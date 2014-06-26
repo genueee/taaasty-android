@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Taaasty</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="tabbar_my_feed_content_description">Мой Дневинк</string>
+    <string name="btn_tabbar_live_description">Прямой эфир</string>
+    <string name="btn_tabbar_action_post">Написать</string>
+    <string name="btn_tabbar_action_notifications">Оповещения</string>
+    <string name="btn_tabbar_action_subscriptions">Подписки</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="feed_item_image_content_description">Открыть на весь экран</string>
+    <string name="feed_item_comments_count_stub">0</string>
+    <string name="feed_item_more_content_description">Еще действия</string>
+    <string name="live_feed_header">Прямой эфир</string>
+    <string name="live_feed_description">12 записей за последний час</string>
+
+</resources>

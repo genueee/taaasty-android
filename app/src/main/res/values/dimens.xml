@@ -1,0 +1,19 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+
+    <!-- Диаметр окружности с аватаркой автора в ленте -->
+    <dimen name="avatar_small_diameter">32dp</dimen>
+
+    <!-- Максимальная высота изображения в ленте -->
+    <dimen name="feed_item_image_max_height">80dp</dimen>
+
+    <!-- padding слева и справа у текста в ленте -->
+    <dimen name="feed_item_padding_left">28dp</dimen>
+    <dimen name="feed_item_padding_right">28dp</dimen>
+
+    <!-- Высота заголовка над лентой -->
+    <dimen name="feed_header_height">235dp</dimen>
+
+</resources>

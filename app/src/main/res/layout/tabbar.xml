@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".widgets.Tabbar"
+    >
+
+    <ImageView
+        android:id="@+id/btn_tabbar_my_feed"
+        android:src="@drawable/btn_tabbar_my_feed"
+        android:contentDescription="@string/tabbar_my_feed_content_description"
+        style="@style/TabbarButton.First" />
+
+    <ImageView
+        android:id="@+id/btn_tabbar_live"
+        android:src="@drawable/btn_tabbar_live"
+        android:contentDescription="@string/btn_tabbar_live_description"
+        style="@style/TabbarButton" />
+
+    <ImageView
+        android:id="@+id/btn_tabbar_post"
+        android:src="@drawable/btn_tabbar_post"
+        android:contentDescription="@string/btn_tabbar_action_post"
+        style="@style/TabbarButton.Action" />
+
+    <ImageView
+        android:id="@+id/btn_tabbar_notifications"
+        android:src="@drawable/btn_tabbar_notifications"
+        android:contentDescription="@string/btn_tabbar_action_notifications"
+        style="@style/TabbarButton" />
+
+    <ImageView
+        android:id="@+id/btn_tabbar_subscribtions"
+        android:src="@drawable/btn_tabbar_subscriptions"
+        android:contentDescription="@string/btn_tabbar_action_subscriptions"
+        style="@style/TabbarButton.Last" />
+
+</merge>

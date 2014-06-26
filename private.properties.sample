@@ -1,0 +1,11 @@
+release.ApServerAddress="http://api.taaasty.ru"
+
+#release.StoreFile=../taaasty.keystore
+#release.StorePassword=
+#release.KeyAlias=release
+#release.KeyPassword=
+
+beta.StoreFile=../taaasty.keystore
+beta.StorePassword=fjrn9rm
+beta.KeyAlias=beta
+beta.KeyPassword=fjrn9rm

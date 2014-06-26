@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tabbar_button_background_normal">#2f2f2f</color>
+    <color name="tabbar_button_background_activated">#000000</color>
+    <color name="tabbar_action_button_background_normal">#24b166</color>
+    <color name="tabbar_action_button_background_pressed">#37be72</color>
+
+
+    <color name="text_color_feed_item_gray">#939393</color>
+
+</resources>

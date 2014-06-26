@@ -1,0 +1,33 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="android:Theme.Holo.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="TabbarButton">
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:background">@drawable/btn_tabbar_background</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <style name="TabbarButton.First">
+        <item name="android:paddingLeft">32dp</item>
+    </style>
+
+    <style name="TabbarButton.Last">
+        <item name="android:paddingRight">32dp</item>
+    </style>
+
+    <style name="TabbarButton.Action">
+        <item name="android:background">@drawable/btn_tabbar_background_action</item>
+    </style>
+
+</resources>
