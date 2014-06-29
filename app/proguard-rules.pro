@@ -18,6 +18,23 @@
 
 -dontobfuscate
 
+-keep class ru.taaasty.model.** { *; }
+
+# GSON
+-keepattributes Signature
+-keep class sun.misc.Unsafe { *; }
+
+# Retrofit
+-keepattributes *Annotation*
+-keep class retrofit.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit.http.* <methods>;
+}
+-dontwarn rx.**
+-dontwarn com.squareup.okhttp.**
+-dontwarn com.google.appengine.api.urlfetch.**
+
+
 # ACRA
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable

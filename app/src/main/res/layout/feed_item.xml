@@ -51,8 +51,20 @@
         android:paddingLeft="@dimen/feed_item_padding_left"
         android:paddingRight="@dimen/feed_item_padding_right"
         android:textIsSelectable="false"
-        android:lines="9"
+        android:maxLines="9"
         android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/source"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:paddingRight="@dimen/feed_item_padding_right"
+        android:textStyle="italic"
+        android:lines="1"
+        android:ellipsize="marquee"
+        android:paddingLeft="@dimen/feed_item_padding_left"
+        tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -74,9 +86,10 @@
             android:minWidth="80dp"
             android:gravity="center"
             android:background="@drawable/feed_item_likes_border"
-            android:drawableLeft="@drawable/ic_gt1_likes"
+            android:drawableLeft="@drawable/ic_gt0_likes"
             android:drawablePadding="8dp"
             tools:text="345"
+            android:clickable="true"
             android:textSize="16sp"
             android:textColor="@color/text_color_feed_item_gray"
             android:layout_marginRight="8dp" />
@@ -88,6 +101,8 @@
             android:background="@drawable/feed_item_likes_border"
             android:gravity="center"
             tools:text="56"
+            android:clickable="true"
+            android:minWidth="80dp"
             android:drawableLeft="@drawable/ic_comments_count_light"
             android:drawablePadding="8dp"
             android:textSize="16sp"
@@ -109,6 +124,7 @@
                 android:contentDescription="@string/feed_item_more_content_description"
                 android:background="@drawable/feed_item_likes_border"
                 android:gravity="center"
+                android:clickable="true"
                 android:src="@drawable/ic_more_light"
                 android:paddingLeft="12dp"
                 android:paddingRight="12dp" />

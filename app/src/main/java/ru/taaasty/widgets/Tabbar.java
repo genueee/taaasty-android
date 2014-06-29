@@ -1,6 +1,8 @@
 package ru.taaasty.widgets;
 
 import android.content.Context;
+import android.support.annotation.IdRes;
+import android.support.annotation.IntegerRes;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -31,6 +33,11 @@ public class Tabbar extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        refreshActivated();
+    }
+
+    public void setActivated(@IdRes int activated) {
+        mActivatedElement = activated;
         refreshActivated();
     }
 

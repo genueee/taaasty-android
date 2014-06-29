@@ -28,7 +28,7 @@ android {
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
-                        "\"http://api.taaasty.ru/\"")
+                        "\"http://api.taaasty.ru/v1\"")
         buildConfigField "Boolean", "ENABLE_ACRA", "true"
         buildConfigField "String", "ACRA_FORM_URI",
                 project.ext.private.getProperty("default.AcraFormUri",
@@ -73,13 +73,18 @@ dependencies {
     compile(group: 'ch.acra', name: 'acra', version: '4.5.0') {
         exclude(group: 'org.json', module: 'json')
     }
+    compile 'com.android.support:support-annotations:+'
+    compile 'com.squareup.retrofit:retrofit:1.6.0'
+
+    // compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
+    // compile 'com.squareup.okhttp:okhttp:2.0.0'
 
 }
 
 ['beta', 'release'].each { typeName ->
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
-            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru\"")
+            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru/v1\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

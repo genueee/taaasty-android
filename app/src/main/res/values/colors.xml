@@ -8,4 +8,7 @@
 
     <color name="text_color_feed_item_gray">#939393</color>
 
+    <color name="likes_gt_1_border">#fca133</color>
+    <color name="text_color_feed_item_likes_gt1">#db7d05</color>
+
 </resources>

@@ -4,47 +4,63 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.zip.Inflater;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.model.Feed;
+import ru.taaasty.model.FeedItem;
+import ru.taaasty.utils.NetworkUtils;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link LiveFeed.OnFragmentInteractionListener} interface
+ * {@link LiveFeedFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link LiveFeed#newInstance} factory method to
+ * Use the {@link LiveFeedFragment#newInstance} factory method to
  * create an instance of this fragment.
  *
  */
-public class LiveFeed extends Fragment {
+public class LiveFeedFragment extends Fragment {
+
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "LiveFeedFragment";
 
     private OnFragmentInteractionListener mListener;
 
     private ListView mListView;
 
+    private TaaastyService mApiService;
+    private FeedItemAdapter mAdapter;
+
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
-     * @return A new instance of fragment LiveFeed.
+     * @return A new instance of fragment LiveFeedFragment.
      */
-    public static LiveFeed newInstance() {
-        return new LiveFeed();
+    public static LiveFeedFragment newInstance() {
+        return new LiveFeedFragment();
     }
-    public LiveFeed() {
+    public LiveFeedFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mApiService = NetworkUtils.getInstance().createTaaastyService();
     }
 
     @Override
@@ -79,16 +95,28 @@ public class LiveFeed extends Fragment {
         View headerView = LayoutInflater.from(mListView.getContext()).inflate(R.layout.header_live_feed, mListView, false);
         mListView.addHeaderView(headerView);
 
-        ArrayAdapter<String> mListAdapter = new ArrayAdapter<String>(getActivity(), R.layout.feed_item, R.id.text,
-                Collections.singletonList("blabla"));
+        mAdapter = new FeedItemAdapter(getActivity());
+        mListView.setAdapter(mAdapter);
 
-        mListView.setAdapter(mListAdapter);
+        mApiService.getLiveFeed(null, 12, new Callback<Feed>() {
+            @Override
+            public void success(Feed feed, Response response) {
+                if (mAdapter != null) mAdapter.setFeed(feed.entries);
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+                Log.e(TAG, "getLiveFeed() failure", error);
+            }
+        });
+
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mListView = null;
+        mAdapter = null;
     }
 
     @Override
@@ -111,6 +139,7 @@ public class LiveFeed extends Fragment {
         // TODO: Update argument type and name
         public void onFeedButtonClicked(Uri uri);
     }
+
 
 
 }
