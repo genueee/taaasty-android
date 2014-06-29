@@ -15,3 +15,32 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontobfuscate
+
+# ACRA
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable
+-keepattributes *Annotation*
+-keep class org.acra.ACRA {
+        *;
+}
+-keep class org.acra.ReportingInteractionMode {
+    *;
+}
+-keepnames class org.acra.sender.HttpSender$** {
+    *;
+}
+-keepnames class org.acra.ReportField {
+    *;
+}
+-keep public class org.acra.ErrorReporter
+{
+    public void addCustomData(java.lang.String,java.lang.String);
+    public void putCustomData(java.lang.String,java.lang.String);
+    public void removeCustomData(java.lang.String);
+}
+-keep public class org.acra.ErrorReporter
+{
+    public void handleSilentException(java.lang.Throwable);
+}

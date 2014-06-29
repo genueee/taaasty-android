@@ -29,6 +29,16 @@ android {
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
                         "\"http://api.taaasty.ru/\"")
+        buildConfigField "Boolean", "ENABLE_ACRA", "true"
+        buildConfigField "String", "ACRA_FORM_URI",
+                project.ext.private.getProperty("default.AcraFormUri",
+                        "\"http://acra.icfdev.ru/acra-trainingprocesses/_design/acra-storage/_update/report\"")
+        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_LOGIN",
+                project.ext.private.getProperty("default.AcraFormUriBaseAuthLogin",
+                        "\"acra\"")
+        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_PASSWORD",
+                project.ext.private.getProperty("default.AcraFormUriBaseAuthPassword",
+                        "\"acra\"")
 
     }
 
@@ -41,6 +51,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
+            buildConfigField "Boolean", "ENABLE_ACRA", "false"
         }
         release {
             runProguard true

@@ -16,4 +16,6 @@
     <string name="live_feed_header">Прямой эфир</string>
     <string name="live_feed_description">12 записей за последний час</string>
 
+    <string name="crash_toast_text">Сбой. Сформирован и отправлен отчет.</string>
+
 </resources>
