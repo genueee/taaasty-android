@@ -7,25 +7,42 @@
     android:orientation="vertical"
     >
 
-    <TextView
-        android:id="@+id/author"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:text="alyonaruban"
-        android:drawablePadding="16dp"
-        android:drawableLeft="@drawable/avatar_dummy"
-        android:minHeight="64dp"
-        android:gravity="center_vertical"
-        android:textColor="@color/text_color_feed_item_gray"
-        android:textSize="14sp"
+        android:orientation="horizontal"
         android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right" />
+        android:paddingRight="@dimen/feed_item_padding_right"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_small_diameter"
+            android:layout_height="@dimen/avatar_small_diameter"
+            android:layout_gravity="center"
+            android:src="@drawable/avatar_dummy"
+            android:layout_marginRight="16dp" />
+
+        <TextView
+            android:id="@+id/author"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:minHeight="64dp"
+            android:textColor="@color/text_color_feed_item_gray"
+            android:textSize="14sp"
+            tools:text="alyonaruban" />
+    </LinearLayout>
+
 
     <ImageView
         android:id="@+id/image"
         android:contentDescription="@string/feed_item_image_content_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:cropToPadding="false"
+        android:adjustViewBounds="true"
         android:visibility="gone" />
 
     <TextView

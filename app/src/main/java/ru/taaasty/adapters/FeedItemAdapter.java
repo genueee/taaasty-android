@@ -3,6 +3,7 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,22 +11,36 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.FeedItem;
+import ru.taaasty.utils.CircleTransformation;
 
 
 public class FeedItemAdapter extends BaseAdapter {
 
     private final List<FeedItem> mFeed;
     private final LayoutInflater mInfater;
+    private final Picasso mPicasso;
+
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "FeedItemAdapter";
+
+    private final int mAvatarDiameter;
+    private final CircleTransformation mCircleTransformation;
 
     public FeedItemAdapter(Context context) {
         super();
         mFeed = new ArrayList<FeedItem>();
         mInfater = LayoutInflater.from(context);
+        mPicasso = Picasso.with(context);
+        mAvatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+        mCircleTransformation = new CircleTransformation();
     }
 
     public void setFeed(List<FeedItem> feed) {
@@ -84,12 +99,32 @@ public class FeedItemAdapter extends BaseAdapter {
     private void setAuthor(ViewHolder vh, FeedItem item) {
         FeedItem.Author author = item.getAuthor();
         vh.author.setText(author.getSlug());
-        // XXX: avatar
+
+        String userpicUrl = author.getUserpic().touchUrl;
+        if (TextUtils.isEmpty(userpicUrl)) {
+            vh.avatar.setImageResource(R.drawable.avatar_dummy);
+        } else {
+            mPicasso.load(userpicUrl)
+                    .resize(mAvatarDiameter, mAvatarDiameter)
+                    .centerCrop()
+                    .placeholder(R.drawable.avatar_dummy)
+                    .error(R.drawable.avatar_dummy)
+                    .transform(mCircleTransformation)
+                    .into(vh.avatar);
+        }
     }
 
     private void setImage(ViewHolder vh, FeedItem item) {
-        // XXX: image
-        vh.image.setVisibility(View.GONE);
+        if (item.getImages().size() > 0) {
+            vh.image.setVisibility(View.VISIBLE);
+            String imageUrl = item.getImages().get(0).mediumUrl;
+            if (DBG) Log.v(TAG, "width: " + vh.image.getMeasuredWidth());
+            mPicasso
+                    .load(imageUrl)
+                    .into(vh.image);
+        } else {
+            vh.image.setVisibility(View.GONE);
+        }
     }
 
     private void setTitle(ViewHolder vh, FeedItem item) {
@@ -144,6 +179,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     public static class ViewHolder {
+        public final ImageView avatar;
         public final TextView author;
         public final ImageView image;
         public final TextView title;
@@ -154,6 +190,7 @@ public class FeedItemAdapter extends BaseAdapter {
         public final ImageView moreButton;
 
         public ViewHolder(View v) {
+            avatar = (ImageView)v.findViewById(R.id.avatar);
             author = (TextView)v.findViewById(R.id.author);
             image = (ImageView)v.findViewById(R.id.image);
             title = (TextView)v.findViewById(R.id.title);
