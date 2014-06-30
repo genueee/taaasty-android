@@ -29,6 +29,8 @@ android {
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
                         "\"http://api.taaasty.ru/v1\"")
+        buildConfigField "String", "THUBOR_KEY",
+                project.ext.private.getProperty("default.ThuborKey", "\"golobog\"")
         buildConfigField "Boolean", "ENABLE_ACRA", "true"
         buildConfigField "String", "ACRA_FORM_URI",
                 project.ext.private.getProperty("default.AcraFormUri",
@@ -76,6 +78,7 @@ dependencies {
     compile 'com.android.support:support-annotations:+'
     compile 'com.squareup.retrofit:retrofit:1.6.0'
     compile 'com.squareup.picasso:picasso:2.3.+'
+    compile 'com.squareup:pollexor:2.0.2'
 
     // compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
     // compile 'com.squareup.okhttp:okhttp:2.0.0'
@@ -86,6 +89,8 @@ dependencies {
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
             project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru/v1\"")
+    bt.buildConfigField "String", "THUBOR_KEY",
+            project.ext.private.getProperty("${typeName}.ThuborKey", "\"golobog\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

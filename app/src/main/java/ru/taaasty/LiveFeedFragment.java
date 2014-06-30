@@ -34,9 +34,9 @@ import ru.taaasty.utils.NetworkUtils;
  *
  */
 public class LiveFeedFragment extends Fragment {
-
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedFragment";
+    private static final int LIVE_FEED_LENGTH = 50;
 
     private OnFragmentInteractionListener mListener;
 
@@ -98,7 +98,7 @@ public class LiveFeedFragment extends Fragment {
         mAdapter = new FeedItemAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        mApiService.getLiveFeed(null, 12, new Callback<Feed>() {
+        mApiService.getLiveFeed(null, LIVE_FEED_LENGTH, new Callback<Feed>() {
             @Override
             public void success(Feed feed, Response response) {
                 if (mAdapter != null) mAdapter.setFeed(feed.entries);

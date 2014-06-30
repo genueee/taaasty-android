@@ -33,7 +33,7 @@ public class TaaastyApplication extends Application {
         // ACRA мешает при отладке
         if (BuildConfig.ENABLE_ACRA) ACRA.init(this);
 
-        initHttpCache();
+        // initHttpCache();
     }
 
     private void initHttpCache() {

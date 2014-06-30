@@ -1,11 +1,18 @@
 package ru.taaasty.utils;
 
 
+import android.os.Build;
+import android.support.annotation.Nullable;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.squareup.pollexor.Thumbor;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
@@ -22,6 +29,8 @@ public final class NetworkUtils {
     private static NetworkUtils mUtils;
 
     private String mUserToken;
+
+    private static final Pattern THUMBOR_MATCHER_PATTERN =Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
 
     private NetworkUtils() {
         Gson builder = new GsonBuilder()
@@ -51,6 +60,15 @@ public final class NetworkUtils {
     public TaaastyService createTaaastyService() {
         RestAdapter a = createRestAdapter();
         return a.create(TaaastyService.class);
+    }
+
+    @Nullable
+    public static ThumborUrlBuilder createThumborUrl(String url) {
+        Matcher m = THUMBOR_MATCHER_PATTERN.matcher(url);
+        if (!m.matches()) return null;
+        return Thumbor.create("http://st1.tasty0.ru/", BuildConfig.THUBOR_KEY)
+            .buildImage(m.group(1));
+
     }
 
     public void setUserToken(String token) {

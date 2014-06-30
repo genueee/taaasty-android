@@ -12,14 +12,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.pollexor.Thumbor;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.FeedItem;
 import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.NetworkUtils;
 
 
 public class FeedItemAdapter extends BaseAdapter {
@@ -75,16 +80,16 @@ public class FeedItemAdapter extends BaseAdapter {
         View res;
 
         if (convertView == null) {
-            res  = mInfater.inflate(R.layout.feed_item, parent, false);
+            res = mInfater.inflate(R.layout.feed_item, parent, false);
             vh = new ViewHolder(res);
             res.setTag(R.id.feed_item_view_holder, vh);
         } else {
             res = convertView;
-            vh = (ViewHolder)res.getTag(R.id.feed_item_view_holder);
+            vh = (ViewHolder) res.getTag(R.id.feed_item_view_holder);
         }
         FeedItem item = mFeed.get(position);
         setAuthor(vh, item);
-        setImage(vh, item);
+        setImage(vh, item, parent);
         setTitle(vh, item);
         setText(vh, item);
         setRating(vh, item);
@@ -100,28 +105,62 @@ public class FeedItemAdapter extends BaseAdapter {
         FeedItem.Author author = item.getAuthor();
         vh.author.setText(author.getSlug());
 
-        String userpicUrl = author.getUserpic().touchUrl;
+        String userpicUrl = author.getUserpic().largeUrl;
         if (TextUtils.isEmpty(userpicUrl)) {
             vh.avatar.setImageResource(R.drawable.avatar_dummy);
         } else {
-            mPicasso.load(userpicUrl)
-                    .resize(mAvatarDiameter, mAvatarDiameter)
-                    .centerCrop()
-                    .placeholder(R.drawable.avatar_dummy)
-                    .error(R.drawable.avatar_dummy)
-                    .transform(mCircleTransformation)
-                    .into(vh.avatar);
+            ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
+            if (b != null) {
+                userpicUrl = b.resize(mAvatarDiameter, mAvatarDiameter)
+                        //.filter(ThumborUrlBuilder.format(ThumborUrlBuilder.ImageFormat.WEBP))
+                        .smart()
+                        .toUrl();
+                if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+                mPicasso.load(userpicUrl)
+                        .placeholder(R.drawable.avatar_dummy)
+                        .error(R.drawable.avatar_dummy)
+                        .transform(mCircleTransformation)
+                        .into(vh.avatar);
+            } else {
+                mPicasso.load(userpicUrl)
+                        .resize(mAvatarDiameter, mAvatarDiameter)
+                        .centerCrop()
+                        .placeholder(R.drawable.avatar_dummy)
+                        .error(R.drawable.avatar_dummy)
+                        .transform(mCircleTransformation)
+                        .into(vh.avatar);
+            }
         }
     }
 
-    private void setImage(ViewHolder vh, FeedItem item) {
+    private void setImage(ViewHolder vh, FeedItem item, ViewGroup parent) {
         if (item.getImages().size() > 0) {
             vh.image.setVisibility(View.VISIBLE);
             String imageUrl = item.getImages().get(0).mediumUrl;
-            if (DBG) Log.v(TAG, "width: " + vh.image.getMeasuredWidth());
+
+            /*
+            if (DBG) Log.v(TAG, "width: " + vh.image.getMeasuredWidth()
+                            + "parent width: " + parent.getMeasuredWidth()
+            );
+            */
+
+            if (parent.getMeasuredWidth() > 0) {
+                ThumborUrlBuilder b = NetworkUtils.createThumborUrl(imageUrl);
+                if (b != null) {
+                    b.resize(parent.getMeasuredWidth(), 0);
+                    /*
+                    if (imageUrl.endsWith(".jpg") || imageUrl.endsWith(".Jpg") || imageUrl.endsWith(".JPG")) {
+                        b.filter(ThumborUrlBuilder.format(ThumborUrlBuilder.ImageFormat.WEBP));
+                    }
+                    */
+                    imageUrl =  b.toUrl();
+                }
+            }
+            if (DBG) Log.v(TAG, "image url: " + imageUrl);
             mPicasso
                     .load(imageUrl)
                     .into(vh.image);
+
         } else {
             vh.image.setVisibility(View.GONE);
         }
@@ -159,7 +198,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void setRating(ViewHolder vh, FeedItem item) {
-        FeedItem.Rating r =  item.getRating();
+        FeedItem.Rating r = item.getRating();
         if (r.votes > 0) {
             vh.likes.setText(String.valueOf(r.votes));
             vh.likes.setTextColor(vh.likes.getResources().getColor(R.color.text_color_feed_item_likes_gt1));
@@ -190,15 +229,15 @@ public class FeedItemAdapter extends BaseAdapter {
         public final ImageView moreButton;
 
         public ViewHolder(View v) {
-            avatar = (ImageView)v.findViewById(R.id.avatar);
-            author = (TextView)v.findViewById(R.id.author);
-            image = (ImageView)v.findViewById(R.id.image);
-            title = (TextView)v.findViewById(R.id.title);
-            text  = (TextView)v.findViewById(R.id.text);
-            comments  = (TextView)v.findViewById(R.id.comments_count);
-            likes = (TextView)v.findViewById(R.id.likes);
-            source = (TextView)v.findViewById(R.id.source);
-            moreButton  = (ImageView)v.findViewById(R.id.more);
+            avatar = (ImageView) v.findViewById(R.id.avatar);
+            author = (TextView) v.findViewById(R.id.author);
+            image = (ImageView) v.findViewById(R.id.image);
+            title = (TextView) v.findViewById(R.id.title);
+            text = (TextView) v.findViewById(R.id.text);
+            comments = (TextView) v.findViewById(R.id.comments_count);
+            likes = (TextView) v.findViewById(R.id.likes);
+            source = (TextView) v.findViewById(R.id.source);
+            moreButton = (ImageView) v.findViewById(R.id.more);
         }
     }
 }
