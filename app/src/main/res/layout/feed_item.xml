@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:scaleType="fitCenter"
         android:cropToPadding="false"
-        android:adjustViewBounds="true"
+        android:adjustViewBounds="false"
         android:visibility="gone" />
 
     <TextView

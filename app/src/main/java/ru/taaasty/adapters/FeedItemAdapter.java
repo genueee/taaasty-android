@@ -1,6 +1,10 @@
 package ru.taaasty.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,12 +15,16 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,6 +41,8 @@ public class FeedItemAdapter extends BaseAdapter {
     private final LayoutInflater mInfater;
     private final Picasso mPicasso;
 
+    private final Map<String, ImageWh> mImageSizes;
+
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedItemAdapter";
 
@@ -46,6 +56,7 @@ public class FeedItemAdapter extends BaseAdapter {
         mPicasso = Picasso.with(context);
         mAvatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
         mCircleTransformation = new CircleTransformation();
+        mImageSizes = new HashMap<String, ImageWh>();
     }
 
     public void setFeed(List<FeedItem> feed) {
@@ -115,11 +126,12 @@ public class FeedItemAdapter extends BaseAdapter {
                         //.filter(ThumborUrlBuilder.format(ThumborUrlBuilder.ImageFormat.WEBP))
                         .smart()
                         .toUrl();
-                if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+                // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
                 mPicasso.load(userpicUrl)
                         .placeholder(R.drawable.avatar_dummy)
                         .error(R.drawable.avatar_dummy)
                         .transform(mCircleTransformation)
+                        .noFade()
                         .into(vh.avatar);
             } else {
                 mPicasso.load(userpicUrl)
@@ -128,14 +140,15 @@ public class FeedItemAdapter extends BaseAdapter {
                         .placeholder(R.drawable.avatar_dummy)
                         .error(R.drawable.avatar_dummy)
                         .transform(mCircleTransformation)
+                        .noFade()
                         .into(vh.avatar);
             }
         }
     }
 
     private void setImage(ViewHolder vh, FeedItem item, ViewGroup parent) {
+        mPicasso.cancelRequest(vh.imageTarget);
         if (item.getImages().size() > 0) {
-            vh.image.setVisibility(View.VISIBLE);
             String imageUrl = item.getImages().get(0).mediumUrl;
 
             /*
@@ -156,11 +169,22 @@ public class FeedItemAdapter extends BaseAdapter {
                     imageUrl =  b.toUrl();
                 }
             }
-            if (DBG) Log.v(TAG, "image url: " + imageUrl);
+            // if (DBG) Log.v(TAG, "image url: " + imageUrl);
+            vh.mImageUrl = imageUrl;
+            ImageWh wh = mImageSizes.get(imageUrl);
+            if (wh != null) {
+                if (DBG) Log.v(TAG, "setimagesize " + wh.width + " " + wh.height);
+                Bitmap b = Bitmap.createBitmap(wh.width, wh.height, Bitmap.Config.ARGB_8888);
+                b.eraseColor(Color.TRANSPARENT);
+                vh.image.setImageBitmap(b);
+                vh.image.setVisibility(View.VISIBLE);
+            } else {
+                vh.image.setVisibility(View.GONE);
+            }
             mPicasso
                     .load(imageUrl)
-                    .into(vh.image);
-
+                    .noFade()
+                    .into(vh.imageTarget);
         } else {
             vh.image.setVisibility(View.GONE);
         }
@@ -177,8 +201,9 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void setText(ViewHolder vh, FeedItem item) {
-        Spanned text = item.getTextSpanned();
-        Spanned source = item.getSourceSpanned();
+        CharSequence text = item.getTextSpanned();
+        CharSequence source = item.getSourceSpanned();
+
 
         // XXX: другой шрифт если есть source
         if (text == null) {
@@ -217,7 +242,16 @@ public class FeedItemAdapter extends BaseAdapter {
         vh.comments.setText(String.valueOf(comments));
     }
 
-    public static class ViewHolder {
+    public static class ImageWh {
+        final int width;
+        final int height;
+        public ImageWh(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    public class ViewHolder {
         public final ImageView avatar;
         public final TextView author;
         public final ImageView image;
@@ -227,6 +261,9 @@ public class FeedItemAdapter extends BaseAdapter {
         public final TextView comments;
         public final TextView source;
         public final ImageView moreButton;
+
+        private final Target imageTarget;
+        private String mImageUrl = null;
 
         public ViewHolder(View v) {
             avatar = (ImageView) v.findViewById(R.id.avatar);
@@ -238,6 +275,26 @@ public class FeedItemAdapter extends BaseAdapter {
             likes = (TextView) v.findViewById(R.id.likes);
             source = (TextView) v.findViewById(R.id.source);
             moreButton = (ImageView) v.findViewById(R.id.more);
+            imageTarget = new Target() {
+
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    image.setImageBitmap(bitmap);
+                    image.setVisibility(View.VISIBLE);
+                    mImageSizes.put(mImageUrl, new ImageWh(bitmap.getWidth(), bitmap.getHeight()));
+                }
+
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                    // XXX
+                    image.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                    // image.setImageDrawable(placeHolderDrawable);
+                }
+            } ;
         }
     }
 }

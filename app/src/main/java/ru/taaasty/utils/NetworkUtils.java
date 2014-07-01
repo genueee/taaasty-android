@@ -30,7 +30,7 @@ public final class NetworkUtils {
 
     private String mUserToken;
 
-    private static final Pattern THUMBOR_MATCHER_PATTERN =Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
+    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
 
     private NetworkUtils() {
         Gson builder = new GsonBuilder()
@@ -66,7 +66,7 @@ public final class NetworkUtils {
     public static ThumborUrlBuilder createThumborUrl(String url) {
         Matcher m = THUMBOR_MATCHER_PATTERN.matcher(url);
         if (!m.matches()) return null;
-        return Thumbor.create("http://st1.tasty0.ru/", BuildConfig.THUBOR_KEY)
+        return Thumbor.create("http://thumbor0.tcdn.ru/", BuildConfig.THUBOR_KEY)
             .buildImage(m.group(1));
 
     }

@@ -57,6 +57,10 @@ public class FeedItem {
     @SerializedName("images")
     private List<Image> mImages;
 
+    private transient Spanned mTextSpanned = null;
+
+    private transient Spanned mSourceSpanned = null;
+
     public long getId() {
         return mId;
     }
@@ -104,13 +108,19 @@ public class FeedItem {
     @Nullable
     public Spanned getTextSpanned() {
         if (TextUtils.isEmpty(mText)) return null;
-        return Html.fromHtml(mText);
+        if (mTextSpanned == null) {
+            mTextSpanned = Html.fromHtml(mText);
+        }
+        return mTextSpanned;
     }
 
     @Nullable
     public Spanned getSourceSpanned() {
         if (TextUtils.isEmpty(mSource)) return null;
-        return Html.fromHtml(mSource);
+        if (mSourceSpanned == null) {
+            mSourceSpanned = Html.fromHtml(mText);
+        }
+        return mSourceSpanned;
     }
 
     public List<Image> getImages() {

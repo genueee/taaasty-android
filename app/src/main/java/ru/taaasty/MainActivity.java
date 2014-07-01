@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.squareup.picasso.Picasso;
+
 
 public class MainActivity extends Activity implements LiveFeedFragment.OnFragmentInteractionListener {
 
@@ -23,5 +25,6 @@ public class MainActivity extends Activity implements LiveFeedFragment.OnFragmen
     public void onFeedButtonClicked(Uri uri) {
 
     }
+
 
 }
