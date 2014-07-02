@@ -55,7 +55,6 @@
         tools:text="Ролики"
         tools:visibility="visible"
         android:ellipsize="end"
-        android:singleLine="true"
         android:paddingLeft="@dimen/feed_item_padding_left"
         android:paddingRight="@dimen/feed_item_padding_right" />
 
@@ -68,7 +67,6 @@
         android:paddingLeft="@dimen/feed_item_padding_left"
         android:paddingRight="@dimen/feed_item_padding_right"
         android:textIsSelectable="false"
-        android:maxLines="9"
         android:paddingBottom="8dp" />
 
     <TextView

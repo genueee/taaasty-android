@@ -62,6 +62,10 @@ public class FeedItemAdapter extends BaseAdapter {
     public void setFeed(List<FeedItem> feed) {
         mFeed.clear();
         mFeed.addAll(feed);
+        for (FeedItem i: mFeed) {
+            i.getTextSpanned();
+            i.getSourceSpanned();
+        }
         notifyDataSetChanged();
     }
 

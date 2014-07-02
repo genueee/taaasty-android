@@ -18,26 +18,32 @@ public class CircleTransformation implements Transformation {
     }
 
     @Override
-    public Bitmap transform(Bitmap bitmap) {
+    public Bitmap transform(Bitmap source) {
         int innerRadius;
 
-        innerRadius = Math.min(bitmap.getWidth(), bitmap.getHeight()) / 2;
+        int size = Math.min(source.getWidth(), source.getHeight());
 
-        Bitmap output = Bitmap.createBitmap(innerRadius * 2,
-                innerRadius * 2, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
+        int x = (source.getWidth() - size) / 2;
+        int y = (source.getHeight() - size) / 2;
 
-        BitmapShader shader = new BitmapShader(bitmap,
-                Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+        Bitmap squaredBitmap = Bitmap.createBitmap(source, x, y, size, size);
+        if (squaredBitmap != source) {
+            source.recycle();
+        }
 
+        Bitmap bitmap = Bitmap.createBitmap(size, size, source.getConfig());
+
+        Canvas canvas = new Canvas(bitmap);
         Paint paint = new Paint();
-        paint.setAntiAlias(true);
+        BitmapShader shader = new BitmapShader(squaredBitmap, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP);
         paint.setShader(shader);
+        paint.setAntiAlias(true);
 
-        canvas.drawCircle(innerRadius, innerRadius, innerRadius, paint);
-        bitmap.recycle();
+        float r = size/2f;
+        canvas.drawCircle(r, r, r, paint);
 
-        return output;
+        squaredBitmap.recycle();
+        return bitmap;
     }
 
     @Override
