@@ -1,5 +1,6 @@
 package ru.taaasty.adapters;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.Thumbor;
@@ -53,7 +55,10 @@ public class FeedItemAdapter extends BaseAdapter {
         super();
         mFeed = new ArrayList<FeedItem>();
         mInfater = LayoutInflater.from(context);
-        mPicasso = Picasso.with(context);
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        int cacheSize = am.getMemoryClass() * 1024 * 1024 * 2 / 3;
+        if (DBG) Log.v(TAG, "memory cache size: " + cacheSize);
+        mPicasso = new Picasso.Builder(context).memoryCache(new LruCache(cacheSize)).build();
         mAvatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
         mCircleTransformation = new CircleTransformation();
         mImageSizes = new HashMap<String, ImageWh>();
@@ -165,11 +170,12 @@ public class FeedItemAdapter extends BaseAdapter {
                 ThumborUrlBuilder b = NetworkUtils.createThumborUrl(imageUrl);
                 if (b != null) {
                     b.resize(parent.getMeasuredWidth(), 0);
+
                     /*
                     if (imageUrl.endsWith(".jpg") || imageUrl.endsWith(".Jpg") || imageUrl.endsWith(".JPG")) {
                         b.filter(ThumborUrlBuilder.format(ThumborUrlBuilder.ImageFormat.WEBP));
-                    }
-                    */
+                    }*/
+
                     imageUrl =  b.toUrl();
                 }
             }
@@ -178,7 +184,7 @@ public class FeedItemAdapter extends BaseAdapter {
             ImageWh wh = mImageSizes.get(imageUrl);
             if (wh != null) {
                 if (DBG) Log.v(TAG, "setimagesize " + wh.width + " " + wh.height);
-                Bitmap b = Bitmap.createBitmap(wh.width, wh.height, Bitmap.Config.ARGB_8888);
+                Bitmap b = Bitmap.createBitmap(wh.width, wh.height, Bitmap.Config.ALPHA_8);
                 b.eraseColor(Color.TRANSPARENT);
                 vh.image.setImageBitmap(b);
                 vh.image.setVisibility(View.VISIBLE);

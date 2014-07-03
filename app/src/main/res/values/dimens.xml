@@ -15,5 +15,6 @@
 
     <!-- Высота заголовка над лентой -->
     <dimen name="feed_header_height">235dp</dimen>
+    <dimen name="login_btn_background_corner_radius">2dp</dimen>
 
 </resources>

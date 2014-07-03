@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="ru.taaasty.login.LoginActivity">
+
+    <TextView
+        android:id="@+id/intro_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/sign_via_vkontakte"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp"
+        android:drawablePadding="16dp"
+        android:drawableTop="@drawable/logo"
+        android:gravity="center_horizontal"
+        android:text="@string/activity_login_intro"
+        android:textColor="@android:color/white"
+        android:textSize="29sp" />
+
+    <LinearLayout
+        android:id="@id/sign_via_vkontakte"
+        style="@style/LoginButtonContainer"
+        android:background="@drawable/login_vkontakte_background"
+        android:layout_above="@+id/sign_via_email">
+
+        <ImageView
+            android:src="@drawable/ic_sign_vkontakte"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:src="@drawable/login_button_divider"
+            android:scaleType="fitXY"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <TextView
+            style="@style/LoginButton"
+            android:text="@string/sign_via_vkontakte"
+            android:textColor="@android:color/white"
+             />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@id/sign_via_email"
+        style="@style/LoginButtonContainer"
+        android:background="@drawable/login_email_background"
+        android:layout_above="@+id/register_button">
+
+        <ImageView
+            android:src="@drawable/ic_sign_email"
+            android:layout_width="36dp"
+            android:layout_height="wrap_content" />
+
+        <ImageView
+            android:src="@drawable/login_button_divider_dark"
+            android:scaleType="fitXY"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <TextView
+            style="@style/LoginButton"
+            android:text="@string/sign_via_email"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@id/register_button"
+        style="@style/LoginButtonContainer"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="30dp"
+        android:layout_marginRight="18dp"
+        android:background="@drawable/register_btn_background">
+
+        <ImageView
+            android:src="@drawable/login_button_divider_dark"
+            android:layout_marginLeft="37dp"
+            android:scaleType="fitXY"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:visibility="invisible" />
+
+        <TextView
+            style="@style/LoginButton"
+            android:text="@string/or_register" />
+    </LinearLayout>
+
+
+</RelativeLayout>

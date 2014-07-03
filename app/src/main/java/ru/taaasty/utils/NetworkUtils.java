@@ -1,7 +1,6 @@
 package ru.taaasty.utils;
 
 
-import android.os.Build;
 import android.support.annotation.Nullable;
 
 import com.google.gson.FieldNamingPolicy;
@@ -18,7 +17,7 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.TaaastyService;
+import ru.taaasty.UserManager;
 
 public final class NetworkUtils {
 
@@ -28,14 +27,14 @@ public final class NetworkUtils {
 
     private static NetworkUtils mUtils;
 
-    private String mUserToken;
-
     private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
+
+    private UserManager mUserManager = UserManager.getInstance();
 
     private NetworkUtils() {
         Gson builder = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(Date.class, new ru.taaasty.utils.DateTypeAdapter())
+                .registerTypeAdapter(Date.class, new DateTypeAdapter())
                 .create();
         mGsonConverter = new GsonConverter(builder);
     }
@@ -57,37 +56,21 @@ public final class NetworkUtils {
         return b.build();
     }
 
-    public TaaastyService createTaaastyService() {
-        RestAdapter a = createRestAdapter();
-        return a.create(TaaastyService.class);
-    }
-
     @Nullable
     public static ThumborUrlBuilder createThumborUrl(String url) {
         Matcher m = THUMBOR_MATCHER_PATTERN.matcher(url);
         if (!m.matches()) return null;
-        return Thumbor.create("http://thumbor0.tcdn.ru/", BuildConfig.THUBOR_KEY)
+        return Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY)
             .buildImage(m.group(1));
 
-    }
-
-    public void setUserToken(String token) {
-        mUserToken = token;
-    }
-
-    public String getUserToken() {
-        return mUserToken;
-    }
-
-    public void clearUserToken() {
-        mUserToken = null;
     }
 
     private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {
         @Override
         public void intercept(RequestFacade request) {
-            if (mUserToken != null) {
-                request.addHeader(HEADER_X_USER_TOKEN, mUserToken);
+            String token = mUserManager.getCurrentUserToken();
+            if (token != null) {
+                request.addHeader(HEADER_X_USER_TOKEN, token);
             }
         }
     };

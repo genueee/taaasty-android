@@ -1,0 +1,35 @@
+<resources>
+    <string name="title_activity_login">Вход</string>
+    <string name="title_fragment_sign_in">Вход</string>
+    <string name="title_fragment_sign_up">Регистрация</string>
+    <string name="title_fragment_recover_password">Забыл пароль</string>
+
+    <string name="or_register">или зарегистрироваться</string>
+    <string name="sign_via_email">Войти с помощью эл. почты</string>
+    <string name="sign_via_vkontakte">Войти с помощью Вконтакте</string>
+    <string name="not_ready_yet">Ещё не работает</string>
+    <string name="btn_i_have_not_registered">Я ещё не зарегистрирован</string>
+    <string name="btn_i_have_registered">Я уже зарегистрирован</string>
+    <string name="btn_i_forgot_password">Я забыл пароль</string>
+    <string name="reset_password">Сбросить пароль</string>
+    <string name="activity_login_intro">Это <b>дневник</b>\nв который хочется\nписать каждый день</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email_or_slug">Электронная почта или ник</string>
+    <string name="prompt_email">Электронная почта</string>
+    <string name="prompt_slug">Ник.taaasty.ru</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in">Войти</string>
+    <string name="action_sign_in_short">Войти</string>
+
+    <string name="action_sign_up">Зарегистрироваться</string>
+    <string name="action_sign_up_short">Создать</string>
+
+    <string name="error_invalid_email">Логин слишком короткий</string>
+    <string name="error_invalid_password">Пароль слишком короткий</string>
+    <string name="error_invalid_slug">Адрес слишком короткий</string>
+    <string name="error_invalid_email_or_password">Неправильный логин или пароль</string>
+    <string name="error_password_field_required">Пароль не указан</string>
+    <string name="error_email_field_required">Логин не указан</string>
+    <string name="error_slug_field_required">Адрес не указан</string>
+</resources>

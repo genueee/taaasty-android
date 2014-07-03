@@ -42,8 +42,8 @@
         android:layout_height="wrap_content"
         android:scaleType="fitCenter"
         android:cropToPadding="false"
-        android:adjustViewBounds="false"
-        android:visibility="gone" />
+        android:adjustViewBounds="true"
+        android:visibility="invisible" />
 
     <TextView
         android:id="@+id/title"

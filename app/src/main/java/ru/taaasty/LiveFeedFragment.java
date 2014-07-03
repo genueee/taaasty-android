@@ -21,8 +21,8 @@ import retrofit.client.Response;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.FeedItem;
+import ru.taaasty.service.Feeds;
 import ru.taaasty.utils.NetworkUtils;
-
 
 /**
  * A simple {@link Fragment} subclass.
@@ -42,7 +42,7 @@ public class LiveFeedFragment extends Fragment {
 
     private ListView mListView;
 
-    private TaaastyService mApiService;
+    private Feeds mFeedsService;
     private FeedItemAdapter mAdapter;
 
     /**
@@ -60,7 +60,7 @@ public class LiveFeedFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mApiService = NetworkUtils.getInstance().createTaaastyService();
+        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(Feeds.class);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class LiveFeedFragment extends Fragment {
         mAdapter = new FeedItemAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        mApiService.getLiveFeed(null, LIVE_FEED_LENGTH, new Callback<Feed>() {
+        mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH, new Callback<Feed>() {
             @Override
             public void success(Feed feed, Response response) {
                 if (mAdapter != null) mAdapter.setFeed(feed.entries);

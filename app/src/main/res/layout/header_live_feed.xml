@@ -13,7 +13,7 @@
         android:layout_gravity="center"
         tools:ignore="UselessParent">
 
-        <ru.taaasty.widgets.TextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
@@ -21,7 +21,7 @@
             android:textColor="@android:color/white"
             android:textSize="42sp" />
 
-        <ru.taaasty.widgets.TextView
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

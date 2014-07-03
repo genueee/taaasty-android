@@ -11,4 +11,6 @@
     <color name="likes_gt_1_border">#fca133</color>
     <color name="text_color_feed_item_likes_gt1">#db7d05</color>
 
+    <color name="login_activity_darken_layer">#50000000</color>
+
 </resources>

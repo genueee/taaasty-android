@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        tools:text="Неправильный логин или пароль"
+        style="@style/ErrorTextView" />
+
+    <LinearLayout
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="20dp"
+        android:minHeight="42dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:minHeight="42dp"
+            android:minWidth="42dp"
+            android:scaleType="center"
+            android:src="@drawable/ab_back" />
+
+        <TextView
+            android:id="@+id/window_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="58dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:singleLine="true"
+            tools:text="Вход" />
+
+    </LinearLayout>
+</merge>

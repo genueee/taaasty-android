@@ -11,6 +11,8 @@ import org.acra.annotation.ReportsCrashes;
 import java.io.File;
 import java.io.IOException;
 
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+
 @ReportsCrashes(
         formKey = "",
         formUri = BuildConfig.ACRA_FORM_URI,
@@ -32,6 +34,10 @@ public class TaaastyApplication extends Application {
 
         // ACRA мешает при отладке
         if (BuildConfig.ENABLE_ACRA) ACRA.init(this);
+
+        CalligraphyConfig.initDefault("fonts/ProximaNova-Reg.otf", R.attr.fontPath);
+
+        UserManager.getInstance().onAppInit(this);
 
         // initHttpCache();
     }

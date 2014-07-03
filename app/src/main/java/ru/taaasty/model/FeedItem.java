@@ -2,7 +2,6 @@ package ru.taaasty.model;
 
 import android.support.annotation.Nullable;
 import android.text.Html;
-import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextUtils;
 
@@ -178,29 +177,6 @@ public class FeedItem {
         public String getTlogUrl() {
             return mTlogUrl;
         }
-
-    }
-
-    public static class Userpic {
-        public static Userpic DUMMY = new Userpic();
-
-        @Nullable
-        public String largeUrl;
-
-        @Nullable
-        public String thumb128Url;
-
-        @Nullable
-        public String thumb64Url;
-
-        @Nullable
-        public String thumb32Url;
-
-        @Nullable
-        public String thumb16Url;
-
-        @Nullable
-        public String touchUrl;
 
     }
 
