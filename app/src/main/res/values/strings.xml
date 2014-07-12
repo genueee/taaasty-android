@@ -13,6 +13,10 @@
     <string name="live_feed_header">Прямой эфир</string>
     <string name="live_feed_description">12 записей за последний час</string>
     <string name="crash_toast_text">Сбой. Сформирован и отправлен отчет.</string>
+    <string name="user_avatar_content_description">Информация о пользователе</string>
+    <string name="additional_menu">Дополнительное меню</string>
+    <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
+    <string name="design_settings">Настройки дизайна</string>
 
 
 </resources>

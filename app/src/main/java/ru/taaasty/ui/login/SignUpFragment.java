@@ -1,37 +1,38 @@
-package ru.taaasty.login;
+package ru.taaasty.ui.login;
 
 import android.animation.Animator;
+import android.animation.AnimatorInflater;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.LoaderManager;
 import android.content.Context;
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
-import android.provider.ContactsContract;
+import android.text.InputFilter;
+import android.text.LoginFilter;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.RecoveryPasswordResponse;
+import ru.taaasty.model.RegisterUserResponse;
 import ru.taaasty.service.Users;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
@@ -40,25 +41,27 @@ import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
-public class RecoverPasswordFragment extends Fragment {
+public class SignUpFragment extends Fragment {
 
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ForgotPasswordFragment";
+    private static final String TAG = "SignViaEmailFragment";
 
     private OnFragmentInteractionListener mListener;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
+    private EditText mPasswordView;
+    private EditText mSlugView;
     private View mProgressView;
-    private View mSendPassword;
+    private View mSignUpButtonView;
     private ErrorTextView mErrorView;
 
-    private Observable<RecoveryPasswordResponse> mAuthTask;
+    private Observable<RegisterUserResponse> mAuthTask;
 
-    public static RecoverPasswordFragment newInstance() {
-        return new RecoverPasswordFragment();
+    public static SignUpFragment newInstance() {
+        return new SignUpFragment();
     }
-    public RecoverPasswordFragment() {
+    public SignUpFragment() {
         // Required empty public constructor
     }
 
@@ -76,20 +79,40 @@ public class RecoverPasswordFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_restore_password, container, false);
+        View root = inflater.inflate(R.layout.fragment_sign_up, container, false);
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) root.findViewById(R.id.email);
-
-        mSendPassword = root.findViewById(R.id.send_password);
-        mSendPassword.setOnClickListener(mOnClickListener);
-
-        root.findViewById(R.id.back_button).setOnClickListener(mOnClickListener);
+        mPasswordView = (EditText) root.findViewById(R.id.password);
+        mSlugView = (EditText)root.findViewById(R.id.slug);
         mErrorView = (ErrorTextView)root.findViewById(R.id.error_text);
-
+        mSignUpButtonView = root.findViewById(R.id.sign_up_button);
         mProgressView = root.findViewById(R.id.login_progress);
 
-        ((TextView)root.findViewById(R.id.window_title)).setText(R.string.title_fragment_recover_password);
+        mSlugView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == R.id.slug || id == EditorInfo.IME_NULL) {
+                    attemptSignUp();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mPasswordView.setFilters(new InputFilter[] {
+                new LoginFilter.PasswordFilterGMail()
+        });
+        mSlugView.setFilters(new InputFilter[] {
+                new SlugTextInputFilter()
+        });
+
+        mSignUpButtonView.setOnClickListener(mOnClickListener);
+
+        root.findViewById(R.id.back_button).setOnClickListener(mOnClickListener);
+        root.findViewById(R.id.button_i_have_registered).setOnClickListener(mOnClickListener);
+
+        ((TextView)root.findViewById(R.id.window_title)).setText(R.string.title_fragment_sign_up);
+
         mEmailView.requestFocus();
 
         return root;
@@ -99,11 +122,14 @@ public class RecoverPasswordFragment extends Fragment {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.send_password:
-                    sendRestorePasswordRequest();
+                case R.id.sign_up_button:
+                    attemptSignUp();
                     break;
                 case R.id.back_button:
-                    if (mListener != null) mListener.onForgotPasswordBackPressed();
+                    if (mListener != null) mListener.onSignUpBackPressed();
+                    break;
+                case R.id.button_i_have_registered:
+                    if (mListener != null) mListener.onIHaveRegisteredPressed();
                     break;
             }
         }
@@ -127,12 +153,38 @@ public class RecoverPasswordFragment extends Fragment {
     }
 
     @Override
+    public Animator onCreateAnimator(int transit, boolean enter, int nextAnim) {
+        AnimatorSet a= null;
+        if (nextAnim != 0) {
+            Animator backgroundAnimator;
+            if (enter) {
+                backgroundAnimator = ((LoginActivity)getActivity()).createBlurInAnimator();
+            } else {
+                backgroundAnimator = ((LoginActivity)getActivity()).createBlurOutAnimator();
+            }
+            if (backgroundAnimator != null) {
+                Animator old = AnimatorInflater.loadAnimator(getActivity(), nextAnim);
+                a = new AnimatorSet();
+                a.play(old).with(backgroundAnimator)
+                ;
+            }
+        }
+        if (DBG) Log.v(TAG, "onCreateAnimator. " + transit + " enter: " + enter + " nextAnim: " + nextAnim + " a: " + a + "aa: " + getActivity());
+        return a;
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
-    public void sendRestorePasswordRequest() {
+    /**
+     * Attempts to sign in or register the account specified by the login form.
+     * If there are form errors (invalid email, missing fields, etc.), the
+     * errors are presented and no actual login attempt is made.
+     */
+    public void attemptSignUp() {
         if (mAuthTask != null) {
             return;
         }
@@ -142,6 +194,8 @@ public class RecoverPasswordFragment extends Fragment {
 
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
+        String password = mPasswordView.getText().toString();
+        String slug = mSlugView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
@@ -157,6 +211,30 @@ public class RecoverPasswordFragment extends Fragment {
             cancel = true;
         }
 
+        // Check for a valid password, if the user entered one.
+        if (TextUtils.isEmpty(password)) {
+            mErrorView.setError(getString(R.string.error_password_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        } else if (!isPasswordValid(password)) {
+            mErrorView.setError(getString(R.string.error_invalid_password));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check slug
+        /*
+        if (TextUtils.isEmpty(slug)) {
+            mErrorView.setError(getString(R.string.error_slug_field_required));
+            focusView = mSlugView;
+            cancel = true;
+        } else if (!isSlugValid(slug)) {
+            mErrorView.setError(getString(R.string.error_invalid_slug));
+            focusView = mSlugView;
+            cancel = true;
+        }
+        */
+
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
@@ -165,9 +243,8 @@ public class RecoverPasswordFragment extends Fragment {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-
             Users service = NetworkUtils.getInstance().createRestAdapter().create(Users.class);
-            mAuthTask = service.recoveryPassword(email);
+            mAuthTask = service.regiserUser(email, password, slug);
             AndroidObservable.bindFragment(this, mAuthTask);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
@@ -179,24 +256,25 @@ public class RecoverPasswordFragment extends Fragment {
                             showProgress(false);
                         }
                     })
-                    .subscribe(new Observer<RecoveryPasswordResponse>() {
+                    .subscribe(new Observer<RegisterUserResponse>() {
                         @Override
                         public void onCompleted() {
                             if (DBG) Log.v(TAG, "onCompleted()");
-                            if (mListener != null) mListener.onForgotPasswordRequestSent();
+                            if (mListener != null) mListener.onSignUpSuccess();
                         }
 
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            // XXX
                             mErrorView.setError(getString(R.string.error_invalid_email_or_password));
-                            mEmailView.requestFocus();
+                            mPasswordView.requestFocus();
                         }
 
                         @Override
-                        public void onNext(RecoveryPasswordResponse success) {
-                            if (DBG) Log.e(TAG, "onNext " + success.toString());
+                        public void onNext(RegisterUserResponse currentUser) {
+                            if (DBG) Log.e(TAG, "onNext " + currentUser.toString());
+                            // XXX
+                            // UserManager.getInstance().setCurrentUser(currentUser);
                         }
                     });
         }
@@ -204,6 +282,14 @@ public class RecoverPasswordFragment extends Fragment {
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
         return email.length() > 3;
+    }
+
+    private boolean isPasswordValid(String password) {
+        return password.length() > 3;
+    }
+
+    private boolean isSlugValid(String slug) {
+        return slug.length() >= 3;
     }
 
     /**
@@ -216,12 +302,12 @@ public class RecoverPasswordFragment extends Fragment {
         // the progress spinner.
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-        mSendPassword.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
-        mSendPassword.animate().setDuration(shortAnimTime).alpha(
+        mSignUpButtonView.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
+        mSignUpButtonView.animate().setDuration(shortAnimTime).alpha(
                 show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                mSendPassword.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
+                mSignUpButtonView.setVisibility(show ? View.INVISIBLE : View.VISIBLE);
             }
         });
 
@@ -258,8 +344,9 @@ public class RecoverPasswordFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onForgotPasswordRequestSent();
-        public void onForgotPasswordBackPressed();
+        public void onSignUpSuccess();
+        public void onSignUpBackPressed();
+        public void onIHaveRegisteredPressed();
     }
 
 }

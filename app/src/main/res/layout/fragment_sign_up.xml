@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    tools:context="ru.taaasty.login.LoginActivity">
+    tools:context="ru.taaasty.ui.login.LoginActivity">
 
     <include layout="@layout/include_action_bar"/>
 

@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    tools:context=".widgets.Tabbar"
-    >
+    tools:context=".widgets.Tabbar">
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_my_feed"

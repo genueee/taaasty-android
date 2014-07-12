@@ -6,15 +6,15 @@
     <entry>
       <key      
         class = "com.android.navigation.ActivityState"      
-        className = "ru.taaasty.MainActivity">
+        className = "ru.taaasty.ui.login.LoginActivity">
         <location        
           id = "point0"        
           x = "0"        
           y = "0"/>
       </key>
       <value      
-        x = "480"      
-        y = "480"      
+        x = "2473"      
+        y = "309"      
         class = "com.android.navigation.Point"/>
     </entry>
     <entry>
@@ -27,6 +27,18 @@
       <value      
         x = "1760"      
         y = "160"      
+        class = "com.android.navigation.Point"/>
+    </entry>
+    <entry>
+      <key      
+        class = "com.android.navigation.ActivityState"      
+        className = "ru.taaasty.ui.MainActivity">
+        <location        
+          idref = "point0"/>
+      </key>
+      <value      
+        x = "773"      
+        y = "309"      
         class = "com.android.navigation.Point"/>
     </entry>
   </locations>

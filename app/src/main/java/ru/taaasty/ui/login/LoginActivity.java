@@ -1,4 +1,4 @@
-package ru.taaasty.login;
+package ru.taaasty.ui.login;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -35,7 +35,7 @@ import java.io.InputStream;
 import java.util.Random;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.MainActivity;
+import ru.taaasty.ui.MainActivity;
 import ru.taaasty.NdkStackBlur;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;

@@ -23,20 +23,22 @@ public final class NetworkUtils {
 
     public static final String HEADER_X_USER_TOKEN = "X-User-Token";
 
-    private final GsonConverter mGsonConverter;
+    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
 
     private static NetworkUtils mUtils;
 
-    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
+    private final Gson mGson;
+
+    private final GsonConverter mGsonConverter;
 
     private UserManager mUserManager = UserManager.getInstance();
 
     private NetworkUtils() {
-        Gson builder = new GsonBuilder()
+        mGson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
                 .registerTypeAdapter(Date.class, new DateTypeAdapter())
                 .create();
-        mGsonConverter = new GsonConverter(builder);
+        mGsonConverter = new GsonConverter(mGson);
     }
 
     public static NetworkUtils getInstance() {
@@ -44,6 +46,10 @@ public final class NetworkUtils {
             mUtils = new NetworkUtils();
         }
         return mUtils;
+    }
+
+    public Gson getGson() {
+        return mGson;
     }
 
     public RestAdapter createRestAdapter() {

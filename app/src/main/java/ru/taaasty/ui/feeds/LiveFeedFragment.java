@@ -1,8 +1,6 @@
-package ru.taaasty;
+package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -11,25 +9,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.util.Collections;
-import java.util.List;
-
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import ru.taaasty.BuildConfig;
+import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
-import ru.taaasty.model.FeedItem;
-import ru.taaasty.model.RegisterUserResponse;
 import ru.taaasty.service.Feeds;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -51,6 +44,8 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     private Feeds mFeedsService;
     private FeedItemAdapter mAdapter;
+
+    private Subscription mFeedSubscription = Subscriptions.empty();
 
     /**
      * Use this factory method to create a new instance of
@@ -88,9 +83,6 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         mRefreshLayout.setOnRefreshListener(this);
 
-        mListView.setOverscrollFooter(new ColorDrawable(Color.BLACK));
-        mListView.setOverscrollHeader(new ColorDrawable(Color.BLACK));
-
         return v;
     }
 
@@ -121,11 +113,12 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mAdapter = new FeedItemAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        if (!mRefreshLayout.isRefreshing()) refreshFeed();
+        if (!mRefreshLayout.isRefreshing()) refreshData();
     }
 
     @Override
     public void onDestroyView() {
+        mFeedSubscription.unsubscribe();
         super.onDestroyView();
         mListView = null;
         mAdapter = null;
@@ -139,39 +132,43 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     @Override
     public void onRefresh() {
-        refreshFeed();
+        refreshData();
     }
 
-    private void refreshFeed() {
+    public void refreshData() {
+        mFeedSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
-        mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH)
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        if (DBG) Log.v(TAG, "finallyDo()");
-                        mRefreshLayout.setRefreshing(false);
-                    }
-                })
-                .subscribe(new Observer<Feed>() {
-                    @Override
-                    public void onCompleted() {
-                        if (DBG) Log.v(TAG, "onCompleted()");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        if (DBG) Log.e(TAG, "onError", e);
-                        // XXX
-                    }
-
-                    @Override
-                    public void onNext(Feed feed) {
-                        if (DBG) Log.e(TAG, "onNext " + feed.toString());
-                        if (mAdapter != null) mAdapter.setFeed(feed.entries);
-                    }
-                });
+        mFeedSubscription = AndroidObservable.bindFragment(this,
+                mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .finallyDo(new Action0() {
+                            @Override
+                            public void call() {
+                                if (DBG) Log.v(TAG, "finallyDo()");
+                                mRefreshLayout.setRefreshing(false);
+                            }
+                        })
+                ).subscribe(mFeedObserver);
     }
+
+    private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
+        @Override
+        public void onCompleted() {
+            if (DBG) Log.v(TAG, "onCompleted()");
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.e(TAG, "onError", e);
+            // XXX
+        }
+
+        @Override
+        public void onNext(Feed feed) {
+            if (DBG) Log.e(TAG, "onNext " + feed.toString());
+            if (mAdapter != null) mAdapter.setFeed(feed.entries);
+        }
+    };
 
     /**
      * This interface must be implemented by activities that contain this

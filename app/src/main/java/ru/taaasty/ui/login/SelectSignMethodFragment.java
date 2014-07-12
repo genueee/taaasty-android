@@ -1,4 +1,4 @@
-package ru.taaasty.login;
+package ru.taaasty.ui.login;
 
 import android.app.Activity;
 import android.os.Bundle;

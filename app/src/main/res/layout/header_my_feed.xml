@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/feed_header_height"
+    android:background="@android:color/black">
+
+    <ImageView
+        android:id="@+id/additional_menu"
+        android:src="@drawable/ic_additional_menu"
+        android:contentDescription="@string/additional_menu"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="14dp"
+        android:layout_marginRight="14dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginBottom="14dp"
+        android:minHeight="48dp"
+        android:minWidth="48dp"
+        android:scaleType="center"
+        android:clickable="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/avatar_user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
+
+        <ru.taaasty.widgets.HintedImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_normal_diameter"
+            android:layout_height="@dimen/avatar_normal_diameter"
+            android:clickable="true"
+            android:contentDescription="@string/user_avatar_content_description"
+            android:cropToPadding="false"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_user_stub_dark" />
+
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center_horizontal"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:textSize="22sp"
+            tools:text="Genue" />
+    </LinearLayout>
+
+    <ru.taaasty.widgets.HintedImageView
+        android:id="@+id/magick_wand_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/avatar_user_name"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="16dp"
+        android:contentDescription="@string/design_settings"
+        android:minHeight="48dp"
+        android:minWidth="48dp"
+        android:scaleType="center"
+        android:clickable="true"
+        android:src="@drawable/ic_magick_wand" />
+
+</RelativeLayout>

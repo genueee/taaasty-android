@@ -3,7 +3,7 @@
     android:id="@+id/swipe_refresh_widget"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.taaasty.LiveFeedFragment">
+    tools:context="ru.taaasty.ui.feeds.LiveFeedFragment">
 
     <ListView
         android:id="@+id/live_feed_list_view"
