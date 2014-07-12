@@ -6,28 +6,25 @@ import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Query;
 import ru.taaasty.model.Feed;
+import rx.Observable;
 
 /**
  * Created by alexey on 11.07.14.
  */
 public interface Feeds {
     @GET("/feeds/live.json")
-    void getLiveFeed(@Query("since_entry_id") Integer sinceEntryId,
-                     @Query("limit") Integer limit,
-                     Callback<Feed> cb);
-
+    Observable<Feed> getLiveFeed(@Query("since_entry_id") Integer sinceEntryId,
+                     @Query("limit") Integer limit);
 
 
     /**
      * Моя, только моя лента. Тоже самое что и tlog/by_id, только еще показываются и личные сообщения.
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
-     * @param cb
      */
     @GET("/feeds/my.json")
-    void getMyFeed(@Query("since_entry_id") Long sinceEntryId,
-                   @Query("limit") Integer limit,
-                   Callback<Feed> cb);
+    Observable<Feed> getMyFeed(@Query("since_entry_id") Long sinceEntryId,
+                   @Query("limit") Integer limit);
 
     /**
      * Лучшие записи
@@ -36,48 +33,40 @@ public interface Feeds {
      * @param date
      * @param kind
      * @param rating
-     * @param cb
      */
     @GET("/feeds/best.json")
-    void getBestFeed(@Query("since_entry_id") Long sinceEntryId,
+    Observable<Feed> getBestFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit,
                      @Query("date") Date date,
                      @Query("kind") String kind,
-                     @Query("rating") String rating,
-                     Callback<Feed> cb);
+                     @Query("rating") String rating);
 
     /**
      * Анонимные записи
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
-     * @param cb
      */
     @GET("/feeds/anonymous.json")
-    void getAnonymousFeed(@Query("since_entry_id") Long sinceEntryId,
-                          @Query("limit") Integer limit,
-                          Callback<Feed> cb);
+    Observable<Feed> getAnonymousFeed(@Query("since_entry_id") Long sinceEntryId,
+                          @Query("limit") Integer limit);
 
     /**
      * Лента подписок с вкраплениями своих постов
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
-     * @param cb
      */
     @GET("/feeds/friends.json")
-    void getFriendsFeed(@Query("since_entry_id") Long sinceEntryId,
-                        @Query("limit") Integer limit,
-                        Callback<Feed> cb);
+    Observable<Feed> getFriendsFeed(@Query("since_entry_id") Long sinceEntryId,
+                        @Query("limit") Integer limit);
 
     /**
      * Поиск записи
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
-     * @param cb
      */
     @GET("/feeds/search.json")
-    void getFriendsFeed(
+    Observable<Feed> getFriendsFeed(
             @Query("query") String query,
             @Query("since_entry_id") Long sinceEntryId,
-            @Query("limit") Integer limit,
-            Callback<Feed> cb);
+            @Query("limit") Integer limit);
 }

@@ -1,9 +1,12 @@
 package ru.taaasty;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +24,12 @@ import retrofit.client.Response;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.FeedItem;
+import ru.taaasty.model.RegisterUserResponse;
 import ru.taaasty.service.Feeds;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observer;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,15 +38,15 @@ import ru.taaasty.utils.NetworkUtils;
  * to handle interaction events.
  * Use the {@link LiveFeedFragment#newInstance} factory method to
  * create an instance of this fragment.
- *
  */
-public class LiveFeedFragment extends Fragment {
+public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedFragment";
     private static final int LIVE_FEED_LENGTH = 50;
 
     private OnFragmentInteractionListener mListener;
 
+    private SwipeRefreshLayout mRefreshLayout;
     private ListView mListView;
 
     private Feeds mFeedsService;
@@ -48,11 +55,13 @@ public class LiveFeedFragment extends Fragment {
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
+     *
      * @return A new instance of fragment LiveFeedFragment.
      */
     public static LiveFeedFragment newInstance() {
         return new LiveFeedFragment();
     }
+
     public LiveFeedFragment() {
         // Required empty public constructor
     }
@@ -66,8 +75,22 @@ public class LiveFeedFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v =  inflater.inflate(R.layout.fragment_live_feed, container, false);
-        mListView = (ListView)v.findViewById(R.id.live_feed_list_view);
+        View v = inflater.inflate(R.layout.fragment_live_feed, container, false);
+        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
+        mListView = (ListView) mRefreshLayout.getChildAt(0);
+
+        mRefreshLayout.setColorSchemeResources(
+                R.color.refresh_widget_color1,
+                R.color.refresh_widget_color2,
+                R.color.refresh_widget_color3,
+                R.color.refresh_widget_color4
+        );
+
+        mRefreshLayout.setOnRefreshListener(this);
+
+        mListView.setOverscrollFooter(new ColorDrawable(Color.BLACK));
+        mListView.setOverscrollHeader(new ColorDrawable(Color.BLACK));
+
         return v;
     }
 
@@ -98,18 +121,7 @@ public class LiveFeedFragment extends Fragment {
         mAdapter = new FeedItemAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH, new Callback<Feed>() {
-            @Override
-            public void success(Feed feed, Response response) {
-                if (mAdapter != null) mAdapter.setFeed(feed.entries);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                Log.e(TAG, "getLiveFeed() failure", error);
-            }
-        });
-
+        if (!mRefreshLayout.isRefreshing()) refreshFeed();
     }
 
     @Override
@@ -125,12 +137,48 @@ public class LiveFeedFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onRefresh() {
+        refreshFeed();
+    }
+
+    private void refreshFeed() {
+        mRefreshLayout.setRefreshing(true);
+        mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH)
+                .observeOn(AndroidSchedulers.mainThread())
+                .finallyDo(new Action0() {
+                    @Override
+                    public void call() {
+                        if (DBG) Log.v(TAG, "finallyDo()");
+                        mRefreshLayout.setRefreshing(false);
+                    }
+                })
+                .subscribe(new Observer<Feed>() {
+                    @Override
+                    public void onCompleted() {
+                        if (DBG) Log.v(TAG, "onCompleted()");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (DBG) Log.e(TAG, "onError", e);
+                        // XXX
+                    }
+
+                    @Override
+                    public void onNext(Feed feed) {
+                        if (DBG) Log.e(TAG, "onNext " + feed.toString());
+                        if (mAdapter != null) mAdapter.setFeed(feed.entries);
+                    }
+                });
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
@@ -139,7 +187,6 @@ public class LiveFeedFragment extends Fragment {
         // TODO: Update argument type and name
         public void onFeedButtonClicked(Uri uri);
     }
-
 
 
 }
