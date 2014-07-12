@@ -49,7 +49,7 @@ public class UserManager {
 
     private void persistAuthtoken() {
         SharedPreferences prefs = mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-        prefs.edit().putString(SHARED_PREFS_KEY_AUTHTOKEN, mAuthtoken).commit();
+        prefs.edit().putString(SHARED_PREFS_KEY_AUTHTOKEN, mAuthtoken).apply();
     }
 
 }
