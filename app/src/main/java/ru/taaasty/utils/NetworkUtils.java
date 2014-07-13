@@ -1,6 +1,7 @@
 package ru.taaasty.utils;
 
 
+import android.os.StatFs;
 import android.support.annotation.Nullable;
 
 import com.google.gson.FieldNamingPolicy;
@@ -9,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import java.io.File;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -23,7 +25,10 @@ public final class NetworkUtils {
 
     public static final String HEADER_X_USER_TOKEN = "X-User-Token";
 
-    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tcdn\\.ru/assets/(.+)$");
+    private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final int MAX_DISK_CACHE_SIZE = 100 * 1024 * 1024; // 50MB
+
+    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tasty0\\.ru/assets/(.+)$");
 
     private static NetworkUtils mUtils;
 
@@ -80,5 +85,20 @@ public final class NetworkUtils {
             }
         }
     };
+
+    public static long calculateDiskCacheSize(File dir) {
+        long size = MIN_DISK_CACHE_SIZE;
+
+        try {
+            StatFs statFs = new StatFs(dir.getAbsolutePath());
+            long available = ((long) statFs.getBlockCount()) * statFs.getBlockSize();
+            // Target 2% of the total space.
+            size = available / 50;
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        // Bound inside min/max size for disk cache.
+        return Math.max(Math.min(size, MAX_DISK_CACHE_SIZE), MIN_DISK_CACHE_SIZE);
+    }
 
 }

@@ -20,6 +20,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.squareup.picasso.UrlConnectionDownloader;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import pl.droidsonroids.gif.GifImageView;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.FeedItem;
@@ -58,7 +60,9 @@ public class FeedItemAdapter extends BaseAdapter {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         int cacheSize = am.getMemoryClass() * 1024 * 1024 * 2 / 3;
         if (DBG) Log.v(TAG, "memory cache size: " + cacheSize);
-        mPicasso = new Picasso.Builder(context).memoryCache(new LruCache(cacheSize)).build();
+        mPicasso = new Picasso.Builder(context)
+                .memoryCache(new LruCache(cacheSize))
+                .build();
         mAvatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
         mCircleTransformation = new CircleTransformation();
         mImageSizes = new HashMap<String, ImageWh>();

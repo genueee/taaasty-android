@@ -11,6 +11,7 @@ import org.acra.annotation.ReportsCrashes;
 import java.io.File;
 import java.io.IOException;
 
+import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 @ReportsCrashes(
@@ -25,8 +26,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
         resToastText = R.string.crash_toast_text
 )
 public class TaaastyApplication extends Application {
+    private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TaaastyApplication";
-    private static final long HTTP_CACHE_SIZE = 20 * 1024 * 1024;
 
     @Override
     public void onCreate() {
@@ -39,13 +40,20 @@ public class TaaastyApplication extends Application {
 
         UserManager.getInstance().onAppInit(this);
 
-        // initHttpCache();
+        initHttpCache();
     }
 
     private void initHttpCache() {
-        File httpCacheDir = new File(getCacheDir(), "http");
+        File cacheDir = getExternalCacheDir();
+        if (cacheDir == null) {
+            cacheDir = getCacheDir();
+        }
+
+        File httpCacheDir = new File(cacheDir, "taaasty");
         try {
-            HttpResponseCache.install(httpCacheDir, HTTP_CACHE_SIZE);
+            long cacheSize = NetworkUtils.calculateDiskCacheSize(httpCacheDir);
+            if (DBG) Log.v(TAG, "cache size, mb: " + cacheSize / 1024/ 1024);
+            HttpResponseCache.install(httpCacheDir, cacheSize);
         } catch (IOException e) {
             Log.e(TAG, "error install http cache", e);
         }

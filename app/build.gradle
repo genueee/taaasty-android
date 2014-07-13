@@ -94,6 +94,7 @@ dependencies {
     compile 'com.squareup:pollexor:2.0.2'
     compile 'com.netflix.rxjava:rxjava-android:0.19.+'
     compile 'uk.co.chrisjenx:calligraphy:1.0.+'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
 }
 
 ['beta', 'release'].each { typeName ->
