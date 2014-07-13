@@ -1,0 +1,77 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal"
+    tools:context="ru.taaasty.ui.feeds.AdditionalMenuActivity">
+
+    <ru.taaasty.widgets.HintedImageView
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:layout_marginRight="18dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="4dp"
+        android:minHeight="48dp"
+        android:minWidth="48dp"
+        android:scaleType="center"
+        android:src="@drawable/ic_close"
+        android:contentDescription="@string/action_close_content_description"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/back_button"
+        android:layout_alignParentBottom="true"
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:orientation="vertical"
+            android:gravity="center_vertical"
+            android:paddingBottom="88dp">
+
+            <TextView
+                android:id="@+id/profile"
+                android:text="@string/profile"
+                android:drawableLeft="@drawable/ic_profile"
+                style="@style/AdditionalMenuItem" />
+
+            <TextView
+                android:id="@+id/favorites"
+                android:text="@string/favorites"
+                android:drawableLeft="@drawable/ic_favorites"
+                style="@style/AdditionalMenuItem" />
+
+            <TextView
+                android:id="@+id/hidden"
+                android:text="@string/hidden_records"
+                android:drawableLeft="@drawable/ic_hidden"
+                style="@style/AdditionalMenuItem" />
+
+            <TextView
+                android:id="@+id/settings"
+                android:text="@string/settings"
+                android:drawableLeft="@drawable/ic_settings"
+                style="@style/AdditionalMenuItem" />
+
+            <TextView
+                android:id="@+id/friends"
+                android:text="@string/friends"
+                android:drawableLeft="@drawable/ic_friends"
+                style="@style/AdditionalMenuItem" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

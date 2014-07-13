@@ -190,7 +190,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     void onAdditionalMenuButtonClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        if (mListener != null) mListener.onShowAdditionalmenuClicked();
     }
 
     void onMagickWandButtonClicked(View v) {
@@ -347,5 +347,6 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         public void onFeedButtonClicked(Uri uri);
+        public void onShowAdditionalmenuClicked();
     }
 }

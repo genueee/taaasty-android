@@ -17,6 +17,14 @@
     <string name="additional_menu">Дополнительное меню</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="design_settings">Настройки дизайна</string>
-
+    <string name="action_close_content_description">Закрыть</string>
+    <string name="profile">Профиль</string>
+    <string name="friends">Друзья</string>
+    <string name="settings">Настройки</string>
+    <string name="hidden_records">Скрытые записи</string>
+    <string name="favorites">Избранное</string>
+    <string name="title_activity_additional_menu">Дополнительное меню</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

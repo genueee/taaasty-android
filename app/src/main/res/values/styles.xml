@@ -26,6 +26,14 @@
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
+    <style name="AdditionMenuActivityTheme" parent="AppTheme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.90</item>
+    </style>
+
     <style name="TabbarButton.First">
         <item name="android:paddingLeft">32dp</item>
     </style>
@@ -70,6 +78,16 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="AdditionalMenuItem">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:drawablePadding">22dp</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@drawable/additional_menu_item_text_color</item>
     </style>
 
 </resources>
