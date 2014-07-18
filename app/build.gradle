@@ -1,4 +1,16 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'https://www.testfairy.com/maven' }
+    }
+
+    dependencies {
+        classpath 'com.testfairy.plugins.gradle:testfairy:1.+'
+    }
+}
+
 apply plugin: 'com.android.application'
+apply plugin: 'testfairy'
 
 ext.private = new Properties()
 if (rootProject.file('private.properties').exists()) {
@@ -15,9 +27,7 @@ def getRevision = { ->
 }
 
 repositories {
-    maven {
-        url "https://repo.commonsware.com.s3.amazonaws.com"
-    }
+    maven { url "https://repo.commonsware.com.s3.amazonaws.com" }
 }
 
 android {
@@ -70,7 +80,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
-            resValue "string", "app_name", "Тейсти dbg-" + getRevision()
+            resValue "string", "app_name", "Тейсти dbg" + getRevision()
             buildConfigField "Boolean", "ENABLE_ACRA", "false"
         }
         release {
@@ -80,7 +90,7 @@ android {
         }
         beta {
             versionNameSuffix "b-" + getRevision()
-            resValue "string", "app_name", "Тейсти b-" + getRevision()
+            resValue "string", "app_name", "Тейсти beta"
             runProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.beta
@@ -89,6 +99,13 @@ android {
 
     lintOptions {
         warning 'InvalidPackage'
+    }
+
+    testfairyConfig {
+        apiKey "d4c4e1c7be190a08909ce36747839e2ca45e74a2"
+        autoUpdate true
+        notify true
+        iconWatermark true
     }
 
 }
