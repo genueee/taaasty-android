@@ -70,6 +70,7 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
+            resValue "string", "app_name", "Тейсти dbg-" + getRevision()
             buildConfigField "Boolean", "ENABLE_ACRA", "false"
         }
         release {
@@ -79,10 +80,15 @@ android {
         }
         beta {
             versionNameSuffix "b-" + getRevision()
+            resValue "string", "app_name", "Тейсти b-" + getRevision()
             runProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.beta
         }
+    }
+
+    lintOptions {
+        warning 'InvalidPackage'
     }
 
 }

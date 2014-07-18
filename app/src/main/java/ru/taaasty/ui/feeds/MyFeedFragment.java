@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
@@ -203,7 +204,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         } else {
             String name = user.getName();
             if (name == null) name = "";
-            name = name.substring(0,1).toUpperCase() + name.substring(1);
+            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
             ((TextView)mHeaderView.findViewById(R.id.user_name)).setText(name);
 
             setupAvatar(user);

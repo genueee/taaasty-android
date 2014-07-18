@@ -88,7 +88,8 @@ public final class NetworkUtils {
 
     private void initLruMemoryCache(Context context) {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        int cacheSize = am.getMemoryClass() * 1024 * 1024 * Constants.LRU_MEMORY_CACHE_PCT / 100;
+        double memoryClass = am.getMemoryClass();
+        int cacheSize = (int)(memoryClass * 1024.0 * 1024.0 * Constants.LRU_MEMORY_CACHE_PCT / 100.0);
         mPicassoCache = new LruCache(cacheSize);
     }
 

@@ -34,6 +34,11 @@
 -dontwarn com.squareup.okhttp.**
 -dontwarn com.google.appengine.api.urlfetch.**
 
+#okhttp
+-dontwarn java.nio.file.*
+-dontwarn com.squareup.okhttp.internal.http.*
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+
 
 # ACRA
 -renamesourcefileattribute SourceFile
