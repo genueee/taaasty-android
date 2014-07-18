@@ -1,34 +1,40 @@
 package ru.taaasty.utils;
 
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.StatFs;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.picasso.LruCache;
+import com.squareup.picasso.OkHttpDownloader;
+import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.client.OkClient;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.UserManager;
 
 public final class NetworkUtils {
-
-    public static final String HEADER_X_USER_TOKEN = "X-User-Token";
-
-    private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
-    private static final int MAX_DISK_CACHE_SIZE = 100 * 1024 * 1024; // 50MB
-
-    private static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tasty0\\.ru/assets/(.+)$");
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "NetworkUtils";
 
     private static NetworkUtils mUtils;
 
@@ -37,6 +43,10 @@ public final class NetworkUtils {
     private final GsonConverter mGsonConverter;
 
     private UserManager mUserManager = UserManager.getInstance();
+
+    private OkHttpClient mOkHttpClient;
+
+    private LruCache mPicassoCache;
 
     private NetworkUtils() {
         mGson = new GsonBuilder()
@@ -53,6 +63,43 @@ public final class NetworkUtils {
         return mUtils;
     }
 
+    public void onAppInit(Context context) {
+        initOkHttpClient(context);
+        initLruMemoryCache(context);
+    }
+
+    private void initOkHttpClient(Context context) {
+        mOkHttpClient = new OkHttpClient();
+        mOkHttpClient.setConnectTimeout(Constants.CONNECT_TIMEOUT_S, TimeUnit.SECONDS);
+        mOkHttpClient.setReadTimeout(Constants.READ_TIMEOUT_S, TimeUnit.SECONDS);
+        File httpCacheDir = NetworkUtils.getCacheDir(context);
+        if (httpCacheDir != null) {
+            long cacheSize = NetworkUtils.calculateDiskCacheSize(httpCacheDir);
+            if (DBG) Log.v(TAG, "cache size, mb: " + cacheSize / 1024 / 1024);
+            try {
+                // HttpResponseCache.install(httpCacheDir, cacheSize);
+                Cache cache = new Cache(httpCacheDir, cacheSize);
+                mOkHttpClient.setCache(cache);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void initLruMemoryCache(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        int cacheSize = am.getMemoryClass() * 1024 * 1024 * Constants.LRU_MEMORY_CACHE_PCT / 100;
+        mPicassoCache = new LruCache(cacheSize);
+    }
+
+    public void onTrimMemory() {
+        mPicassoCache.evictAll();
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        return mOkHttpClient;
+     }
+
     public Gson getGson() {
         return mGson;
     }
@@ -61,19 +108,32 @@ public final class NetworkUtils {
         RestAdapter.Builder b = new RestAdapter.Builder();
 
         if (BuildConfig.DEBUG) b.setLogLevel(RestAdapter.LogLevel.FULL);
-        b.setEndpoint(BuildConfig.API_SERVER_ADDRESS)
+        b.setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
                 .setConverter(mGsonConverter)
-                .setRequestInterceptor(mRequestInterceptor);
+                .setRequestInterceptor(mRequestInterceptor)
+                .setClient(new OkClient(mOkHttpClient))
+        ;
         return b.build();
+    }
+
+    public Picasso getPicasso(Context context) {
+        if (mPicassoCache == null) initLruMemoryCache(context.getApplicationContext());
+        return new Picasso.Builder(context)
+                .memoryCache(mPicassoCache)
+                .downloader(new OkHttpDownloader(mOkHttpClient))
+                .build();
     }
 
     @Nullable
     public static ThumborUrlBuilder createThumborUrl(String url) {
-        Matcher m = THUMBOR_MATCHER_PATTERN.matcher(url);
+        Matcher m = Constants.THUMBOR_MATCHER_PATTERN.matcher(url);
         if (!m.matches()) return null;
-        return Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY)
-            .buildImage(m.group(1));
+        return createThumborUrlFromPath(m.group(1));
+    }
 
+    public static ThumborUrlBuilder createThumborUrlFromPath(String path) {
+        return Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY)
+                .buildImage(path);
     }
 
     private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {
@@ -81,13 +141,13 @@ public final class NetworkUtils {
         public void intercept(RequestFacade request) {
             String token = mUserManager.getCurrentUserToken();
             if (token != null) {
-                request.addHeader(HEADER_X_USER_TOKEN, token);
+                request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
             }
         }
     };
 
     public static long calculateDiskCacheSize(File dir) {
-        long size = MIN_DISK_CACHE_SIZE;
+        long size = Constants.MIN_DISK_CACHE_SIZE;
 
         try {
             StatFs statFs = new StatFs(dir.getAbsolutePath());
@@ -98,7 +158,18 @@ public final class NetworkUtils {
         }
 
         // Bound inside min/max size for disk cache.
-        return Math.max(Math.min(size, MAX_DISK_CACHE_SIZE), MIN_DISK_CACHE_SIZE);
+        return Math.max(Math.min(size, Constants.MAX_DISK_CACHE_SIZE), Constants.MIN_DISK_CACHE_SIZE);
+    }
+
+    @Nullable
+    public static File getCacheDir(Context context) {
+        File cacheDir = context.getExternalCacheDir();
+        if (cacheDir == null) {
+            cacheDir = context.getCacheDir();
+        }
+        if (cacheDir == null) return null;
+
+        return new File(cacheDir, "taaasty");
     }
 
 }

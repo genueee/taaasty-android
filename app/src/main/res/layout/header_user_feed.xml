@@ -3,37 +3,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/feed_header_height"
+    android:layout_height="@dimen/feed_header_with_title_height"
     android:background="@android:color/black">
-
-    <ImageView
-        android:id="@+id/additional_menu"
-        android:src="@drawable/ic_additional_menu"
-        android:contentDescription="@string/additional_menu"
-        android:layout_alignParentRight="true"
-        android:layout_marginLeft="14dp"
-        android:layout_marginRight="14dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginBottom="14dp"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:scaleType="center"
-        android:clickable="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
 
     <LinearLayout
         android:id="@+id/avatar_user_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerInParent="true"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp"
         android:gravity="center"
         android:orientation="vertical"
+        android:layout_above="@+id/feed_name"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="8dp"
+        android:layout_centerInParent="true"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp">
 
         <ru.taaasty.widgets.HintedImageView
             android:id="@+id/avatar"
@@ -42,7 +28,7 @@
             android:clickable="true"
             android:contentDescription="@string/user_avatar_content_description"
             android:cropToPadding="false"
-            android:scaleType="centerInside"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_user_stub_dark" />
 
         <TextView
@@ -59,18 +45,20 @@
             tools:text="Genue" />
     </LinearLayout>
 
-    <ru.taaasty.widgets.HintedImageView
-        android:id="@+id/magick_wand_button"
-        android:layout_width="wrap_content"
+    <TextView
+        android:id="@id/feed_name"
+        android:background="@color/green_background_normal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/avatar_user_name"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="16dp"
-        android:contentDescription="@string/design_settings"
+        android:gravity="center_vertical"
+        android:textSize="18sp"
         android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:scaleType="center"
-        android:clickable="true"
-        android:src="@drawable/ic_magick_wand" />
+        android:textColor="@android:color/white"
+        android:drawablePadding="22dp"
+        tools:text="Избранное"
+        tools:drawableLeft="@drawable/ic_favorites_normal"
+        android:layout_alignParentBottom="true"
+        android:paddingLeft="@dimen/feed_item_padding_left"
+        android:paddingRight="@dimen/feed_item_padding_right" />
 
 </RelativeLayout>

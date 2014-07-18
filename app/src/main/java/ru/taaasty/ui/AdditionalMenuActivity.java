@@ -1,4 +1,4 @@
-package ru.taaasty.ui.feeds;
+package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.content.Context;

@@ -2,9 +2,9 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.annotation.IntDef;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
 import android.util.Log;
@@ -28,6 +28,7 @@ import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.service.Feeds;
 import ru.taaasty.service.MyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.CircleTransformation;
@@ -40,9 +41,11 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
-public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "LiveFeedFragment";
+    private static final String TAG = "FeedFragment";
+    private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";
     private static final int LIVE_FEED_LENGTH = 50;
 
     private final CircleTransformation mCircleTransformation = new CircleTransformation();
@@ -54,32 +57,39 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
-    private MyFeeds mFeedsService;
+    private MyFeeds mMyFeedsService;
     private FeedItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
-    private Subscription mCurrentUserSubscribtion = Subscriptions.empty();
+    private Subscription mUserSubscribtion = Subscriptions.empty();
 
+    private @MyAdditionalFeedActivity.FeedType
+    int mFeedType = MyAdditionalFeedActivity.FEED_TYPE_FAVORITES;
     private int mRefreshCounter;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment LiveFeedFragment.
-     */
-    public static MyFeedFragment newInstance() {
-        return new MyFeedFragment();
+    public static MyAdditionalFeedFragment newInstance(@MyAdditionalFeedActivity.FeedType int type) {
+        MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
+        Bundle b = new Bundle();
+        b.putInt(BUNDLE_ARG_FEED_TYPE, type);
+        usf.setArguments(b);
+        return usf;
     }
 
-    public MyFeedFragment() {
+    public MyAdditionalFeedFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(MyFeeds.class);
+        mMyFeedsService = NetworkUtils.getInstance().createRestAdapter().create(MyFeeds.class);
+
+        if (getArguments() != null) {
+            Bundle args = getArguments();
+            //noinspection ResourceType
+            mFeedType = args.getInt(BUNDLE_ARG_FEED_TYPE, MyAdditionalFeedActivity.FEED_TYPE_MAIN);
+        }
+
     }
 
     @Override
@@ -88,23 +98,13 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mListView = (ListView) v.findViewById(R.id.list_view);
-        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_my_feed, mListView, false);
+        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_user_feed, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
-
-        mHeaderView.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
         mHeaderView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
-        mHeaderView.findViewById(R.id.magick_wand_button).setOnClickListener(mOnClickListener);
-
         mRefreshLayout.setOnRefreshListener(this);
-
+        setupEmptyView(v);
+        setupFeedName(v);
         return v;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFeedButtonClicked(uri);
-        }
     }
 
     @Override
@@ -133,25 +133,62 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.additional_menu:
-                    onAdditionalMenuButtonClicked(v);
-                    break;
                 case R.id.avatar:
                     onAvatarClicked(v);
-                    break;
-                case R.id.magick_wand_button:
-                    onMagickWandButtonClicked(v);
                     break;
             }
         }
     };
 
+    void setupEmptyView(View root) {
+        int textNoRecords;
+        switch (mFeedType) {
+            case MyAdditionalFeedActivity.FEED_TYPE_MAIN:
+                textNoRecords = R.string.you_have_not_written_anything;
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FRIENDS:
+                textNoRecords = R.string.friends_have_not_written_anything;
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FAVORITES:
+                textNoRecords = R.string.you_have_no_favorite_records;
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_PRIVATE:
+                textNoRecords = R.string.you_have_no_private_records;
+                break;
+            default:
+                textNoRecords = R.string.no_records;
+                break;
+        }
+
+        ((TextView)root.findViewById(R.id.empty_view)).setText(textNoRecords);
+    }
+
+    void setupFeedName(View root) {
+        TextView name = (TextView)mHeaderView.findViewById(R.id.feed_name);
+        switch (mFeedType) {
+            case MyAdditionalFeedActivity.FEED_TYPE_MAIN:
+                name.setVisibility(View.GONE);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FRIENDS:
+                name.setText(R.string.friends);
+                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_friends_normal, 0, 0, 0);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FAVORITES:
+                name.setText(R.string.favorites);
+                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_favorites_normal, 0, 0, 0);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_PRIVATE:
+                name.setText(R.string.hidden_records);
+                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_hidden_normal, 0, 0, 0);
+                break;
+        }
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
-        mCurrentUserSubscribtion.unsubscribe();
+        mUserSubscribtion.unsubscribe();
         mListView = null;
         mAdapter = null;
     }
@@ -185,14 +222,6 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         refreshFeed();
     }
 
-    void onAdditionalMenuButtonClicked(View v) {
-        if (mListener != null) mListener.onShowAdditionalmenuClicked();
-    }
-
-    void onMagickWandButtonClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
-    }
-
     void onAvatarClicked(View v) {
         Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
@@ -205,20 +234,8 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
             if (name == null) name = "";
             name = name.substring(0,1).toUpperCase() + name.substring(1);
             ((TextView)mHeaderView.findViewById(R.id.user_name)).setText(name);
-
             setupAvatar(user);
         }
-    }
-
-    void setupFeedDesign(TlogDesign design) {
-        mAdapter.setFeedDesign(design);
-        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
-        String backgroudUrl = design.getBackgroundUrl();
-        int foregroundColor = design.getTitleForegroundColor(getResources());
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(mHeaderView, design, foregroundColor));
-
     }
 
     private void setupAvatar(CurrentUser user) {
@@ -263,15 +280,15 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     public void refreshUser() {
-        if (!mCurrentUserSubscribtion.isUnsubscribed()) {
-            mCurrentUserSubscribtion.unsubscribe();
+        if (!mUserSubscribtion.isUnsubscribed()) {
+            mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
         setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
-        mCurrentUserSubscribtion = observableCurrentUser
+        mUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
@@ -284,12 +301,30 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }
 
         setRefreshing(true);
-        Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFeed(null, LIVE_FEED_LENGTH));
+        Observable<Feed> observableFeed = getFeedObservable();
         mFeedSubscription = observableFeed
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mFeedObserver);
+    }
+
+    public Observable<Feed> getFeedObservable() {
+        Observable<Feed> ob = Observable.empty();
+        switch (mFeedType) {
+            case MyAdditionalFeedActivity.FEED_TYPE_MAIN:
+                ob = mMyFeedsService.getMyFeed(null, null);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FRIENDS:
+                ob = mMyFeedsService.getMyFeed(null, null);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_FAVORITES:
+                ob = mMyFeedsService.getMyFavoritesFeed(null, null);
+                break;
+            case MyAdditionalFeedActivity.FEED_TYPE_PRIVATE:
+                ob = mMyFeedsService.getMyPrivateFeed(null, null);
+                break;
+        }
+        return AndroidObservable.bindFragment(this, ob);
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
@@ -300,6 +335,16 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }
     };
 
+    void setupFeedDesign(TlogDesign design) {
+        mAdapter.setFeedDesign(design);
+        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+        String backgroudUrl = design.getBackgroundUrl();
+        int foregroundColor = design.getTitleForegroundColor(getResources());
+        NetworkUtils.getInstance().getPicasso(getActivity())
+                .load(backgroudUrl)
+                .into(new TargetSetHeaderBackground(mHeaderView, design, foregroundColor));
+    }
+
     private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
         @Override
         public void onCompleted() {
@@ -309,8 +354,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         @Override
         public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            // XXX
+            mListener.notifyError(getString(R.string.server_error), e);
         }
 
         @Override
@@ -329,6 +373,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         @Override
         public void onError(Throwable e) {
+            mListener.notifyError(getString(R.string.server_error), e);
             // XXX
             if (e instanceof NoSuchElementException) {
                 setupUser(null);
@@ -353,8 +398,5 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        // TODO: Update argument type and name
-        public void onFeedButtonClicked(Uri uri);
-        public void onShowAdditionalmenuClicked();
     }
 }

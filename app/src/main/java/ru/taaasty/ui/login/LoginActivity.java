@@ -61,8 +61,6 @@ public class LoginActivity extends Activity implements
     public static final int SECONDARY_BACKGROUND_IN_SAMPLE_SIZE = 1;
     public static final int SECONDARY_BACKGROUND_BLUR_KERNEL = 24;
 
-
-
     private final Background mBackground = new Background();
 
     @DrawableRes

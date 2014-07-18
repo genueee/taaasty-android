@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
-    tools:context="ru.taaasty.ui.feeds.AdditionalMenuActivity">
+    tools:context="ru.taaasty.ui.AdditionalMenuActivity">
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/back_button"

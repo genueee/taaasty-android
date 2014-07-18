@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
 import ru.taaasty.model.CurrentUser;
+import ru.taaasty.service.Users;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 
@@ -50,7 +51,8 @@ public class UserManager {
     }
 
     public Observable<CurrentUser> getCurrentUser() {
-        return Observable.from(mCurrentUser);
+        return NetworkUtils.getInstance().createRestAdapter().create(Users.class).getMyInfo();
+        // return Observable.from(mCurrentUser);
     }
 
     private void load() {

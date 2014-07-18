@@ -198,9 +198,33 @@ public class FeedItem {
 
     public static class Image {
         public long id;
+
         public Date createAt;
-        public String thumbUrl;
-        public String mediumUrl;
-        public String tlogUrl;
+
+        String title;
+
+        String source;
+
+        public Image2 image = Image2.DUMMY;
+    }
+
+    public static class Image2 {
+
+        public static final Image2 DUMMY = new Image2();
+
+        public String url = "";
+
+        /**
+         * Thumbor path
+         */
+        public String path = "";
+
+        public ImageGeometry geometry = new ImageGeometry();
+
+    }
+
+    public static class ImageGeometry {
+        public int width;
+        public int height;
     }
 }

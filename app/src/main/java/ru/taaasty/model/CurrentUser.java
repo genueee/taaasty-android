@@ -86,6 +86,9 @@ public class CurrentUser {
     @SerializedName("userpic")
     private Userpic mUserpic = Userpic.DUMMY;
 
+    @SerializedName("design")
+    private TlogDesign mTlogDesign = TlogDesign.DUMMY;
+
     public ApiKey getApiKey() {
         return mApiKey;
     }
@@ -159,5 +162,9 @@ public class CurrentUser {
 
     public Userpic getUserpic() {
         return mUserpic;
+    }
+
+    public TlogDesign getDesign() {
+        return mTlogDesign;
     }
 }

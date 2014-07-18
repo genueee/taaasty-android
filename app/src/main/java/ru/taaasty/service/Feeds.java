@@ -13,7 +13,7 @@ import rx.Observable;
  */
 public interface Feeds {
     @GET("/feeds/live.json")
-    Observable<Feed> getLiveFeed(@Query("since_entry_id") Integer sinceEntryId,
+    Observable<Feed> getLiveFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit);
 
 

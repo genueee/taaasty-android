@@ -2,7 +2,9 @@ package ru.taaasty.service;
 
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
+import retrofit.http.GET;
 import retrofit.http.POST;
+import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.RecoveryPasswordResponse;
 import ru.taaasty.model.RegisterUserResponse;
 import rx.Observable;
@@ -11,6 +13,9 @@ import rx.Observable;
  * Created by alexey on 11.07.14.
  */
 public interface Users {
+
+    @GET("/users/me.json")
+    Observable<CurrentUser> getMyInfo();
 
     /**
      * Регистрация пользователя

@@ -1,6 +1,7 @@
 package ru.taaasty.widgets;
 
 import android.content.Context;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -9,6 +10,11 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 public class ErrorTextView extends TextView {
+
+    private static final int HIDE_DELAY_MS = 5000;
+
+    private Handler mHideErrorViewDelayerHandler;
+
     public ErrorTextView(Context context) {
         this(context, null);
     }
@@ -19,10 +25,11 @@ public class ErrorTextView extends TextView {
 
     public ErrorTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-
+        mHideErrorViewDelayerHandler = new Handler();
     }
 
-    public void setError(String error) {
+    public void setError(CharSequence error) {
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
         if (TextUtils.isEmpty(error)) {
             hideErrorView();
         } else {
@@ -36,6 +43,7 @@ public class ErrorTextView extends TextView {
     }
 
     public void hideErrorView() {
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
         if (getVisibility() != View.VISIBLE) return;
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
@@ -62,6 +70,8 @@ public class ErrorTextView extends TextView {
     }
 
     public void showErrorView() {
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
+
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         Animation fadeInAnim = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_in);
@@ -69,12 +79,12 @@ public class ErrorTextView extends TextView {
         fadeInAnim.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
+                setVisibility(View.VISIBLE);
             }
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                setVisibility(View.VISIBLE);
+                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, HIDE_DELAY_MS);
             }
 
             @Override
@@ -86,7 +96,9 @@ public class ErrorTextView extends TextView {
         startAnimation(fadeInAnim);
     }
 
-    private void updateErrorView(final String newText) {
+    private void updateErrorView(final CharSequence newText) {
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
+
         int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         final Animation fadeOutAnim = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_out);
@@ -113,7 +125,42 @@ public class ErrorTextView extends TextView {
             }
         });
 
+        fadeInAnim.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, HIDE_DELAY_MS);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+
         startAnimation(fadeOutAnim);
     }
 
+    private Runnable mHideErrorViewDelayed = new Runnable() {
+        @Override
+        public void run() {
+            hideErrorView();
+        }
+    };
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
+    }
 }

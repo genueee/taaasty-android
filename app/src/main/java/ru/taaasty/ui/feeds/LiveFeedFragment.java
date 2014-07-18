@@ -1,6 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -13,10 +14,12 @@ import android.widget.ListView;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.EndlessFeedItemAdapter;
 import ru.taaasty.model.Feed;
 import ru.taaasty.service.Feeds;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
@@ -35,7 +38,7 @@ import rx.subscriptions.Subscriptions;
 public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedFragment";
-    private static final int LIVE_FEED_LENGTH = 50;
+    private static final int LIVE_FEED_LENGTH = 32;
 
     private OnFragmentInteractionListener mListener;
 
@@ -43,9 +46,10 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private ListView mListView;
 
     private Feeds mFeedsService;
-    private FeedItemAdapter mAdapter;
+    private FeedAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
+
 
     /**
      * Use this factory method to create a new instance of
@@ -73,13 +77,6 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         View v = inflater.inflate(R.layout.fragment_live_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mListView = (ListView) mRefreshLayout.getChildAt(0);
-
-        mRefreshLayout.setColorSchemeResources(
-                R.color.refresh_widget_color1,
-                R.color.refresh_widget_color2,
-                R.color.refresh_widget_color3,
-                R.color.refresh_widget_color4
-        );
 
         mRefreshLayout.setOnRefreshListener(this);
 
@@ -110,7 +107,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         View headerView = LayoutInflater.from(mListView.getContext()).inflate(R.layout.header_live_feed, mListView, false);
         mListView.addHeaderView(headerView);
 
-        mAdapter = new FeedItemAdapter(getActivity());
+        mAdapter = new FeedAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
@@ -119,6 +116,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onDestroyView() {
         mFeedSubscription.unsubscribe();
+        mAdapter.onDestroy();
         super.onDestroyView();
         mListView = null;
         mAdapter = null;
@@ -160,15 +158,34 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            // XXX
+            mListener.notifyError(getString(R.string.server_error), e);
         }
 
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.setFeed(feed.entries);
+            if (mAdapter != null) mAdapter.setFeed(feed);
         }
     };
+
+    public class FeedAdapter extends EndlessFeedItemAdapter {
+
+        public FeedAdapter(Context context) {
+            super(context);
+        }
+
+        @Override
+        public void onRemoteError(Throwable e) {
+            mListener.notifyError(getString(R.string.server_error), e);
+        }
+
+        @Override
+        public Observable<Feed> createObservable(Long sinceEntryId) {
+            return AndroidObservable.bindFragment(LiveFeedFragment.this,
+                    mFeedsService.getLiveFeed(sinceEntryId, LIVE_FEED_LENGTH));
+        }
+    }
+
 
     /**
      * This interface must be implemented by activities that contain this
@@ -180,7 +197,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnFragmentInteractionListener extends CustomErrorView {
         // TODO: Update argument type and name
         public void onFeedButtonClicked(Uri uri);
     }

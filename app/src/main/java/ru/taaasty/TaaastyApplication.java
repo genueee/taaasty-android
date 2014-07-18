@@ -1,15 +1,10 @@
 package ru.taaasty;
 
 import android.app.Application;
-import android.net.http.HttpResponseCache;
-import android.util.Log;
 
 import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
-
-import java.io.File;
-import java.io.IOException;
 
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -39,23 +34,14 @@ public class TaaastyApplication extends Application {
         CalligraphyConfig.initDefault("fonts/ProximaNova-Reg.otf", R.attr.fontPath);
 
         UserManager.getInstance().onAppInit(this);
-
-        initHttpCache();
+        NetworkUtils.getInstance().onAppInit(this);
     }
 
-    private void initHttpCache() {
-        File cacheDir = getExternalCacheDir();
-        if (cacheDir == null) {
-            cacheDir = getCacheDir();
-        }
-
-        File httpCacheDir = new File(cacheDir, "taaasty");
-        try {
-            long cacheSize = NetworkUtils.calculateDiskCacheSize(httpCacheDir);
-            if (DBG) Log.v(TAG, "cache size, mb: " + cacheSize / 1024/ 1024);
-            HttpResponseCache.install(httpCacheDir, cacheSize);
-        } catch (IOException e) {
-            Log.e(TAG, "error install http cache", e);
-        }
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        NetworkUtils.getInstance().onTrimMemory();
     }
+
+
 }

@@ -14,6 +14,11 @@ def getRevision = { ->
     return stdout.toString().trim()
 }
 
+repositories {
+    maven {
+        url "https://repo.commonsware.com.s3.amazonaws.com"
+    }
+}
 
 android {
     compileSdkVersion 19
@@ -28,7 +33,7 @@ android {
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
-                        "\"http://api.taaasty.ru/v1\"")
+                        "\"http://api.taaasty.ru\"")
         buildConfigField "String", "THUMBOR_SERVER",
                 project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
@@ -50,6 +55,10 @@ android {
             ldLibs "log", "jnigraphics"
         }
 
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_7
+            targetCompatibility JavaVersion.VERSION_1_7
+        }
     }
 
     signingConfigs {
@@ -84,9 +93,6 @@ dependencies {
         exclude(group: 'org.json', module: 'json')
     }
 
-    // compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
-    // compile 'com.squareup.okhttp:okhttp:2.0.0'
-
     compile "com.android.support:support-v4:20.0.+"
     compile 'com.android.support:support-annotations:+'
     compile 'com.squareup.retrofit:retrofit:1.6.0'
@@ -95,12 +101,15 @@ dependencies {
     compile 'com.netflix.rxjava:rxjava-android:0.19.+'
     compile 'uk.co.chrisjenx:calligraphy:1.0.+'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
+    compile 'com.commonsware.cwac:endless:1.2.3'
+
+    compile 'javax.annotation:jsr250-api:1.0'
 }
 
 ['beta', 'release'].each { typeName ->
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
-            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru/v1\"")
+            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru\"")
     bt.buildConfigField "String", "THUMBOR_KEY",
             project.ext.private.getProperty("${typeName}.ThumborKey", "\"golobog\"")
     bt.buildConfigField "String", "THUMBOR_SERVER",

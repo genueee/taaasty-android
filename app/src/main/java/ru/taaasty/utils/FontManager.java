@@ -35,8 +35,15 @@ public class FontManager {
         return mDefaultFontBold;
     }
 
-    public Typeface getmDefaultFontLight() {
+    public Typeface getDefaultFontLight() {
         return mDefaultFontLight;
     }
 
+    public Typeface getDefaultSansSerifTypeface() {
+        return mDefaultFont;
+    }
+
+    public Typeface getDefaultSerifTypeface() {
+        return Typeface.SERIF;
+    }
 }

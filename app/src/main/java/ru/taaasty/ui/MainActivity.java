@@ -6,15 +6,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.ui.feeds.AdditionalMenuActivity;
+import ru.taaasty.ui.feeds.MyAdditionalFeedActivity;
+import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.feeds.LiveFeedFragment;
+import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -22,8 +27,9 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 public class MainActivity extends Activity implements
         MyFeedFragment.OnFragmentInteractionListener,
         LiveFeedFragment.OnFragmentInteractionListener {
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "MainActivity";
     private static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
-
     private UserManager mUserManager = UserManager.getInstance();
     private Tabbar mTabbar;
 
@@ -151,19 +157,42 @@ public class MainActivity extends Activity implements
         }
     };
 
+    void openAdditionalFeed(@MyAdditionalFeedActivity.FeedType int type) {
+        Intent i = new Intent(this, MyAdditionalFeedActivity.class);
+        i.putExtra(MyAdditionalFeedActivity.ARG_KEY_FEED_TYPE, type);
+        startActivity(i);
+    }
+
     public void onAdditionMenuItemClicked(int viewId) {
         switch (viewId) {
             case R.id.profile:
+            case R.id.back_button:
                 break;
             case R.id.favorites:
+                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_FAVORITES);
+                break;
             case R.id.hidden:
-            case R.id.settings:
+                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_PRIVATE);
+                break;
             case R.id.friends:
-            case R.id.back_button:
+                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_FRIENDS);
+                break;
+            case R.id.settings:
                 Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
                 break;
             default:
                 throw new IllegalStateException();
+        }
+    }
+
+    @Override
+    public void notifyError(CharSequence error, @Nullable Throwable exception) {
+        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error);
+        if (exception != null) Log.e(TAG, error.toString(), exception);
+        if (DBG) {
+            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));
+        } else {
+            ert.setError(error);
         }
     }
 }

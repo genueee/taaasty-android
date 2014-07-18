@@ -18,7 +18,7 @@
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
-            tools:listheader="@layout/header_live_feed"
+            tools:listheader="@layout/header_user_feed"
             tools:listitem="@layout/feed_item" />
 
     </ru.taaasty.widgets.SwipeRefreshLayout>
@@ -32,9 +32,7 @@
         android:paddingLeft="50dp"
         android:paddingRight="50dp"
         android:paddingTop="@dimen/feed_header_height"
-        android:text="@string/you_have_not_written_anything"
         android:textColor="#7d7d7d"
         android:textSize="22sp"
         android:visibility="gone" />
-
 </FrameLayout>

@@ -4,7 +4,7 @@
     android:shape="rectangle">
 
     <corners
-        android:radius="8dp" />
+        android:radius="@dimen/thin_button_corner_radius" />
 
     <padding
         android:left="8dp"
@@ -16,7 +16,7 @@
         android:color="@android:color/transparent"/>
 
     <stroke
-        android:width="2dp"
+        android:width="@dimen/thin_button_border"
         android:color="@color/likes_gt_1_border" />
 
 </shape>
