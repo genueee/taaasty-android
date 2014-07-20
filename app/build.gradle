@@ -59,12 +59,6 @@ android {
                 project.ext.private.getProperty("default.AcraFormUriBaseAuthPassword",
                         "\"acra\"")
 
-        ndk {
-            moduleName "libblur"
-            cFlags "-fvisibility=hidden -W -Wall -ffast-math -O3 -funroll-loops"
-            ldLibs "log", "jnigraphics"
-        }
-
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
             targetCompatibility JavaVersion.VERSION_1_7
@@ -125,8 +119,8 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:1.0.+'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
     compile 'com.commonsware.cwac:endless:1.2.3'
-
     compile 'javax.annotation:jsr250-api:1.0'
+    compile project(':ne10blur')
 }
 
 ['beta', 'release'].each { typeName ->

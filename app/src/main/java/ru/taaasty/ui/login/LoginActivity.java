@@ -36,9 +36,9 @@ import java.util.Random;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.ui.MainActivity;
-import ru.taaasty.NdkStackBlur;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;
+import ru0xdc.ne10.Blur;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
@@ -243,7 +243,7 @@ public class LoginActivity extends Activity implements
         private final float minScaleFactor = 2.2F;
         private int mSwapMs = 10000;
 
-        private final NdkStackBlur mBlur = NdkStackBlur.create();
+        private final Blur mBlur = new Blur();
         private final Random random = new Random();
         private Bitmap mCurrentBackgroundBitmap;
 
