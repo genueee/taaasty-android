@@ -1,6 +1,32 @@
 package ru.taaasty.utils;
 
+import android.content.Context;
+import android.support.annotation.DimenRes;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.widget.ImageView;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.pollexor.ThumborUrlBuilder;
+
+import ru.taaasty.R;
+import ru.taaasty.model.CurrentUser;
+import ru.taaasty.model.Userpic;
+
 public class ImageUtils {
+
+    private final CircleTransformation mCircleTransformation;
+
+    private static ImageUtils sInstance;
+
+    private ImageUtils() {
+        mCircleTransformation = new CircleTransformation();
+    }
+
+    public static ImageUtils getInstance() {
+        if (sInstance == null) sInstance = new ImageUtils();
+        return sInstance;
+    }
 
     public static int calculateInSampleSize(
             int width, int height,
@@ -22,6 +48,47 @@ public class ImageUtils {
         }
 
         return inSampleSize;
+    }
+
+    public void loadAvatar(@Nullable Userpic userpic, ImageView dst, @DimenRes int diameterResource) {
+        int avatarDiameter;
+        String userpicUrl;
+        Context context = dst.getContext();
+        Picasso picasso = NetworkUtils.getInstance().getPicasso(context);
+        avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+
+        if (userpic != null) {
+            userpicUrl = userpic.largeUrl;
+        } else {
+            userpicUrl = null;
+        }
+
+        if (TextUtils.isEmpty(userpicUrl)) {
+            dst.setImageResource(R.drawable.avatar_dummy);
+        } else {
+            ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
+            if (b != null) {
+                userpicUrl = b.resize(avatarDiameter, avatarDiameter)
+                        .smart()
+                        .toUrl();
+                // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+                picasso.load(userpicUrl)
+                        .placeholder(R.drawable.ic_user_stub_dark)
+                        .error(R.drawable.ic_user_stub_dark)
+                        .transform(mCircleTransformation)
+                        .noFade()
+                        .into(dst);
+            } else {
+                picasso.load(userpicUrl)
+                        .resize(avatarDiameter, avatarDiameter)
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_user_stub_dark)
+                        .error(R.drawable.ic_user_stub_dark)
+                        .transform(mCircleTransformation)
+                        .noFade()
+                        .into(dst);
+            }
+        }
     }
 
 }

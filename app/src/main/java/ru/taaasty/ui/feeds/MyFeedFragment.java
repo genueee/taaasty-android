@@ -32,6 +32,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.MyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
@@ -124,7 +125,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         super.onActivityCreated(savedInstanceState);
 
         mListView.addHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity());
+        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
         mListView.setAdapter(mAdapter);
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
@@ -223,45 +224,38 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     private void setupAvatar(CurrentUser user) {
-        String userpicUrl;
-        ImageView avatarView;
-        int avatarDiameter;
-        Picasso picasso;
-
-        avatarView = (ImageView)mHeaderView.findViewById(R.id.avatar);
-        avatarDiameter = getResources().getDimensionPixelSize(R.dimen.avatar_normal_diameter);
-        picasso = NetworkUtils.getInstance().getPicasso(getActivity());
-        if (user != null) {
-            userpicUrl = user.getUserpic().largeUrl;
-        } else {
-            userpicUrl = null;
-        }
-
-        if (TextUtils.isEmpty(userpicUrl)) {
-            avatarView.setImageResource(R.drawable.avatar_dummy);
-        } else {
-            ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
-            if (b != null) {
-                userpicUrl = b.resize(avatarDiameter, avatarDiameter)
-                        .smart()
-                        .toUrl();
-                // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
-                picasso.load(userpicUrl)
-                        .placeholder(R.drawable.ic_user_stub_dark)
-                        .error(R.drawable.ic_user_stub_dark)
-                        .transform(mCircleTransformation)
-                        .into(avatarView);
-            } else {
-                picasso.load(userpicUrl)
-                        .resize(avatarDiameter, avatarDiameter)
-                        .centerCrop()
-                        .placeholder(R.drawable.ic_user_stub_dark)
-                        .error(R.drawable.ic_user_stub_dark)
-                        .transform(mCircleTransformation)
-                        .into(avatarView);
-            }
-        }
+        ImageUtils.getInstance().loadAvatar(user == null ? null : user.getUserpic(),
+                (ImageView)mHeaderView.findViewById(R.id.avatar),
+                R.dimen.avatar_normal_diameter
+                );
     }
+
+    public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
+
+        @Override
+        public void onFeedItemClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedLikesClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedLikesClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedCommentsClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedAdditionalMenuClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedAdditionalMenuClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+    };
 
     public void refreshUser() {
         if (!mCurrentUserSubscribtion.isUnsubscribed()) {

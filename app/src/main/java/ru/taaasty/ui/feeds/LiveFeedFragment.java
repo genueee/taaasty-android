@@ -11,10 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.EndlessFeedItemAdapter;
+import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
 import ru.taaasty.service.Feeds;
 import ru.taaasty.ui.CustomErrorView;
@@ -171,7 +173,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public class FeedAdapter extends EndlessFeedItemAdapter {
 
         public FeedAdapter(Context context) {
-            super(context);
+            super(context, mOnFeedItemClickListener);
         }
 
         @Override
@@ -186,6 +188,32 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     }
 
+    public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
+
+        @Override
+        public void onFeedItemClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedLikesClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedLikesClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedCommentsClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onFeedAdditionalMenuClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onFeedAdditionalMenuClicked postId: " + postId);
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+    };
 
     /**
      * This interface must be implemented by activities that contain this

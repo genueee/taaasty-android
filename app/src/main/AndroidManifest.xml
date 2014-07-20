@@ -35,17 +35,25 @@
         <activity
             android:name=".ui.AdditionalMenuActivity"
             android:label="@string/title_activity_additional_menu"
-            android:screenOrientation="portrait"
             android:parentActivityName=".ui.MainActivity"
-            android:theme="@style/AdditionMenuActivityTheme">
+            android:screenOrientation="portrait"
+            android:theme="@style/AdditionMenuActivityTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.MainActivity" />
         </activity>
         <activity
             android:name=".ui.feeds.MyAdditionalFeedActivity"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".ui.MainActivity">
+            android:parentActivityName=".ui.MainActivity"
+            android:screenOrientation="portrait" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ui.ShowPostActivity"
+            android:label="@string/title_activity_show_post"
+            android:parentActivityName=".ui.MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.MainActivity" />

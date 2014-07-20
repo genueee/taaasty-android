@@ -22,8 +22,8 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.FeedItem;
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.FontManager;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 
 public class FeedItemAdapter extends BaseAdapter {
@@ -35,9 +35,6 @@ public class FeedItemAdapter extends BaseAdapter {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedItemAdapter";
 
-    private final int mAvatarDiameter;
-    private final CircleTransformation mCircleTransformation;
-
     private static final int FEED_STYLE_DARK = 0;
     private static final int FEED_STYLE_LIGHT = 1;
 
@@ -45,17 +42,19 @@ public class FeedItemAdapter extends BaseAdapter {
 
     private final Resources mResources;
     private final FontManager mFontManager;
+    private final ImageUtils mImageUtils;
+    private final OnItemListener mListener;
 
-    public FeedItemAdapter(Context context) {
+    public FeedItemAdapter(Context context, OnItemListener mListener) {
         super();
         mFeed = new ArrayList<FeedItem>();
         mInfater = LayoutInflater.from(context);
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
-        mAvatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-        mCircleTransformation = new CircleTransformation();
         mFeedDesign = TlogDesign.DUMMY;
         mResources = context.getResources();
         mFontManager = FontManager.getInstance(context);
+        mImageUtils = ImageUtils.getInstance();
+        this.mListener = mListener;
     }
 
     public void setFeed(List<FeedItem> feed) {
@@ -118,6 +117,10 @@ public class FeedItemAdapter extends BaseAdapter {
             res = mInfater.inflate(R.layout.feed_item, parent, false);
             vh = new ViewHolder(res);
             res.setTag(R.id.feed_item_view_holder, vh);
+            res.setOnClickListener(mOnFeedItemClickListener);
+            vh.likes.setOnClickListener(mOnFeedLikesClickListener);
+            vh.comments.setOnClickListener(mOnFeedCommentsClickListener);
+            vh.moreButton.setOnClickListener(mOnFeedAdditionalMenuClickListener);
         } else {
             res = convertView;
             vh = (ViewHolder) res.getTag(R.id.feed_item_view_holder);
@@ -131,6 +134,12 @@ public class FeedItemAdapter extends BaseAdapter {
         setRating(vh, item);
         setComments(vh, item);
 
+
+        res.setTag(R.id.feed_item_post_id, item.getId());
+        vh.likes.setTag(R.id.feed_item_post_id, item.getId());
+        vh.comments.setTag(R.id.feed_item_post_id, item.getId());
+        vh.moreButton.setTag(R.id.feed_item_post_id, item.getId());
+
         // XXX: more button
         // XX: тыкабельные кнопки
 
@@ -140,35 +149,7 @@ public class FeedItemAdapter extends BaseAdapter {
     private void setAuthor(ViewHolder vh, FeedItem item) {
         FeedItem.Author author = item.getAuthor();
         vh.author.setText(author.getSlug());
-
-        String userpicUrl = author.getUserpic().largeUrl;
-        if (TextUtils.isEmpty(userpicUrl)) {
-            vh.avatar.setImageResource(R.drawable.avatar_dummy);
-        } else {
-            ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
-            if (b != null) {
-                userpicUrl = b.resize(mAvatarDiameter, mAvatarDiameter)
-                        //.filter(ThumborUrlBuilder.format(ThumborUrlBuilder.ImageFormat.WEBP))
-                        .smart()
-                        .toUrl();
-                // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
-                mPicasso.load(userpicUrl)
-                        .placeholder(R.drawable.avatar_dummy)
-                        .error(R.drawable.avatar_dummy)
-                        .transform(mCircleTransformation)
-                        .noFade()
-                        .into(vh.avatar);
-            } else {
-                mPicasso.load(userpicUrl)
-                        .resize(mAvatarDiameter, mAvatarDiameter)
-                        .centerCrop()
-                        .placeholder(R.drawable.avatar_dummy)
-                        .error(R.drawable.avatar_dummy)
-                        .transform(mCircleTransformation)
-                        .noFade()
-                        .into(vh.avatar);
-            }
-        }
+        mImageUtils.loadAvatar(author.getUserpic(), vh.avatar, R.dimen.avatar_small_diameter);
     }
 
     private void setImage(ViewHolder vh, FeedItem item, ViewGroup parent) {
@@ -263,6 +244,38 @@ public class FeedItemAdapter extends BaseAdapter {
         vh.comments.setText(String.valueOf(comments));
     }
 
+    private final View.OnClickListener mOnFeedItemClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            long postId = (Long)v.getTag(R.id.feed_item_post_id);
+            if (mListener != null) mListener.onFeedItemClicked(v, postId);
+        }
+    };
+
+    private final View.OnClickListener mOnFeedLikesClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            long postId = (Long)v.getTag(R.id.feed_item_post_id);
+            if (mListener != null) mListener.onFeedLikesClicked(v, postId);
+        }
+    };
+
+    private final View.OnClickListener mOnFeedAdditionalMenuClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            long postId = (Long)v.getTag(R.id.feed_item_post_id);
+            if (mListener != null) mListener.onFeedAdditionalMenuClicked(v, postId);
+        }
+    };
+
+    private final View.OnClickListener mOnFeedCommentsClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            long postId = (Long)v.getTag(R.id.feed_item_post_id);
+            if (mListener != null) mListener.onFeedCommentsClicked(v, postId);
+        }
+    };
+
     public class ViewHolder {
         public final ImageView avatar;
         public final TextView author;
@@ -287,5 +300,12 @@ public class FeedItemAdapter extends BaseAdapter {
             source = (TextView) v.findViewById(R.id.source);
             moreButton = (ImageView) v.findViewById(R.id.more);
         }
+    }
+
+    public interface OnItemListener {
+        public void onFeedItemClicked(View view, long postId);
+        public void onFeedLikesClicked(View view, long postId);
+        public void onFeedCommentsClicked(View view, long postId);
+        public void onFeedAdditionalMenuClicked(View view, long postId);
     }
 }
