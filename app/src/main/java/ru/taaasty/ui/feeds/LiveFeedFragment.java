@@ -2,6 +2,7 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -20,6 +21,7 @@ import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
 import ru.taaasty.service.Feeds;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
@@ -51,7 +53,6 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private FeedAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
-
 
     /**
      * Use this factory method to create a new instance of
@@ -193,7 +194,9 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onFeedItemClicked(View view, long postId) {
             if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(getActivity(), ShowPostActivity.class);
+            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+            startActivity(i);
         }
 
         @Override
@@ -205,7 +208,9 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onFeedCommentsClicked(View view, long postId) {
             if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(getActivity(), ShowPostActivity.class);
+            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+            startActivity(i);
         }
 
         @Override

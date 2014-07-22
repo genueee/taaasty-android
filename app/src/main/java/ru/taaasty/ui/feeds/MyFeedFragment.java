@@ -1,6 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.MyFeeds;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -235,7 +237,9 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         @Override
         public void onFeedItemClicked(View view, long postId) {
             if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(getActivity(), ShowPostActivity.class);
+            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+            startActivity(i);
         }
 
         @Override
@@ -247,7 +251,9 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         @Override
         public void onFeedCommentsClicked(View view, long postId) {
             if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            Intent i = new Intent(getActivity(), ShowPostActivity.class);
+            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+            startActivity(i);
         }
 
         @Override
