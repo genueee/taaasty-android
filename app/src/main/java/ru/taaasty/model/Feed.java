@@ -5,6 +5,6 @@ import java.util.List;
 
 public class Feed {
 
-    public List<FeedItem> entries;
+    public List<Entry> entries;
 
 }

@@ -20,7 +20,7 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.FeedItem;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
@@ -28,7 +28,7 @@ import ru.taaasty.utils.NetworkUtils;
 
 public class FeedItemAdapter extends BaseAdapter {
 
-    private final List<FeedItem> mFeed;
+    private final List<Entry> mFeed;
     private final LayoutInflater mInfater;
     private final Picasso mPicasso;
 
@@ -47,7 +47,7 @@ public class FeedItemAdapter extends BaseAdapter {
 
     public FeedItemAdapter(Context context, OnItemListener mListener) {
         super();
-        mFeed = new ArrayList<FeedItem>();
+        mFeed = new ArrayList<Entry>();
         mInfater = LayoutInflater.from(context);
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
         mFeedDesign = TlogDesign.DUMMY;
@@ -57,14 +57,14 @@ public class FeedItemAdapter extends BaseAdapter {
         this.mListener = mListener;
     }
 
-    public void setFeed(List<FeedItem> feed) {
+    public void setFeed(List<Entry> feed) {
         mFeed.clear();
         appendFeed(feed);
     }
 
-    public void appendFeed(List<FeedItem> feed) {
+    public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
-        for (FeedItem i: mFeed) {
+        for (Entry i: mFeed) {
             i.getTextSpanned();
             i.getSourceSpanned();
         }
@@ -82,7 +82,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     @Override
-    public FeedItem getItem(int position) {
+    public Entry getItem(int position) {
         return mFeed.get(position);
     }
 
@@ -126,7 +126,7 @@ public class FeedItemAdapter extends BaseAdapter {
             vh = (ViewHolder) res.getTag(R.id.feed_item_view_holder);
         }
         applyFeedStyle(vh);
-        FeedItem item = mFeed.get(position);
+        Entry item = mFeed.get(position);
         setAuthor(vh, item);
         setImage(vh, item, parent);
         setTitle(vh, item);
@@ -146,19 +146,19 @@ public class FeedItemAdapter extends BaseAdapter {
         return res;
     }
 
-    private void setAuthor(ViewHolder vh, FeedItem item) {
-        FeedItem.Author author = item.getAuthor();
+    private void setAuthor(ViewHolder vh, Entry item) {
+        Entry.Author author = item.getAuthor();
         vh.author.setText(author.getSlug());
         mImageUtils.loadAvatar(author.getUserpic(), vh.avatar, R.dimen.avatar_small_diameter);
     }
 
-    private void setImage(ViewHolder vh, FeedItem item, ViewGroup parent) {
+    private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {
         if (item.getImages().isEmpty()) {
             vh.image.setVisibility(View.GONE);
             return;
         }
 
-        FeedItem.Image image = item.getImages().get(0);
+        Entry.Image image = item.getImages().get(0);
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
 
         float dstWidth, dstHeight;
@@ -193,7 +193,7 @@ public class FeedItemAdapter extends BaseAdapter {
 
     }
 
-    private void setTitle(ViewHolder vh, FeedItem item) {
+    private void setTitle(ViewHolder vh, Entry item) {
         String title = item.getTitle();
         if (TextUtils.isEmpty(title)) {
             vh.title.setVisibility(View.GONE);
@@ -203,7 +203,7 @@ public class FeedItemAdapter extends BaseAdapter {
         }
     }
 
-    private void setText(ViewHolder vh, FeedItem item) {
+    private void setText(ViewHolder vh, Entry item) {
         CharSequence text = item.getTextSpanned();
         CharSequence source = item.getSourceSpanned();
 
@@ -224,8 +224,8 @@ public class FeedItemAdapter extends BaseAdapter {
 
     }
 
-    private void setRating(ViewHolder vh, FeedItem item) {
-        FeedItem.Rating r = item.getRating();
+    private void setRating(ViewHolder vh, Entry item) {
+        Entry.Rating r = item.getRating();
         if (r.votes > 0) {
             vh.likes.setText(String.valueOf(r.votes));
             vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
@@ -239,7 +239,7 @@ public class FeedItemAdapter extends BaseAdapter {
         }
     }
 
-    private void setComments(ViewHolder vh, FeedItem item) {
+    private void setComments(ViewHolder vh, Entry item) {
         int comments = item.getCommentsCount();
         vh.comments.setText(String.valueOf(comments));
     }

@@ -11,7 +11,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class FeedItem {
+public class Entry {
 
     @SerializedName("id")
     private long mId;

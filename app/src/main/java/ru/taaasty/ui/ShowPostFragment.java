@@ -18,8 +18,8 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.service.Entries;
 import ru.taaasty.service.MyFeeds;
-import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
@@ -39,7 +39,8 @@ public class ShowPostFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mUserSubscribtion = Subscriptions.empty();
+    private Subscription mPostSubscribtion = Subscriptions.empty();
+    private Entries mEntriesService;
 
     private long mPostId;
 
@@ -66,6 +67,7 @@ public class ShowPostFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         mPostId = args.getLong(ARG_POST_ID);
+        mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(Entries.class);
     }
 
     @Override
@@ -109,7 +111,7 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mUserSubscribtion.unsubscribe();
+        mPostSubscribtion.unsubscribe();
     }
 
     @Override
@@ -145,13 +147,14 @@ public class ShowPostFragment extends Fragment {
     }
 
     public void refreshUser() {
-        if (!mUserSubscribtion.isUnsubscribed()) {
-            mUserSubscribtion.unsubscribe();
+        if (!mPostSubscribtion.isUnsubscribed()) {
+            mPostSubscribtion.unsubscribe();
         }
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
-                UserManager.getInstance().getCurrentUser());
 
-        mUserSubscribtion = observableCurrentUser
+        Observable<CurrentUser> observablePost = AndroidObservable.bindFragment(this,
+                );
+
+        mPostSubscribtion = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCurrentUserObserver);
     }
