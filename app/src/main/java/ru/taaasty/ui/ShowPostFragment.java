@@ -15,11 +15,9 @@ import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
-import ru.taaasty.model.CurrentUser;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.Entries;
-import ru.taaasty.service.MyFeeds;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
@@ -94,6 +92,7 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        refreshEntry();
     }
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -124,42 +123,42 @@ public class ShowPostFragment extends Fragment {
         Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
-    void setupUser(CurrentUser user) {
-        if (user == null) {
+    void setupAuthor(Entry.Author author) {
+        if (author == null) {
             // XXX
         } else {
-            String name = user.getName();
+            String name = author.getName();
             if (name == null) name = "";
             name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
             ((TextView)getView().findViewById(R.id.user_name)).setText(name);
 
-            setupAvatar(user);
+            setupAvatar(author);
         }
     }
 
     void setupFeedDesign(TlogDesign design) {
     }
 
-    private void setupAvatar(CurrentUser user) {
-        ImageUtils.getInstance().loadAvatar(user == null ? null : user.getUserpic(),
+    private void setupAvatar(Entry.Author author) {
+        ImageUtils.getInstance().loadAvatar(author == null ? null : author.getUserpic(),
                 (ImageView)getView().findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter);
     }
 
-    public void refreshUser() {
+    public void refreshEntry() {
         if (!mPostSubscribtion.isUnsubscribed()) {
             mPostSubscribtion.unsubscribe();
         }
 
-        Observable<CurrentUser> observablePost = AndroidObservable.bindFragment(this,
-                );
+        Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
+                mEntriesService.getEntry(mPostId, true));
 
         mPostSubscribtion = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mCurrentUserObserver);
+                .subscribe(mCurrentEntryObserver);
     }
 
-    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
+    private final Observer<Entry> mCurrentEntryObserver = new Observer<Entry>() {
 
         @Override
         public void onCompleted() {
@@ -170,14 +169,14 @@ public class ShowPostFragment extends Fragment {
         public void onError(Throwable e) {
             // XXX
             if (e instanceof NoSuchElementException) {
-                setupUser(null);
+                setupAuthor(null);
             }
         }
 
         @Override
-        public void onNext(CurrentUser currentUser) {
-            setupFeedDesign(currentUser.getDesign());
-            setupUser(currentUser);
+        public void onNext(Entry entry) {
+            //setupFeedDesign(currentUser.getDesign());
+            setupAuthor(entry.getAuthor());
         }
     };
 
