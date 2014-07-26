@@ -36,9 +36,9 @@ import java.util.Random;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.ui.MainActivity;
-import ru.taaasty.NdkStackBlur;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;
+import ru0xdc.NdkStackBlur;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
