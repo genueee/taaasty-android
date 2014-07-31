@@ -53,7 +53,7 @@ public class Entry {
     @SerializedName("via")
     private String mVia;
 
-    @SerializedName("images")
+    @SerializedName("image_attachments")
     private List<Image> mImages;
 
     private transient Spanned mTextSpanned = null;
