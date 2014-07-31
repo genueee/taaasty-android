@@ -243,7 +243,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     }
 
     private void setupAvatar(CurrentUser user) {
-        ImageUtils.getInstance().loadAvatar(user == null ? null : user.getUserpic(),
+        ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                 (ImageView)mHeaderView.findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter
         );

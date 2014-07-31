@@ -11,7 +11,9 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.R;
 import ru.taaasty.model.CurrentUser;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Userpic;
+import ru.taaasty.ui.DefaultUserpicDrawable;
 
 public class ImageUtils {
 
@@ -50,7 +52,15 @@ public class ImageUtils {
         return inSampleSize;
     }
 
-    public void loadAvatar(@Nullable Userpic userpic, ImageView dst, @DimenRes int diameterResource) {
+    public void loadAvatar(Entry.Author a, ImageView dst, @DimenRes int diameterResource) {
+        loadAvatar(
+                a == null ? Userpic.DUMMY : a.getUserpic(),
+                a == null ? "" : a.getName(),
+                dst,
+                diameterResource);
+    }
+
+    public void loadAvatar(@Nullable Userpic userpic, String userName, ImageView dst, @DimenRes int diameterResource) {
         int avatarDiameter;
         String userpicUrl;
         Context context = dst.getContext();
@@ -64,7 +74,8 @@ public class ImageUtils {
         }
 
         if (TextUtils.isEmpty(userpicUrl)) {
-            dst.setImageResource(R.drawable.avatar_dummy);
+            // dst.setImageResource(R.drawable.avatar_dummy);
+            dst.setImageDrawable(new DefaultUserpicDrawable(userpic, userName));
         } else {
             ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
             if (b != null) {

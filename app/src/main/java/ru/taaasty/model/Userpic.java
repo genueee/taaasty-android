@@ -25,16 +25,25 @@ public class Userpic {
 
         public static final DefaultColors DUMMY = new DefaultColors();
 
-        public String background;
-        public String name;
+        String background;
+        String name;
 
-        public int backgroundColor() {
+        public int getBackgroundColor() {
             if (TextUtils.isEmpty(background)) return Color.TRANSPARENT;
             try {
                 return Color.parseColor(background);
             } catch (IllegalArgumentException iae) {
                 Log.e("DefaultColors", "Color.parseColor() error. Color: " + background, iae);
                 return Color.TRANSPARENT;
+            }
+        }
+
+        public int getTextColor() {
+            try {
+                return Color.parseColor(name);
+            } catch (IllegalArgumentException iae) {
+                Log.e("DefaultColors", "Color.parseColor() error. Color: " + name, iae);
+                return Color.WHITE;
             }
         }
     }

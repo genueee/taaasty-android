@@ -140,4 +140,10 @@ public class TlogDesign {
         return FONT_TYPE_SERIF.equals(mFontTypeface);
     }
 
+    @Override
+    public String toString() {
+        return "TlogDesign[backgroundUrl: " + getBackgroundUrl() + ", coverAlign: " + mCoverAlign
+                + ", feed color: " + mFeedColor + ", header color: " + mHeaderColor
+                + ", font typeface: " + mFontTypeface + ", feedOpacity: " + mFeedOpacity + "]";
+    }
 }

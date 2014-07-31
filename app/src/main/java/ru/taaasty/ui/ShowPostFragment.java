@@ -140,7 +140,7 @@ public class ShowPostFragment extends Fragment {
     }
 
     private void setupAvatar(Entry.Author author) {
-        ImageUtils.getInstance().loadAvatar(author == null ? null : author.getUserpic(),
+        ImageUtils.getInstance().loadAvatar(author,
                 (ImageView)getView().findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter);
     }

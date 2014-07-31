@@ -42,7 +42,7 @@
             android:clickable="true"
             android:contentDescription="@string/user_avatar_content_description"
             android:cropToPadding="false"
-            android:scaleType="centerInside"
+            android:scaleType="fitCenter"
             android:src="@drawable/ic_user_stub_dark" />
 
         <TextView

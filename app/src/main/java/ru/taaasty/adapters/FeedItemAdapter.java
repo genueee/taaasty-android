@@ -149,7 +149,7 @@ public class FeedItemAdapter extends BaseAdapter {
     private void setAuthor(ViewHolder vh, Entry item) {
         Entry.Author author = item.getAuthor();
         vh.author.setText(author.getSlug());
-        mImageUtils.loadAvatar(author.getUserpic(), vh.avatar, R.dimen.avatar_small_diameter);
+        mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
     }
 
     private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {

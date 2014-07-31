@@ -46,10 +46,8 @@ import rx.subscriptions.Subscriptions;
 
 public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "LiveFeedFragment";
+    private static final String TAG = "MyFeedFragment";
     private static final int LIVE_FEED_LENGTH = 50;
-
-    private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
     private OnFragmentInteractionListener mListener;
 
@@ -185,6 +183,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     public void refreshData() {
+        if (DBG) Log.v(TAG, "refreshData()");
         refreshUser();
         refreshFeed();
     }
@@ -215,6 +214,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     void setupFeedDesign(TlogDesign design) {
+        if (DBG) Log.e(TAG, "Setup feed design " + design);
         mAdapter.setFeedDesign(design);
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
@@ -226,7 +226,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     private void setupAvatar(CurrentUser user) {
-        ImageUtils.getInstance().loadAvatar(user == null ? null : user.getUserpic(),
+        ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                 (ImageView)mHeaderView.findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter
                 );
@@ -330,6 +330,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         @Override
         public void onError(Throwable e) {
+            if (DBG) Log.e(TAG, "refresh user error", e);
             // XXX
             if (e instanceof NoSuchElementException) {
                 setupUser(null);
