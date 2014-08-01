@@ -20,7 +20,7 @@ public class Entry {
     private String mType;
 
     @SerializedName("author")
-    private Author mAuthor;
+    private User mAuthor;
 
     @SerializedName("comments_count")
     private int mCommentsCount;
@@ -68,8 +68,8 @@ public class Entry {
         return mType;
     }
 
-    public Author getAuthor() {
-        return mAuthor == null ? Author.DUMMY : mAuthor;
+    public User getAuthor() {
+        return mAuthor == null ? User.DUMMY : mAuthor;
     }
 
     public int getCommentsCount() {
@@ -128,72 +128,6 @@ public class Entry {
 
     public Rating getRating() {
         return mRating != null ? Rating.DUMMY : new Rating();
-    }
-
-    public static class Author {
-
-        public static Author DUMMY = new Author();
-
-        @SerializedName("id")
-        private long mId = -1;
-
-        @SerializedName("gender")
-        private String mGender = "m";
-
-        @SerializedName("name")
-        private String mName = "";
-
-        @SerializedName("slug")
-        private String mSlug = "";
-
-        @SerializedName("userpic")
-        @Nullable
-        private Userpic mUserpic = null;
-
-        @SerializedName("tlog_url")
-        private String mTlogUrl = "";
-
-        public long getId() {
-            return mId;
-        }
-
-        // XXX
-        public String getGender() {
-            return mGender;
-        }
-
-        public String getName() {
-            return mName;
-        }
-
-        public String getSlug() {
-            return mSlug;
-        }
-
-        public Userpic getUserpic() {
-            return mUserpic == null ? Userpic.DUMMY : mUserpic;
-        }
-
-        public String getTlogUrl() {
-            return mTlogUrl;
-        }
-
-    }
-
-    public static class Rating {
-
-        public static final Rating DUMMY = new Rating();
-
-        public int votes;
-
-        public float rating;
-
-        public long entryId;
-
-        public boolean isVoted;
-
-        public boolean isVoteable;
-
     }
 
     public static class Image {

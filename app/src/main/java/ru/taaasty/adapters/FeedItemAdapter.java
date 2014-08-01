@@ -21,7 +21,9 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -147,7 +149,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void setAuthor(ViewHolder vh, Entry item) {
-        Entry.Author author = item.getAuthor();
+        User author = item.getAuthor();
         vh.author.setText(author.getSlug());
         mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
     }
@@ -225,7 +227,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void setRating(ViewHolder vh, Entry item) {
-        Entry.Rating r = item.getRating();
+        Rating r = item.getRating();
         if (r.votes > 0) {
             vh.likes.setText(String.valueOf(r.votes));
             vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));

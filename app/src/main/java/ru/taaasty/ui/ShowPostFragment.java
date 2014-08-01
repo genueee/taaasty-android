@@ -17,6 +17,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.service.Entries;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -38,7 +39,9 @@ public class ShowPostFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private Subscription mPostSubscribtion = Subscriptions.empty();
+    private Subscription mCommentsSubscribtion = Subscriptions.empty();
     private Entries mEntriesService;
+
 
     private long mPostId;
 
@@ -123,7 +126,7 @@ public class ShowPostFragment extends Fragment {
         Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
-    void setupAuthor(Entry.Author author) {
+    void setupAuthor(User author) {
         if (author == null) {
             // XXX
         } else {
@@ -139,7 +142,7 @@ public class ShowPostFragment extends Fragment {
     void setupFeedDesign(TlogDesign design) {
     }
 
-    private void setupAvatar(Entry.Author author) {
+    private void setupAvatar(User author) {
         ImageUtils.getInstance().loadAvatar(author,
                 (ImageView)getView().findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter);

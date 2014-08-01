@@ -19,10 +19,8 @@ import ru.taaasty.utils.FontManager;
  * Created by alexey on 31.07.14.
  */
 public class DefaultUserpicDrawable extends BitmapDrawable {
-
-    public static final int TEXT_PADDING = 8;
     public static final int AVATAR_DIAMETER = 128;
-    public static final int TEXT_SIZE = 100;
+    public static final int TEXT_SIZE = 42;
     private final Paint mBackgroundPaint;
     private final Paint mTextPaint;
 
@@ -115,8 +113,9 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
 
     private void invalidatePaints() {
         mBackgroundPaint.setColor(mBackgroundColor);
+        mBackgroundPaint.setAntiAlias(true);
         mTextPaint.setColor(mTextColor);
-        mTextPaint.setTypeface(FontManager.getInstance(null).getDefaultSerifTypeface()); // XXX
+        mTextPaint.setTypeface(FontManager.getInstance(null).getDefaultSansSerifTypeface()); // XXX
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
 

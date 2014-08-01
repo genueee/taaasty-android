@@ -36,58 +36,23 @@ import java.util.List;
  }
  }
  */
-public class CurrentUser {
-
-    @SerializedName("id")
-    private long mId = -1;
-
-    @SerializedName("name")
-    private String mName;
-
-    @SerializedName("slug")
-    private String mSlug;
-
-    @SerializedName("title")
-    private String mTitle;
-
-    @SerializedName("is_female")
-    private boolean mIsFemale;
-
-    @SerializedName("is_daylog")
-    private boolean mIsDaylog;
-
-    @SerializedName("tlog_url")
-    private String mTlogUrl;
-
-    @SerializedName("created_at")
-    private Date mCreateAt;
-
-    @SerializedName("updated_at")
-    private Date mUpdatedAt;
-
-    @SerializedName("email")
-    private String mEmail;
-
-    @SerializedName("is_privacy")
-    private boolean mIsPrivacy;
+public class CurrentUser extends User {
 
     @SerializedName("is_confirmed")
-    private boolean mIsConfirmed;
+    boolean mIsConfirmed;
 
     @SerializedName("available_notifications")
-    private boolean mAvailableNotifications;
+    boolean mAvailableNotifications;
 
     @SerializedName("authentications")
-    private List<Object> mAuthentifications;
+    List<Object> mAuthentifications;
 
     @SerializedName("api_key")
-    private ApiKey mApiKey = ApiKey.DUMMY;
-
-    @SerializedName("userpic")
-    private Userpic mUserpic = Userpic.DUMMY;
+    ApiKey mApiKey = ApiKey.DUMMY;
 
     @SerializedName("design")
-    private TlogDesign mTlogDesign = TlogDesign.DUMMY;
+    TlogDesign mTlogDesign = TlogDesign.DUMMY;
+
 
     public ApiKey getApiKey() {
         return mApiKey;

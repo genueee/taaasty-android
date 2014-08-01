@@ -10,8 +10,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.R;
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.model.Entry;
+import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.DefaultUserpicDrawable;
 
@@ -52,7 +51,7 @@ public class ImageUtils {
         return inSampleSize;
     }
 
-    public void loadAvatar(Entry.Author a, ImageView dst, @DimenRes int diameterResource) {
+    public void loadAvatar(User a, ImageView dst, @DimenRes int diameterResource) {
         loadAvatar(
                 a == null ? Userpic.DUMMY : a.getUserpic(),
                 a == null ? "" : a.getName(),
