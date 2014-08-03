@@ -60,7 +60,7 @@ public class TlogDesign {
      * Шрифт ленты {@value #FONT_TYPE_SANS}, {@value #FONT_TYPE_SERIF}
      */
     @SerializedName("fontType")
-    String mFontTypeface = FONT_TYPE_SERIF;
+    String mFontTypeface = FONT_TYPE_SANS;
 
     /**
      * Прозрачность бэкраунда ленты, 0..1

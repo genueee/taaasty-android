@@ -9,7 +9,7 @@ import rx.Observable;
 /**
  * Created by alexey on 11.07.14.
  */
-public interface Sessions {
+public interface ApiSessions {
 
     /**
      * Логин

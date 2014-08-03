@@ -1,77 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/feed_header_with_title_height"
-    android:background="@android:color/black">
+    android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:contentDescription="@string/back_button_content_description"
-        android:minHeight="42dp"
-        android:minWidth="42dp"
-        android:scaleType="center"
-        android:src="@drawable/ab_back" />
-
-    <ScrollView
+    <com.nirhart.parallaxscroll.views.ParallaxListView
+        android:id="@+id/list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true">
+        android:background="@android:color/white"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:overScrollHeader="@android:color/black"
+        android:paddingBottom="8dp"
+        tools:listheader="@layout/header_show_post"
+        tools:listitem="@layout/feed_item" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/avatar_user_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="50dp"
-                android:layout_marginRight="50dp"
-                android:layout_marginTop="16dp"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingBottom="8dp"
-                android:paddingTop="8dp">
-
-                <ru.taaasty.widgets.HintedImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="@dimen/avatar_normal_diameter"
-                    android:layout_height="@dimen/avatar_normal_diameter"
-                    android:clickable="true"
-                    android:contentDescription="@string/user_avatar_content_description"
-                    android:cropToPadding="false"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/ic_user_stub_dark" />
-
-                <TextView
-                    android:id="@+id/user_name"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
-                    android:gravity="center_horizontal"
-                    android:paddingLeft="8dp"
-                    android:paddingRight="8dp"
-                    android:singleLine="true"
-                    android:textColor="@android:color/white"
-                    android:textSize="22sp"
-                    tools:text="Genue" />
-            </LinearLayout>
-
-            <FrameLayout
-                android:id="@+id/post"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-    </ScrollView>
-
-</RelativeLayout>
+</FrameLayout>

@@ -30,7 +30,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.RegisterUserResponse;
-import ru.taaasty.service.Users;
+import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
@@ -243,7 +243,7 @@ public class SignUpFragment extends Fragment {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            Users service = NetworkUtils.getInstance().createRestAdapter().create(Users.class);
+            ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
             mAuthTask = service.regiserUser(email, password, slug);
             AndroidObservable.bindFragment(this, mAuthTask);
             mAuthTask

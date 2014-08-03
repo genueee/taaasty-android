@@ -27,7 +27,7 @@ import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.service.MyFeeds;
+import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -53,7 +53,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
-    private MyFeeds mFeedsService;
+    private ApiMyFeeds mFeedsService;
     private FeedItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
@@ -78,7 +78,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(MyFeeds.class);
+        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
     }
 
     @Override
@@ -97,13 +97,6 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         mRefreshLayout.setOnRefreshListener(this);
 
         return v;
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFeedButtonClicked(uri);
-        }
     }
 
     @Override

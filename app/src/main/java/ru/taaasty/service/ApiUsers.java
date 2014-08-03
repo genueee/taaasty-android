@@ -12,7 +12,7 @@ import rx.Observable;
 /**
  * Created by alexey on 11.07.14.
  */
-public interface Users {
+public interface ApiUsers {
 
     @GET("/users/me.json")
     Observable<CurrentUser> getMyInfo();

@@ -2,7 +2,6 @@ package ru.taaasty.service;
 
 import java.util.Date;
 
-import retrofit.Callback;
 import retrofit.http.GET;
 import retrofit.http.Query;
 import ru.taaasty.model.Feed;
@@ -11,7 +10,7 @@ import rx.Observable;
 /**
  * Created by alexey on 11.07.14.
  */
-public interface Feeds {
+public interface ApiFeeds {
     @GET("/feeds/live.json")
     Observable<Feed> getLiveFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit);

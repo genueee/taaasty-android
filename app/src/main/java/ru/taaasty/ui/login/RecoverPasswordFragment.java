@@ -23,7 +23,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.RecoveryPasswordResponse;
-import ru.taaasty.service.Users;
+import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import ru.taaasty.widgets.ErrorTextView;
@@ -159,7 +159,7 @@ public class RecoverPasswordFragment extends Fragment {
             // perform the user login attempt.
             showProgress(true);
 
-            Users service = NetworkUtils.getInstance().createRestAdapter().create(Users.class);
+            ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
             mAuthTask = service.recoveryPassword(email);
             AndroidObservable.bindFragment(this, mAuthTask);
             mAuthTask

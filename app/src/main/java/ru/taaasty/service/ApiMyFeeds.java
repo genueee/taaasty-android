@@ -5,7 +5,7 @@ import retrofit.http.Query;
 import ru.taaasty.model.Feed;
 import rx.Observable;
 
-public interface MyFeeds {
+public interface ApiMyFeeds {
 
     /**
      * Моя лента (с приватными сообщениями)

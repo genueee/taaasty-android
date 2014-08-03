@@ -35,7 +35,6 @@
             tools:text="alyonaruban" />
     </LinearLayout>
 
-
     <ImageView
         android:id="@+id/image"
         android:contentDescription="@string/feed_item_image_content_description"
@@ -46,8 +45,8 @@
         android:adjustViewBounds="false"
         android:visibility="invisible" />
 
-    <TextView
-        android:id="@+id/title"
+    <ru.taaasty.widgets.EllipsizingTextView
+        android:id="@+id/feed_item_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingBottom="8dp"
@@ -59,8 +58,8 @@
         android:paddingLeft="@dimen/feed_item_padding_left"
         android:paddingRight="@dimen/feed_item_padding_right" />
 
-    <TextView
-        android:id="@+id/text"
+    <ru.taaasty.widgets.EllipsizingTextView
+        android:id="@+id/feed_item_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ellipsize="end"

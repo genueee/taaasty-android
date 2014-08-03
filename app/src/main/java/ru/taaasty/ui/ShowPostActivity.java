@@ -5,12 +5,10 @@ import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.ui.feeds.LiveFeedFragment;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends Activity implements ShowPostFragment.OnFragmentInteractionListener {
@@ -23,6 +21,13 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_post);
+        findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
         if (savedInstanceState == null) {
             long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
             if (postId < 0) throw new IllegalArgumentException("no ARG_POST_ID");

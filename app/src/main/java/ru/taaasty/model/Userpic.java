@@ -5,8 +5,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.google.gson.annotations.SerializedName;
-
 /**
 * Created by alexey on 10.07.14.
 */
@@ -25,8 +23,8 @@ public class Userpic {
 
         public static final DefaultColors DUMMY = new DefaultColors();
 
-        String background;
-        String name;
+        String background = "";
+        String name = "";
 
         public int getBackgroundColor() {
             if (TextUtils.isEmpty(background)) return Color.TRANSPARENT;

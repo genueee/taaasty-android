@@ -29,7 +29,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.CurrentUser;
-import ru.taaasty.service.Sessions;
+import ru.taaasty.service.ApiSessions;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import ru.taaasty.widgets.ErrorTextView;
@@ -222,7 +222,7 @@ public class SignViaEmailFragment extends Fragment {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            Sessions service = NetworkUtils.getInstance().createRestAdapter().create(Sessions.class);
+            ApiSessions service = NetworkUtils.getInstance().createRestAdapter().create(ApiSessions.class);
             mAuthTask = service.signIn(email, password);
             AndroidObservable.bindFragment(this, mAuthTask);
             mAuthTask

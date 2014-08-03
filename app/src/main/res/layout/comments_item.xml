@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:paddingLeft="4dp"
+    android:paddingRight="8dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    tools:ignore="UseCompoundDrawables">
+
+    <ImageView
+        android:id="@+id/avatar"
+        android:layout_width="@dimen/avatar_small_diameter"
+        android:layout_height="@dimen/avatar_small_diameter"
+        android:src="@drawable/avatar_dummy"
+        android:layout_marginRight="16dp" />
+
+    <TextView
+        android:id="@+id/comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textIsSelectable="true"
+        tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+
+</LinearLayout>

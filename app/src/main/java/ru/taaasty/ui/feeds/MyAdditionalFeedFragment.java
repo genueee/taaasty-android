@@ -26,7 +26,7 @@ import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.service.MyFeeds;
+import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.CircleTransformation;
@@ -57,7 +57,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
-    private MyFeeds mMyFeedsService;
+    private ApiMyFeeds mMyFeedsService;
     private FeedItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
@@ -82,7 +82,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mMyFeedsService = NetworkUtils.getInstance().createRestAdapter().create(MyFeeds.class);
+        mMyFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
 
         if (getArguments() != null) {
             Bundle args = getArguments();

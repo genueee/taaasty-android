@@ -27,6 +27,7 @@ import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.widgets.EllipsizingTextView;
 
 public class FeedItemAdapter extends BaseAdapter {
 
@@ -123,6 +124,8 @@ public class FeedItemAdapter extends BaseAdapter {
             vh.likes.setOnClickListener(mOnFeedLikesClickListener);
             vh.comments.setOnClickListener(mOnFeedCommentsClickListener);
             vh.moreButton.setOnClickListener(mOnFeedAdditionalMenuClickListener);
+            vh.title.setMaxLines(2);
+            vh.text.setMaxLines(10);
         } else {
             res = convertView;
             vh = (ViewHolder) res.getTag(R.id.feed_item_view_holder);
@@ -282,8 +285,8 @@ public class FeedItemAdapter extends BaseAdapter {
         public final ImageView avatar;
         public final TextView author;
         public final ImageView image;
-        public final TextView title;
-        public final TextView text;
+        public final EllipsizingTextView title;
+        public final EllipsizingTextView text;
         public final TextView likes;
         public final TextView comments;
         public final TextView source;
@@ -295,8 +298,8 @@ public class FeedItemAdapter extends BaseAdapter {
             avatar = (ImageView) v.findViewById(R.id.avatar);
             author = (TextView) v.findViewById(R.id.author);
             image = (ImageView) v.findViewById(R.id.image);
-            title = (TextView) v.findViewById(R.id.title);
-            text = (TextView) v.findViewById(R.id.text);
+            title = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
+            text = (EllipsizingTextView) v.findViewById(R.id.feed_item_text);
             comments = (TextView) v.findViewById(R.id.comments_count);
             likes = (TextView) v.findViewById(R.id.likes);
             source = (TextView) v.findViewById(R.id.source);

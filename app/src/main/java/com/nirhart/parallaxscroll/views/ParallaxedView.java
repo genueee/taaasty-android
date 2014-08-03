@@ -31,7 +31,7 @@ public abstract class ParallaxedView {
 		if (view != null)
             if (isAPI11) {
                 view.setTranslationY(offset);
-                
+
                 float viewHeight = view.getHeight();
                 float visibleHeight = view.getBottom() - offset; // XXX: wrong
                 if (visibleHeight < viewHeight) {

@@ -7,7 +7,7 @@ import retrofit.http.Query;
 import ru.taaasty.model.Entry;
 import rx.Observable;
 
-public interface Entries {
+public interface ApiEntries {
 
     public static final String PRIVACY_LOCK = "lock";
     public static final String PRIVACY_UNLOCK = "unlock";

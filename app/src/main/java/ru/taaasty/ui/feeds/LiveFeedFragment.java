@@ -1,27 +1,28 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.EndlessFeedItemAdapter;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.Feed;
-import ru.taaasty.service.Feeds;
+import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
@@ -44,14 +45,13 @@ import rx.subscriptions.Subscriptions;
 public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedFragment";
-    private static final int LIVE_FEED_LENGTH = 32;
 
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
     private ParallaxListView mListView;
 
-    private Feeds mFeedsService;
+    private ApiFeeds mApiFeedsService;
     private FeedAdapter mAdapter;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
@@ -73,7 +73,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(Feeds.class);
+        mApiFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiFeeds.class);
     }
 
     @Override
@@ -110,11 +110,13 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         View headerView = LayoutInflater.from(mListView.getContext()).inflate(R.layout.header_live_feed, mListView, false);
+        ((TextView)headerView.findViewById(R.id.live_feed_description)).setText(
+                getResources().getQuantityString(R.plurals.live_feed_description, Constants.LIVE_FEED_LENGTH, Constants.LIVE_FEED_LENGTH)
+        );
         mListView.addParallaxedHeaderView(headerView);
 
         mAdapter = new FeedAdapter(getActivity());
         mListView.setAdapter(mAdapter);
-
 
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
@@ -144,7 +146,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mFeedSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
         mFeedSubscription = AndroidObservable.bindFragment(this,
-                mFeedsService.getLiveFeed(null, LIVE_FEED_LENGTH)
+                mApiFeedsService.getLiveFeed(null, Constants.LIVE_FEED_LENGTH)
                         .observeOn(AndroidSchedulers.mainThread())
                         .finallyDo(new Action0() {
                             @Override
@@ -189,7 +191,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public Observable<Feed> createObservable(Long sinceEntryId) {
             return AndroidObservable.bindFragment(LiveFeedFragment.this,
-                    mFeedsService.getLiveFeed(sinceEntryId, LIVE_FEED_LENGTH));
+                    mApiFeedsService.getLiveFeed(sinceEntryId, Constants.LIVE_FEED_LENGTH));
         }
     }
 

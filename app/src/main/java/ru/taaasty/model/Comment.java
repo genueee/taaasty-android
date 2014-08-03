@@ -12,14 +12,8 @@ public class Comment {
     @SerializedName("id")
     private long mId;
 
-    @SerializedName("type")
-    String mType;
-
-    @SerializedName("author")
+    @SerializedName("user")
     User mAuthor = User.DUMMY;
-
-    @SerializedName("comments_count")
-    long commentsCount;
 
     @SerializedName("created_at")
     private Date mCreatedAt;
@@ -27,17 +21,25 @@ public class Comment {
     @SerializedName("updated_at")
     private Date mUpdatedAt;
 
-    @SerializedName("entry_url")
-    private String mEntryUrl;
-
-    @SerializedName("privacy")
-    String mPrivacy;
-
-    Rating mRating = Rating.DUMMY;
-
-    @SerializedName("title")
-    String mTitle;
-
     @SerializedName("text")
     String mText;
+
+    @SerializedName("is_disabled")
+    boolean mIsDisabled;
+
+    public long getId() {
+        return mId;
+    }
+
+    public User getAuthor() {
+        return mAuthor;
+    }
+
+    public String getText() {
+        return mText;
+    }
+
+    public boolean IsDisabled() {
+        return mIsDisabled;
+    }
 }
