@@ -32,7 +32,7 @@ repositories {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.1.0"
+    buildToolsVersion "20.0"
 
     defaultConfig {
         applicationId "ru.taaasty"
@@ -120,6 +120,7 @@ dependencies {
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
     compile 'com.commonsware.cwac:endless:1.2.3'
     compile project(':ndkstackblur')
+    compile project(':paralloid')
 
     compile 'javax.annotation:jsr250-api:1.0'
 }

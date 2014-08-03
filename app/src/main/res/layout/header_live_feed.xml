@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/feed_header_height"
+    android:id="@+id/header_live_feed"
     android:background="@android:color/black">
 
     <LinearLayout

@@ -154,7 +154,7 @@ public class ShowPostFragment extends Fragment {
         }
 
         Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
-                mEntriesService.getEntry(mPostId, true));
+                mEntriesService.getEntry(mPostId, false));
 
         mPostSubscribtion = observablePost
                 .observeOn(AndroidSchedulers.mainThread())

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.feeds.LiveFeedFragment">
 
-    <ListView
+    <com.nirhart.parallaxscroll.views.ParallaxListView
         android:id="@+id/live_feed_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

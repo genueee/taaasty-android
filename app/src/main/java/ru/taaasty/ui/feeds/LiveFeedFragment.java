@@ -14,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.nirhart.parallaxscroll.views.ParallaxListView;
+
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.EndlessFeedItemAdapter;
@@ -47,7 +49,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ListView mListView;
+    private ParallaxListView mListView;
 
     private Feeds mFeedsService;
     private FeedAdapter mAdapter;
@@ -79,7 +81,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_live_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ListView) mRefreshLayout.getChildAt(0);
+        mListView = (ParallaxListView) mRefreshLayout.getChildAt(0);
 
         mRefreshLayout.setOnRefreshListener(this);
 
@@ -108,10 +110,12 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         View headerView = LayoutInflater.from(mListView.getContext()).inflate(R.layout.header_live_feed, mListView, false);
-        mListView.addHeaderView(headerView);
+        mListView.addParallaxedHeaderView(headerView);
 
         mAdapter = new FeedAdapter(getActivity());
         mListView.setAdapter(mAdapter);
+
+
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
     }

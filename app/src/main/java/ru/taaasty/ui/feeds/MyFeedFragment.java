@@ -1,24 +1,21 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.pollexor.ThumborUrlBuilder;
+import com.nirhart.parallaxscroll.views.ParallaxListView;
 
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -33,7 +30,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.MyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
-import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
@@ -44,6 +40,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
+
 public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
@@ -52,7 +49,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ListView mListView;
+    private ParallaxListView mListView;
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
@@ -89,7 +86,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ListView) v.findViewById(R.id.list_view);
+        mListView = (ParallaxListView) v.findViewById(R.id.list_view);
         mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_my_feed, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
 
@@ -124,7 +121,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mListView.addHeaderView(mHeaderView);
+        mListView.addParallaxedHeaderView(mHeaderView);
         mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
         mListView.setAdapter(mAdapter);
 
