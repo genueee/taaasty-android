@@ -1,5 +1,8 @@
 package ru.taaasty.model;
 
+import android.text.Html;
+import android.text.TextUtils;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
@@ -37,6 +40,10 @@ public class Comment {
 
     public String getText() {
         return mText;
+    }
+
+    public CharSequence getTextSpanned() {
+        return TextUtils.isEmpty(mText) ? "" : Html.fromHtml(mText);
     }
 
     public boolean IsDisabled() {

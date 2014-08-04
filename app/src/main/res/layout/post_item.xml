@@ -9,7 +9,7 @@
     >
 
     <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/image"
+        android:id="@+id/gif_image"
         android:contentDescription="@string/feed_item_image_content_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

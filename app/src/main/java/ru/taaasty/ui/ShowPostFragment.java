@@ -3,6 +3,7 @@ package ru.taaasty.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -164,7 +165,7 @@ public class ShowPostFragment extends Fragment {
             String name = author.getName();
             if (name == null) name = "";
             name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
-            ((TextView)getView().findViewById(R.id.user_name)).setText(name);
+            ((TextView)mUserTitleView.findViewById(R.id.user_name)).setText(name);
             setupAvatar(author);
         }
     }
@@ -187,7 +188,7 @@ public class ShowPostFragment extends Fragment {
 
     // XXX
     private void setupPostImage() {
-        GifImageView imageView = (GifImageView)mPostContentView.findViewById(R.id.image);
+        GifImageView imageView = (GifImageView)mPostContentView.findViewById(R.id.gif_image);
 
         if (mCurrentEntry.getImages().isEmpty()) {
             imageView.setVisibility(View.GONE);
@@ -233,7 +234,7 @@ public class ShowPostFragment extends Fragment {
         if (TextUtils.isEmpty(title)) {
             titleView.setVisibility(View.GONE);
         } else {
-            titleView.setText(title);
+            titleView.setText(Html.fromHtml(title));
             titleView.setVisibility(View.VISIBLE);
         }
     }

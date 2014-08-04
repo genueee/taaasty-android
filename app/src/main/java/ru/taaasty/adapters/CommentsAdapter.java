@@ -117,7 +117,7 @@ public class CommentsAdapter extends BaseAdapter {
     }
 
     private void setComment(ViewHolder vh, Comment item) {
-        vh.comment.setText(item.getText());
+        vh.comment.setText(item.getTextSpanned());
     }
 
     public class ViewHolder {
