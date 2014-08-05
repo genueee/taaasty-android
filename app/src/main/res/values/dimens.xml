@@ -9,6 +9,9 @@
     <!-- Диаметр окружноти с аватаркой в заголовке на странице пользователя -->
     <dimen name="avatar_normal_diameter">120dp</dimen>
 
+    <!-- Диаметр окружноти с аватаркой на странице пользователя -->
+    <dimen name="avatar_large_diameter">148dp</dimen>
+
     <!-- Максимальная высота изображения в ленте -->
     <dimen name="feed_item_image_max_height">80dp</dimen>
 
