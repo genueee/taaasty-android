@@ -38,10 +38,12 @@
     <string name="you_have_no_private_records">У вас нет скрытых записей</string>
     <string name="you_have_no_favorite_records">У вас нет избранных записей</string>
     <string name="title_activity_show_post">ShowPostActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="back_button_content_description">Вверх</string>
-    <string name="title_activity_user_info">UserInfoActivity</string>
+    <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
+    <string name="records_title">записей</string>
+    <string name="subscribtions_title">подписан</string>
+    <string name="subscribers_title">подписчиков</string>
+    <string name="days_here_title">дней тут</string>
 
 </resources>
