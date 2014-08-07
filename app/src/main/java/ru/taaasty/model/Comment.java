@@ -17,7 +17,7 @@ public class Comment implements Parcelable {
     @SerializedName("id")
     private long mId;
 
-    @SerializedName("author")
+    @SerializedName("user")
     User mAuthor = User.DUMMY;
 
     @SerializedName("created_at")
