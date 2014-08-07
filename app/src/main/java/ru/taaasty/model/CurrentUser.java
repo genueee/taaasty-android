@@ -50,10 +50,6 @@ public class CurrentUser extends User {
     @SerializedName("api_key")
     ApiKey mApiKey = ApiKey.DUMMY;
 
-    @SerializedName("design")
-    TlogDesign mTlogDesign = TlogDesign.DUMMY;
-
-
     public ApiKey getApiKey() {
         return mApiKey;
     }
@@ -129,7 +125,4 @@ public class CurrentUser extends User {
         return mUserpic;
     }
 
-    public TlogDesign getDesign() {
-        return mTlogDesign;
-    }
 }

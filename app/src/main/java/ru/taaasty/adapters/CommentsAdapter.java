@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ru.taaasty.R;
@@ -30,7 +31,7 @@ public class CommentsAdapter extends BaseAdapter {
     private final FontManager mFontManager;
     private final ImageUtils mImageUtils;
 
-    private final List<Comment> mComments;
+    private final ArrayList<Comment> mComments;
     private TlogDesign mFeedDesign;
 
     public CommentsAdapter(Context context) {
@@ -47,6 +48,10 @@ public class CommentsAdapter extends BaseAdapter {
     public void setComments(List<Comment> comments) {
         mComments.clear();
         appendComments(comments);
+    }
+
+    public ArrayList<Comment> getComments() {
+        return mComments;
     }
 
     public void setFeedDesign(TlogDesign design) {

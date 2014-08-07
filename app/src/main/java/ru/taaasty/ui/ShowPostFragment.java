@@ -3,6 +3,7 @@ package ru.taaasty.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.widget.Toast;
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -24,6 +26,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
+import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -46,6 +49,9 @@ public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedFragment";
     private static final String ARG_POST_ID = "post_id";
+    private static final String KEY_CURRENT_ENTRY = "current_entry";
+    private static final String KEY_TLOG_DESIGN = "tlog_design";
+    private static final String KEY_COMMENTS = "comments";
 
     private OnFragmentInteractionListener mListener;
 
@@ -125,20 +131,29 @@ public class ShowPostFragment extends Fragment {
         mListView.addHeaderView(mPostContentView);
         mListView.setAdapter(mCommentsAdapter);
 
+        if (savedInstanceState != null) {
+            mCurrentEntry = savedInstanceState.getParcelable(KEY_CURRENT_ENTRY);
+            mTlogDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
+            ArrayList<Comment> comments = savedInstanceState.getParcelableArrayList(KEY_COMMENTS);
+            mCommentsAdapter.setComments(comments);
+            setupEntry();
+        }
+
         refreshEntry();
     }
 
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.avatar:
-                    onAvatarClicked(v);
-                    break;
-            }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (DBG) Log.v(TAG, "onSaveInstanceState");
+        outState.putParcelable(KEY_CURRENT_ENTRY, mCurrentEntry);
+        outState.putParcelable(KEY_TLOG_DESIGN, mTlogDesign);
+        if (mCommentsAdapter != null) {
+            outState.putParcelableArrayList(KEY_COMMENTS, mCommentsAdapter.getComments());
+        } else {
+            outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
         }
-    };
-
+    }
 
     @Override
     public void onDestroyView() {
@@ -153,9 +168,16 @@ public class ShowPostFragment extends Fragment {
         mListener = null;
     }
 
-    void onAvatarClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
-    }
+    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.avatar:
+                    if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mTlogDesign);
+                    break;
+            }
+        }
+    };
 
     void setupAuthor() {
         if (mCurrentEntry == null || mCurrentEntry.getAuthor() == null) {
@@ -170,7 +192,14 @@ public class ShowPostFragment extends Fragment {
         }
     }
 
+    private void setupEntry() {
+        setupFeedDesign();
+        setupAuthor();
+        setupPost();
+    }
+
     void setupFeedDesign() {
+        // XXX
     }
 
     void setupPost() {
@@ -183,7 +212,6 @@ public class ShowPostFragment extends Fragment {
         setupPostImage();
         setupPostTitle();
         setupPostText();
-
     }
 
     // XXX
@@ -311,10 +339,8 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onNext(Entry entry) {
-            //setupFeedDesign(currentUser.getDesign());
             mCurrentEntry = entry;
-            setupAuthor();
-            setupPost();
+            setupEntry();
             loadComments();
         }
     };
@@ -348,5 +374,6 @@ public class ShowPostFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onAvatarClicked(User user, TlogDesign design);
     }
 }

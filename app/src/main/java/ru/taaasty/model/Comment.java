@@ -1,5 +1,7 @@
 package ru.taaasty.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.Html;
 import android.text.TextUtils;
 
@@ -10,7 +12,7 @@ import java.util.Date;
 /**
  * Created by alexey on 01.08.14.
  */
-public class Comment {
+public class Comment implements Parcelable {
 
     @SerializedName("id")
     private long mId;
@@ -49,4 +51,44 @@ public class Comment {
     public boolean IsDisabled() {
         return mIsDisabled;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.mId);
+        dest.writeParcelable(this.mAuthor, 0);
+        dest.writeLong(mCreatedAt != null ? mCreatedAt.getTime() : -1);
+        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
+        dest.writeString(this.mText);
+        dest.writeByte(mIsDisabled ? (byte) 1 : (byte) 0);
+    }
+
+    public Comment() {
+    }
+
+    private Comment(Parcel in) {
+        this.mId = in.readLong();
+        this.mAuthor = in.readParcelable(User.class.getClassLoader());
+        long tmpMCreatedAt = in.readLong();
+        this.mCreatedAt = tmpMCreatedAt == -1 ? null : new Date(tmpMCreatedAt);
+        long tmpMUpdatedAt = in.readLong();
+        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
+        this.mText = in.readString();
+        this.mIsDisabled = in.readByte() != 0;
+    }
+
+    public static final Parcelable.Creator<Comment> CREATOR = new Parcelable.Creator<Comment>() {
+        public Comment createFromParcel(Parcel source) {
+            return new Comment(source);
+        }
+
+        public Comment[] newArray(int size) {
+            return new Comment[size];
+        }
+    };
 }

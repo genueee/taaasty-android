@@ -61,7 +61,6 @@
         </activity>
         <activity
             android:name=".ui.UserInfoActivity"
-            android:label="@string/title_activity_user_info"
             android:parentActivityName=".ui.ShowPostActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

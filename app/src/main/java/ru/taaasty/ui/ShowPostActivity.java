@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -9,6 +10,8 @@ import android.view.View;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends Activity implements ShowPostFragment.OnFragmentInteractionListener {
@@ -47,5 +50,13 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
         } else {
             ert.setError(error);
         }
+    }
+
+    @Override
+    public void onAvatarClicked(User user, TlogDesign design) {
+        Intent i = new Intent(this, UserInfoActivity.class);
+        i.putExtra(UserInfoActivity.ARG_USER, user);
+        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        startActivity(i);
     }
 }

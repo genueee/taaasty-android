@@ -2,6 +2,8 @@ package ru.taaasty.model;
 
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
@@ -12,7 +14,7 @@ import ru.taaasty.R;
 /**
  * Дизайн дневника
  */
-public class TlogDesign {
+public class TlogDesign implements Parcelable {
 
     public static final String HEADER_COLOR_BLACK = "black";
     public static final String HEADER_COLOR_WHITE = "white";
@@ -146,4 +148,42 @@ public class TlogDesign {
                 + ", feed color: " + mFeedColor + ", header color: " + mHeaderColor
                 + ", font typeface: " + mFontTypeface + ", feedOpacity: " + mFeedOpacity + "]";
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.mBackgroundUrl);
+        dest.writeString(this.mCoverAlign);
+        dest.writeString(this.mFeedColor);
+        dest.writeString(this.mHeaderColor);
+        dest.writeString(this.mFontTypeface);
+        dest.writeFloat(this.mFeedOpacity);
+    }
+
+    public TlogDesign() {
+    }
+
+    private TlogDesign(Parcel in) {
+        this.mBackgroundUrl = in.readString();
+        this.mCoverAlign = in.readString();
+        this.mFeedColor = in.readString();
+        this.mHeaderColor = in.readString();
+        this.mFontTypeface = in.readString();
+        this.mFeedOpacity = in.readFloat();
+    }
+
+    public static final Parcelable.Creator<TlogDesign> CREATOR = new Parcelable.Creator<TlogDesign>() {
+        public TlogDesign createFromParcel(Parcel source) {
+            return new TlogDesign(source);
+        }
+
+        public TlogDesign[] newArray(int size) {
+            return new TlogDesign[size];
+        }
+    };
 }

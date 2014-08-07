@@ -41,9 +41,33 @@
     <string name="back_button_content_description">Вверх</string>
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
-    <string name="records_title">записей</string>
-    <string name="subscribtions_title">подписан</string>
-    <string name="subscribers_title">подписчиков</string>
-    <string name="days_here_title">дней тут</string>
+
+    <plurals name="records_title">
+        <item quantity="one">пост</item>
+        <item quantity="few">поста</item>
+        <item quantity="many">постов</item>
+        <item quantity="other">постов</item>
+    </plurals>
+
+    <plurals name="subscribtions_title">
+        <item quantity="one">подписка</item>
+        <item quantity="few">подписка</item>
+        <item quantity="many">подписок</item>
+        <item quantity="other">подписок</item>
+    </plurals>
+
+    <plurals name="subscribers_title">
+        <item quantity="one">подписчик</item>
+        <item quantity="few">подписчика</item>
+        <item quantity="many">подписчиков</item>
+        <item quantity="other">подписчиков</item>
+    </plurals>
+
+    <plurals name="days_here_title">
+        <item quantity="one">день тут</item>
+        <item quantity="few">дня тут</item>
+        <item quantity="many">дней тут</item>
+        <item quantity="other">дней тут</item>
+    </plurals>
 
 </resources>

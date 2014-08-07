@@ -39,7 +39,6 @@
 -dontwarn com.squareup.okhttp.internal.http.*
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
-
 # ACRA
 -renamesourcefileattribute SourceFile
 -keepattributes SourceFile,LineNumberTable
