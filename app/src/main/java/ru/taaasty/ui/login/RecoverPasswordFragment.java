@@ -156,7 +156,7 @@ public class RecoverPasswordFragment extends Fragment {
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            // perform the author login attempt.
             showProgress(true);
 
             ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);

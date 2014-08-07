@@ -6,7 +6,7 @@ import android.os.Parcelable;
 
 public class TlogInfo implements Parcelable {
 
-    public User user = User.DUMMY;
+    public User author = User.DUMMY;
 
     public TlogDesign design = TlogDesign.DUMMY;
 
@@ -20,7 +20,7 @@ public class TlogInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(this.user, 0);
+        dest.writeParcelable(this.author, 0);
         dest.writeParcelable(this.design, 0);
         dest.writeParcelable(this.relationshipsSummary, 0);
     }
@@ -29,7 +29,7 @@ public class TlogInfo implements Parcelable {
     }
 
     private TlogInfo(Parcel in) {
-        this.user = in.readParcelable(User.class.getClassLoader());
+        this.author = in.readParcelable(User.class.getClassLoader());
         this.design = in.readParcelable(TlogDesign.class.getClassLoader());
         this.relationshipsSummary = in.readParcelable(RelationshipsSummary.class.getClassLoader());
     }

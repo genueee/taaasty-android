@@ -58,7 +58,7 @@ public class MyAdditionalFeedActivity extends Activity implements MyAdditionalFe
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error);
+        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
             ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));

@@ -192,7 +192,7 @@ public class SignViaEmailFragment extends Fragment {
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the user entered one.
+        // Check for a valid password, if the author entered one.
         if (TextUtils.isEmpty(password)) {
             mErrorView.setError(getString(R.string.error_password_field_required));
             focusView = mPasswordView;
@@ -220,7 +220,7 @@ public class SignViaEmailFragment extends Fragment {
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
+            // perform the author login attempt.
             showProgress(true);
             ApiSessions service = NetworkUtils.getInstance().createRestAdapter().create(ApiSessions.class);
             mAuthTask = service.signIn(email, password);

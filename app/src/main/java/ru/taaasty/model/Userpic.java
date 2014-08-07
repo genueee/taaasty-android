@@ -41,8 +41,8 @@ public class Userpic implements Parcelable {
         public int getTextColor() {
             try {
                 return Color.parseColor(name);
-            } catch (IllegalArgumentException iae) {
-                Log.e("DefaultColors", "Color.parseColor() error. Color: " + name, iae);
+            } catch (IllegalArgumentException | StringIndexOutOfBoundsException e) {
+                Log.e("DefaultColors", "Color.parseColor() error. Color: " + name, e);
                 return Color.WHITE;
             }
         }

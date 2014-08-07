@@ -320,7 +320,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         @Override
         public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "refresh user error", e);
+            if (DBG) Log.e(TAG, "refresh author error", e);
             // XXX
             if (e instanceof NoSuchElementException) {
                 setupUser(null);

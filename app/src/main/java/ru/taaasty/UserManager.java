@@ -15,7 +15,7 @@ public class UserManager {
 
     private static final String SHARED_PREFS_KEY_AUTHTOKEN="authtoken";
 
-    private static final String SHARED_PREFS_KEY_USER="user";
+    private static final String SHARED_PREFS_KEY_USER="author";
 
     private static UserManager mUserManager;
 

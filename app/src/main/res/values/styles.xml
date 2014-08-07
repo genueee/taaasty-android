@@ -96,13 +96,14 @@
         <item name="android:paddingLeft">4dp</item>
         <item name="android:paddingRight">4dp</item>
         <item name="android:clickable">true</item>
+        <item name="android:background">@drawable/clickable_item_background</item>
     </style>
 
     <style name="UserInfoContentValue">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">center_horizontal</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">@drawable/clickable_item_text_white</item>
         <item name="android:textSize">26sp</item>
         <item name="android:singleLine">true</item>
         <item name="android:gravity">center</item>
@@ -112,7 +113,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">center_horizontal</item>
-        <item name="android:textColor">@color/text_color_semi_transparent_white</item>
+        <item name="android:textColor">@drawable/clickable_item_text_semi_transparent_white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textScaleX">0.95</item>
         <item name="android:gravity">center</item>

@@ -30,4 +30,6 @@
     <color name="feed_dark_background_color">#ff1e1e1e</color>
     <color name="feed_light_background_color">@android:color/white</color>
 
+    <color name="semi_transparent_yellow_background">#e6f8c700</color>
+
 </resources>

@@ -14,11 +14,10 @@ import android.widget.Toast;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.ui.feeds.LiveFeedFragment;
 import ru.taaasty.ui.feeds.MyAdditionalFeedActivity;
-import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
-import ru.taaasty.ui.feeds.LiveFeedFragment;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -187,7 +186,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error);
+        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
             ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));

@@ -59,7 +59,10 @@ public class ImageUtils {
                 diameterResource);
     }
 
-    public void loadAvatar(@Nullable Userpic userpic, String userName, ImageView dst, @DimenRes int diameterResource) {
+    public void loadAvatar(@Nullable Userpic userpic,
+                           String userName,
+                           ImageView dst,
+                           @DimenRes int diameterResource) {
         int avatarDiameter;
         String userpicUrl;
         Context context = dst.getContext();

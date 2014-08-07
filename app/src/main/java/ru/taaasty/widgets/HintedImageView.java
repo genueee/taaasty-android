@@ -13,7 +13,7 @@ import android.widget.Toast;
 
 /**
  * Extended image view to show the content description in a Toast view when
- * the user long presses.
+ * the author long presses.
  *
  * Note: `android:contentDescription` must be set in order for the toast to
  * work

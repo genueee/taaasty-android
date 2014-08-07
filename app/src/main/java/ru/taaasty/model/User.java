@@ -102,6 +102,11 @@ public class User implements Parcelable {
         return mTotalEntriesCount;
     }
 
+    public long getDaysOnTasty() {
+        long diffMs = Math.abs(System.currentTimeMillis() - mCreateAt.getTime());
+        return Math.round(diffMs / (24f * 60f * 60f * 1000f)); // XXX: wrong
+    }
+
     @Nullable
     public RelationshipsSummary getRelationshipsSummary() {
         return mRelationshipsSummary;

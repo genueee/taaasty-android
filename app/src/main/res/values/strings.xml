@@ -51,7 +51,7 @@
 
     <plurals name="subscribtions_title">
         <item quantity="one">подписка</item>
-        <item quantity="few">подписка</item>
+        <item quantity="few">подписки</item>
         <item quantity="many">подписок</item>
         <item quantity="other">подписок</item>
     </plurals>
