@@ -3,6 +3,7 @@ package ru.taaasty.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -20,6 +21,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiTlog;
+import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
@@ -206,6 +208,15 @@ public class UserInfoFragment extends Fragment {
     }
 
     private void setupDesign() {
+        TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
+
+        // getView().setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+        String backgroudUrl = design.getBackgroundUrl();
+        int foregroundColor = design.getTitleForegroundColor(getResources());
+        NetworkUtils.getInstance().getPicasso(getActivity())
+                .load(backgroudUrl)
+                .into(new TargetSetHeaderBackground(getView(), design, getResources().getColor(R.color.additional_menu_background)));
+
         // XXX
     }
 

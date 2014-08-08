@@ -15,14 +15,13 @@
     <color name="text_color_semi_transparent_white">#62ffffff</color>
 
     <color name="login_activity_darken_layer">#50000000</color>
-
+    <color name="additional_menu_background">#b0000000</color>
 
     <color name="refresh_widget_color1">#ff000000</color>
     <color name="refresh_widget_color2">#ff202020</color>
     <color name="refresh_widget_color3">#ff606060</color>
     <color name="refresh_widget_color4">#ff909090</color>
 
-    <color name="additional_menu_background">#b0000000</color>
 
     <color name="feed_dark_text_color">@android:color/white</color>
     <color name="feed_light_text_color">@android:color/black</color>

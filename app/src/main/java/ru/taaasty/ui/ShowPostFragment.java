@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.Html;
@@ -31,7 +32,9 @@ import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiComments;
+import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
+import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
@@ -56,8 +59,10 @@ public class ShowPostFragment extends Fragment {
 
     private Subscription mPostSubscribtion = Subscriptions.empty();
     private Subscription mCommentsSubscribtion = Subscriptions.empty();
+    private Subscription mTlogDesignSubscribtion = Subscriptions.empty();
     private ApiEntries mEntriesService;
     private ApiComments mCommentsService;
+    private ApiDesignSettings mTlogDesignService;
 
     private ParallaxListView mListView;
     private CommentsAdapter mCommentsAdapter;
@@ -68,7 +73,7 @@ public class ShowPostFragment extends Fragment {
     private long mPostId;
 
     private Entry mCurrentEntry;
-    private TlogDesign mTlogDesign;
+    private TlogDesign mDesign;
 
     /**
      * Use this factory method to create a new instance of
@@ -95,6 +100,7 @@ public class ShowPostFragment extends Fragment {
         mPostId = args.getLong(ARG_POST_ID);
         mCommentsService = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+        mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
     }
 
     @Override
@@ -132,7 +138,7 @@ public class ShowPostFragment extends Fragment {
 
         if (savedInstanceState != null) {
             mCurrentEntry = savedInstanceState.getParcelable(KEY_CURRENT_ENTRY);
-            mTlogDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
+            mDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
             ArrayList<Comment> comments = savedInstanceState.getParcelableArrayList(KEY_COMMENTS);
             mCommentsAdapter.setComments(comments);
             setupEntry();
@@ -146,7 +152,7 @@ public class ShowPostFragment extends Fragment {
         super.onSaveInstanceState(outState);
         if (DBG) Log.v(TAG, "onSaveInstanceState");
         outState.putParcelable(KEY_CURRENT_ENTRY, mCurrentEntry);
-        outState.putParcelable(KEY_TLOG_DESIGN, mTlogDesign);
+        outState.putParcelable(KEY_TLOG_DESIGN, mDesign);
         if (mCommentsAdapter != null) {
             outState.putParcelableArrayList(KEY_COMMENTS, mCommentsAdapter.getComments());
         } else {
@@ -159,6 +165,7 @@ public class ShowPostFragment extends Fragment {
         super.onDestroyView();
         mPostSubscribtion.unsubscribe();
         mCommentsSubscribtion.unsubscribe();
+        mTlogDesignSubscribtion.unsubscribe();
     }
 
     @Override
@@ -172,7 +179,7 @@ public class ShowPostFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.avatar:
-                    if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mTlogDesign);
+                    if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
                     break;
             }
         }
@@ -199,6 +206,15 @@ public class ShowPostFragment extends Fragment {
 
     void setupFeedDesign() {
         // XXX
+        TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
+
+        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+        String backgroudUrl = design.getBackgroundUrl();
+        int foregroundColor = design.getTitleForegroundColor(getResources());
+        NetworkUtils.getInstance().getPicasso(getActivity())
+                .load(backgroudUrl)
+                .into(new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor));
+
     }
 
     void setupPost() {
@@ -295,9 +311,7 @@ public class ShowPostFragment extends Fragment {
     }
 
     public void refreshEntry() {
-        if (!mPostSubscribtion.isUnsubscribed()) {
-            mPostSubscribtion.unsubscribe();
-        }
+        mPostSubscribtion.unsubscribe();
 
         Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
                 mEntriesService.getEntry(mPostId, false));
@@ -305,6 +319,15 @@ public class ShowPostFragment extends Fragment {
         mPostSubscribtion = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCurrentEntryObserver);
+    }
+
+    private void loadDesign(String slug) {
+        mTlogDesignSubscribtion.unsubscribe();
+        Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
+                mTlogDesignService.getDesignSettings(slug));
+        mTlogDesignSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mTlogDesignObserver);
     }
 
     private void loadComments() {
@@ -341,6 +364,7 @@ public class ShowPostFragment extends Fragment {
             mCurrentEntry = entry;
             setupEntry();
             loadComments();
+            loadDesign(entry.getAuthor().getSlug());
         }
     };
 
@@ -359,6 +383,25 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(Comments comments) {
             mCommentsAdapter.appendComments(comments.comments);
+        }
+    };
+
+    private final Observer<TlogDesign> mTlogDesignObserver = new Observer<TlogDesign>() {
+
+        @Override
+        public void onCompleted() {
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            mListener.notifyError(getString(R.string.error_loading_user), e);
+        }
+
+        @Override
+        public void onNext(TlogDesign design) {
+            mDesign = design;
+            setupFeedDesign();
         }
     };
 

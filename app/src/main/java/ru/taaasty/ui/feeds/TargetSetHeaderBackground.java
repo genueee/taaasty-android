@@ -1,23 +1,21 @@
 package ru.taaasty.ui.feeds;
 
 import android.graphics.Bitmap;
-import android.graphics.Shader;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-import android.view.Gravity;
 import android.view.View;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.ui.BackgroundBitmapDrawable;
 
 /**
 * Created by alexey on 18.07.14.
 */
-class TargetSetHeaderBackground implements Target {
+public class TargetSetHeaderBackground implements Target {
 
     private final View mTarget;
     private final TlogDesign mDesign;
@@ -31,12 +29,12 @@ class TargetSetHeaderBackground implements Target {
 
     @Override
     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-        BitmapDrawable background = new BitmapDrawable(mTarget.getResources(), bitmap);
+        BackgroundBitmapDrawable background = new BackgroundBitmapDrawable(mTarget.getResources(), bitmap);
         ColorDrawable foreground = new ColorDrawable(mForegroundColor);
         if (TlogDesign.COVER_ALIGN_CENTER.equals(mDesign.getCoverAlign())) {
-            background.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+            background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_CENTER_CROP);
         } else {
-            background.setGravity(Gravity.FILL);
+            background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_STRETCH);
         }
         mTarget.setBackgroundDrawable(
                 new LayerDrawable(new Drawable[] {background, foreground}));
