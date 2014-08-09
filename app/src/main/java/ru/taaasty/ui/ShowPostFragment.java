@@ -364,6 +364,7 @@ public class ShowPostFragment extends Fragment {
             mCurrentEntry = entry;
             setupEntry();
             loadComments();
+            //
             loadDesign(entry.getAuthor().getSlug());
         }
     };
@@ -401,6 +402,7 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(TlogDesign design) {
             mDesign = design;
+            if (mCommentsAdapter != null) mCommentsAdapter.setFeedDesign(mDesign);
             setupFeedDesign();
         }
     };

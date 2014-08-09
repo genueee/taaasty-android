@@ -3,7 +3,6 @@ package ru.taaasty.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.Resources;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
@@ -105,9 +104,13 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
 
-        setupUserInfo();
-
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setupUserInfo();
     }
 
     @Override

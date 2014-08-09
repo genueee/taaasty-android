@@ -43,5 +43,9 @@ public class TaaastyApplication extends Application {
         NetworkUtils.getInstance().onTrimMemory();
     }
 
-
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        NetworkUtils.getInstance().onTrimMemory();
+    }
 }

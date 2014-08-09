@@ -48,6 +48,10 @@ public final class NetworkUtils {
 
     private LruCache mPicassoCache;
 
+    private Picasso mPicasso;
+
+    private final Object mSyncObject = new Object();
+
     private NetworkUtils() {
         mGson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -94,7 +98,13 @@ public final class NetworkUtils {
     }
 
     public void onTrimMemory() {
-        mPicassoCache.evictAll();
+        synchronized (mSyncObject) {
+            if (mPicasso != null) {
+                mPicasso.shutdown();
+                mPicasso = null;
+            }
+            mPicassoCache = null;
+        }
     }
 
     public OkHttpClient getOkHttpClient() {
@@ -118,11 +128,16 @@ public final class NetworkUtils {
     }
 
     public Picasso getPicasso(Context context) {
-        if (mPicassoCache == null) initLruMemoryCache(context.getApplicationContext());
-        return new Picasso.Builder(context)
-                .memoryCache(mPicassoCache)
-                .downloader(new OkHttpDownloader(mOkHttpClient))
-                .build();
+        synchronized (mSyncObject) {
+            if (mPicasso == null) {
+                initLruMemoryCache(context.getApplicationContext());
+                mPicasso = new Picasso.Builder(context.getApplicationContext())
+                        .memoryCache(mPicassoCache)
+                        .downloader(new OkHttpDownloader(mOkHttpClient))
+                        .build();
+            }
+            return mPicasso;
+        }
     }
 
     @Nullable

@@ -22,6 +22,7 @@ public class TargetSetHeaderBackground implements Target {
     private final int mForegroundColor;
 
     public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColor) {
+        if (target == null) throw new NullPointerException();
         mTarget = target;
         mDesign = design;
         mForegroundColor = foregroundColor;
