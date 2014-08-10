@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="4dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    tools:ignore="UseCompoundDrawables">
+
+    <ImageView
+        android:id="@+id/avatar"
+        android:layout_width="@dimen/avatar_small_diameter"
+        android:layout_height="@dimen/avatar_small_diameter"
+        android:src="@drawable/avatar_dummy"
+        android:layout_marginRight="16dp" />
+
+    <FrameLayout
+        android:id="@+id/add_remove_relationship_container"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/relationship_added"
+            android:src="@drawable/ic_relationship_added"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            android:padding="4dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center" />
+
+        <ImageView
+            android:id="@+id/add_relationship"
+            android:src="@drawable/ic_relationship_add"
+            android:padding="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_toLeftOf="@id/add_remove_relationship_container"
+        android:textSize="15sp"
+        android:textColor="#1b1b1b"
+        tools:text="waterbasedinks"
+        android:layout_gravity="center_vertical"
+        android:paddingTop="4dp"
+        android:paddingBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/posts_count"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/avatar"
+        android:layout_toLeftOf="@id/add_remove_relationship_container"
+        android:layout_below="@id/user_name"
+        android:layout_alignLeft="@id/user_name"
+        android:textSize="13sp"
+        tools:text="600 записей"
+        android:layout_gravity="center_vertical"
+        android:textColor="#c9c9c9"/>
+
+</RelativeLayout>

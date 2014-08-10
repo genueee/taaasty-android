@@ -19,6 +19,7 @@
         <activity
             android:name=".ui.MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -65,6 +66,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.ShowPostActivity" />
+        </activity>
+        <activity
+            android:name=".ui.relationships.FollowingFollowersActivity"
+            android:label="@string/title_activity_following_followers"
+            android:theme="@style/AppThemeLightActionBar"
+            android:parentActivityName=".ui.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.MainActivity" />
         </activity>
     </application>
 

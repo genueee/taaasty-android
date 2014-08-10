@@ -189,7 +189,7 @@ public class UserInfoFragment extends Fragment {
         res = getResources();
 
         mEntriesCount.setText(String.valueOf(entries));
-        mEntriesCountTitle.setText(res.getQuantityString(R.plurals.records_title, (int)(entries % 1000000l)));
+        mEntriesCountTitle.setText(res.getQuantityString(R.plurals.posts_title, (int)(entries % 1000000l)));
 
         diffDays = mUser.getDaysOnTasty();
         mDaysCount.setText(String.valueOf(diffDays));

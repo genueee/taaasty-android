@@ -32,6 +32,7 @@
     <string name="server_error">Ошибка связи с сервером</string>
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
     <string name="error_loading_user">Ошибка загрузки пользователя</string>
+    <string name="error_loading_relationships">Ошибка загрузки подписок</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="friends_have_not_written_anything">Ваши друзья пока ничего не написали</string>
@@ -42,32 +43,42 @@
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
 
-    <plurals name="records_title">
+    <plurals name="posts_title">
         <item quantity="one">пост</item>
         <item quantity="few">поста</item>
         <item quantity="many">постов</item>
         <item quantity="other">постов</item>
     </plurals>
-
     <plurals name="subscribtions_title">
         <item quantity="one">подписка</item>
         <item quantity="few">подписки</item>
         <item quantity="many">подписок</item>
         <item quantity="other">подписок</item>
     </plurals>
-
     <plurals name="subscribers_title">
         <item quantity="one">подписчик</item>
         <item quantity="few">подписчика</item>
         <item quantity="many">подписчиков</item>
         <item quantity="other">подписчиков</item>
     </plurals>
-
     <plurals name="days_here_title">
         <item quantity="one">день тут</item>
         <item quantity="few">дня тут</item>
         <item quantity="many">дней тут</item>
         <item quantity="other">дней тут</item>
     </plurals>
+
+    <plurals name="records_title">
+        <item quantity="one">%d запись</item>
+        <item quantity="few">%d записи</item>
+        <item quantity="many">%d записей</item>
+        <item quantity="other">%d записей</item>
+    </plurals>
+
+    <string name="title_activity_following_followers">Подписки</string>
+    <string name="title_followings">Вы подписаны</string>
+    <string name="title_followers">Ваши подписчики</string>
+    <string name="title_friends">Друзья</string>
+
 
 </resources>

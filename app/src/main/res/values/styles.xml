@@ -5,6 +5,9 @@
         <item name="android:windowBackground">@android:color/black</item>
     </style>
 
+    <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light">
+    </style>
+
     <style name="TabbarButton">
         <item name="android:paddingTop">8dp</item>
         <item name="android:paddingBottom">8dp</item>

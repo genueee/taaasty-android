@@ -3,4 +3,5 @@
     <item type="id" name="feed_item_view_holder" />
     <item type="id" name="feed_item_post_id" />
     <item type="id" name="comment_view_holder" />
+    <item type="id" name="relationships_view_holder" />
 </resources>

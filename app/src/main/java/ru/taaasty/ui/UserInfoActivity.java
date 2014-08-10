@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -12,6 +13,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class UserInfoActivity extends Activity implements UserInfoFragment.OnFragmentInteractionListener {
@@ -20,6 +22,8 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
 
     public static final String ARG_USER = "ru.taaasty.ui.UserInfoActivity.author";
     public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
+
+    private User mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +36,13 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
             }
         });
 
+        mUser = getIntent().getParcelableExtra(ARG_USER);
+        if (mUser == null) throw new IllegalArgumentException("no User");
+
         if (savedInstanceState == null) {
-            User user = getIntent().getParcelableExtra(ARG_USER);
-            if (user == null) throw new IllegalArgumentException("no User");
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
 
-            Fragment userInfoFragment = UserInfoFragment.newInstance(user);
+            Fragment userInfoFragment = UserInfoFragment.newInstance(mUser);
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment)
                     .commit();
@@ -51,12 +56,16 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
 
     @Override
     public void onSubscribtionsCountClicked() {
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        Intent i = new Intent(this, FollowingFollowersActivity.class);
+        i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
+        startActivity(i);
     }
 
     @Override
     public void onSubscribersCountClicked() {
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        Intent i = new Intent(this, FollowingFollowersActivity.class);
+        i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
+        startActivity(i);
     }
 
     @Override

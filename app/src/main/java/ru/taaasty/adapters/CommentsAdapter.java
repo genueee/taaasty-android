@@ -10,10 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ru.taaasty.R;
@@ -22,11 +19,9 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.NetworkUtils;
 
 public class CommentsAdapter extends BaseAdapter {
     private final LayoutInflater mInfater;
-    private final Picasso mPicasso;
     private final Resources mResources;
     private final FontManager mFontManager;
     private final ImageUtils mImageUtils;
@@ -37,7 +32,6 @@ public class CommentsAdapter extends BaseAdapter {
     public CommentsAdapter(Context context) {
         super();
         mInfater = LayoutInflater.from(context);
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
         mFeedDesign = TlogDesign.DUMMY;
         mResources = context.getResources();
         mFontManager = FontManager.getInstance(context);

@@ -1,12 +1,14 @@
 package ru.taaasty.service;
 
+import java.util.List;
+
 import retrofit.http.GET;
 import retrofit.http.Path;
 import retrofit.http.Query;
-import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Feed;
+import ru.taaasty.model.Relationships;
+import ru.taaasty.model.Tag;
 import ru.taaasty.model.TlogInfo;
-import ru.taaasty.model.User;
 import rx.Observable;
 
 public interface ApiTlog {
@@ -27,18 +29,18 @@ public interface ApiTlog {
 
     // XXX
     @GET("/tlog/{id}/followers.json")
-    Observable<Object> getFollowers(@Path("id") String idOrSlug,
+    Observable<Relationships> getFollowers(@Path("id") String idOrSlug,
                                     @Query("since_position") Integer sincePosition,
                                    @Query("limit") Integer limit);
 
     // XXX
     @GET("/tlog/{id}/followings.json")
-    Observable<Object> getFollowings(@Path("id") String idOrSlug,
+    Observable<Relationships> getFollowings(@Path("id") String idOrSlug,
                                     @Query("since_position") Integer sincePosition,
                                     @Query("limit") Integer limit);
 
     // XXX
     @GET("/tlog/{id}/tags.json")
-    Observable<Object> getFollowings(@Path("id") String idOrSlug);
+    Observable<List<Tag>> getTags(@Path("id") String idOrSlug);
 
 }

@@ -98,13 +98,7 @@ public final class NetworkUtils {
     }
 
     public void onTrimMemory() {
-        synchronized (mSyncObject) {
-            if (mPicasso != null) {
-                mPicasso.shutdown();
-                mPicasso = null;
-            }
-            mPicassoCache = null;
-        }
+        mPicassoCache.evictAll();
     }
 
     public OkHttpClient getOkHttpClient() {
