@@ -231,16 +231,22 @@ public class FeedItemAdapter extends BaseAdapter {
 
     private void setRating(ViewHolder vh, Entry item) {
         Rating r = item.getRating();
-        if (r.votes > 0) {
-            vh.likes.setText(String.valueOf(r.votes));
-            vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
-            vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_gt0_likes, 0, 0, 0);
-            vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border_gt0);
+
+        if (!r.isVoteable) {
+            vh.likes.setVisibility(View.INVISIBLE);
         } else {
-            vh.likes.setText("0");
-            vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_gray));
-            vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_no_likes_light, 0, 0, 0);
-            vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border);
+            vh.likes.setVisibility(View.VISIBLE);
+            if (r.votes > 0) {
+                vh.likes.setText(String.valueOf(r.votes));
+                vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
+                vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_gt0_likes, 0, 0, 0);
+                vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border_gt0);
+            } else {
+                vh.likes.setText("0");
+                vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_gray));
+                vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_no_likes_light, 0, 0, 0);
+                vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border);
+            }
         }
     }
 

@@ -95,21 +95,6 @@
         >
 
         <TextView
-            android:id="@+id/likes"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:minWidth="80dp"
-            android:gravity="center"
-            android:background="@drawable/feed_item_likes_border"
-            android:drawableLeft="@drawable/ic_gt0_likes"
-            android:drawablePadding="8dp"
-            tools:text="345"
-            android:clickable="true"
-            android:textSize="16sp"
-            android:textColor="@color/text_color_feed_item_gray"
-            android:layout_marginRight="8dp" />
-
-        <TextView
             android:id="@+id/comments_count"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -122,8 +107,24 @@
             android:drawablePadding="8dp"
             android:textSize="16sp"
             android:textColor="@color/text_color_feed_item_gray"
-            android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp" />
+
+        <TextView
+            android:id="@+id/likes"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:minWidth="80dp"
+            android:gravity="center"
+            android:background="@drawable/feed_item_likes_border"
+            android:drawableLeft="@drawable/ic_gt0_likes"
+            android:drawablePadding="8dp"
+            tools:text="345"
+            android:clickable="true"
+            android:textSize="16sp"
+            android:textColor="@color/text_color_feed_item_gray"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"/>
+
 
         <LinearLayout
             android:layout_width="0dp"

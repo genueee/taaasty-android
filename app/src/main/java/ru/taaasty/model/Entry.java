@@ -129,10 +129,8 @@ public class Entry implements Parcelable {
     }
 
     public Rating getRating() {
-        return mRating != null ? Rating.DUMMY : new Rating();
+        return mRating != null ? mRating : Rating.DUMMY;
     }
-
-
 
     public static class Image implements Parcelable {
         public long id;
