@@ -124,6 +124,7 @@ dependencies {
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
     compile 'com.commonsware.cwac:endless:1.2.3'
     compile 'javax.annotation:jsr250-api:1.0'
+    compile 'com.android.support:support-v13:20.0.0'
 }
 
 ['beta', 'release'].each { typeName ->
