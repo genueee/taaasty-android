@@ -20,7 +20,6 @@ public class Rating implements Parcelable {
 
     public boolean isVoteable;
 
-
     @Override
     public int describeContents() {
         return 0;
@@ -55,4 +54,15 @@ public class Rating implements Parcelable {
             return new Rating[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "Rating{" +
+                "votes=" + votes +
+                ", rating=" + rating +
+                ", entryId=" + entryId +
+                ", isVoted=" + isVoted +
+                ", isVoteable=" + isVoteable +
+                '}';
+    }
 }

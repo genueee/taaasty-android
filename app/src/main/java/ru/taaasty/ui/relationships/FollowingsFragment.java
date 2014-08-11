@@ -65,7 +65,6 @@ public class FollowingsFragment extends ListFragment {
         }
     }
 
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -76,7 +75,6 @@ public class FollowingsFragment extends ListFragment {
                 + " must implement OnFragmentInteractionListener");
         }
     }
-
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -118,7 +116,6 @@ public class FollowingsFragment extends ListFragment {
         super.onDetach();
         mListener = null;
     }
-
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {

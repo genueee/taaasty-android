@@ -24,13 +24,16 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.CurrentUser;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
@@ -66,6 +69,8 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     private @MyAdditionalFeedActivity.FeedType
     int mFeedType = MyAdditionalFeedActivity.FEED_TYPE_FAVORITES;
     private int mRefreshCounter;
+
+    private CurrentUser mCurrentUser;
 
     public static MyAdditionalFeedFragment newInstance(@MyAdditionalFeedActivity.FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
@@ -224,6 +229,9 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
 
     void onAvatarClicked(View v) {
         Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        if (mCurrentUser == null) return;
+
+        if (mListener != null) mListener.onAvatarClicked(mCurrentUser, mCurrentUser.getDesign());
     }
 
     void setupUser(CurrentUser user) {
@@ -322,9 +330,14 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
         }
 
         @Override
-        public void onFeedLikesClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedLikesClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onFeedLikesClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onFeedLikesClicked post: " + entry);
+            new LikesHelper(MyAdditionalFeedFragment.this, mAdapter) {
+                @Override
+                public void notifyError(String error, Throwable e) {
+                    if (mListener != null) mListener.notifyError(error, e);
+                }
+            }.voteUnvote(entry);
         }
 
         @Override
@@ -379,6 +392,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
 
         @Override
         public void onNext(CurrentUser currentUser) {
+            mCurrentUser = currentUser;
             setupFeedDesign(currentUser.getDesign());
             setupUser(currentUser);
         }
@@ -395,5 +409,6 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onAvatarClicked(User user, TlogDesign design);
     }
 }

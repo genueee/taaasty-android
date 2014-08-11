@@ -132,6 +132,10 @@ public class Entry implements Parcelable {
         return mRating != null ? mRating : Rating.DUMMY;
     }
 
+    public void setRating(Rating rating) {
+        mRating = rating;
+    }
+
     public static class Image implements Parcelable {
         public long id;
 
@@ -316,4 +320,25 @@ public class Entry implements Parcelable {
             return new Entry[size];
         }
     };
+
+    @Override
+    public String toString() {
+        return "Entry{" +
+                "mId=" + mId +
+                ", mType='" + mType + '\'' +
+                ", mAuthor=" + mAuthor +
+                ", mCommentsCount=" + mCommentsCount +
+                ", mCreatedAt=" + mCreatedAt +
+                ", mUpdatedAt=" + mUpdatedAt +
+                ", mEntryUrl='" + mEntryUrl + '\'' +
+                ", mRating=" + mRating +
+                ", mImageUrl='" + mImageUrl + '\'' +
+                ", mTitle='" + mTitle + '\'' +
+                ", mText='" + mText + '\'' +
+                ", mSource='" + mSource + '\'' +
+                ", mVia='" + mVia + '\'' +
+                ", mImages=" + mImages +
+                '}';
+    }
+
 }

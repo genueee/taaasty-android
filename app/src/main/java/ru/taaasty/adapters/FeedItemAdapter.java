@@ -16,7 +16,9 @@ import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -29,7 +31,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
 
-public class FeedItemAdapter extends BaseAdapter {
+public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
 
     private final List<Entry> mFeed;
     private final LayoutInflater mInfater;
@@ -48,6 +50,8 @@ public class FeedItemAdapter extends BaseAdapter {
     private final ImageUtils mImageUtils;
     private final OnItemListener mListener;
 
+    private final Set<Long> mUpdateRatingEntrySet;
+
     public FeedItemAdapter(Context context, OnItemListener mListener) {
         super();
         mFeed = new ArrayList<Entry>();
@@ -57,6 +61,7 @@ public class FeedItemAdapter extends BaseAdapter {
         mResources = context.getResources();
         mFontManager = FontManager.getInstance(context);
         mImageUtils = ImageUtils.getInstance();
+        mUpdateRatingEntrySet = new HashSet<>();
         this.mListener = mListener;
     }
 
@@ -77,6 +82,38 @@ public class FeedItemAdapter extends BaseAdapter {
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
         notifyDataSetChanged();
+    }
+
+    public void onUpdateRatingStart(long entryId) {
+        if (mUpdateRatingEntrySet.contains(entryId)) {
+            if (DBG) {
+                throw new IllegalStateException();
+            } else {
+                return;
+            }
+        }
+        mUpdateRatingEntrySet.add(entryId);
+        notifyDataSetChanged();
+    }
+
+    public void onUpdateRatingEnd(long entryId) {
+        mUpdateRatingEntrySet.remove(entryId);
+        notifyDataSetChanged();
+    }
+
+    public boolean isRatingInUpdate(long entryId) {
+        return mUpdateRatingEntrySet.contains(entryId);
+    }
+
+    public void updateEntry(Entry entry) {
+        int size = mFeed.size();
+        for (int i=0; i < size; ++i) {
+            if (mFeed.get(i).getId() == entry.getId()) {
+                mFeed.set(i, entry);
+                notifyDataSetChanged();
+                break;
+            }
+        }
     }
 
     @Override
@@ -140,13 +177,12 @@ public class FeedItemAdapter extends BaseAdapter {
         setComments(vh, item);
 
 
-        res.setTag(R.id.feed_item_post_id, item.getId());
-        vh.likes.setTag(R.id.feed_item_post_id, item.getId());
-        vh.comments.setTag(R.id.feed_item_post_id, item.getId());
-        vh.moreButton.setTag(R.id.feed_item_post_id, item.getId());
+        res.setTag(R.id.feed_item_post, item);
+        vh.likes.setTag(R.id.feed_item_post, item);
+        vh.comments.setTag(R.id.feed_item_post, item);
+        vh.moreButton.setTag(R.id.feed_item_post, item);
 
         // XXX: more button
-        // XX: тыкабельные кнопки
 
         return res;
     }
@@ -236,13 +272,20 @@ public class FeedItemAdapter extends BaseAdapter {
             vh.likes.setVisibility(View.INVISIBLE);
         } else {
             vh.likes.setVisibility(View.VISIBLE);
-            if (r.votes > 0) {
+
+            if (mUpdateRatingEntrySet.contains(item.getId())) {
+                vh.likes.setText("—");
+                vh.likes.setEnabled(false);
+            } else {
                 vh.likes.setText(String.valueOf(r.votes));
+                vh.likes.setEnabled(true);
+            }
+
+            if (r.isVoted) {
                 vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
                 vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_gt0_likes, 0, 0, 0);
                 vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border_gt0);
             } else {
-                vh.likes.setText("0");
                 vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_gray));
                 vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_no_likes_light, 0, 0, 0);
                 vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border);
@@ -258,32 +301,32 @@ public class FeedItemAdapter extends BaseAdapter {
     private final View.OnClickListener mOnFeedItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            long postId = (Long)v.getTag(R.id.feed_item_post_id);
-            if (mListener != null) mListener.onFeedItemClicked(v, postId);
+            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
+            if (mListener != null) mListener.onFeedItemClicked(v, entry.getId());
         }
     };
 
     private final View.OnClickListener mOnFeedLikesClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            long postId = (Long)v.getTag(R.id.feed_item_post_id);
-            if (mListener != null) mListener.onFeedLikesClicked(v, postId);
+            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
+            if (mListener != null) mListener.onFeedLikesClicked(v, entry);
         }
     };
 
     private final View.OnClickListener mOnFeedAdditionalMenuClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            long postId = (Long)v.getTag(R.id.feed_item_post_id);
-            if (mListener != null) mListener.onFeedAdditionalMenuClicked(v, postId);
+            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
+            if (mListener != null) mListener.onFeedAdditionalMenuClicked(v, entry.getId());
         }
     };
 
     private final View.OnClickListener mOnFeedCommentsClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            long postId = (Long)v.getTag(R.id.feed_item_post_id);
-            if (mListener != null) mListener.onFeedCommentsClicked(v, postId);
+            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
+            if (mListener != null) mListener.onFeedCommentsClicked(v, entry.getId());
         }
     };
 
@@ -315,7 +358,7 @@ public class FeedItemAdapter extends BaseAdapter {
 
     public interface OnItemListener {
         public void onFeedItemClicked(View view, long postId);
-        public void onFeedLikesClicked(View view, long postId);
+        public void onFeedLikesClicked(View view, Entry entry);
         public void onFeedCommentsClicked(View view, long postId);
         public void onFeedAdditionalMenuClicked(View view, long postId);
     }

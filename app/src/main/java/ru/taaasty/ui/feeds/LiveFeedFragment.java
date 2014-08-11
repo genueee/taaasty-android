@@ -21,10 +21,12 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.EndlessFeedItemAdapter;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
@@ -118,7 +120,6 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mAdapter = new FeedAdapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-
         if (!mRefreshLayout.isRefreshing()) refreshData();
     }
 
@@ -173,7 +174,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.setFeed(feed);
+            if (mAdapter != null) mAdapter.setFeed(feed.entries);
         }
     };
 
@@ -206,9 +207,14 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
 
         @Override
-        public void onFeedLikesClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedLikesClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onFeedLikesClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onFeedLikesClicked post: " + entry);
+            new LikesHelper(LiveFeedFragment.this, mAdapter) {
+                @Override
+                public void notifyError(String error, Throwable e) {
+                    if (mListener != null) mListener.notifyError(error, e);
+                }
+            }.voteUnvote(entry);
         }
 
         @Override

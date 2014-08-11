@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
@@ -25,12 +24,15 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.model.CurrentUser;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
@@ -58,6 +60,8 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private Subscription mFeedSubscription = Subscriptions.empty();
     private Subscription mCurrentUserSubscribtion = Subscriptions.empty();
+
+    private CurrentUser mCurrentUser;
 
     private int mRefreshCounter;
 
@@ -187,7 +191,8 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     void onAvatarClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        if (mListener != null) mListener.onAvatarClicked(mCurrentUser,
+                mCurrentUser == null ? null : mCurrentUser.getDesign());
     }
 
     void setupUser(CurrentUser user) {
@@ -233,9 +238,14 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }
 
         @Override
-        public void onFeedLikesClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedLikesClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onFeedLikesClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onFeedLikesClicked entry: " + entry);
+            new LikesHelper(MyFeedFragment.this, mAdapter) {
+                @Override
+                public void notifyError(String error, Throwable e) {
+                    if (mListener != null) mListener.notifyError(error, e);
+                }
+            }.voteUnvote(entry);
         }
 
         @Override
@@ -329,6 +339,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         @Override
         public void onNext(CurrentUser currentUser) {
+            mCurrentUser = currentUser;
             setupFeedDesign(currentUser.getDesign());
             setupUser(currentUser);
         }
@@ -345,8 +356,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        // TODO: Update argument type and name
-        public void onFeedButtonClicked(Uri uri);
         public void onShowAdditionalmenuClicked();
+        public void onAvatarClicked(User user, TlogDesign design);
     }
 }

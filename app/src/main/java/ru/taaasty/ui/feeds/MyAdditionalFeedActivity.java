@@ -2,6 +2,7 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
@@ -12,6 +13,9 @@ import java.lang.annotation.RetentionPolicy;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
+import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
@@ -65,5 +69,14 @@ public class MyAdditionalFeedActivity extends Activity implements MyAdditionalFe
         } else {
             ert.setError(error);
         }
+    }
+
+    @Override
+    public void onAvatarClicked(User user, TlogDesign design) {
+        if (user == null) return;
+        Intent i = new Intent(this, UserInfoActivity.class);
+        i.putExtra(UserInfoActivity.ARG_USER, user);
+        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        startActivity(i);
     }
 }

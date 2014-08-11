@@ -14,6 +14,8 @@ import android.widget.Toast;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.LiveFeedFragment;
 import ru.taaasty.ui.feeds.MyAdditionalFeedActivity;
 import ru.taaasty.ui.feeds.MyFeedFragment;
@@ -75,6 +77,15 @@ public class MainActivity extends Activity implements
     public void onShowAdditionalmenuClicked() {
         Intent i = new Intent(this, AdditionalMenuActivity.class);
         startActivityForResult(i, ADDITIONAL_MENU_REQUEST_CODE);
+    }
+
+    @Override
+    public void onAvatarClicked(User user, TlogDesign design) {
+        if (user == null) return;
+        Intent i = new Intent(this, UserInfoActivity.class);
+        i.putExtra(UserInfoActivity.ARG_USER, user);
+        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        startActivity(i);
     }
 
     private void switchToLoginForm() {

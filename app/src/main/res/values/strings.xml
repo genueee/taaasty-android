@@ -33,6 +33,7 @@
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
     <string name="error_loading_user">Ошибка загрузки пользователя</string>
     <string name="error_loading_relationships">Ошибка загрузки подписок</string>
+    <string name="error_vote">Ошибка голосования</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="friends_have_not_written_anything">Ваши друзья пока ничего не написали</string>

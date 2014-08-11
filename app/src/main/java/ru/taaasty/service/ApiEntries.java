@@ -2,9 +2,11 @@ package ru.taaasty.service;
 
 import retrofit.http.DELETE;
 import retrofit.http.GET;
+import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.Rating;
 import rx.Observable;
 
 public interface ApiEntries {
@@ -33,4 +35,9 @@ public interface ApiEntries {
     Observable<Object> deleteEntry(@Path("id") Long id);
 
 
+    @POST("/entries/{entry_id}/votes.json")
+    Observable<Rating> vote(@Path("entry_id") long entryId);
+
+    @DELETE("/entries/{entry_id}/votes.json")
+    Observable<Rating> unvote(@Path("entry_id") long entryId);
 }

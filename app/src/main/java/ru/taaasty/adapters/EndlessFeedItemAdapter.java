@@ -3,11 +3,13 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.util.Log;
 
-
 import com.commonsware.cwac.endless.EndlessAdapter;
+
+import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
 import rx.Observable;
@@ -18,7 +20,7 @@ import rx.subscriptions.Subscriptions;
 /**
  * Created by alexey on 17.07.14.
  */
-public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
+public abstract class EndlessFeedItemAdapter extends EndlessAdapter implements  IFeedItemAdapter {
     private static final String TAG = "EndlessFeedItemAdapter";
     private static final boolean DBG = BuildConfig.DEBUG;
 
@@ -57,13 +59,34 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
         throw new IllegalStateException();
     }
 
-    public void setFeed(Feed feed) {
-        mAdapter.setFeed(feed.entries);
+    public void setFeed(List<Entry> entries) {
+        mAdapter.setFeed(entries);
         restartAppending();
     }
 
     public void setFeedDesign(TlogDesign design) {
         mAdapter.setFeedDesign(design);
+    }
+
+    public void onUpdateRatingStart(long entryId) {
+        mAdapter.onUpdateRatingStart(entryId);
+    }
+
+    public void onUpdateRatingEnd(long entryId) {
+        mAdapter.onUpdateRatingEnd(entryId);
+    }
+
+    public boolean isRatingInUpdate(long entryId) {
+        return mAdapter.isRatingInUpdate(entryId);
+    }
+
+    public void updateEntry(Entry entry) {
+        mAdapter.updateEntry(entry);
+    }
+
+    @Override
+    public Entry getItem(int position) {
+        return mAdapter.getItem(position);
     }
 
     public void onDestroy() {
