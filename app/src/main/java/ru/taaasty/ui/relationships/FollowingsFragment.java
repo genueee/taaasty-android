@@ -2,9 +2,11 @@ package ru.taaasty.ui.relationships;
 
 import android.app.Activity;
 import android.app.ListFragment;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.ListView;
 
@@ -87,6 +89,9 @@ public class FollowingsFragment extends ListFragment {
         }
 
         setListAdapter(mRelationshipsAdapter);
+
+        Drawable divider = getResources().getDrawable(R.drawable.followings_list_divider);
+        getListView().setDivider(divider);
 
         refreshRelationships();
     }
