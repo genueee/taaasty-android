@@ -7,6 +7,11 @@ import com.google.gson.annotations.SerializedName;
 
 public class Relationship implements Parcelable {
 
+    public static final String RELATIONSHIP_NONE = "none";
+    public static final String RELATIONSHIP_FRIEND = "friend";
+    public static final String RELATIONSHIP_GUESSED = "guessed";
+    public static final String RELATIONSHIP_IGNORED = "ignored";
+    public static final String RELATIONSHIP_REQUESTED = "requested";
     @SerializedName("id")
     private long mId;
 

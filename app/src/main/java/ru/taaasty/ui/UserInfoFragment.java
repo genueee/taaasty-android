@@ -11,14 +11,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.Relationship;
 import ru.taaasty.model.RelationshipsSummary;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
+import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
@@ -39,16 +40,18 @@ public class UserInfoFragment extends Fragment {
     private User mUser;
     private TlogDesign mDesign;
     private RelationshipsSummary mRelationshipsSummary;
+    private String mMyRelationship = Relationship.RELATIONSHIP_NONE;
 
     private ImageView mAvatarView;
     private TextView mUserName, mUserTitle;
-    private View mSubscribeButton, mUnsubscribeButton;
+    private View mSubscribeButton, mUnsubscribeButton, mFollowUnfollowProgress;
     private TextView mEntriesCount, mSubscriptionsCount, mSubscribersCount, mDaysCount;
     private TextView mEntriesCountTitle, mSubscriptionsCountTitle, mSubscribersCountTitle, mDaysCountTitle;
 
     private OnFragmentInteractionListener mListener;
 
     private Subscription mUserInfoSubscription = Subscriptions.empty();
+    private Subscription mFollowSubscribtion = Subscriptions.empty();
 
     public static UserInfoFragment newInstance(User user) {
         UserInfoFragment fragment = new UserInfoFragment();
@@ -84,6 +87,7 @@ public class UserInfoFragment extends Fragment {
         mUserTitle = (TextView)view.findViewById(R.id.user_title);
         mSubscribeButton = view.findViewById(R.id.subscribe);
         mUnsubscribeButton = view.findViewById(R.id.unsubscribe);
+        mFollowUnfollowProgress = view.findViewById(R.id.follow_unfollow_progress);
 
         mEntriesCount = (TextView)view.findViewById(R.id.entries_count_value);
         mEntriesCountTitle = (TextView)view.findViewById(R.id.entries_count_title);
@@ -116,12 +120,18 @@ public class UserInfoFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mUserInfoSubscription.unsubscribe();
         mAvatarView = null;
         mUserName = null;
         mUserTitle = null;
         mSubscribeButton = null;
         mUnsubscribeButton = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mFollowSubscribtion.unsubscribe();
+        mUserInfoSubscription.unsubscribe();
     }
 
     @Override
@@ -174,12 +184,26 @@ public class UserInfoFragment extends Fragment {
 
 
     private void setupSubscribeButton() {
-        // XXX
+        mFollowUnfollowProgress.setVisibility(View.GONE);
+        if (Relationship.RELATIONSHIP_FRIEND.equals(mMyRelationship)
+                || Relationship.RELATIONSHIP_REQUESTED.equals(mMyRelationship)
+                ) {
+            mSubscribeButton.setVisibility(View.GONE);
+            mUnsubscribeButton.setVisibility(View.VISIBLE);
+        } else {
+            mSubscribeButton.setVisibility(View.VISIBLE);
+            mUnsubscribeButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void showFollowUnfollowProgress() {
+        mFollowUnfollowProgress.setVisibility(View.VISIBLE);
+        mSubscribeButton.setVisibility(View.INVISIBLE);
+        mUnsubscribeButton.setVisibility(View.INVISIBLE);
     }
 
     private void setupCounters() {
         long entries;
-        long days;
         long diffDays;
         Resources res;
         RelationshipsSummary summary;
@@ -236,16 +260,54 @@ public class UserInfoFragment extends Fragment {
                 .subscribe(mTlogInfoObserver);
     }
 
-    private final Observer<TlogInfo> mTlogInfoObserver = new Observer<TlogInfo>() {
+    void follow() {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+                relApi.follow(String.valueOf(mUser.getId())));
+        showFollowUnfollowProgress();
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mFollowObserver);
+    }
 
+    void unfollow() {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+                relApi.unfollow(String.valueOf(mUser.getId())));
+        showFollowUnfollowProgress();
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mFollowObserver);
+    }
+
+    private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
         @Override
         public void onCompleted() {
-
+            setupSubscribeButton();
+            refreshUser();
         }
 
         @Override
         public void onError(Throwable e) {
-            // XXX
+            mListener.notifyError(getString(R.string.error_follow), e);
+        }
+
+        @Override
+        public void onNext(Relationship relationship) {
+            mMyRelationship = relationship.getState();
+        }
+    };
+
+    private final Observer<TlogInfo> mTlogInfoObserver = new Observer<TlogInfo>() {
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
             mListener.notifyError(getString(R.string.error_loading_user), e);
         }
 
@@ -254,10 +316,10 @@ public class UserInfoFragment extends Fragment {
             mUser = info.author;
             mDesign = info.design;
             mRelationshipsSummary = info.relationshipsSummary;
+            mMyRelationship = info.getMyRelationship();
             setupUserInfo();
         }
     };
-
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
@@ -276,10 +338,10 @@ public class UserInfoFragment extends Fragment {
                     if (mListener != null) mListener.onDaysCountClicked();
                     break;
                 case R.id.subscribe:
-                    Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+                    follow();
                     break;
                 case R.id.unsubscribe:
-                    Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+                    unfollow();
                     break;
                 default:
                     throw new IllegalStateException();

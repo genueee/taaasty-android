@@ -85,6 +85,16 @@
                 android:layout_marginRight="12dp"
                 android:layout_marginTop="28dp"
                 android:text="@string/you_have_subscribed_button" />
+
+            <ProgressBar
+                android:id="@+id/follow_unfollow_progress"
+                android:visibility="gone"
+                tools:visibility="visible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center"/>
+
         </FrameLayout>
 
     </LinearLayout>
