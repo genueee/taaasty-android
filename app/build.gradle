@@ -125,6 +125,7 @@ dependencies {
     compile 'com.commonsware.cwac:endless:1.2.3'
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'com.android.support:support-v13:20.0.0'
+    compile 'com.github.chrisbanes.photoview:library:1.2.3'
 }
 
 ['beta', 'release'].each { typeName ->

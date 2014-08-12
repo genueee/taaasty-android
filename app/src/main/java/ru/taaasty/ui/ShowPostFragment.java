@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -269,6 +270,25 @@ public class ShowPostFragment extends Fragment {
                 .error(R.drawable.image_loading_drawable)
                 .noFade()
                 .into(imageView);
+
+        final String imageUrl =  NetworkUtils.createThumborUrlFromPath(image.image.path).toUrl();
+        final String title;
+        final User author;
+        if (mCurrentEntry != null) {
+            title = mCurrentEntry.getTitle();
+            author = mCurrentEntry.getAuthor();
+        } else {
+            title = "";
+            author = null;
+        }
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) mListener.onShowImageClicked(
+                        author, imageUrl, title);
+            }
+        });
     }
 
     private void setupPostTitle() {
@@ -419,5 +439,6 @@ public class ShowPostFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onAvatarClicked(User user, TlogDesign design);
+        public void onShowImageClicked(User author, String imageUrl, String title);
     }
 }

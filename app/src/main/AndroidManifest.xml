@@ -70,11 +70,16 @@
         <activity
             android:name=".ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
-            android:theme="@style/AppThemeLightActionBar"
-            android:parentActivityName=".ui.MainActivity" >
+            android:parentActivityName=".ui.MainActivity"
+            android:theme="@style/AppThemeLightActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ui.ShowPhotoActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:theme="@style/FullscreenTheme" >
         </activity>
     </application>
 

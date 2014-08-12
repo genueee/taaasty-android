@@ -59,4 +59,13 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
         i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
         startActivity(i);
     }
+
+    @Override
+    public void onShowImageClicked(User author, String imageUrl, String title) {
+        Intent i = new Intent(this, ShowPhotoActivity.class);
+        i.putExtra(ShowPhotoActivity.ARG_IMAGE_URL, imageUrl);
+        i.putExtra(ShowPhotoActivity.ARG_TITLE, title);
+        i.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
+        startActivity(i);
+    }
 }
