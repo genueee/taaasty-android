@@ -8,10 +8,15 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends Activity implements ShowPostFragment.OnFragmentInteractionListener {
@@ -61,9 +66,11 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
     }
 
     @Override
-    public void onShowImageClicked(User author, String imageUrl, String title) {
+    public void onShowImageClicked(User author, List<ImageInfo> images, String title) {
         Intent i = new Intent(this, ShowPhotoActivity.class);
-        i.putExtra(ShowPhotoActivity.ARG_IMAGE_URL, imageUrl);
+
+        ArrayList<ImageInfo> imagesList = new ArrayList<>(images);
+        i.putParcelableArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
         i.putExtra(ShowPhotoActivity.ARG_TITLE, title);
         i.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
         startActivity(i);

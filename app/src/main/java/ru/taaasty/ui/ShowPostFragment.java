@@ -2,7 +2,6 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -19,6 +18,7 @@ import com.nirhart.parallaxscroll.views.ParallaxListView;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -30,6 +30,7 @@ import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiComments;
@@ -239,7 +240,7 @@ public class ShowPostFragment extends Fragment {
             return;
         }
 
-        Entry.Image image = mCurrentEntry.getImages().get(0);
+        ImageInfo image = mCurrentEntry.getImages().get(0);
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
 
         float dstWidth, dstHeight;
@@ -271,7 +272,7 @@ public class ShowPostFragment extends Fragment {
                 .noFade()
                 .into(imageView);
 
-        final String imageUrl =  NetworkUtils.createThumborUrlFromPath(image.image.path).toUrl();
+        final List<ImageInfo> images = mCurrentEntry.getImages();
         final String title;
         final User author;
         if (mCurrentEntry != null) {
@@ -286,7 +287,7 @@ public class ShowPostFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mListener != null) mListener.onShowImageClicked(
-                        author, imageUrl, title);
+                        author, images, title);
             }
         });
     }
@@ -439,6 +440,6 @@ public class ShowPostFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onAvatarClicked(User user, TlogDesign design);
-        public void onShowImageClicked(User author, String imageUrl, String title);
+        public void onShowImageClicked(User author, List<ImageInfo> images, String title);
     }
 }

@@ -1,13 +1,17 @@
-package ru.taaasty.ui;
+package ru.taaasty.ui.photo;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.MenuItem;
@@ -18,29 +22,30 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
-import org.w3c.dom.Text;
+import java.util.ArrayList;
+import java.util.List;
 
 import ru.taaasty.R;
+import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
+import ru.taaasty.ui.DefaultUserpicDrawable;
 import ru.taaasty.utils.CircleTransformation;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import uk.co.senab.photoview.PhotoView;
-import uk.co.senab.photoview.PhotoViewAttacher;
 
-public class ShowPhotoActivity extends Activity {
-    public static final String ARG_IMAGE_URL = "ru.taaasty.ui.ShowPhotoActivity.image_url";
-    public static final String ARG_TITLE = "ru.taaasty.ui.ShowPhotoActivity.title";
-    public static final String ARG_AUTHOR = "ru.taaasty.ui.ShowPhotoActivity.author";
+public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnFragmentInteractionListener {
+    public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
+    public static final String ARG_TITLE = "ru.taaasty.ui.photo.ShowPhotoActivity.title";
+    public static final String ARG_AUTHOR = "ru.taaasty.ui.photo.ShowPhotoActivity.author";
 
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
-
-    private PhotoViewAttacher mPhotoViewAttacher;
 
     private boolean isNavigationHidden = false;
     private final Handler mHideActionBarHandler = new Handler();
     private volatile boolean userForcedToChangeOverlayMode = false;
+
+    private PhotoAdapter mAdapter;
+    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,12 +54,12 @@ public class ShowPhotoActivity extends Activity {
 
         Picasso picasso = NetworkUtils.getInstance().getPicasso(this);
 
-        String imageUrl = getIntent().getStringExtra(ARG_IMAGE_URL);
+        ArrayList<ImageInfo> images = getIntent().getParcelableArrayListExtra(ARG_IMAGE_URL_LIST);
         String title = getIntent().getStringExtra(ARG_TITLE);
         User author = getIntent().getParcelableExtra(ARG_AUTHOR);
 
-        if (TextUtils.isEmpty(imageUrl)) {
-            throw new IllegalStateException("ARG_IMAGE_URL not defined");
+        if (images == null) {
+            throw new IllegalStateException("ARG_IMAGE_URL_LIST not defined");
         }
 
         ActionBar ab = getActionBar();
@@ -64,8 +69,10 @@ public class ShowPhotoActivity extends Activity {
         }
 
         setupAuthor(author);
-        picasso.load(imageUrl).into(mPicassoTarget);
 
+        mAdapter = new PhotoAdapter(getFragmentManager(), images);
+        mViewPager = (ViewPager)findViewById(R.id.PhotoViewPager);
+        mViewPager.setAdapter(mAdapter);
     }
 
     private void setupAuthor(User author) {
@@ -123,14 +130,6 @@ public class ShowPhotoActivity extends Activity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mPhotoViewAttacher != null) {
-            mPhotoViewAttacher.cleanup();
-        }
-    }
-
     private final Target mUserAvatarTarget = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -148,40 +147,6 @@ public class ShowPhotoActivity extends Activity {
 
         }
     };
-
-    private final Target mPicassoTarget = new Target() {
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            findViewById(R.id.progressView).setVisibility(View.GONE);
-            PhotoView pv = (PhotoView) findViewById(R.id.picturePhotoView);
-            pv.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-            mPhotoViewAttacher = new PhotoViewAttacher(pv);
-            mPhotoViewAttacher.setOnPhotoTapListener(mOnTapListener);
-            runHideActionBarTimer();
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-            findViewById(R.id.progressView).setVisibility(View.GONE);
-            Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_LONG).show();
-            finish();
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-            findViewById(R.id.progressView).setVisibility(View.VISIBLE);
-        }
-    };
-
-    private final PhotoViewAttacher.OnPhotoTapListener mOnTapListener = new PhotoViewAttacher.OnPhotoTapListener() {
-
-        @Override
-        public void onPhotoTap(View view, float x, float y) {
-            userForcedToChangeOverlayMode = true;
-            toggleShowOrHideHideyBarMode();
-        }
-    };
-
 
     private void runHideActionBarTimer() {
         mHideActionBarHandler.postDelayed(new Runnable() {
@@ -219,5 +184,43 @@ public class ShowPhotoActivity extends Activity {
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
 
+
+    @Override
+    public void onBitmapLoaded() {
+        runHideActionBarTimer();
+    }
+
+    @Override
+    public void onPhotoTap() {
+        userForcedToChangeOverlayMode = true;
+        toggleShowOrHideHideyBarMode();
+    }
+
+    @Override
+    public void onLoadBitmapFailed() {
+        Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_SHORT).show();
+        if (mAdapter != null && mAdapter.getCount() <= 1) finish();
+    }
+
+    public static class PhotoAdapter extends FragmentStatePagerAdapter {
+
+        private final List<ImageInfo> mImages;
+
+        public PhotoAdapter(FragmentManager fm, List<ImageInfo> images) {
+            super(fm);
+            mImages = images;
+        }
+
+        @Override
+        public int getCount() {
+            return mImages.size();
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            String url = NetworkUtils.createThumborUrlFromPath(mImages.get(position).image.path).toUrl();
+            return ShowPhotoFragment.newInstance(url);
+        }
+    }
 
 }

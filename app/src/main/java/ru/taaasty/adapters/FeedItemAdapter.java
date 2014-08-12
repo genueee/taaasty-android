@@ -23,6 +23,7 @@ import java.util.Set;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
@@ -199,7 +200,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
             return;
         }
 
-        Entry.Image image = item.getImages().get(0);
+        ImageInfo image = item.getImages().get(0);
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
 
         float dstWidth, dstHeight;
