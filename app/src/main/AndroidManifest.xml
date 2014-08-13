@@ -81,6 +81,16 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/FullscreenTheme" >
         </activity>
+        <activity
+            android:name=".ui.feeds.TlogActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label="@string/title_activity_tlog"
+            android:parentActivityName=".ui.ShowPostActivity"
+            android:theme="@style/FullscreenTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.ShowPostActivity" />
+        </activity>
     </application>
 
 </manifest>

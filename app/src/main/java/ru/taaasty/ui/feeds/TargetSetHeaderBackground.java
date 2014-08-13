@@ -10,7 +10,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.ui.BackgroundBitmapDrawable;
+import ru.taaasty.widgets.BackgroundBitmapDrawable;
 
 /**
 * Created by alexey on 18.07.14.

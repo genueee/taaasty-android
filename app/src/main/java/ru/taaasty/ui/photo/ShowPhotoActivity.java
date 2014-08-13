@@ -29,9 +29,9 @@ import ru.taaasty.R;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
-import ru.taaasty.ui.DefaultUserpicDrawable;
 import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 
 public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";

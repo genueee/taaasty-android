@@ -12,7 +12,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
-import ru.taaasty.ui.DefaultUserpicDrawable;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 
 public class ImageUtils {
 

@@ -1,4 +1,4 @@
-package ru.taaasty.ui;
+package ru.taaasty.widgets;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
