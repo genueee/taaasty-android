@@ -172,6 +172,11 @@ public class SignViaEmailFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
     /**
      * Attempts to sign in or register the account specified by the login form.
      * If there are form errors (invalid email, missing fields, etc.), the
@@ -223,8 +228,7 @@ public class SignViaEmailFragment extends Fragment {
             // perform the author login attempt.
             showProgress(true);
             ApiSessions service = NetworkUtils.getInstance().createRestAdapter().create(ApiSessions.class);
-            mAuthTask = service.signIn(email, password);
-            AndroidObservable.bindFragment(this, mAuthTask);
+            mAuthTask = AndroidObservable.bindFragment(this, service.signIn(email, password));
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {

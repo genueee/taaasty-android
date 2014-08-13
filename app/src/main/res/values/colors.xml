@@ -23,4 +23,6 @@
     <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
+    <color name="life_feed_background">#ffeaeaea</color>
+
 </resources>

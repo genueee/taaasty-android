@@ -20,6 +20,6 @@ public interface Constants {
     /**
      * Кол-во постов в прямом эфире
      */
-    public static final int LIVE_FEED_LENGTH = 32;
+    public static final int LIVE_FEED_INITIAL_LENGTH = 50;
 
 }

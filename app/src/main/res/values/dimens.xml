@@ -19,11 +19,19 @@
     <dimen name="feed_item_padding_left">28dp</dimen>
     <dimen name="feed_item_padding_right">28dp</dimen>
 
+    <dimen name="feed_grid_item_padding_left">7dp</dimen>
+    <dimen name="feed_grid_item_padding_right">7dp</dimen>
+
+    <dimen name="feed_grid_item_padding_top">4dp</dimen>
+    <dimen name="feed_grid_item_padding_bottom">4dp</dimen>
+
     <!-- Высота заголовка над лентой -->
+    <dimen name="live_feed_header_height">195dp</dimen>
     <dimen name="feed_header_height">235dp</dimen>
     <dimen name="feed_header_with_title_height">260dp</dimen>
     <dimen name="login_btn_background_corner_radius">2dp</dimen>
     <dimen name="thin_button_border">0.5dp</dimen>
     <dimen name="thin_button_corner_radius">6dp</dimen>
+
 
 </resources>

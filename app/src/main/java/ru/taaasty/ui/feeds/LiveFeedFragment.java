@@ -11,23 +11,24 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.nirhart.parallaxscroll.views.ParallaxListView;
+import com.etsy.android.grid.StaggeredGridView;
+
+import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.adapters.EndlessFeedItemAdapter;
-import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.EndlessFeedGridItemAdapter;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
-import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -51,10 +52,12 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ParallaxListView mListView;
+    private StaggeredGridView mGridView;
 
     private ApiFeeds mApiFeedsService;
     private FeedAdapter mAdapter;
+
+    private View mHeaderView;
 
     private Subscription mFeedSubscription = Subscriptions.empty();
 
@@ -83,10 +86,8 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_live_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ParallaxListView) mRefreshLayout.getChildAt(0);
-
+        mGridView = (StaggeredGridView) mRefreshLayout.getChildAt(0);
         mRefreshLayout.setOnRefreshListener(this);
-
         return v;
     }
 
@@ -111,16 +112,25 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        View headerView = LayoutInflater.from(mListView.getContext()).inflate(R.layout.header_live_feed, mListView, false);
-        ((TextView)headerView.findViewById(R.id.live_feed_description)).setText(
-                getResources().getQuantityString(R.plurals.live_feed_description, Constants.LIVE_FEED_LENGTH, Constants.LIVE_FEED_LENGTH)
-        );
-        mListView.addParallaxedHeaderView(headerView);
+        mHeaderView = LayoutInflater.from(mGridView.getContext()).inflate(R.layout.header_live_feed, mGridView, false);
+
+        // mGridView.addParallaxedHeaderView(headerView);
+        mGridView.addHeaderView(mHeaderView);
 
         mAdapter = new FeedAdapter(getActivity());
-        mListView.setAdapter(mAdapter);
+        mGridView.setAdapter(mAdapter);
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
+
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long postId) {
+                if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
+                Intent i = new Intent(getActivity(), ShowPostActivity.class);
+                i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+                startActivity(i);
+            }
+        });
     }
 
     @Override
@@ -128,7 +138,7 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mFeedSubscription.unsubscribe();
         mAdapter.onDestroy();
         super.onDestroyView();
-        mListView = null;
+        mGridView = null;
         mAdapter = null;
     }
 
@@ -146,23 +156,44 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void refreshData() {
         mFeedSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
-        mFeedSubscription = AndroidObservable.bindFragment(this,
-                mApiFeedsService.getLiveFeed(null, Constants.LIVE_FEED_LENGTH)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .finallyDo(new Action0() {
-                            @Override
-                            public void call() {
-                                if (DBG) Log.v(TAG, "finallyDo()");
-                                mRefreshLayout.setRefreshing(false);
-                            }
-                        })
-                ).subscribe(mFeedObserver);
+        mFeedSubscription = AndroidObservable.bindFragment(this, mApiFeedsService.getLiveFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH))
+                .observeOn(AndroidSchedulers.mainThread())
+                .finallyDo(new Action0() {
+                    @Override
+                    public void call() {
+                        if (DBG) Log.v(TAG, "finallyDo()");
+                        mRefreshLayout.setRefreshing(false);
+                    }
+                })
+                .subscribe(mFeedObserver);
+    }
+
+    private void refreshFeedDescription() {
+        TextView descView = (TextView)mHeaderView.findViewById(R.id.live_feed_description);
+
+        if (mAdapter == null) {
+            descView.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        List<Entry> feed = mAdapter.getFeed();
+        int records1h = UiUtils.getEntriesLastHour(feed);
+        String entries;
+        if (records1h >= 0) {
+            entries = getResources().getQuantityString(R.plurals.records_last_hour, records1h, records1h);
+        } else {
+            entries = getResources().getQuantityString(R.plurals.over_records_last_hour, feed.size(), feed.size());
+        }
+
+        descView.setText(entries);
+        descView.setVisibility(View.VISIBLE);
     }
 
     private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
         @Override
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
+            refreshFeedDescription();
         }
 
         @Override
@@ -178,10 +209,10 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     };
 
-    public class FeedAdapter extends EndlessFeedItemAdapter {
+    public class FeedAdapter extends EndlessFeedGridItemAdapter {
 
         public FeedAdapter(Context context) {
-            super(context, mOnFeedItemClickListener);
+            super(context);
         }
 
         @Override
@@ -192,45 +223,9 @@ public class LiveFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public Observable<Feed> createObservable(Long sinceEntryId) {
             return AndroidObservable.bindFragment(LiveFeedFragment.this,
-                    mApiFeedsService.getLiveFeed(sinceEntryId, Constants.LIVE_FEED_LENGTH));
+                    mApiFeedsService.getLiveFeed(sinceEntryId, Constants.LIVE_FEED_INITIAL_LENGTH));
         }
     }
-
-    public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
-
-        @Override
-        public void onFeedItemClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-            startActivity(i);
-        }
-
-        @Override
-        public void onFeedLikesClicked(View view, Entry entry) {
-            if (DBG) Log.v(TAG, "onFeedLikesClicked post: " + entry);
-            new LikesHelper(LiveFeedFragment.this, mAdapter) {
-                @Override
-                public void notifyError(String error, Throwable e) {
-                    if (mListener != null) mListener.notifyError(error, e);
-                }
-            }.voteUnvote(entry);
-        }
-
-        @Override
-        public void onFeedCommentsClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-            startActivity(i);
-        }
-
-        @Override
-        public void onFeedAdditionalMenuClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedAdditionalMenuClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
-        }
-    };
 
     /**
      * This interface must be implemented by activities that contain this

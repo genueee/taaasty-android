@@ -11,11 +11,18 @@
     <string name="feed_item_more_content_description">Еще действия</string>
     <string name="live_feed_header">Прямой эфир</string>
 
-    <plurals name="live_feed_description">
-        <item quantity="one">%d запись за последний час</item>
-        <item quantity="few">%d записи за последний час</item>
-        <item quantity="many">%d записей за последний час</item>
-        <item quantity="other">%d записей за последний час</item>
+    <plurals name="records_last_hour">
+        <item quantity="one">%d запись за час</item>
+        <item quantity="few">%d записи за час</item>
+        <item quantity="many">%d записей за час</item>
+        <item quantity="other">%d записей за час</item>
+    </plurals>
+
+    <plurals name="over_records_last_hour">
+        <item quantity="one">больше %d записи за час</item>
+        <item quantity="few">больше %d записей за час</item>
+        <item quantity="many">больше %d записей за час</item>
+        <item quantity="other">больше %d записей за час</item>
     </plurals>
 
     <string name="crash_toast_text">Сбой. Сформирован и отправлен отчет.</string>

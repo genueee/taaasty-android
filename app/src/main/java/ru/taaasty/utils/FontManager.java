@@ -9,15 +9,13 @@ public class FontManager {
 
     private static FontManager mFontManager;
 
-    private final Typeface mDefaultFont;
-    private final Typeface mDefaultFontBold;
-    private final Typeface mDefaultFontLight;
+    private final Typeface mFontSans;
+    private final Typeface mFontSerif;
 
     private FontManager(Context context) {
         AssetManager asm = context.getApplicationContext().getAssets();
-        mDefaultFont = Typeface.createFromAsset(asm, "fonts/ProximaNova-Reg.otf");
-        mDefaultFontBold = Typeface.createFromAsset(asm, "fonts/ProximaNova-Bold.otf");
-        mDefaultFontLight = Typeface.createFromAsset(asm, "fonts/ProximaNova-Light.otf");
+        mFontSans = Typeface.createFromAsset(asm, "fonts/PTS55F_W.ttf");
+        mFontSerif = Typeface.createFromAsset(asm, "fonts/PTF55F_W.ttf");
     }
 
     public static FontManager getInstance(Context context) {
@@ -28,22 +26,14 @@ public class FontManager {
     }
 
     public Typeface getMainFont() {
-        return mDefaultFont;
-    }
-
-    public Typeface getMainFontBold() {
-        return mDefaultFontBold;
-    }
-
-    public Typeface getDefaultFontLight() {
-        return mDefaultFontLight;
+        return mFontSans;
     }
 
     public Typeface getDefaultSansSerifTypeface() {
-        return mDefaultFont;
+        return mFontSans;
     }
 
     public Typeface getDefaultSerifTypeface() {
-        return Typeface.SERIF;
+        return mFontSerif;
     }
 }

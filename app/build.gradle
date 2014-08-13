@@ -119,13 +119,14 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.6.1'
     compile 'com.squareup.picasso:picasso:2.3.+'
     compile 'com.squareup:pollexor:2.0.2'
-    compile 'com.netflix.rxjava:rxjava-android:0.19.+'
+    compile 'com.netflix.rxjava:rxjava-android:0.19.6'
     compile 'uk.co.chrisjenx:calligraphy:1.0.+'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
     compile 'com.commonsware.cwac:endless:1.2.3'
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'com.android.support:support-v13:20.0.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
+    compile 'com.etsy.android.grid:library:1.0.5'
 }
 
 ['beta', 'release'].each { typeName ->

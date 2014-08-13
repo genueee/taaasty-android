@@ -15,6 +15,14 @@ import java.util.List;
 
 public class Entry implements Parcelable {
 
+    public static final String ENTRY_TYPE_TEXT = "text";
+
+    public static final String ENTRY_TYPE_IMAGE = "image";
+
+    public static final String ENTRY_TYPE_VIDEO = "video";
+
+    public static final String ENTRY_TYPE_QUOTE = "quote";
+
     @SerializedName("id")
     private long mId;
 
@@ -122,6 +130,26 @@ public class Entry implements Parcelable {
             mSourceSpanned = Html.fromHtml(mText);
         }
         return mSourceSpanned;
+    }
+
+    public boolean hasTitle() {
+        return !TextUtils.isEmpty(mTitle);
+    }
+
+    public boolean hasText() {
+        return !TextUtils.isEmpty(mText);
+    }
+
+    public boolean hasNoAnyText() {
+        return !hasTitle() && !hasText() && !hasSource();
+    }
+
+    public boolean hasSource() {
+        return !TextUtils.isEmpty(mSource);
+    }
+
+    public boolean hasImages() {
+        return mImages != null && !mImages.isEmpty();
     }
 
     public List<ImageInfo> getImages() {
