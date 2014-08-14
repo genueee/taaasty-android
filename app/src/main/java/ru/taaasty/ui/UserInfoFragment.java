@@ -24,12 +24,12 @@ import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.subscriptions.Subscriptions;
 
 public class UserInfoFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -50,8 +50,8 @@ public class UserInfoFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mUserInfoSubscription = Subscriptions.empty();
-    private Subscription mFollowSubscribtion = Subscriptions.empty();
+    private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
+    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
 
     public static UserInfoFragment newInstance(User user) {
         UserInfoFragment fragment = new UserInfoFragment();

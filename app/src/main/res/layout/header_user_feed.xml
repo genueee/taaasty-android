@@ -1,64 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/feed_header_with_title_height"
-    android:background="@android:color/black">
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/avatar_user_name"
+    <RelativeLayout
+        android:background="@android:color/black"
+        android:id="@+id/header_user_feed_main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="50dp"
-        android:layout_marginRight="50dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:layout_above="@+id/feed_name"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:layout_centerInParent="true"
-        android:layout_marginBottom="16dp"
-        android:layout_marginTop="16dp">
+        android:layout_height="@dimen/feed_header_height">
 
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/avatar"
-            android:layout_width="@dimen/avatar_normal_diameter"
-            android:layout_height="@dimen/avatar_normal_diameter"
-            android:clickable="true"
-            android:contentDescription="@string/user_avatar_content_description"
-            android:cropToPadding="false"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_user_stub_dark" />
-
-        <TextView
-            android:id="@+id/user_name"
+        <LinearLayout
+            android:id="@+id/avatar_user_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
-            android:gravity="center_horizontal"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:singleLine="true"
-            android:textColor="@android:color/white"
-            android:textSize="22sp"
-            tools:text="Genue" />
-    </LinearLayout>
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingBottom="8dp"
+            android:paddingTop="8dp">
+
+            <ru.taaasty.widgets.HintedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_normal_diameter"
+                android:layout_height="@dimen/avatar_normal_diameter"
+                android:clickable="true"
+                android:contentDescription="@string/user_avatar_content_description"
+                android:cropToPadding="false"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_user_stub_dark" />
+
+            <TextView
+                android:id="@+id/user_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center_horizontal"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textSize="32sp"
+                tools:text="Genue" />
+
+        </LinearLayout>
+
+        <ru.taaasty.widgets.CirclePageStaticIndicator
+            android:id="@+id/circle_page_indicator"
+            style="@style/LiveFeedCirclePageStaticIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/avatar_user_name"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="8dp"
+            android:padding="4dp"
+            app:cpsi_count="3"
+            app:cpsi_selected_item="0" />
+
+    </RelativeLayout>
 
     <TextView
-        android:id="@id/feed_name"
-        android:background="@color/green_background_normal"
+        android:id="@+id/feed_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:textSize="18sp"
-        android:minHeight="48dp"
-        android:textColor="@android:color/white"
+        android:layout_gravity="bottom"
+        android:background="@color/green_background_normal"
         android:drawablePadding="22dp"
-        tools:text="Избранное"
-        tools:drawableLeft="@drawable/ic_favorites_normal"
-        android:layout_alignParentBottom="true"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
         android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right" />
+        android:paddingRight="@dimen/feed_item_padding_right"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        tools:drawableLeft="@drawable/ic_favorites_normal"
+        tools:text="Избранное" />
 
-</RelativeLayout>
+</LinearLayout>

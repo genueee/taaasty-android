@@ -4,6 +4,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="android:Theme.Holo.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
+        <item name="vpiCirclePageIndicatorStyle">@style/LiveFeedCirclePageIndicator</item>
     </style>
 
     <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light"/>
@@ -21,6 +22,17 @@
         <item name="android:clickable">true</item>
     </style>
 
+    <style name="TabbarButton.First">
+    </style>
+
+    <style name="TabbarButton.Last">
+    </style>
+
+    <style name="TabbarButton.Action">
+        <item name="android:background">@drawable/btn_tabbar_background_action</item>
+    </style>
+
+
     <style name="LoginActivityTheme" parent="AppTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
@@ -33,7 +45,7 @@
         <item name="android:backgroundDimAmount">0.90</item>
     </style>
 
-    <style name="FullscreenTheme" parent="android:Theme.Holo">
+    <style name="FullscreenThemeBase" parent="android:Theme.Holo">
         <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_dark</item>
@@ -41,21 +53,10 @@
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
     </style>
 
+    <style name="FullscreenTheme" parent="FullscreenThemeBase"/>
+
     <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
         <item name="android:background">@color/black_overlay</item>
-    </style>
-
-
-    <style name="TabbarButton.First">
-        <item name="android:paddingLeft">32dp</item>
-    </style>
-
-    <style name="TabbarButton.Last">
-        <item name="android:paddingRight">32dp</item>
-    </style>
-
-    <style name="TabbarButton.Action">
-        <item name="android:background">@drawable/btn_tabbar_background_action</item>
     </style>
 
     <style name="LoginButtonContainer">
@@ -144,5 +145,23 @@
     </style>
 
     <style name="ButtonBarButton" />
+
+    <style name="LiveFeedCirclePageIndicator">
+        <item name="fillColor">#ffffffff</item>
+        <item name="pageColor">#30ffffff</item>
+        <item name="strokeColor">#00000000</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="radius">2.5dp</item>
+        <item name="centered">false</item>
+    </style>
+
+    <style name="LiveFeedCirclePageStaticIndicator">
+        <item name="cpsi_fillColor">#ffffffff</item>
+        <item name="cpsi_pageColor">#30ffffff</item>
+        <item name="cpsi_strokeColor">#00000000</item>
+        <item name="cpsi_strokeWidth">0dp</item>
+        <item name="cpsi_radius">2.5dp</item>
+        <item name="cpsi_centered">false</item>
+    </style>
 
 </resources>

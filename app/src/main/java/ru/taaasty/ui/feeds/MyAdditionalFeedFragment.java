@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
@@ -35,13 +36,14 @@ import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.widgets.CirclePageStaticIndicator;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
 
 
 public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
@@ -49,7 +51,8 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedFragment";
     private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";
-    private static final int LIVE_FEED_LENGTH = 50;
+    private static final String BUNDLE_ARG_PAGE_IDX = "BUNDLE_ARG_PAGE_IDX";
+    private static final String BUNDLE_ARG_PAGE_COUNT = "BUNDLE_ARG_PAGE_COUNT";
 
     private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
@@ -63,8 +66,8 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     private ApiMyFeeds mMyFeedsService;
     private FeedItemAdapter mAdapter;
 
-    private Subscription mFeedSubscription = Subscriptions.empty();
-    private Subscription mUserSubscribtion = Subscriptions.empty();
+    private Subscription mFeedSubscription = SubscriptionHelper.empty();
+    private Subscription mUserSubscribtion = SubscriptionHelper.empty();
 
     private @MyAdditionalFeedActivity.FeedType
     int mFeedType = MyAdditionalFeedActivity.FEED_TYPE_FAVORITES;
@@ -72,10 +75,19 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
 
     private CurrentUser mCurrentUser;
 
-    public static MyAdditionalFeedFragment newInstance(@MyAdditionalFeedActivity.FeedType int type) {
+    // XXX: anti picasso weak ref
+    private TargetSetHeaderBackground mFeedDesignTarget;
+
+    private int mPageIdx;
+    private int mPageCount;
+
+    public static MyAdditionalFeedFragment newInstance(@MyAdditionalFeedActivity.FeedType int type,
+                                                       int pageIdx, int pageCount) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
         Bundle b = new Bundle();
         b.putInt(BUNDLE_ARG_FEED_TYPE, type);
+        b.putInt(BUNDLE_ARG_PAGE_IDX, pageIdx);
+        b.putInt(BUNDLE_ARG_PAGE_COUNT, pageCount);
         usf.setArguments(b);
         return usf;
     }
@@ -93,8 +105,9 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
             Bundle args = getArguments();
             //noinspection ResourceType
             mFeedType = args.getInt(BUNDLE_ARG_FEED_TYPE, MyAdditionalFeedActivity.FEED_TYPE_MAIN);
+            mPageIdx = args.getInt(BUNDLE_ARG_PAGE_IDX, 0);
+            mPageCount = args.getInt(BUNDLE_ARG_PAGE_COUNT, 3);
         }
-
     }
 
     @Override
@@ -109,6 +122,8 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
         mRefreshLayout.setOnRefreshListener(this);
         setupEmptyView(v);
         setupFeedName(v);
+        setupPageIndicator(mHeaderView);
+
         return v;
     }
 
@@ -179,13 +194,23 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
                 name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_friends_normal, 0, 0, 0);
                 break;
             case MyAdditionalFeedActivity.FEED_TYPE_FAVORITES:
-                name.setText(R.string.favorites);
+                name.setText(R.string.title_favorites);
                 name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_favorites_normal, 0, 0, 0);
                 break;
             case MyAdditionalFeedActivity.FEED_TYPE_PRIVATE:
-                name.setText(R.string.hidden_records);
+                name.setText(R.string.title_hidden_entries);
                 name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_hidden_normal, 0, 0, 0);
                 break;
+        }
+    }
+
+    void setupPageIndicator(View root) {
+        CirclePageStaticIndicator cpsi = (CirclePageStaticIndicator) root.findViewById(R.id.circle_page_indicator);
+        if (mPageCount == 0) {
+            cpsi.setVisibility(View.GONE);
+        } else {
+            cpsi.setCount(mPageCount);
+            cpsi.setSelected(mPageIdx);
         }
     }
 
@@ -196,6 +221,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
         mUserSubscribtion.unsubscribe();
         mListView = null;
         mAdapter = null;
+        mFeedDesignTarget = null;
     }
 
     @Override
@@ -228,9 +254,7 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
     }
 
     void onAvatarClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
         if (mCurrentUser == null) return;
-
         if (mListener != null) mListener.onAvatarClicked(mCurrentUser, mCurrentUser.getDesign());
     }
 
@@ -314,9 +338,11 @@ public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLa
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
+        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView.findViewById(R.id.header_user_feed_main),
+                design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(mHeaderView, design, foregroundColor));
+                .into(mFeedDesignTarget);
     }
 
     public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {

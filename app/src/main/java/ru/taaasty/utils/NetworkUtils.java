@@ -3,6 +3,7 @@ package ru.taaasty.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.net.Uri;
 import android.os.StatFs;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -20,6 +21,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -127,8 +129,14 @@ public final class NetworkUtils {
                 initLruMemoryCache(context.getApplicationContext());
                 mPicasso = new Picasso.Builder(context.getApplicationContext())
                         .memoryCache(mPicassoCache)
-                        .downloader(new OkHttpDownloader(mOkHttpClient))
-                        .build();
+                        .downloader(new OkHttpDownloader(mOkHttpClient) {
+                                        @Override
+                                        protected HttpURLConnection openConnection(Uri uri) throws IOException {
+                                            if (DBG) Log.v(TAG, "Load uri: " + uri);
+                                            return super.openConnection(uri);
+                                        }
+                                    }
+                        ).build();
             }
             return mPicasso;
         }
@@ -143,7 +151,8 @@ public final class NetworkUtils {
 
     public static ThumborUrlBuilder createThumborUrlFromPath(String path) {
         return Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY)
-                .buildImage(path);
+                .buildImage(path)
+                .filter(ThumborUrlBuilder.stripicc());
     }
 
     private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {

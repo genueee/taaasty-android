@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
@@ -34,19 +35,18 @@ import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
 
 
 public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
-    private static final int LIVE_FEED_LENGTH = 50;
 
     private OnFragmentInteractionListener mListener;
 
@@ -58,10 +58,13 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     private ApiMyFeeds mFeedsService;
     private FeedItemAdapter mAdapter;
 
-    private Subscription mFeedSubscription = Subscriptions.empty();
-    private Subscription mCurrentUserSubscribtion = Subscriptions.empty();
+    private Subscription mFeedSubscription = SubscriptionHelper.empty();
+    private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
 
     private CurrentUser mCurrentUser;
+
+    // XXX: anti picasso weak ref
+    private TargetSetHeaderBackground mFeedDesignTarget;
 
     private int mRefreshCounter;
 
@@ -150,6 +153,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         mCurrentUserSubscribtion.unsubscribe();
         mListView = null;
         mAdapter = null;
+        mFeedDesignTarget = null;
     }
 
     @Override
@@ -214,9 +218,10 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
+        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(mHeaderView, design, foregroundColor));
+                .into(mFeedDesignTarget);
 
     }
 
@@ -286,7 +291,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         setRefreshing(true);
         Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFeed(null, LIVE_FEED_LENGTH));
+                mFeedsService.getMyFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH));
         mFeedSubscription = observableFeed
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)

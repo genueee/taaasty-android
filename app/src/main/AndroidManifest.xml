@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".ui.tabbar.LiveFeedActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
@@ -28,6 +28,16 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.tabbar.SubscribtionsActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".ui.tabbar.MyFeedActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"/>
+        <activity
             android:name=".ui.login.LoginActivity"
             android:label="@string/title_activity_login"
             android:theme="@style/LoginActivityTheme"
@@ -36,7 +46,7 @@
         <activity
             android:name=".ui.AdditionalMenuActivity"
             android:label="@string/title_activity_additional_menu"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName=".ui.tabbar.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AdditionMenuActivityTheme" >
             <meta-data
@@ -45,7 +55,7 @@
         </activity>
         <activity
             android:name=".ui.feeds.MyAdditionalFeedActivity"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName=".ui.tabbar.MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -54,7 +64,7 @@
         <activity
             android:name=".ui.ShowPostActivity"
             android:label="@string/title_activity_show_post"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName=".ui.tabbar.MainActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -70,7 +80,7 @@
         <activity
             android:name=".ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
-            android:parentActivityName=".ui.MainActivity"
+            android:parentActivityName=".ui.tabbar.MainActivity"
             android:theme="@style/AppThemeLightActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

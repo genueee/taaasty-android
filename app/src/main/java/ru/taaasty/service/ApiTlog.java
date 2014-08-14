@@ -18,7 +18,7 @@ public interface ApiTlog {
 
     @GET("/tlog/{id}/entries.json")
     Observable<Feed> getEntries(@Path("id") String idOrSlug,
-                                @Query("since_entry_id") Integer sinceEntryId,
+                                @Query("since_entry_id") Long sinceEntryId,
                                 @Query("limit") Integer limit);
 
     // XXX

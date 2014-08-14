@@ -36,6 +36,7 @@ public interface ApiFeeds {
     @GET("/feeds/best.json")
     Observable<Feed> getBestFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit,
+                     @Query("limit_hours") Integer limit_hours,
                      @Query("date") Date date,
                      @Query("kind") String kind,
                      @Query("rating") String rating);

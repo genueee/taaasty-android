@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.widget.ListView;
 
@@ -20,12 +19,12 @@ import ru.taaasty.model.Relationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.subscriptions.Subscriptions;
 
 public class FollowingsFragment extends ListFragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -39,7 +38,7 @@ public class FollowingsFragment extends ListFragment {
 
     RelationshipsAdapter mRelationshipsAdapter;
     OnFragmentInteractionListener mListener;
-    Subscription mRelationshipsSubscribtion = Subscriptions.empty();
+    Subscription mRelationshipsSubscribtion = SubscriptionHelper.empty();
 
     public static FollowingsFragment newInstance(long userId) {
         FollowingsFragment fragment = new FollowingsFragment();

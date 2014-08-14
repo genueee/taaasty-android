@@ -51,6 +51,7 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
 
     @Override
     public void onEntriesCountClicked() {
+        if (DBG) Log.v(TAG, "onEntriesCountClicked");
         Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
@@ -70,6 +71,7 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
 
     @Override
     public void onDaysCountClicked() {
+        if (DBG) Log.v(TAG, "onDaysCountClicked");
         Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 

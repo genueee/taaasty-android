@@ -14,4 +14,37 @@
         <attr name="metaButtonBarButtonStyle" format="reference" />
     </declare-styleable>
 
+    <attr name="cpsi_centered" format="boolean" />
+    <attr name="cpsi_selectedColor" format="color" />
+    <attr name="cpsi_strokeWidth" format="dimension" />
+    <attr name="cpsi_unselectedColor" format="color" />
+
+    <declare-styleable name="CirclePageStaticIndicator">
+        <!-- Whether or not the indicators should be centered. -->
+        <attr name="cpsi_centered" />
+        <!-- Color of the filled circle that represents the current page. -->
+        <attr name="cpsi_fillColor" format="color" />
+        <!-- Color of the filled circles that represents pages. -->
+        <attr name="cpsi_pageColor" format="color" />
+        <!-- Orientation of the indicator. -->
+        <attr name="android:orientation"/>
+        <!-- Radius of the circles. This is also the spacing between circles. -->
+        <attr name="cpsi_radius" format="dimension" />
+        <!-- Whether or not the selected indicator snaps to the circles. -->
+        <attr name="cpsi_snap" format="boolean" />
+        <!-- Color of the open circles. -->
+        <attr name="cpsi_strokeColor" format="color" />
+        <!-- Width of the stroke used to draw the circles. -->
+        <attr name="cpsi_strokeWidth" />
+        <!-- View background -->
+        <attr name="android:background"/>
+
+        <attr name="cpsi_count" format="integer"/>
+
+        <attr name="cpsi_selected_item" format="integer"/>
+
+
+    </declare-styleable>
+
+
 </resources>

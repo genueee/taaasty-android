@@ -22,4 +22,5 @@ public interface Constants {
      */
     public static final int LIVE_FEED_INITIAL_LENGTH = 50;
 
+    int FEED_TITLE_BACKGROUND_BLUR_RADIUS = 24;
 }

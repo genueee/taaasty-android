@@ -1,10 +1,12 @@
 package ru.taaasty.utils;
 
 import android.text.InputFilter;
-import android.text.LoginFilter;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 
+/**
+ * Фильтр для формы ввода логина ([0-9a-zA-Z])
+ */
 public class SlugTextInputFilter implements InputFilter {
 
     public CharSequence filter(CharSequence source, int start, int end,

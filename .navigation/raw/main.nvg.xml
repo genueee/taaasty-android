@@ -32,7 +32,7 @@
     <entry>
       <key      
         class = "com.android.navigation.ActivityState"      
-        className = "ru.taaasty.ui.MainActivity">
+        className = "ru.taaasty.ui.tabbar.MainActivity">
         <location        
           idref = "point0"/>
       </key>

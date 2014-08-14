@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.feeds.LiveFeedFragment">
+    tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
 
     <ru.taaasty.widgets.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_widget"
@@ -18,7 +18,7 @@
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
-            tools:listheader="@layout/header_live_feed"
+            tools:listheader="@layout/header_user_feed"
             tools:listitem="@layout/feed_item" />
 
     </ru.taaasty.widgets.SwipeRefreshLayout>

@@ -12,10 +12,10 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.subscriptions.Subscriptions;
 
 /**
  * Created by alexey on 17.07.14.
@@ -26,7 +26,7 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter implements  
 
     private final FeedItemAdapter mAdapter;
 
-    private Subscription mFeedAppendSubscription = Subscriptions.empty();
+    private Subscription mFeedAppendSubscription = SubscriptionHelper.empty();
 
     public EndlessFeedItemAdapter(Context context, FeedItemAdapter.OnItemListener listener) {
         super(context, new FeedItemAdapter(context, listener), R.layout.endless_loading_indicator, false);

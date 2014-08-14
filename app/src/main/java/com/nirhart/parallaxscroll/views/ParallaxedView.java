@@ -31,26 +31,29 @@ public abstract class ParallaxedView {
 		if (view != null)
             if (isAPI11) {
                 view.setTranslationY(offset);
-
-                float viewHeight = view.getHeight();
-                float visibleHeight = view.getBottom() - offset; // XXX: wrong
-                if (visibleHeight < viewHeight) {
-                    float opacity = 0.3f + (visibleHeight / viewHeight) * 0.7f;
-                    if (view instanceof ViewGroup && ((ViewGroup) view).getChildCount() > 0) {
-                        ViewGroup vg = (ViewGroup)view;
-                        int childCount = vg.getChildCount();
-                        for (int i = 0; i < childCount; ++i){
-                            vg.getChildAt(i).setAlpha(opacity);
-                        }
-                    } else {
-                        view.setAlpha(opacity);
-                    }
-                }
+                setOpacity(view, offset);
             } else {
                 translatePreICS(view, offset);
             }
     }
-	
+
+    private void setOpacity(View view, float offset) {
+        float viewHeight = view.getHeight();
+        float visibleHeight = view.getBottom() - offset; // XXX: wrong
+        if (visibleHeight < viewHeight) {
+            float opacity = 0.3f + (visibleHeight / viewHeight) * 0.7f;
+            if (view instanceof ViewGroup && ((ViewGroup) view).getChildCount() > 0) {
+                ViewGroup vg = (ViewGroup) view;
+                int childCount = vg.getChildCount();
+                for (int i = 0; i < childCount; ++i) {
+                    vg.getChildAt(i).setAlpha(opacity);
+                }
+            } else {
+                view.setAlpha(opacity);
+            }
+        }
+    }
+
 	public void setView(View view) {
 		this.view = new WeakReference<View>(view);
 	}

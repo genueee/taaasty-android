@@ -18,7 +18,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
-
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.util.Log;
@@ -35,8 +34,8 @@ import java.io.InputStream;
 import java.util.Random;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.ui.MainActivity;
 import ru.taaasty.R;
+import ru.taaasty.ui.tabbar.LiveFeedActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru0xdc.NdkStackBlur;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -151,7 +150,7 @@ public class LoginActivity extends Activity implements
     }
 
     private void switchToMainScreen() {
-        Intent i = new Intent(this, MainActivity.class);
+        Intent i = new Intent(this, LiveFeedActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
         finish();

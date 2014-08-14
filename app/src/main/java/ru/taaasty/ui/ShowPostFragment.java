@@ -39,19 +39,19 @@ import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.subscriptions.Subscriptions;
 
 /**
  * Пост с комментариями
  */
 public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "LiveFeedFragment";
+    private static final String TAG = "ShowPostFragment";
     private static final String ARG_POST_ID = "post_id";
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
@@ -59,9 +59,9 @@ public class ShowPostFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mPostSubscribtion = Subscriptions.empty();
-    private Subscription mCommentsSubscribtion = Subscriptions.empty();
-    private Subscription mTlogDesignSubscribtion = Subscriptions.empty();
+    private Subscription mPostSubscribtion = SubscriptionHelper.empty();
+    private Subscription mCommentsSubscribtion = SubscriptionHelper.empty();
+    private Subscription mTlogDesignSubscribtion = SubscriptionHelper.empty();
     private ApiEntries mEntriesService;
     private ApiComments mCommentsService;
     private ApiDesignSettings mTlogDesignService;
@@ -76,6 +76,9 @@ public class ShowPostFragment extends Fragment {
 
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
+
+    // XXX: anti picasso weak ref
+    private TargetSetHeaderBackground mFeedDesignTarget;
 
     /**
      * Use this factory method to create a new instance of
@@ -168,6 +171,7 @@ public class ShowPostFragment extends Fragment {
         mPostSubscribtion.unsubscribe();
         mCommentsSubscribtion.unsubscribe();
         mTlogDesignSubscribtion.unsubscribe();
+        mFeedDesignTarget = null;
     }
 
     @Override
@@ -209,13 +213,15 @@ public class ShowPostFragment extends Fragment {
     void setupFeedDesign() {
         // XXX
         TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
+        if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
+        mFeedDesignTarget = new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor));
+                .into(mFeedDesignTarget);
 
     }
 

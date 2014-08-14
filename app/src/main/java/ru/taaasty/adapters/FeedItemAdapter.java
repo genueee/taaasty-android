@@ -16,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,6 +84,10 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
         notifyDataSetChanged();
+    }
+
+    public List<Entry> getFeed() {
+        return Collections.unmodifiableList(mFeed);
     }
 
     public void onUpdateRatingStart(long entryId) {

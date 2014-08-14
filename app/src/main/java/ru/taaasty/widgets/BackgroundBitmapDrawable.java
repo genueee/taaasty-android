@@ -10,9 +10,12 @@ import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.view.Gravity;
 
+import ru0xdc.NdkStackBlur;
+
 
 public class BackgroundBitmapDrawable extends BitmapDrawable {
     private Matrix mMatrix = new Matrix();
+    private Matrix mBlurScaleMatrix = new Matrix();
     private int moldHeight;
 
     public static final int COVER_ALIGN_CENTER_CROP = 0;
@@ -20,6 +23,15 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
     public static final int COVER_ALIGN_STRETCH = 2;
 
     private int mCoverAlign = COVER_ALIGN_CENTER_CROP;
+
+    private int mBlurRarius;
+    private int mBlurScaleFactor = 3;
+
+    private boolean mRefreshBlurredBitmap = true;
+
+    private Bitmap mBlurredBitmap;
+
+    private final NdkStackBlur mBlurer = NdkStackBlur.create();
 
     public BackgroundBitmapDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
@@ -49,6 +61,24 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
 
     public int getCoverAlign() {
         return mCoverAlign;
+    }
+
+    public int getBlur() {
+        return mBlurRarius;
+    }
+
+    public void setBlurRadius(int blur) {
+        mBlurRarius = blur;
+        mRefreshBlurredBitmap = true;
+    }
+
+    public int getBlurScaleFactor() {
+        return mBlurScaleFactor;
+    }
+
+    public void setBlurScaleFactor(int scaleFactor) {
+        mBlurScaleFactor = scaleFactor;
+        mRefreshBlurredBitmap = true;
     }
 
     @Override
@@ -81,13 +111,31 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
             mMatrix.setScale(scale, scale);
             mMatrix.postTranslate(dx, dy);
         }
+        mRefreshBlurredBitmap = true;
+    }
+
+    private void refreshBlurredBitmap() {
+        mRefreshBlurredBitmap = false;
+
+        mBlurScaleMatrix.set(mMatrix);
+        if (mBlurRarius == 0) {
+            mBlurredBitmap = getBitmap();
+        } else {
+            mBlurScaleMatrix.preScale(mBlurScaleFactor, mBlurScaleFactor);
+            Bitmap b = getBitmap();
+            mBlurredBitmap = Bitmap.createScaledBitmap(b, (int)(b.getWidth() / (float)mBlurScaleFactor),
+                    (int)(b.getHeight() / (float)mBlurScaleFactor), true);
+            // mBlurredBitmap = b.copy(Bitmap.Config.ARGB_8888, true);
+            mBlurer.blur(mBlurRarius, mBlurredBitmap);
+        }
     }
 
     @Override
     public void draw(Canvas canvas) {
         if (mCoverAlign == COVER_ALIGN_CENTER_CROP) {
+            if (mRefreshBlurredBitmap) refreshBlurredBitmap();
             // canvas.drawColor(0xaa00ff00);
-            canvas.drawBitmap(getBitmap(), mMatrix, null);
+            canvas.drawBitmap(mBlurredBitmap, mBlurScaleMatrix, null);
         } else {
             super.draw(canvas);
         }

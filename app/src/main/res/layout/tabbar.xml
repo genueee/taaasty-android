@@ -7,9 +7,9 @@
     tools:context=".widgets.Tabbar">
 
     <ru.taaasty.widgets.HintedImageView
-        android:id="@+id/btn_tabbar_my_feed"
-        android:src="@drawable/btn_tabbar_my_feed"
-        android:contentDescription="@string/tabbar_my_feed_content_description"
+        android:id="@+id/btn_tabbar_subscribtions"
+        android:src="@drawable/btn_tabbar_subscribtions"
+        android:contentDescription="@string/btn_tabbar_action_subscriptions"
         style="@style/TabbarButton.First" />
 
     <ru.taaasty.widgets.HintedImageView
@@ -31,9 +31,9 @@
         style="@style/TabbarButton" />
 
     <ru.taaasty.widgets.HintedImageView
-        android:id="@+id/btn_tabbar_subscribtions"
-        android:src="@drawable/btn_tabbar_subscriptions"
-        android:contentDescription="@string/btn_tabbar_action_subscriptions"
+        android:id="@+id/btn_tabbar_my_feed"
+        android:src="@drawable/btn_tabbar_myfeed"
+        android:contentDescription="@string/tabbar_my_feed_content_description"
         style="@style/TabbarButton.Last" />
 
 </merge>

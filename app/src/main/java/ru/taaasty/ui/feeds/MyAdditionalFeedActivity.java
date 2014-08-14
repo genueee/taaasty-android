@@ -48,7 +48,7 @@ public class MyAdditionalFeedActivity extends Activity implements MyAdditionalFe
             MyAdditionalFeedFragment feedFragment;
             //noinspection ResourceType
             feedType = getIntent().getIntExtra(ARG_KEY_FEED_TYPE, FEED_TYPE_MAIN);
-            feedFragment = MyAdditionalFeedFragment.newInstance(feedType);
+            feedFragment = MyAdditionalFeedFragment.newInstance(feedType, 0, 0);
             getFragmentManager().beginTransaction()
                     .add(R.id.container, feedFragment)
                     .commit();
