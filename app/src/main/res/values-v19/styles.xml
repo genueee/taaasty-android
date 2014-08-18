@@ -2,8 +2,9 @@
 <resources>
 
 <style name="FullscreenTheme" parent="FullscreenThemeBase">
-    <item name="android:windowTranslucentStatus">true</item>
-    <item name="android:windowTranslucentNavigation">true</item>
+    <!-- Не используем, некрасиво, и не пропадает со временем -->
+    <!-- <item name="android:windowTranslucentStatus">true</item>
+    <item name="android:windowTranslucentNavigation">true</item> -->
 </style>
 
 </resources>
