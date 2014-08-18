@@ -1,5 +1,6 @@
 package ru.taaasty.ui.photo;
 
+import android.animation.ValueAnimator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -66,6 +67,7 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
         if (ab != null) {
             ab.setTitle(title == null ? "" : Html.fromHtml(title));
             ab.setDisplayHomeAsUpEnabled(true);
+            ab.setIcon(R.drawable.avatar_dummy);
         }
 
         setupAuthor(author);
@@ -106,7 +108,6 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
                     .placeholder(R.drawable.ic_user_stub_dark)
                     .error(R.drawable.ic_user_stub_dark)
                     .transform(circleTransformation)
-                    .noFade()
                     .into(mUserAvatarTarget);
         } else {
             picasso.load(userpicUrl)
@@ -115,7 +116,6 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
                     .placeholder(R.drawable.ic_user_stub_dark)
                     .error(R.drawable.ic_user_stub_dark)
                     .transform(circleTransformation)
-                    .noFade()
                     .into(mUserAvatarTarget);
         }
     }
@@ -132,9 +132,27 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
 
     private final Target mUserAvatarTarget = new Target() {
         @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            ActionBar ab = getActionBar();
-            if (ab != null) ab.setIcon(new BitmapDrawable(getResources(), bitmap));
+        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+            final ActionBar ab = getActionBar();
+            if (ab == null) return;
+            if (!Picasso.LoadedFrom.NETWORK.equals(from)) {
+                ab.setIcon(new BitmapDrawable(getResources(), bitmap));
+            } else {
+                ValueAnimator va = ValueAnimator.ofInt(0, 255);
+                va.setDuration(300);
+                va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+                    final ActionBar ab = getActionBar();
+                    final BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
+
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator animation) {
+                        bd.setAlpha((Integer) animation.getAnimatedValue());
+                        ab.setIcon(bd);
+                    }
+                });
+                va.start();
+            }
         }
 
         @Override
@@ -144,7 +162,6 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
-
         }
     };
 
