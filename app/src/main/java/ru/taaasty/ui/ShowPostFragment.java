@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -56,6 +57,7 @@ public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostFragment";
     private static final String ARG_POST_ID = "post_id";
+    private static final String ARG_SHOW_USER_HEADER = "show_user_header";
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
     private static final String KEY_COMMENTS = "comments";
@@ -72,6 +74,7 @@ public class ShowPostFragment extends Fragment {
     private ParallaxListView mListView;
     private CommentsAdapter mCommentsAdapter;
 
+    @Nullable
     private ViewGroup mUserTitleView;
     private ViewGroup mPostContentView;
 
@@ -79,6 +82,8 @@ public class ShowPostFragment extends Fragment {
 
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
+
+    private boolean mShowUserHeader = false;
 
     // XXX: anti picasso weak ref
     private TargetSetHeaderBackground mFeedDesignTarget;
@@ -89,12 +94,17 @@ public class ShowPostFragment extends Fragment {
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static ShowPostFragment newInstance(long postId) {
+    public static ShowPostFragment newInstance(long postId, boolean showUserHeader) {
         ShowPostFragment f = new  ShowPostFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
+        b.putBoolean(ARG_SHOW_USER_HEADER, showUserHeader);
         f.setArguments(b);
         return f;
+    }
+
+    public static ShowPostFragment newInstance(long postId) {
+        return newInstance(postId, false);
     }
 
     public ShowPostFragment() {
@@ -106,6 +116,7 @@ public class ShowPostFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         mPostId = args.getLong(ARG_POST_ID);
+        mShowUserHeader = args.getBoolean(ARG_SHOW_USER_HEADER);
         mCommentsService = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
@@ -117,10 +128,15 @@ public class ShowPostFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_show_post, container, false);
 
         mListView = (ParallaxListView) v.findViewById(R.id.list_view);
-        mUserTitleView = (ViewGroup) inflater.inflate(R.layout.header_show_post, mListView, false);
         mPostContentView = (ViewGroup) inflater.inflate(R.layout.post_item, mListView, false);
 
-        mUserTitleView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
+        if (mShowUserHeader) {
+            mUserTitleView = (ViewGroup) inflater.inflate(R.layout.header_show_post, mListView, false);
+            mUserTitleView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
+        } else {
+            mUserTitleView = null;
+        }
+
         return v;
     }
 
@@ -140,7 +156,7 @@ public class ShowPostFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mCommentsAdapter = new CommentsAdapter(getActivity());
 
-        mListView.addParallaxedHeaderView(mUserTitleView);
+        if (mShowUserHeader) mListView.addParallaxedHeaderView(mUserTitleView);
         mListView.addHeaderView(mPostContentView);
         mListView.setAdapter(mCommentsAdapter);
 
@@ -195,6 +211,7 @@ public class ShowPostFragment extends Fragment {
     };
 
     void setupAuthor() {
+        if (!mShowUserHeader) return;
         if (mCurrentEntry == null || mCurrentEntry.getAuthor() == null) {
             // XXX
         } else {
@@ -221,15 +238,17 @@ public class ShowPostFragment extends Fragment {
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
-        mFeedDesignTarget = new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(backgroudUrl)
-                .into(mFeedDesignTarget);
-
         FontManager fm = FontManager.getInstance(getActivity());
         int textColor = design.getFeedTextColor(getResources());
         Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
-        ((TextView)mUserTitleView.findViewById(R.id.user_name)).setTypeface(tf);
+
+        if (mUserTitleView != null) {
+            ((TextView) mUserTitleView.findViewById(R.id.user_name)).setTypeface(tf);
+            mFeedDesignTarget = new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+            NetworkUtils.getInstance().getPicasso(getActivity())
+                    .load(backgroudUrl)
+                    .into(mFeedDesignTarget);
+        }
 
         for (int id: new int[] {
                 R.id.title,
@@ -358,6 +377,7 @@ public class ShowPostFragment extends Fragment {
     }
 
     private void setupAvatar(User author) {
+        if (mUserTitleView == null) return;
         ImageUtils.getInstance().loadAvatar(author,
                 (ImageView)getView().findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter);
