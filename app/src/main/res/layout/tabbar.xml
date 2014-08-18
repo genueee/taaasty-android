@@ -8,7 +8,7 @@
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_subscribtions"
-        android:src="@drawable/btn_tabbar_subscribtions"
+        android:src="@drawable/btn_tabbar_subscriptions"
         android:contentDescription="@string/btn_tabbar_action_subscriptions"
         style="@style/TabbarButton.First" />
 

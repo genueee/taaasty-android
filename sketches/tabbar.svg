@@ -451,15 +451,15 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.5910859"
-     inkscape:cx="202.97203"
-     inkscape:cy="299.6786"
+     inkscape:cx="92.534476"
+     inkscape:cy="877.90005"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="977"
+     inkscape:window-width="1680"
+     inkscape:window-height="950"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="27"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3020">
@@ -498,18 +498,18 @@
        id="rect4020"
        width="96.974655"
        height="72.730988"
-       x="322.23868"
-       y="10.389832" />
+       x="319.72467"
+       y="9.7613382" />
     <rect
        style="opacity:0.95999995;fill:#2f2f2f;fill-opacity:1;fill-rule:nonzero;stroke:none"
        id="bg1"
        width="289.91379"
        height="72.730988"
-       x="12.12183"
-       y="9.8847561" />
+       x="19.03536"
+       y="11.141761" />
     <g
-       id="ic_tabbar_my_feed_normal"
-       transform="matrix(0.625,0,0,-0.625,39.782587,63.856927)"
+       id="ic_tabbar_subscriptions_normal"
+       transform="matrix(0.41875,0,0,-0.41875,45.552121,58.241585)"
        style="stroke:#767676;stroke-opacity:1">
       <g
          id="ic_tabbar_friends_normal"
@@ -521,7 +521,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 c -4.28,0.238 -6.795,3.902 -6.795,8.388 0,0.59 0.071,1.163 0.177,1.721 0.289,1.537 -1.722,1.365 -1.722,1.365 l -37.14,0"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22"
              inkscape:connector-curvature="0" />
         </g>
@@ -531,7 +531,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="M 0,0 26.219,0"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path26"
              inkscape:connector-curvature="0" />
         </g>
@@ -541,7 +541,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="M 0,0 17.785,0"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path30"
              inkscape:connector-curvature="0" />
         </g>
@@ -551,7 +551,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="M 0,0 21.658,0"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path34"
              inkscape:connector-curvature="0" />
         </g>
@@ -561,7 +561,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 c -0.358,-0.951 -0.554,-1.987 -0.554,-3.073 0,-4.625 3.561,-8.374 7.954,-8.374 l 37.476,0 c 4.393,0 8.018,3.749 8.018,8.374 l 0,16.705 0,17.384 0,6.4 c 0,1.707 -1.315,3.089 -2.934,3.089 l -36.596,0 c -1.62,0 -2.933,-1.382 -2.933,-3.089 l 0,-37.23"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path38"
              inkscape:connector-curvature="0" />
         </g>
@@ -569,7 +569,7 @@
     </g>
     <g
        id="ic_tabbar_live_normal"
-       transform="matrix(0.625,0,0,-0.625,85.178857,64.665633)"
+       transform="matrix(0.41875,0,0,-0.41875,92.227657,58.916651)"
        style="stroke:#767676;stroke-opacity:1"
        inkscape:label="#ic_tabbar_live_normal">
       <g
@@ -582,7 +582,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 17.014,0 c 0.682,0.68 9.137,28.987 9.137,28.987 L 34.344,-24.261 42.535,14.882 48.206,0 65.852,0"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-0"
              inkscape:connector-curvature="0" />
         </g>
@@ -590,7 +590,7 @@
     </g>
     <g
        id="ic_tabbar_notifications_normal"
-       transform="matrix(0.625,0,0,-0.625,175.85052,64.592551)"
+       transform="matrix(0.41875,0,0,-0.41875,180.9378,58.733153)"
        style="stroke:#767676;stroke-opacity:1">
       <g
          id="g14-5"
@@ -603,7 +603,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 c -14.699,0 -26.617,-10.487 -26.617,-23.424 0,-6.826 3.333,-12.945 8.62,-17.226 -0.834,-6.813 -2.026,-13.668 -2.026,-13.668 0,0 9.494,5.535 13.989,8.09 1.941,-0.394 3.954,-0.625 6.034,-0.625 14.698,0 26.614,10.488 26.614,23.429 C 26.614,-10.487 14.698,0 0,0 z"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-7"
              inkscape:connector-curvature="0" />
         </g>
@@ -612,7 +612,7 @@
     <g
        id="ic_tabbar_post_normal"
        clip-path="url(#clipPath16-8)"
-       transform="matrix(0.625,0,0,-0.625,352.78061,64.172628)"
+       transform="matrix(0.41875,0,0,-0.41875,358.42569,58.527545)"
        style="fill:#800000;stroke:#ffffff;stroke-opacity:1">
       <g
          id="g20-6"
@@ -636,8 +636,8 @@
       </g>
     </g>
     <g
-       id="ic_tabbar_subscribers_normal"
-       transform="matrix(0.625,0,0,-0.625,216.9422,66.991338)"
+       id="ic_tabbar_myfeed_normal"
+       transform="matrix(0.41875,0,0,-0.41875,223.41984,60.513716)"
        style="stroke:#767676;stroke-opacity:1">
       <g
          id="g14-3"
@@ -649,7 +649,7 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 c 0,-16.654 -13.503,-30.156 -30.157,-30.156 -16.654,0 -30.156,13.502 -30.156,30.156 0,16.656 13.502,30.157 30.156,30.157 C -13.503,30.157 0,16.656 0,0 z"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-3"
              inkscape:connector-curvature="0" />
         </g>
@@ -659,24 +659,24 @@
            style="stroke:#767676;stroke-opacity:1">
           <path
              d="m 0,0 0.229,0.237 3.798,4.03 c 2.684,3.273 4.84,7.566 1.583,12.038 -3.371,4.628 -4.618,10.617 -3.141,16.307 1.442,5.558 3.565,8.629 7.026,9.894 0,0 4.176,1.156 8.369,0.937 3.102,-0.012 9.206,-0.403 11.157,-3.108 0.489,-0.679 -0.086,-2.542 0.251,-2.942 1.225,-1.456 2.474,-3.871 2.787,-6.608 0.063,-0.572 -1.54,-3.437 -0.459,-4.968 0.703,-0.996 2.692,-3.172 3.145,-3.999 1.273,-3.087 -2.846,-2.705 -2.527,-3.579 0.084,-0.23 0.212,-1.69 0.294,-3.255 0.013,-0.263 -0.882,-0.53 -0.87,-0.794 0.013,-0.325 0.932,-0.647 0.939,-0.955 0.014,-0.534 0.017,-1.026 0.005,-1.425 -0.032,-1.044 1.217,-2.5 -0.87,-3.823 -2.245,-1.421 -10.046,2.765 -10.697,-5.145 -0.091,-1.11 2.642,-7.889 2.897,-8.299"
-             style="fill:none;stroke:#767676;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#767676;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path26-27"
              inkscape:connector-curvature="0" />
         </g>
       </g>
     </g>
     <rect
-       style="opacity:0.95999995000000005;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       style="opacity:0.95999995;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none"
        id="rect3250-6"
        width="289.91379"
        height="72.730988"
-       x="10.60658"
-       y="95.97995" />
+       x="25.06213"
+       y="96.608452" />
     <g
-       id="ic_tabbar_my_feed_activated"
-       transform="matrix(0.625,0,0,-0.625,38.267346,149.95212)"
+       id="ic_tabbar_subscriptions_activated"
+       transform="matrix(0.41875,0,0,-0.41875,44.03688,144.33678)"
        style="stroke:#ffffff;stroke-opacity:1"
-       inkscape:label="#ic_tabbar_my_feed_normal">
+       inkscape:label="#ic_tabbar_subscriptions_normal">
       <g
          id="g14-6"
          clip-path="url(#clipPath16-2)"
@@ -687,7 +687,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 c -4.28,0.238 -6.795,3.902 -6.795,8.388 0,0.59 0.071,1.163 0.177,1.721 0.289,1.537 -1.722,1.365 -1.722,1.365 l -37.14,0"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-6"
              inkscape:connector-curvature="0" />
         </g>
@@ -697,7 +697,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="M 0,0 26.219,0"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path26-6"
              inkscape:connector-curvature="0" />
         </g>
@@ -707,7 +707,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="M 0,0 17.785,0"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path30-5"
              inkscape:connector-curvature="0" />
         </g>
@@ -717,7 +717,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="M 0,0 21.658,0"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path34-3"
              inkscape:connector-curvature="0" />
         </g>
@@ -727,7 +727,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 c -0.358,-0.951 -0.554,-1.987 -0.554,-3.073 0,-4.625 3.561,-8.374 7.954,-8.374 l 37.476,0 c 4.393,0 8.018,3.749 8.018,8.374 l 0,16.705 0,17.384 0,6.4 c 0,1.707 -1.315,3.089 -2.934,3.089 l -36.596,0 c -1.62,0 -2.933,-1.382 -2.933,-3.089 l 0,-37.23"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path38-8"
              inkscape:connector-curvature="0" />
         </g>
@@ -735,7 +735,7 @@
     </g>
     <g
        id="ic_tabbar_live_activated"
-       transform="matrix(0.625,0,0,-0.625,83.663616,150.76083)"
+       transform="matrix(0.41875,0,0,-0.41875,90.712416,145.01185)"
        style="stroke:#ffffff;stroke-opacity:1"
        inkscape:label="#g12-4-7">
       <g
@@ -748,7 +748,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 17.014,0 c 0.682,0.68 9.137,28.987 9.137,28.987 L 34.344,-24.261 42.535,14.882 48.206,0 65.852,0"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-0-7"
              inkscape:connector-curvature="0" />
         </g>
@@ -756,7 +756,7 @@
     </g>
     <g
        id="ic_tabbar_notifications_activated"
-       transform="matrix(0.625,0,0,-0.625,174.33528,150.68775)"
+       transform="matrix(0.41875,0,0,-0.41875,179.42256,144.82835)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-5-4"
@@ -769,15 +769,15 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 c -14.699,0 -26.617,-10.487 -26.617,-23.424 0,-6.826 3.333,-12.945 8.62,-17.226 -0.834,-6.813 -2.026,-13.668 -2.026,-13.668 0,0 9.494,5.535 13.989,8.09 1.941,-0.394 3.954,-0.625 6.034,-0.625 14.698,0 26.614,10.488 26.614,23.429 C 26.614,-10.487 14.698,0 0,0 z"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-7-9"
              inkscape:connector-curvature="0" />
         </g>
       </g>
     </g>
     <g
-       id="ic_tabbar_subscribers_activated"
-       transform="matrix(0.625,0,0,-0.625,215.42696,153.08653)"
+       id="ic_tabbar_myfeed_activated"
+       transform="matrix(0.41875,0,0,-0.41875,221.9046,146.60891)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-3-7"
@@ -789,7 +789,7 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 c 0,-16.654 -13.503,-30.156 -30.157,-30.156 -16.654,0 -30.156,13.502 -30.156,30.156 0,16.656 13.502,30.157 30.156,30.157 C -13.503,30.157 0,16.656 0,0 z"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path22-3-7"
              inkscape:connector-curvature="0" />
         </g>
@@ -799,24 +799,24 @@
            style="stroke:#ffffff;stroke-opacity:1">
           <path
              d="m 0,0 0.229,0.237 3.798,4.03 c 2.684,3.273 4.84,7.566 1.583,12.038 -3.371,4.628 -4.618,10.617 -3.141,16.307 1.442,5.558 3.565,8.629 7.026,9.894 0,0 4.176,1.156 8.369,0.937 3.102,-0.012 9.206,-0.403 11.157,-3.108 0.489,-0.679 -0.086,-2.542 0.251,-2.942 1.225,-1.456 2.474,-3.871 2.787,-6.608 0.063,-0.572 -1.54,-3.437 -0.459,-4.968 0.703,-0.996 2.692,-3.172 3.145,-3.999 1.273,-3.087 -2.846,-2.705 -2.527,-3.579 0.084,-0.23 0.212,-1.69 0.294,-3.255 0.013,-0.263 -0.882,-0.53 -0.87,-0.794 0.013,-0.325 0.932,-0.647 0.939,-0.955 0.014,-0.534 0.017,-1.026 0.005,-1.425 -0.032,-1.044 1.217,-2.5 -0.87,-3.823 -2.245,-1.421 -10.046,2.765 -10.697,-5.145 -0.091,-1.11 2.642,-7.889 2.897,-8.299"
-             style="fill:none;stroke:#ffffff;stroke-width:2.50000000000000000;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
+             style="fill:none;stroke:#ffffff;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1;stroke-dasharray:none"
              id="path26-27-4"
              inkscape:connector-curvature="0" />
         </g>
       </g>
     </g>
     <rect
-       style="opacity:0.95999995000000005;fill:#2f2f2f;fill-opacity:1;fill-rule:nonzero;stroke:none"
+       style="opacity:0.95999995;fill:#2f2f2f;fill-opacity:1;fill-rule:nonzero;stroke:none"
        id="rect3250-6-9"
        width="289.91379"
        height="72.730988"
-       x="10.101508"
-       y="184.22617" />
+       x="17.643517"
+       y="183.59766" />
     <g
-       id="ic_tabbar_my_feed_pressed"
-       transform="matrix(0.625,0,0,-0.625,37.76228,238.19833)"
+       id="ic_tabbar_subscriptions_pressed"
+       transform="matrix(0.41875,0,0,-0.41875,43.531814,232.58299)"
        style="stroke:#ffffff;stroke-opacity:1"
-       inkscape:label="#ic_tabbar_my_feed_pressed">
+       inkscape:label="#ic_tabbar_subscriptions_pressed">
       <g
          id="g14-6-9"
          clip-path="url(#clipPath16-2-1)"
@@ -875,7 +875,7 @@
     </g>
     <g
        id="ic_tabbar_live_pressed"
-       transform="matrix(0.625,0,0,-0.625,83.15855,239.00704)"
+       transform="matrix(0.41875,0,0,-0.41875,90.20735,233.25806)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-7-7-4"
@@ -895,7 +895,7 @@
     </g>
     <g
        id="ic_tabbar_notifications_pressed"
-       transform="matrix(0.625,0,0,-0.625,173.83021,238.93396)"
+       transform="matrix(0.41875,0,0,-0.41875,178.91749,233.07456)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-5-4-6"
@@ -915,8 +915,8 @@
       </g>
     </g>
     <g
-       id="ic_tabbar_subscribers_pressed"
-       transform="matrix(0.625,0,0,-0.625,214.92189,241.33274)"
+       id="ic_tabbar_myfeed_pressed"
+       transform="matrix(0.41875,0,0,-0.41875,221.39953,234.85512)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-3-7-4"
