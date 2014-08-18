@@ -47,38 +47,22 @@
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
+        style="@style/PostTitle"
         android:visibility="gone"
         tools:text="Ролики"
-        tools:visibility="visible"
-        android:ellipsize="end"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right" />
+        tools:visibility="visible"/>
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
+        style="@style/PostText"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right"
         android:textIsSelectable="false"
         android:paddingBottom="8dp" />
 
     <TextView
         android:id="@+id/source"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:paddingRight="@dimen/feed_item_padding_right"
-        android:textStyle="italic"
+        style="@style/PostQuoteSource"
         android:lines="1"
-        android:ellipsize="marquee"
-        android:paddingLeft="@dimen/feed_item_padding_left"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />
 
     <LinearLayout

@@ -18,42 +18,20 @@
         android:adjustViewBounds="false"
         android:visibility="invisible" />
 
-    <TextView
+    <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
         android:visibility="gone"
         tools:text="Ролики"
         tools:visibility="visible"
-        android:ellipsize="end"
-        android:autoLink="web"
-        android:textIsSelectable="true"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right" />
+        style="@style/PostTitle" />
 
-    <TextView
+    <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right"
-        android:textIsSelectable="true"
-        android:autoLink="web"
-        android:paddingBottom="8dp" />
+        style="@style/PostText" />
 
     <TextView
         android:id="@+id/source"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:paddingRight="@dimen/feed_item_padding_right"
-        android:textStyle="italic"
-        android:lines="1"
-        android:ellipsize="marquee"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />
+        tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;"
+        style="@style/PostQuoteSource" />
 </LinearLayout>
