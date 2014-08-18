@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import pl.droidsonroids.gif.GifImageView;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -38,11 +37,11 @@ import ru.taaasty.model.User;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
-import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
@@ -276,7 +275,7 @@ public class ShowPostFragment extends Fragment {
 
     // XXX
     private void setupPostImage() {
-        GifImageView imageView = (GifImageView)mPostContentView.findViewById(R.id.gif_image);
+        ImageView imageView = (ImageView)mPostContentView.findViewById(R.id.image);
 
         if (mCurrentEntry.getImages().isEmpty()) {
             imageView.setVisibility(View.GONE);
@@ -312,7 +311,6 @@ public class ShowPostFragment extends Fragment {
                 .load(b.toUrl())
                 .placeholder(R.drawable.image_loading_drawable)
                 .error(R.drawable.image_loading_drawable)
-                .noFade()
                 .into(imageView);
 
         final List<ImageInfo> images = mCurrentEntry.getImages();

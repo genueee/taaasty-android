@@ -34,6 +34,7 @@ import ru.taaasty.ui.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;

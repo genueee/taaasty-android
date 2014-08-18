@@ -21,7 +21,7 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.service.ApiTlog;
-import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;

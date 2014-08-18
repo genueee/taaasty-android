@@ -8,8 +8,8 @@
     tools:visibility="visible"
     >
 
-    <pl.droidsonroids.gif.GifImageView
-        android:id="@+id/gif_image"
+    <ImageView
+        android:id="@+id/image"
         android:contentDescription="@string/feed_item_image_content_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

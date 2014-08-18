@@ -196,7 +196,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
                 .load(vh.mImageUrl)
                 .placeholder(R.drawable.image_loading_drawable)
                 .error(R.drawable.image_loading_drawable)
-                .noFade()
                 .into(vh.image);
 
     }

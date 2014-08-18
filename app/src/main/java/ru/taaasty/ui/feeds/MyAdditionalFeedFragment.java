@@ -37,6 +37,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.CirclePageStaticIndicator;
 import rx.Observable;
 import rx.Observer;

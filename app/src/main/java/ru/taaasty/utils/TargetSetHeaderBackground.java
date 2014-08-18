@@ -1,4 +1,4 @@
-package ru.taaasty.ui.feeds;
+package ru.taaasty.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
