@@ -127,7 +127,7 @@ public class Entry implements Parcelable {
     public Spanned getSourceSpanned() {
         if (TextUtils.isEmpty(mSource)) return null;
         if (mSourceSpanned == null) {
-            mSourceSpanned = Html.fromHtml(mText);
+            mSourceSpanned = Html.fromHtml(mSource);
         }
         return mSourceSpanned;
     }

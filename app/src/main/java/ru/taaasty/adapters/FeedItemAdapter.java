@@ -31,6 +31,7 @@ import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
 
 public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
@@ -251,10 +252,17 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     }
 
     private void setText(ViewHolder vh, Entry item) {
-        CharSequence text = item.getTextSpanned();
-        CharSequence source = item.getSourceSpanned();
+        CharSequence text;
+        CharSequence source;
 
-        // XXX: другой шрифт если есть source
+        if (Entry.ENTRY_TYPE_QUOTE.equals(item.getType())) {
+            text = UiUtils.formatQuoteText(item.getText());
+            source = UiUtils.formatQuoteSource(item.getSource());
+        } else {
+            text = item.getTextSpanned();
+            source = null;
+        }
+
         if (text == null) {
             vh.text.setVisibility(View.GONE);
         } else {
@@ -268,7 +276,6 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
             vh.source.setText(source);
             vh.source.setVisibility(View.VISIBLE);
         }
-
     }
 
     private void setRating(ViewHolder vh, Entry item) {

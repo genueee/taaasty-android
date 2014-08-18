@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -37,9 +38,11 @@ import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.feeds.TargetSetHeaderBackground;
+import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -223,6 +226,21 @@ public class ShowPostFragment extends Fragment {
                 .load(backgroudUrl)
                 .into(mFeedDesignTarget);
 
+        FontManager fm = FontManager.getInstance(getActivity());
+        int textColor = design.getFeedTextColor(getResources());
+        Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
+        ((TextView)mUserTitleView.findViewById(R.id.user_name)).setTypeface(tf);
+
+        for (int id: new int[] {
+                R.id.title,
+                R.id.text,
+                R.id.source,
+        }) {
+            TextView tw = (TextView)mPostContentView.findViewById(id);
+            tw.setTypeface(tf);
+            tw.setTextColor(textColor);
+        }
+
     }
 
     void setupPost() {
@@ -312,8 +330,16 @@ public class ShowPostFragment extends Fragment {
     private void setupPostText() {
         TextView textView = (TextView)mPostContentView.findViewById(R.id.text);
         TextView sourceView = (TextView)mPostContentView.findViewById(R.id.source);
-        CharSequence text = mCurrentEntry.getTextSpanned();
-        CharSequence source = mCurrentEntry.getSourceSpanned();
+        CharSequence text;
+        CharSequence source;
+
+        if (Entry.ENTRY_TYPE_QUOTE.equals(mCurrentEntry.getType())) {
+            text = UiUtils.formatQuoteText(mCurrentEntry.getText());
+            source = UiUtils.formatQuoteSource(mCurrentEntry.getSource());
+        } else {
+            text = mCurrentEntry.getTextSpanned();
+            source = null;
+        }
 
         // XXX: другой шрифт если есть source
         if (text == null) {
