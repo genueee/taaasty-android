@@ -3,6 +3,7 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,6 +54,8 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     private final ImageUtils mImageUtils;
     private final OnItemListener mListener;
 
+    private boolean mShowUserAvatar = true;
+
     private final Set<Long> mUpdateRatingEntrySet;
 
     public FeedItemAdapter(Context context, OnItemListener mListener) {
@@ -73,6 +76,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         appendFeed(feed);
     }
 
+
     public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
         for (Entry i: mFeed) {
@@ -89,6 +93,13 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
 
     public List<Entry> getFeed() {
         return Collections.unmodifiableList(mFeed);
+    }
+
+    public void setShowUserAvatar(boolean show) {
+        if (show != mShowUserAvatar) {
+            mShowUserAvatar = show;
+            notifyDataSetChanged();
+        }
     }
 
     public void onUpdateRatingStart(long entryId) {
@@ -195,9 +206,13 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     }
 
     private void setAuthor(ViewHolder vh, Entry item) {
-        User author = item.getAuthor();
-        vh.author.setText(author.getSlug());
-        mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
+        if (mShowUserAvatar) {
+            User author = item.getAuthor();
+            vh.author.setText(author.getSlug());
+            mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
+        } else {
+            vh.avarar_author.setVisibility(View.GONE);
+        }
     }
 
     private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {
@@ -246,7 +261,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         if (TextUtils.isEmpty(title)) {
             vh.title.setVisibility(View.GONE);
         } else {
-            vh.title.setText(title);
+            vh.title.setText(Html.fromHtml(title));
             vh.title.setVisibility(View.VISIBLE);
         }
     }
@@ -297,11 +312,9 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
             if (r.isVoted) {
                 vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
                 vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_gt0_likes, 0, 0, 0);
-                vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border_gt0);
             } else {
                 vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_gray));
                 vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_no_likes_light, 0, 0, 0);
-                vh.likes.setBackgroundResource(R.drawable.feed_item_likes_border);
             }
         }
     }
@@ -344,6 +357,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     };
 
     public class ViewHolder {
+        private final ViewGroup avarar_author;
         public final ImageView avatar;
         public final TextView author;
         public final ImageView image;
@@ -357,8 +371,9 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         private String mImageUrl = null;
 
         public ViewHolder(View v) {
-            avatar = (ImageView) v.findViewById(R.id.avatar);
-            author = (TextView) v.findViewById(R.id.author);
+            avarar_author = (ViewGroup) v.findViewById(R.id.avatar_author);
+            avatar = (ImageView) avarar_author.findViewById(R.id.avatar);
+            author = (TextView) avarar_author.findViewById(R.id.author);
             image = (ImageView) v.findViewById(R.id.image);
             title = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
             text = (EllipsizingTextView) v.findViewById(R.id.feed_item_text);

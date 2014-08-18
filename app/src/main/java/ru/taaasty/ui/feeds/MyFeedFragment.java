@@ -123,6 +123,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
         mListView.addParallaxedHeaderView(mHeaderView);
         mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
+        mAdapter.setShowUserAvatar(false);
         mListView.setAdapter(mAdapter);
 
         if (!mRefreshLayout.isRefreshing()) refreshData();

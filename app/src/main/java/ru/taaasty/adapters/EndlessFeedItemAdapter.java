@@ -64,6 +64,10 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter implements  
         restartAppending();
     }
 
+    public void setShowUserAvatar(boolean show) {
+        mAdapter.setShowUserAvatar(show);
+    }
+
     public void setFeedDesign(TlogDesign design) {
         mAdapter.setFeedDesign(design);
     }
