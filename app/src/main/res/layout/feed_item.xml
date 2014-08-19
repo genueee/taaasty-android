@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:paddingTop="8dp"
     android:background="@android:color/white"
     >
 
@@ -51,7 +52,7 @@
         style="@style/PostTitle"
         android:visibility="gone"
         tools:text="Ролики"
-        android:textSize="28dp"
+        android:textSize="28sp"
         android:textIsSelectable="false"
         tools:visibility="visible"/>
 
@@ -68,77 +69,6 @@
         android:lines="1"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:orientation="horizontal"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="16dp"
-        android:paddingBottom="4dp"
-        android:paddingLeft="@dimen/feed_item_padding_left"
-        android:paddingRight="@dimen/feed_item_padding_right"
-        >
-
-        <TextView
-            android:id="@+id/comments_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            tools:text="56"
-            android:clickable="true"
-            android:drawableLeft="@drawable/ic_comments_count_light"
-            android:drawablePadding="4dp"
-            android:textSize="16sp"
-            android:textColor="@color/text_color_feed_item_gray"
-            android:layout_marginRight="8dp"
-            android:background="@drawable/clickable_item_background"
-            android:minWidth="32dp"
-            android:minHeight="42dp"
-            android:paddingTop="8dp"
-            android:paddingLeft="0dp"
-            android:paddingRight="8dp"
-            android:paddingBottom="8dp"
-            android:layout_alignParentLeft="true" />
-
-        <TextView
-            android:id="@+id/likes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:drawableLeft="@drawable/ic_gt0_likes"
-            android:drawablePadding="4dp"
-            tools:text="345"
-            android:clickable="true"
-            android:textSize="16sp"
-            android:textColor="@color/text_color_feed_item_gray"
-            android:background="@drawable/clickable_item_background"
-            android:layout_marginRight="4dp"
-            android:layout_marginLeft="4dp"
-            android:minWidth="48dp"
-            android:minHeight="42dp"
-            android:padding="8dp"
-            android:layout_toRightOf="@id/comments_count"
-            />
-
-        <ImageView
-            android:id="@+id/more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_gravity="right"
-            android:background="@drawable/clickable_item_background"
-            android:contentDescription="@string/feed_item_more_content_description"
-            android:minHeight="42dp"
-            android:gravity="center"
-            android:clickable="true"
-            android:src="@drawable/ic_more_light"
-            android:padding="8dp"
-            android:layout_alignParentRight="true"
-            />
-
-
-    </RelativeLayout>
+    <include layout="@layout/include_post_bottom_action_bar"/>
 
 </LinearLayout>

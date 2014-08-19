@@ -1,12 +1,9 @@
 package ru.taaasty.ui.photo;
 
-import android.animation.ValueAnimator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,14 +11,9 @@ import android.os.Handler;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
-import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +21,8 @@ import java.util.List;
 import ru.taaasty.R;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.User;
-import ru.taaasty.model.Userpic;
-import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
 
 public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
@@ -46,14 +36,11 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
     private volatile boolean userForcedToChangeOverlayMode = false;
 
     private PhotoAdapter mAdapter;
-    private ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_photo);
-
-        Picasso picasso = NetworkUtils.getInstance().getPicasso(this);
 
         ArrayList<ImageInfo> images = getIntent().getParcelableArrayListExtra(ARG_IMAGE_URL_LIST);
         String title = getIntent().getStringExtra(ARG_TITLE);
@@ -63,60 +50,23 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
             throw new IllegalStateException("ARG_IMAGE_URL_LIST not defined");
         }
 
-        ActionBar ab = getActionBar();
-        if (ab != null) {
-            ab.setTitle(title == null ? "" : Html.fromHtml(title));
+        mAdapter = new PhotoAdapter(getFragmentManager(), images);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.PhotoViewPager);
+        viewPager.setAdapter(mAdapter);
+
+        if (getActionBar() != null) {
+            ActionBar ab = getActionBar();
+            ab.setTitle(title == null ?  "" : Html.fromHtml(title));
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setIcon(R.drawable.avatar_dummy);
-        }
 
-        setupAuthor(author);
-
-        mAdapter = new PhotoAdapter(getFragmentManager(), images);
-        mViewPager = (ViewPager)findViewById(R.id.PhotoViewPager);
-        mViewPager.setAdapter(mAdapter);
-    }
-
-    private void setupAuthor(User author) {
-        ActionBar ab;
-        Picasso picasso;
-        Userpic up;
-        String userpicUrl;
-        ThumborUrlBuilder b;
-        CircleTransformation circleTransformation;
-        int avatarDiameter;
-
-        ab = getActionBar();
-        if (ab == null) return;
-        picasso = NetworkUtils.getInstance().getPicasso(this);
-        circleTransformation = new CircleTransformation();
-        up = author.getUserpic();
-        userpicUrl = up.largeUrl;
-        if (TextUtils.isEmpty(userpicUrl)) {
-            ab.setIcon(new DefaultUserpicDrawable(up, author.getName()));
-            return;
-        }
-
-        b = NetworkUtils.createThumborUrl(userpicUrl);
-        avatarDiameter = getResources().getDimensionPixelSize(android.R.dimen.app_icon_size);
-        if (b != null) {
-            userpicUrl = b.resize(avatarDiameter, avatarDiameter)
-                    .smart()
-                    .toUrl();
-            // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
-            picasso.load(userpicUrl)
-                    .placeholder(R.drawable.ic_user_stub_dark)
-                    .error(R.drawable.ic_user_stub_dark)
-                    .transform(circleTransformation)
-                    .into(mUserAvatarTarget);
-        } else {
-            picasso.load(userpicUrl)
-                    .resize(avatarDiameter, avatarDiameter)
-                    .centerCrop()
-                    .placeholder(R.drawable.ic_user_stub_dark)
-                    .error(R.drawable.ic_user_stub_dark)
-                    .transform(circleTransformation)
-                    .into(mUserAvatarTarget);
+            ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                    Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_SHORT).show();
+                }
+            };
+            abIconLoader.loadIcon(author.getUserpic(), author.getName());
         }
     }
 
@@ -129,41 +79,6 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    private final Target mUserAvatarTarget = new Target() {
-        @Override
-        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-            final ActionBar ab = getActionBar();
-            if (ab == null) return;
-            if (!Picasso.LoadedFrom.NETWORK.equals(from)) {
-                ab.setIcon(new BitmapDrawable(getResources(), bitmap));
-            } else {
-                ValueAnimator va = ValueAnimator.ofInt(0, 255);
-                va.setDuration(300);
-                va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-
-                    final ActionBar ab = getActionBar();
-                    final BitmapDrawable bd = new BitmapDrawable(getResources(), bitmap);
-
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        bd.setAlpha((Integer) animation.getAnimatedValue());
-                        ab.setIcon(bd);
-                    }
-                });
-                va.start();
-            }
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-        }
-    };
 
     private void runHideActionBarTimer() {
         mHideActionBarHandler.postDelayed(new Runnable() {
@@ -239,5 +154,4 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
             return ShowPhotoFragment.newInstance(url);
         }
     }
-
 }

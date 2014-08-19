@@ -4,8 +4,6 @@ import android.app.Fragment;
 import android.util.Log;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.R;
-import ru.taaasty.adapters.IFeedItemAdapter;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.service.ApiEntries;
@@ -19,14 +17,17 @@ public abstract class LikesHelper {
     private static final String TAG = "LikesHelper";
 
     private final Fragment mFragment;
-    private final IFeedItemAdapter mAdapter;
     private final ApiEntries mApiEntriesService;
 
-    public LikesHelper(Fragment fragment, IFeedItemAdapter adapter) {
+    public LikesHelper(Fragment fragment) {
         mFragment = fragment;
-        mAdapter = adapter;
         mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
     }
+
+    public abstract boolean isRatingInUpdate(long entryId);
+    public abstract void onRatingUpdateStart(long entryId);
+    public abstract void onRatingUpdateCompleted(Entry entry);
+    public abstract void onRatingUpdateError(Throwable e, Entry entry);
 
     /**
      * Лайкаем, либо снимаем лайк, в зависимости от статуса entry.rating
@@ -39,27 +40,25 @@ public abstract class LikesHelper {
             return;
         }
 
-        if (mAdapter == null) return;
-
-        if (mAdapter.isRatingInUpdate(entry.getId())) {
+        if (isRatingInUpdate(entry.getId())) {
             if (DBG) Log.e(TAG, "entry is in process of upgrade");
             return;
         }
 
         Observable<Rating> observable;
         if (rating.isVoted) {
-            observable = mApiEntriesService.unvote(entry.getId());
+            // XXX: убрать нафиг, когда починат отмену голоса
+            return;
+            // observable = mApiEntriesService.unvote(entry.getId());
         } else {
             observable = mApiEntriesService.vote(entry.getId());
         }
 
-        mAdapter.onUpdateRatingStart(entry.getId());
+        onRatingUpdateStart(entry.getId());
         AndroidObservable.bindFragment(mFragment,
                 observable.observeOn(AndroidSchedulers.mainThread())
         ).subscribe(new UpdateRatingObserver(entry));
     }
-
-    public abstract void notifyError(String error, Throwable e);
 
     public class UpdateRatingObserver implements Observer<Rating> {
 
@@ -72,22 +71,19 @@ public abstract class LikesHelper {
         @Override
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
-            if (mAdapter != null) mAdapter.onUpdateRatingEnd(mEntry.getId());
+            onRatingUpdateCompleted(mEntry);
         }
 
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            if (mAdapter != null) mAdapter.onUpdateRatingEnd(mEntry.getId());
-            notifyError(mFragment.getString(R.string.error_vote), e);
+            onRatingUpdateCompleted(mEntry);
+            onRatingUpdateError(e, mEntry);
         }
 
         @Override
         public void onNext(Rating rating) {
-            if (mAdapter != null) {
-                mEntry.setRating(rating);
-                mAdapter.updateEntry(mEntry);
-            }
+            mEntry.setRating(rating);
         }
     }
 

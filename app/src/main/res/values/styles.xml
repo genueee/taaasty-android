@@ -7,7 +7,40 @@
         <item name="vpiCirclePageIndicatorStyle">@style/LiveFeedCirclePageIndicator</item>
     </style>
 
-    <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light"/>
+    <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light">
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_wrapper</item>
+        <item name="android:actionBarStyle">@style/ActionBar.Taaasty</item>>
+    </style>
+
+    <style name="AppThemeOverlayingActionBar" parent="AppThemeLightActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
+    <style name="ShowPostTheme" parent="AppThemeOverlayingActionBar">
+        <item name="android:windowBackground">@color/show_post_background</item>
+        <item name="android:colorBackground">@color/show_post_background</item>
+        <item name="android:colorBackgroundCacheHint">@color/show_post_background</item>
+    </style>
+
+    <style name="FullscreenThemeBase" parent="android:Theme.Holo">
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_wrapper</item>
+        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@android:color/background_dark</item>
+        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
+        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
+    </style>
+
+    <style name="FullscreenTheme" parent="FullscreenThemeBase"/>
+
+    <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
+        <item name="android:background">@color/black_overlay</item>
+    </style>
+
+    <style name="ActionBar.Taaasty" parent="android:Widget.Holo.Light.ActionBar">
+        <item name="android:background">@android:color/white</item>
+    </style>
 
     <style name="TabbarButton">
         <item name="android:paddingTop">8dp</item>
@@ -44,20 +77,6 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:backgroundDimAmount">0.90</item>
-    </style>
-
-    <style name="FullscreenThemeBase" parent="android:Theme.Holo">
-        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@android:color/background_dark</item>
-        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
-        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
-    </style>
-
-    <style name="FullscreenTheme" parent="FullscreenThemeBase"/>
-
-    <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
-        <item name="android:background">@color/black_overlay</item>
     </style>
 
     <style name="LoginButtonContainer">

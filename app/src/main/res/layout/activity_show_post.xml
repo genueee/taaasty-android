@@ -11,6 +11,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <include layout="@layout/include_action_bar" />
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        tools:text="Неправильный логин или пароль"
+        style="@style/ErrorTextView" />
 
 </FrameLayout>

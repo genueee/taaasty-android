@@ -16,13 +16,14 @@
     <color name="refresh_widget_color2">#ff202020</color>
     <color name="refresh_widget_color3">#ff606060</color>
     <color name="refresh_widget_color4">#ff909090</color>
-    <color name="feed_dark_text_color">@android:color/white</color>
-    <color name="feed_light_text_color">@android:color/black</color>
+    <color name="feed_white_text">@android:color/white</color>
+    <color name="feed_black_text">@android:color/black</color>
     <color name="feed_dark_background_color">#ff1e1e1e</color>
-    <color name="feed_light_background_color">@android:color/white</color>
+    <color name="feed_light_background_color">#ffeeeeee</color>
     <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
     <color name="life_feed_background">#ffeaeaea</color>
+    <color name="show_post_background">#ffeeeeee</color>
 
 </resources>

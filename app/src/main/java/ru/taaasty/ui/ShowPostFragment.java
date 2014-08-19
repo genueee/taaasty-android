@@ -2,8 +2,8 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.TypedArray;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -21,7 +22,6 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
@@ -43,6 +43,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -76,6 +77,10 @@ public class ShowPostFragment extends Fragment {
     @Nullable
     private ViewGroup mUserTitleView;
     private ViewGroup mPostContentView;
+    private EntryBottomActionBar mEntryBottomActionBar;
+    private TextView mTitleView;
+    private TextView mTextView;
+    private TextView mSourceView;
 
     private long mPostId;
 
@@ -136,6 +141,14 @@ public class ShowPostFragment extends Fragment {
             mUserTitleView = null;
         }
 
+        mEntryBottomActionBar = new EntryBottomActionBar(mPostContentView.findViewById(R.id.entry_bottom_action_bar), false);
+        mEntryBottomActionBar.setOnItemClickListener(mEntryActionBarListener);
+        mEntryBottomActionBar.setCommentsClickable(false);
+
+        mTitleView = (TextView)mPostContentView.findViewById(R.id.title);
+        mTextView = (TextView)mPostContentView.findViewById(R.id.text);
+        mSourceView = (TextView)mPostContentView.findViewById(R.id.source);
+
         return v;
     }
 
@@ -164,6 +177,7 @@ public class ShowPostFragment extends Fragment {
             mDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
             ArrayList<Comment> comments = savedInstanceState.getParcelableArrayList(KEY_COMMENTS);
             mCommentsAdapter.setComments(comments);
+            if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             setupEntry();
         }
 
@@ -190,6 +204,12 @@ public class ShowPostFragment extends Fragment {
         mCommentsSubscribtion.unsubscribe();
         mTlogDesignSubscribtion.unsubscribe();
         mFeedDesignTarget = null;
+        mEntryBottomActionBar = null;
+        mUserTitleView = null;
+        mPostContentView = null;
+        mSourceView = null;
+        mTextView = null;
+        mTitleView = null;
     }
 
     @Override
@@ -209,6 +229,31 @@ public class ShowPostFragment extends Fragment {
         }
     };
 
+    private void adjustPaddings() {
+        final TypedArray styledAttributes = getActivity().getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int abSize = (int) styledAttributes.getDimensionPixelSize(0, 0);
+        styledAttributes.recycle();
+
+        if (willMyListScroll()) {
+            mListView.setPadding(mListView.getPaddingLeft(), 0, mListView.getPaddingRight(), mListView.getPaddingBottom());
+        } else {
+            mListView.setPadding(mListView.getPaddingLeft(), abSize, mListView.getPaddingRight(), mListView.getPaddingBottom());
+        }
+
+        // XXX
+    }
+
+    private boolean willMyListScroll() {
+        if (mListView.getChildCount() == 0) return false;
+        int pos = mListView.getLastVisiblePosition();
+        if (mListView.getChildAt(pos).getBottom() > mListView.getHeight()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     void setupAuthor() {
         if (!mShowUserHeader) return;
         if (mCurrentEntry == null || mCurrentEntry.getAuthor() == null) {
@@ -216,31 +261,60 @@ public class ShowPostFragment extends Fragment {
         } else {
             User author = mCurrentEntry.getAuthor();
             String name = author.getName();
-            if (name == null) name = "";
-            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
+            name = UiUtils.capitalize(name);
             ((TextView)mUserTitleView.findViewById(R.id.user_name)).setText(name);
             setupAvatar(author);
         }
     }
 
     private void setupEntry() {
+        mEntryBottomActionBar.setOnItemListenerEntry(mCurrentEntry);
+        mEntryBottomActionBar.setupEntry(mCurrentEntry);
         setupFeedDesign();
-        setupAuthor();
-        setupPost();
+
+        if (mCurrentEntry == null) {
+            mPostContentView.setVisibility(View.GONE);
+            // XXX
+        } else {
+            mPostContentView.setVisibility(View.VISIBLE);
+            setupAuthor();
+            setupPostImage();
+            setupPostText();
+            mListView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adjustPaddings();
+                }
+            }, 64);
+        }
+        mListView.setOnScrollListener(mScrollListener);
     }
 
     void setupFeedDesign() {
-        // XXX
         TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
-        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+        /*
+        Drawable currentDrawable = mListView.getBackground();
+        Drawable newDrawable = new ColorDrawable(design.getFeedBackgroundColor(getResources()));
+
+        if (currentDrawable == null) {
+            mListView.setBackgroundDrawable(newDrawable);
+        } else {
+            TransitionDrawable td = new TransitionDrawable(new Drawable[]{currentDrawable, newDrawable});
+            mListView.setBackgroundDrawable(td);
+            td.startTransition(200);
+        }
+        */
+
         String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
         FontManager fm = FontManager.getInstance(getActivity());
+
         int textColor = design.getFeedTextColor(getResources());
         Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
 
+        /*
         if (mUserTitleView != null) {
             ((TextView) mUserTitleView.findViewById(R.id.user_name)).setTypeface(tf);
             mFeedDesignTarget = new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
@@ -248,6 +322,7 @@ public class ShowPostFragment extends Fragment {
                     .load(backgroudUrl)
                     .into(mFeedDesignTarget);
         }
+        */
 
         for (int id: new int[] {
                 R.id.title,
@@ -256,21 +331,10 @@ public class ShowPostFragment extends Fragment {
         }) {
             TextView tw = (TextView)mPostContentView.findViewById(id);
             tw.setTypeface(tf);
-            tw.setTextColor(textColor);
+            // tw.setTextColor(textColor);
         }
+        // mEntryBottomActionBar.setTlogDesign(design);
 
-    }
-
-    void setupPost() {
-        if (mCurrentEntry == null) {
-            mPostContentView.setVisibility(View.GONE);
-            // XXX
-            return;
-        }
-        mPostContentView.setVisibility(View.VISIBLE);
-        setupPostImage();
-        setupPostTitle();
-        setupPostText();
     }
 
     // XXX
@@ -333,44 +397,52 @@ public class ShowPostFragment extends Fragment {
         });
     }
 
-    private void setupPostTitle() {
-        TextView titleView = (TextView)mPostContentView.findViewById(R.id.title);
-        String title = mCurrentEntry.getTitle();
-        if (TextUtils.isEmpty(title)) {
-            titleView.setVisibility(View.GONE);
-        } else {
-            titleView.setText(Html.fromHtml(title));
-            titleView.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void setupPostText() {
-        TextView textView = (TextView)mPostContentView.findViewById(R.id.text);
-        TextView sourceView = (TextView)mPostContentView.findViewById(R.id.source);
+        CharSequence title;
         CharSequence text;
         CharSequence source;
+        boolean hasTitle = false;
 
         if (Entry.ENTRY_TYPE_QUOTE.equals(mCurrentEntry.getType())) {
+            title = null;
             text = UiUtils.formatQuoteText(mCurrentEntry.getText());
             source = UiUtils.formatQuoteSource(mCurrentEntry.getSource());
+        } else if (Entry.ENTRY_TYPE_IMAGE.endsWith(mCurrentEntry.getType())) {
+            title = null;
+            text = mCurrentEntry.getTitle();
+            if (!TextUtils.isEmpty(text)) text = Html.fromHtml(text.toString());
+            source = null;
         } else {
+            title = mCurrentEntry.getTitle();
             text = mCurrentEntry.getTextSpanned();
             source = null;
         }
 
-        // XXX: другой шрифт если есть source
-        if (text == null) {
-            textView.setVisibility(View.GONE);
+        if (TextUtils.isEmpty(title)) {
+            mTitleView.setVisibility(View.GONE);
+            hasTitle = false;
         } else {
-            textView.setText(text);
-            textView.setVisibility(View.VISIBLE);
+            mTitleView.setText(Html.fromHtml(title.toString()));
+            mTitleView.setVisibility(View.VISIBLE);
+            hasTitle = true;
+        }
+
+        if (text == null) {
+            mTextView.setVisibility(View.GONE);
+        } else {
+            mTextView.setText(text);
+            mTextView.setVisibility(View.VISIBLE);
+            mTextView.setPadding(mTextView.getPaddingLeft(),
+                    hasTitle ? 0 : getResources().getDimensionPixelSize(R.dimen.post_no_title_padding),
+                    mTextView.getPaddingRight(),
+                    mTextView.getPaddingBottom());
         }
 
         if (source == null) {
-            sourceView.setVisibility(View.GONE);
+            mSourceView.setVisibility(View.GONE);
         } else {
-            sourceView.setText(source);
-            sourceView.setVisibility(View.VISIBLE);
+            mSourceView.setText(source);
+            mSourceView.setVisibility(View.VISIBLE);
         }
     }
 
@@ -414,6 +486,43 @@ public class ShowPostFragment extends Fragment {
 
     }
 
+    private final AbsListView.OnScrollListener mScrollListener = new  AbsListView.OnScrollListener() {
+        private boolean mBottomReachedCalled = false;
+
+        @Override
+        public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+        }
+
+        @Override
+        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+            final int lastItem = firstVisibleItem + visibleItemCount;
+            int lastBottom = 0;
+            int listViewHeight = 0;
+
+            boolean atBottom = false;
+
+            if (lastItem == totalItemCount) {
+                lastBottom = mListView.getChildAt(mListView.getChildCount() - 1).getBottom();
+                listViewHeight = mListView.getHeight();
+                if (DBG) Log.v(TAG, "child bottom: " + lastBottom + " view height: " + listViewHeight);
+                atBottom = lastBottom <= listViewHeight;
+            }
+
+            if (atBottom) {
+                if (!mBottomReachedCalled) {
+                    mBottomReachedCalled = true;
+                    if (mListener != null) mListener.onBottomReached(lastBottom, listViewHeight);
+                }
+            } else {
+                if (mBottomReachedCalled) {
+                    mBottomReachedCalled = false;
+                    if (mListener != null) mListener.onBottomUnreached();
+                }
+            }
+        }
+    };
+
     private final Observer<Entry> mCurrentEntryObserver = new Observer<Entry>() {
 
         @Override
@@ -433,6 +542,7 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(Entry entry) {
             mCurrentEntry = entry;
+            if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             setupEntry();
             loadComments();
             //
@@ -473,8 +583,67 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(TlogDesign design) {
             mDesign = design;
-            if (mCommentsAdapter != null) mCommentsAdapter.setFeedDesign(mDesign);
+            TlogDesign designLight = new TlogDesign();
+            designLight.setFontTypeface(design.isFontTypefaceSerif());
+            if (mCommentsAdapter != null) mCommentsAdapter.setFeedDesign(designLight);
             setupFeedDesign();
+        }
+    };
+
+    private boolean mUpdateRating;
+
+    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
+
+        public LikesHelper() {
+            super(ShowPostFragment.this);
+        }
+
+        @Override
+        public boolean isRatingInUpdate(long entryId) {
+            return mUpdateRating;
+        }
+
+        @Override
+        public void onRatingUpdateStart(long entryId) {
+            mUpdateRating = true;
+            // XXX: refresh item
+        }
+
+        @Override
+        public void onRatingUpdateCompleted(Entry entry) {
+            mUpdateRating = false;
+            mCurrentEntry = entry;
+            setupEntry();
+        }
+
+        @Override
+        public void onRatingUpdateError(Throwable e, Entry entry) {
+            mUpdateRating = false;
+            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
+        }
+    }
+
+    private final EntryBottomActionBar.OnEntryActionBarListener mEntryActionBarListener = new EntryBottomActionBar.OnEntryActionBarListener() {
+
+        @Override
+        public void onPostLikesClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
+            new LikesHelper().voteUnvote(entry);
+        }
+
+        @Override
+        public void onPostCommentsClicked(View view, long postId) {
+            // XXX
+        }
+
+        @Override
+        public void onPostUserInfoClicked(View view, Entry entry) {
+            if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+        }
+
+        @Override
+        public void onPostAdditionalMenuClicked(View view, long postId) {
+            // XXX
         }
     };
 
@@ -489,7 +658,11 @@ public class ShowPostFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onPostLoaded(Entry entry);
         public void onAvatarClicked(User user, TlogDesign design);
         public void onShowImageClicked(User author, List<ImageInfo> images, String title);
+
+        public void onBottomReached(int listBottom, int listViewHeight);
+        public void onBottomUnreached();
     }
 }

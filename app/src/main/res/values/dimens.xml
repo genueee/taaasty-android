@@ -3,6 +3,9 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <!-- Диаметр окружности с аватаркой автора в панели лайков под постом -->
+    <dimen name="avatar_extra_small_diameter">30dp</dimen>
+
     <!-- Диаметр окружности с аватаркой автора в ленте -->
     <dimen name="avatar_small_diameter">48dp</dimen>
 
@@ -25,6 +28,12 @@
     <dimen name="feed_grid_item_padding_top">4dp</dimen>
     <dimen name="feed_grid_item_padding_bottom">4dp</dimen>
 
+    <dimen name="post_item_padding_left">22dp</dimen>
+    <dimen name="post_item_padding_right">22dp</dimen>
+
+    <dimen name="post_item_likes_padding_left">12dp</dimen>
+    <dimen name="post_item_likes_padding_right">12dp</dimen>
+
     <!-- Высота заголовка над лентой -->
     <dimen name="header_title_subtitle_height">195dp</dimen>
     <dimen name="live_feed_pager_indicator_top">175dp</dimen>
@@ -33,6 +42,8 @@
     <dimen name="login_btn_background_corner_radius">2dp</dimen>
     <dimen name="thin_button_border">0.5dp</dimen>
     <dimen name="thin_button_corner_radius">6dp</dimen>
+
+    <dimen name="post_no_title_padding">16dp</dimen>
 
 
 </resources>

@@ -31,7 +31,7 @@ repositories {
 }
 
 android {
-    compileSdkVersion 19
+    compileSdkVersion 20
     buildToolsVersion "20.0"
 
     defaultConfig {
@@ -111,7 +111,6 @@ dependencies {
     }
 
     compile project(':ndkstackblur')
-    compile project(':paralloid')
     compile project(':ViewPagerIndicator')
 
     // You must install or update the Support Repository through the SDK manager to use this dependency.

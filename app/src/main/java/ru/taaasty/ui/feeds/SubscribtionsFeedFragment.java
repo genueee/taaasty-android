@@ -31,7 +31,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
-import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -208,6 +207,34 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
     }
 
+    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
+
+        public LikesHelper() {
+            super(SubscribtionsFeedFragment.this);
+        }
+
+        @Override
+        public boolean isRatingInUpdate(long entryId) {
+            return mAdapter.isRatingInUpdate(entryId);
+        }
+
+        @Override
+        public void onRatingUpdateStart(long entryId) {
+            mAdapter.onUpdateRatingStart(entryId);
+        }
+
+        @Override
+        public void onRatingUpdateCompleted(Entry entry) {
+            mAdapter.onUpdateRatingEnd(entry.getId());
+        }
+
+        @Override
+        public void onRatingUpdateError(Throwable e, Entry entry) {
+            mAdapter.onUpdateRatingEnd(entry.getId());
+            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
+        }
+    }
+
     public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
 
         @Override
@@ -219,27 +246,27 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         }
 
         @Override
-        public void onFeedLikesClicked(View view, Entry entry) {
-            if (DBG) Log.v(TAG, "onFeedLikesClicked entry: " + entry);
-            new LikesHelper(SubscribtionsFeedFragment.this, mAdapter) {
-                @Override
-                public void notifyError(String error, Throwable e) {
-                    if (mListener != null) mListener.notifyError(error, e);
-                }
-            }.voteUnvote(entry);
+        public void onPostUserInfoClicked(View view, Entry entry) {
+            throw new IllegalStateException();
         }
 
         @Override
-        public void onFeedCommentsClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedCommentsClicked postId: " + postId);
+        public void onPostLikesClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
+            new LikesHelper().voteUnvote(entry);
+        }
+
+        @Override
+        public void onPostCommentsClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + postId);
             Intent i = new Intent(getActivity(), ShowPostActivity.class);
             i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
             startActivity(i);
         }
 
         @Override
-        public void onFeedAdditionalMenuClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedAdditionalMenuClicked postId: " + postId);
+        public void onPostAdditionalMenuClicked(View view, long postId) {
+            if (DBG) Log.v(TAG, "onPostAdditionalMenuClicked postId: " + postId);
             Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
         }
     };

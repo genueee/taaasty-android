@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/entry_bottom_action_bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:orientation="horizontal"
+    android:clickable="false"
+    android:gravity="center_vertical"
+    android:baselineAligned="false"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="16dp"
+    android:paddingBottom="4dp"
+    android:layout_marginLeft="@dimen/feed_item_padding_left"
+    android:layout_marginRight="@dimen/feed_item_padding_right">
+
+    <TextView
+        android:id="@+id/likes"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:drawableLeft="@drawable/ic_like_not_voted_light"
+        android:drawablePadding="6dp"
+        tools:text="345"
+        android:clickable="true"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="@drawable/clickable_item_background"
+        android:minWidth="42dp"
+        android:minHeight="42dp"
+        android:gravity="center_vertical"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/comments_count"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        tools:text="56"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_comments_count_light"
+        android:drawablePadding="6dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="@drawable/clickable_item_background"
+        android:minWidth="68sp"
+        android:minHeight="42dp"
+        android:gravity="center_vertical"
+        android:padding="8dp" />
+
+    <TextView
+        android:id="@+id/user_info"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:drawablePadding="8dp"
+        tools:text="genue"
+        android:clickable="true"
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:background="@drawable/clickable_item_background"
+        android:singleLine="true"
+        android:shadowDx="1.1"
+        android:shadowDy="1.1"
+        android:shadowColor="@android:color/white"
+        android:minWidth="48dp"
+        android:minHeight="42dp"
+        android:gravity="center_vertical"
+        android:padding="8dp" />
+
+    <ImageView
+        android:id="@+id/more"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="right"
+        android:background="@drawable/clickable_item_background"
+        android:contentDescription="@string/feed_item_more_content_description"
+        android:minHeight="42dp"
+        android:clickable="true"
+        android:gravity="center_vertical"
+        android:src="@drawable/ic_more_light"
+        android:padding="8dp" />
+
+
+</LinearLayout>

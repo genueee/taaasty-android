@@ -11,7 +11,6 @@ import android.text.TextUtils;
 
 import java.util.Random;
 
-import ru.taaasty.model.Entry;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.utils.FontManager;
 
@@ -64,7 +63,6 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
 
     @Override
     public void draw(Canvas canvas) {
-
         if (!mPaintsInvalidated) {
             invalidatePaints();
         }
@@ -123,7 +121,6 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
         mTextPaint.setTextSize(textSize);
 
         mPaintsInvalidated = true;
-
     }
 
     @Override

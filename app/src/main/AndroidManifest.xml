@@ -46,29 +46,30 @@
         <activity
             android:name=".ui.AdditionalMenuActivity"
             android:label="@string/title_activity_additional_menu"
-            android:parentActivityName=".ui.tabbar.MainActivity"
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AdditionMenuActivityTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.MainActivity" />
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
             android:name=".ui.feeds.MyAdditionalFeedActivity"
-            android:parentActivityName=".ui.tabbar.MainActivity"
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.MainActivity" />
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
             android:name=".ui.ShowPostActivity"
             android:label="@string/title_activity_show_post"
-            android:parentActivityName=".ui.tabbar.MainActivity"
+            android:theme="@style/ShowPostTheme"
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.MainActivity" />
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
             android:name=".ui.UserInfoActivity"
@@ -80,11 +81,11 @@
         <activity
             android:name=".ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
-            android:parentActivityName=".ui.tabbar.MainActivity"
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:theme="@style/AppThemeLightActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.MainActivity" />
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
             android:name=".ui.photo.ShowPhotoActivity"

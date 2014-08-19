@@ -1,18 +1,22 @@
 package ru.taaasty.utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.widgets.DefaultUserpicDrawable;
+import ru.taaasty.widgets.PicassoDrawable;
 
 public class ImageUtils {
 
@@ -63,44 +67,81 @@ public class ImageUtils {
                            String userName,
                            ImageView dst,
                            @DimenRes int diameterResource) {
-        int avatarDiameter;
-        String userpicUrl;
-        Context context = dst.getContext();
-        Picasso picasso = NetworkUtils.getInstance().getPicasso(context);
-        avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+        loadAvatar(dst.getContext(), userpic, userName, new ImageViewTarget(dst), diameterResource);
+    }
 
-        if (userpic != null) {
-            userpicUrl = userpic.largeUrl;
-        } else {
-            userpicUrl = null;
-        }
+    public void loadAvatar(
+            Context context,
+            @Nullable Userpic userpic,
+            String userName,
+            DrawableTarget target,
+            @DimenRes int diameterResource) {
+        ThumborUrlBuilder b;
+        String userpicUrl;
+        int avatarDiameter;
+
+        userpicUrl = userpic == null ? null : userpic.largeUrl;
+        Picasso picasso = NetworkUtils.getInstance().getPicasso(context);
 
         if (TextUtils.isEmpty(userpicUrl)) {
-            // dst.setImageResource(R.drawable.avatar_dummy);
-            dst.setImageDrawable(new DefaultUserpicDrawable(userpic, userName));
+            target.onDrawableReady(new DefaultUserpicDrawable(userpic, userName));
+            return;
+        }
+
+        b = NetworkUtils.createThumborUrl(userpicUrl);
+        avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+        if (b != null) {
+            userpicUrl = b.resize(avatarDiameter, avatarDiameter)
+                    .smart()
+                    .toUrl();
+            // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+            picasso.load(userpicUrl)
+                    .placeholder(R.drawable.ic_user_stub_dark)
+                    .error(R.drawable.ic_user_stub_dark)
+                    .transform(mCircleTransformation)
+                    .into(target);
         } else {
-            ThumborUrlBuilder b = NetworkUtils.createThumborUrl(userpicUrl);
-            if (b != null) {
-                userpicUrl = b.resize(avatarDiameter, avatarDiameter)
-                        .smart()
-                        .toUrl();
-                // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
-                picasso.load(userpicUrl)
-                        .placeholder(R.drawable.ic_user_stub_dark)
-                        .error(R.drawable.ic_user_stub_dark)
-                        .transform(mCircleTransformation)
-                        .noFade()
-                        .into(dst);
-            } else {
-                picasso.load(userpicUrl)
-                        .resize(avatarDiameter, avatarDiameter)
-                        .centerCrop()
-                        .placeholder(R.drawable.ic_user_stub_dark)
-                        .error(R.drawable.ic_user_stub_dark)
-                        .transform(mCircleTransformation)
-                        .noFade()
-                        .into(dst);
-            }
+            picasso.load(userpicUrl)
+                    .resize(avatarDiameter, avatarDiameter)
+                    .centerCrop()
+                    .placeholder(R.drawable.ic_user_stub_dark)
+                    .error(R.drawable.ic_user_stub_dark)
+                    .transform(mCircleTransformation)
+                    .into(target);
+        }
+    }
+
+    public static interface DrawableTarget extends Target {
+        public void onDrawableReady(Drawable drawable);
+    }
+
+    private static class ImageViewTarget implements DrawableTarget {
+
+        private final ImageView mView;
+
+        public ImageViewTarget(ImageView view) {
+            mView = view;
+        }
+
+        @Override
+        public void onDrawableReady(Drawable drawable) {
+            mView.setImageDrawable(drawable);
+        }
+
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            if (mView.getContext() == null) return;
+            PicassoDrawable.setBitmap(mView, mView.getContext(), bitmap, from, false, false);
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+            if (errorDrawable != null) mView.setImageDrawable(errorDrawable);
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+            if (placeHolderDrawable != null) mView.setImageDrawable(placeHolderDrawable);
         }
     }
 

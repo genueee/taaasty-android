@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="tabbar_my_feed_content_description">Мой Дневинк</string>
     <string name="btn_tabbar_live_description">Прямой эфир</string>
     <string name="btn_tabbar_action_post">Написать</string>
@@ -51,7 +50,7 @@
     <string name="friends_have_not_written_anything">Ваши друзья пока ничего не написали</string>
     <string name="you_have_no_private_records">У вас нет скрытых записей</string>
     <string name="you_have_no_favorite_records">У вас нет избранных записей</string>
-    <string name="title_activity_show_post">ShowPostActivity</string>
+    <string name="title_activity_show_post">Запись</string>
     <string name="back_button_content_description">Вверх</string>
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>

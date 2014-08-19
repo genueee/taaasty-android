@@ -6,6 +6,7 @@
     android:layout_height="wrap_content"
     android:visibility="gone"
     tools:visibility="visible"
+    tools:context=".ui.ShowPostActivity"
     >
 
     <ImageView
@@ -16,22 +17,38 @@
         android:scaleType="fitCenter"
         android:cropToPadding="false"
         android:adjustViewBounds="false"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        />
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/title"
         android:visibility="gone"
         tools:text="Ролики"
         tools:visibility="visible"
+        android:paddingLeft="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_left"
         style="@style/PostTitle" />
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/text"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
+        android:paddingLeft="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_left"
         style="@style/PostText" />
 
     <TextView
         android:id="@+id/source"
+        android:paddingLeft="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_left"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;"
         style="@style/PostQuoteSource" />
+
+    <include layout="@layout/include_post_bottom_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/post_item_likes_padding_left"
+        android:layout_marginRight="@dimen/post_item_likes_padding_right"
+        />
+
+
 </LinearLayout>

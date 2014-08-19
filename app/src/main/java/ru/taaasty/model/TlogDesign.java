@@ -77,10 +77,10 @@ public class TlogDesign implements Parcelable {
      */
     public int getFeedTextColor(Resources r) {
         int color;
-        if (FEED_BACKGROUND_COLOR_BLACK.equals(mFeedColor)) {
-            color = r.getColor(R.color.feed_dark_text_color);
+        if (isLightTheme()) {
+            color = r.getColor(R.color.feed_black_text);
         } else {
-            color = r.getColor(R.color.feed_light_text_color);
+            color = r.getColor(R.color.feed_white_text);
         }
         return color;
     }
@@ -92,10 +92,10 @@ public class TlogDesign implements Parcelable {
      */
     public int getFeedBackgroundColor(Resources r) {
         int bgColor;
-        if (FEED_BACKGROUND_COLOR_BLACK.equals(mFeedColor)) {
-            bgColor = r.getColor(R.color.feed_light_text_color);
+        if (isLightTheme()) {
+            bgColor = r.getColor(R.color.feed_light_background_color);
         } else {
-            bgColor = r.getColor(R.color.feed_dark_text_color);
+            bgColor = r.getColor(R.color.feed_dark_background_color);
         }
         return bgColor;
     }
@@ -106,12 +106,12 @@ public class TlogDesign implements Parcelable {
         switch (mHeaderColor) {
             case HEADER_COLOR_BLACK:
             case HEADER_COLOR_WHITE_ON_BLACK:
-                color = r.getColor(R.color.feed_dark_text_color);
+                color = r.getColor(R.color.feed_white_text);
                 break;
             case HEADER_COLOR_WHITE:
             case HEADER_COLOR_BLACK_ON_WHITE:
             default:
-                color = r.getColor(R.color.feed_light_text_color);
+                color = r.getColor(R.color.feed_black_text);
                 break;
         }
         int alpha = 200;
@@ -140,6 +140,24 @@ public class TlogDesign implements Parcelable {
 
     public boolean isFontTypefaceSerif() {
         return FONT_TYPE_SERIF.equals(mFontTypeface);
+    }
+
+    /**
+     * @return тёмный текст на светлом фоне
+     */
+    public boolean isLightTheme() {
+        return FEED_BACKGROUND_COLOR_WHITE.equals(mFeedColor);
+    }
+
+    /**
+     * @return светлый текст на темном фоне
+     */
+    public boolean isDarkTheme() {
+        return !isLightTheme();
+    }
+
+    public void setFontTypeface(boolean serif) {
+        mFontTypeface = serif ? FONT_TYPE_SERIF : FONT_TYPE_SANS;
     }
 
     @Override

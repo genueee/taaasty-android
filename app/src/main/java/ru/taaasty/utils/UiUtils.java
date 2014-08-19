@@ -20,6 +20,7 @@ public class UiUtils {
     }
 
     public static String capitalize(String text) {
+        if (text == null) return "";
         return text.substring(0,1).toUpperCase(Locale.getDefault()) + text.substring(1);
     }
 

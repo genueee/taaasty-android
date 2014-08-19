@@ -26,9 +26,9 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
-import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -176,9 +176,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
             vh = new ViewHolder(res);
             res.setTag(R.id.feed_item_view_holder, vh);
             res.setOnClickListener(mOnFeedItemClickListener);
-            vh.likes.setOnClickListener(mOnFeedLikesClickListener);
-            vh.comments.setOnClickListener(mOnFeedCommentsClickListener);
-            vh.moreButton.setOnClickListener(mOnFeedAdditionalMenuClickListener);
+            vh.entryActionBar.setOnItemClickListener(mListener);
             vh.title.setMaxLines(2);
             vh.text.setMaxLines(10);
         } else {
@@ -191,15 +189,10 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         setImage(vh, item, parent);
         setTitle(vh, item);
         setText(vh, item);
-        setRating(vh, item);
-        setComments(vh, item);
-
+        vh.entryActionBar.setOnItemListenerEntry(item);
+        vh.entryActionBar.setupEntry(item);
 
         res.setTag(R.id.feed_item_post, item);
-        vh.likes.setTag(R.id.feed_item_post, item);
-        vh.comments.setTag(R.id.feed_item_post, item);
-        vh.moreButton.setTag(R.id.feed_item_post, item);
-
         // XXX: more button
 
         return res;
@@ -293,66 +286,11 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         }
     }
 
-    private void setRating(ViewHolder vh, Entry item) {
-        Rating r = item.getRating();
-
-        if (!r.isVoteable) {
-            vh.likes.setVisibility(View.INVISIBLE);
-        } else {
-            vh.likes.setVisibility(View.VISIBLE);
-
-            if (mUpdateRatingEntrySet.contains(item.getId())) {
-                vh.likes.setText("—");
-                vh.likes.setEnabled(false);
-            } else {
-                vh.likes.setText(String.valueOf(r.votes));
-                vh.likes.setEnabled(true);
-            }
-
-            if (r.isVoted) {
-                vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_likes_gt1));
-                vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_gt0_likes, 0, 0, 0);
-            } else {
-                vh.likes.setTextColor(mResources.getColor(R.color.text_color_feed_item_gray));
-                vh.likes.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_no_likes_light, 0, 0, 0);
-            }
-        }
-    }
-
-    private void setComments(ViewHolder vh, Entry item) {
-        int comments = item.getCommentsCount();
-        vh.comments.setText(String.valueOf(comments));
-    }
-
     private final View.OnClickListener mOnFeedItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             Entry entry = (Entry)v.getTag(R.id.feed_item_post);
             if (mListener != null) mListener.onFeedItemClicked(v, entry.getId());
-        }
-    };
-
-    private final View.OnClickListener mOnFeedLikesClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
-            if (mListener != null) mListener.onFeedLikesClicked(v, entry);
-        }
-    };
-
-    private final View.OnClickListener mOnFeedAdditionalMenuClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
-            if (mListener != null) mListener.onFeedAdditionalMenuClicked(v, entry.getId());
-        }
-    };
-
-    private final View.OnClickListener mOnFeedCommentsClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
-            if (mListener != null) mListener.onFeedCommentsClicked(v, entry.getId());
         }
     };
 
@@ -363,10 +301,8 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         public final ImageView image;
         public final EllipsizingTextView title;
         public final EllipsizingTextView text;
-        public final TextView likes;
-        public final TextView comments;
         public final TextView source;
-        public final ImageView moreButton;
+        public final EntryBottomActionBar entryActionBar;
 
         private String mImageUrl = null;
 
@@ -377,17 +313,12 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
             image = (ImageView) v.findViewById(R.id.image);
             title = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
             text = (EllipsizingTextView) v.findViewById(R.id.feed_item_text);
-            comments = (TextView) v.findViewById(R.id.comments_count);
-            likes = (TextView) v.findViewById(R.id.likes);
             source = (TextView) v.findViewById(R.id.source);
-            moreButton = (ImageView) v.findViewById(R.id.more);
+            entryActionBar = new EntryBottomActionBar(v.findViewById(R.id.entry_bottom_action_bar), true);
         }
     }
 
-    public interface OnItemListener {
+    public interface OnItemListener extends EntryBottomActionBar.OnEntryActionBarListener {
         public void onFeedItemClicked(View view, long postId);
-        public void onFeedLikesClicked(View view, Entry entry);
-        public void onFeedCommentsClicked(View view, long postId);
-        public void onFeedAdditionalMenuClicked(View view, long postId);
     }
 }
