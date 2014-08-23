@@ -14,6 +14,7 @@
         android:layout_above="@+id/button_i_have_registered"
         android:layout_below="@+id/action_bar"
         android:fillViewport="true"
+        tools:ignore="UnknownIdInLayout"
         >
 
         <LinearLayout

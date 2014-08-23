@@ -26,20 +26,20 @@
         tools:text="Ролики"
         tools:visibility="visible"
         android:paddingLeft="@dimen/post_item_padding_left"
-        android:paddingRight="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_right"
         style="@style/PostTitle" />
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/text"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
         android:paddingLeft="@dimen/post_item_padding_left"
-        android:paddingRight="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_right"
         style="@style/PostText" />
 
     <TextView
         android:id="@+id/source"
         android:paddingLeft="@dimen/post_item_padding_left"
-        android:paddingRight="@dimen/post_item_padding_left"
+        android:paddingRight="@dimen/post_item_padding_right"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;"
         style="@style/PostQuoteSource" />
 

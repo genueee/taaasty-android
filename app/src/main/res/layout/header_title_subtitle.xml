@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/header_title_subtitle_height"
     android:id="@+id/header_title_subtitle"
-    android:background="@android:color/black">
+    android:background="@android:color/black"
+    tools:ignore="Overdraw">
 
     <LinearLayout
         android:orientation="vertical"

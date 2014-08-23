@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
@@ -43,6 +44,7 @@ public class SystemUiHiderHoneycomb extends SystemUiHiderBase {
      * Constructor not intended to be called by clients. Use
      * {@link SystemUiHider#getInstance} to obtain an instance.
      */
+    @SuppressLint("InlinedApi")
     protected SystemUiHiderHoneycomb(Activity activity, View anchorView, int flags) {
         super(activity, anchorView, flags);
 
