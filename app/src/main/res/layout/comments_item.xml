@@ -5,10 +5,10 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="48dp"
-    android:paddingLeft="4dp"
+    android:paddingLeft="@dimen/post_item_likes_padding_left"
     android:paddingRight="8dp"
     android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingBottom="16dp"
     tools:ignore="UseCompoundDrawables">
 
     <ImageView
@@ -20,9 +20,22 @@
 
     <TextView
         android:id="@+id/comment"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
+        android:textSize="14sp"
         android:textIsSelectable="true"
         tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+
+    <TextView
+        android:id="@+id/date_relative"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="2dp"
+        android:textColor="@color/text_color_feed_item_gray"
+        android:maxWidth="64dp"
+        android:textSize="10sp"
+        tools:text="28 мрт"
+        tools:ignore="RtlSymmetry,SmallSp" />
 
 </LinearLayout>

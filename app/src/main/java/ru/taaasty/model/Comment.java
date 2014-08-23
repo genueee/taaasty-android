@@ -48,6 +48,14 @@ public class Comment implements Parcelable {
         return TextUtils.isEmpty(mText) ? "" : Html.fromHtml(mText);
     }
 
+    public Date getCreatedAt() {
+        return mCreatedAt;
+    }
+
+    public Date getUpdatedAt() {
+        return mUpdatedAt != null ? mUpdatedAt : mCreatedAt;
+    }
+
     public boolean IsDisabled() {
         return mIsDisabled;
     }
