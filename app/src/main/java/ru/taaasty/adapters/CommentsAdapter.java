@@ -3,6 +3,9 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,7 +132,16 @@ public class CommentsAdapter extends BaseAdapter {
     }
 
     private void setComment(ViewHolder vh, Comment item) {
-        vh.comment.setText(item.getTextSpanned());
+        Context context = vh.comment.getContext();
+        if (context == null) return;
+        TextAppearanceSpan tas = new TextAppearanceSpan(context, R.style.TextAppearanceSlugInlineBlack);
+
+        String slug = item.getAuthor().getSlug();
+        SpannableStringBuilder ssb = new SpannableStringBuilder(slug);
+        ssb.setSpan(tas, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.append(' ');
+        ssb.append(item.getTextSpanned());
+        vh.comment.setText(ssb);
     }
 
     private void setDate(ViewHolder vh, Comment item) {

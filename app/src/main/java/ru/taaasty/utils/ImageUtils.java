@@ -89,23 +89,25 @@ public class ImageUtils {
         }
 
         b = NetworkUtils.createThumborUrl(userpicUrl);
+        // Ставим bounds врчучную, иначе мерцает при скролле
         avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+        Drawable errorPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub_dark);
+        errorPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter);
         if (b != null) {
             userpicUrl = b.resize(avatarDiameter, avatarDiameter)
-                    .smart()
                     .toUrl();
             // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
             picasso.load(userpicUrl)
-                    .placeholder(R.drawable.ic_user_stub_dark)
-                    .error(R.drawable.ic_user_stub_dark)
+                    .placeholder(errorPlaceholder)
+                    .error(errorPlaceholder)
                     .transform(mCircleTransformation)
                     .into(target);
         } else {
             picasso.load(userpicUrl)
                     .resize(avatarDiameter, avatarDiameter)
                     .centerCrop()
-                    .placeholder(R.drawable.ic_user_stub_dark)
-                    .error(R.drawable.ic_user_stub_dark)
+                    .placeholder(errorPlaceholder)
+                    .error(errorPlaceholder)
                     .transform(mCircleTransformation)
                     .into(target);
         }

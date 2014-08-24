@@ -220,4 +220,9 @@
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
     </style>
 
+    <style name="TextAppearanceSlugInlineBlack">
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
 </resources>

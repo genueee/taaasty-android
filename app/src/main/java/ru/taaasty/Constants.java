@@ -9,7 +9,7 @@ public interface Constants {
     public int READ_TIMEOUT_S = 25;
     public int LRU_MEMORY_CACHE_PCT = 70;
     public String API_VERSION = "v1";
-    public Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://a0\\.tasty0\\.ru/assets/(.+)$");
+    public Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://taaasty\\.ru/assets/(.+)$");
     public String HEADER_X_USER_TOKEN = "X-User-Token";
 
     /**

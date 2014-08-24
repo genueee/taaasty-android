@@ -2,21 +2,24 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="48dp"
-    android:paddingLeft="@dimen/post_item_likes_padding_left"
-    android:paddingRight="8dp"
+    android:paddingLeft="@dimen/post_item_comments_padding_left"
+    android:paddingRight="@dimen/post_item_comments_padding_right"
     android:paddingTop="8dp"
     android:paddingBottom="16dp"
-    tools:ignore="UseCompoundDrawables">
+    tools:ignore="UseCompoundDrawables"
+    android:clickable="false"
+    android:baselineAligned="true">
 
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/avatar_small_diameter"
         android:layout_height="@dimen/avatar_small_diameter"
         android:src="@drawable/avatar_dummy"
-        android:layout_marginRight="16dp" />
+        android:layout_marginRight="10dp" />
 
     <TextView
         android:id="@+id/comment"
@@ -25,17 +28,22 @@
         android:layout_height="wrap_content"
         android:textSize="14sp"
         android:textIsSelectable="true"
-        tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+        android:minHeight="48dp"
+        android:gravity="center_vertical"
+        tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен"
+        android:layout_gravity="center_vertical" />
 
     <TextView
         android:id="@+id/date_relative"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="2dp"
+        android:layout_marginLeft="3dp"
         android:textColor="@color/text_color_feed_item_gray"
+        android:gravity="fill_vertical"
         android:maxWidth="64dp"
         android:textSize="10sp"
         tools:text="28 мрт"
-        tools:ignore="RtlSymmetry,SmallSp" />
+        tools:ignore="RtlSymmetry,SmallSp"
+        android:layout_marginTop="3dp" />
 
 </LinearLayout>

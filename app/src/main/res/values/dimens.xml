@@ -31,8 +31,8 @@
     <dimen name="post_item_likes_padding_left">12dp</dimen>
     <dimen name="post_item_likes_padding_right">12dp</dimen>
 
-    <dimen name="post_item_comments_padding_left">8dp</dimen>
-    <dimen name="post_item_comments_padding_right">8dp</dimen>
+    <dimen name="post_item_comments_padding_left">10dp</dimen>
+    <dimen name="post_item_comments_padding_right">10dp</dimen>
 
     <!-- Высота заголовка над лентой -->
     <dimen name="header_title_subtitle_height">195dp</dimen>
