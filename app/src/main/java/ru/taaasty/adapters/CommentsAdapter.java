@@ -215,16 +215,16 @@ public class CommentsAdapter extends BaseAdapter {
         int avatarWidth = vh.avatar.getWidth();
         PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", 0, -avatarWidth);
         PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", 0, -avatarWidth);
-        PropertyValuesHolder dxButtons = PropertyValuesHolder.ofFloat("dxButtons",vh.actionView.getWidth(), 0);
+        PropertyValuesHolder dAlphaButtons = PropertyValuesHolder.ofFloat("dAlphaButtons",0f, 1f);
 
-        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dxButtons);
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dAlphaButtons);
         va.setDuration(200);
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
                 vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
-                vh.actionView.setTranslationX((Float) animation.getAnimatedValue("dxButtons"));
+                vh.actionView.setAlpha((Float) animation.getAnimatedValue("dAlphaButtons"));
             }
         });
         va.addListener(new Animator.AnimatorListener() {
@@ -241,7 +241,7 @@ public class CommentsAdapter extends BaseAdapter {
                 vh.date.setVisibility(View.GONE);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
-                vh.actionView.setTranslationX(0f);
+                vh.actionView.setAlpha(1f);
             }
 
             @Override
@@ -265,16 +265,16 @@ public class CommentsAdapter extends BaseAdapter {
         int avatarWidth = vh.avatar.getWidth();
         PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", -avatarWidth, 0);
         PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", -avatarWidth, 0);
-        PropertyValuesHolder dxButtons = PropertyValuesHolder.ofFloat("dxButtons",0, vh.actionView.getWidth());
+        PropertyValuesHolder dalphaButtons = PropertyValuesHolder.ofFloat("dalpha",1f, 0f);
 
-        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dxButtons);
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dalphaButtons);
         va.setDuration(200);
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
                 vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
-                vh.actionView.setTranslationX((Float) animation.getAnimatedValue("dxButtons"));
+                vh.actionView.setAlpha((Float) animation.getAnimatedValue("dalpha"));
             }
         });
         va.addListener(new Animator.AnimatorListener() {
@@ -288,7 +288,7 @@ public class CommentsAdapter extends BaseAdapter {
             public void onAnimationEnd(Animator animation) {
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
-                vh.actionView.setTranslationX(0f);
+                vh.actionView.setAlpha(1);
                 vh.date.setVisibility(View.VISIBLE);
                 vh.actionView.setVisibility(View.GONE);
             }
