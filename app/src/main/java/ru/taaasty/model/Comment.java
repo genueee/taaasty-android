@@ -32,6 +32,15 @@ public class Comment implements Parcelable {
     @SerializedName("is_disabled")
     boolean mIsDisabled;
 
+    @SerializedName("can_edit")
+    boolean mCanEdit;
+
+    @SerializedName("can_report")
+    boolean mCanReport;
+
+    @SerializedName("can_delete")
+    boolean mCanDelete;
+
     public long getId() {
         return mId;
     }
@@ -60,6 +69,17 @@ public class Comment implements Parcelable {
         return mIsDisabled;
     }
 
+    public boolean canEdit() {
+        return mCanEdit;
+    }
+
+    public boolean canReport() {
+        return mCanReport;
+    }
+
+    public boolean canDelete() {
+        return mCanDelete;
+    }
 
     @Override
     public int describeContents() {
@@ -74,6 +94,9 @@ public class Comment implements Parcelable {
         dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
         dest.writeString(this.mText);
         dest.writeByte(mIsDisabled ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanEdit ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanReport ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanDelete ? (byte) 1 : (byte) 0);
     }
 
     public Comment() {
@@ -88,6 +111,9 @@ public class Comment implements Parcelable {
         this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
         this.mText = in.readString();
         this.mIsDisabled = in.readByte() != 0;
+        this.mCanEdit = in.readByte() != 0;
+        this.mCanReport = in.readByte() != 0;
+        this.mCanDelete = in.readByte() != 0;
     }
 
     public static final Parcelable.Creator<Comment> CREATOR = new Parcelable.Creator<Comment>() {

@@ -1,5 +1,7 @@
 package ru.taaasty.ui;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.TypedArray;
@@ -485,9 +487,61 @@ public class ShowPostFragment extends Fragment {
     private final AdapterView.OnItemClickListener mOnCommentClickedListener = new AdapterView.OnItemClickListener() {
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
             if (DBG) Log.v(TAG, "Comment clicked " + id);
-            mCommentsAdapter.setSelectedCommentId(id, false, true);
+            if (mCommentsAdapter.getCommentSelected() != null && mCommentsAdapter.getCommentSelected() == id) {
+                ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(view);
+                va.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mListView.setEnabled(false);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mListView.setEnabled(true);
+                        mCommentsAdapter.setSelectedCommentId(null, false, false);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                va.start();
+            } else {
+                final Comment comment = mCommentsAdapter.getItem(position - 1);
+
+                ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
+                va.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mListView.setEnabled(false);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mListView.setEnabled(true);
+                        mCommentsAdapter.setSelectedCommentId(id, comment.canDelete(), comment.canReport());
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                va.start();
+            }
         }
     };
 

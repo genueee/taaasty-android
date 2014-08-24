@@ -1,5 +1,8 @@
 package ru.taaasty.adapters;
 
+import android.animation.Animator;
+import android.animation.PropertyValuesHolder;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
@@ -92,6 +95,11 @@ public class CommentsAdapter extends BaseAdapter {
         mShowReportButton = showReportButton;
         mSelectedCommentId = commentId;
         notifyDataSetChanged();
+    }
+
+    @Nullable
+    public Long getCommentSelected() {
+        return mSelectedCommentId;
     }
 
     @Override
@@ -197,6 +205,105 @@ public class CommentsAdapter extends BaseAdapter {
             }
         }
         vh.date.setText(date);
+    }
+
+    public ValueAnimator createShowButtonsAnimator(View view) {
+        final ViewHolder vh = (ViewHolder)view.getTag(R.id.comment_view_holder);
+        if (vh == null) throw new NullPointerException();
+        vh.inflateActionViewStub();
+
+        int avatarWidth = vh.avatar.getWidth();
+        PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", 0, -avatarWidth);
+        PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", 0, -avatarWidth);
+        PropertyValuesHolder dxButtons = PropertyValuesHolder.ofFloat("dxButtons",vh.actionView.getWidth(), 0);
+
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dxButtons);
+        va.setDuration(200);
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
+                vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
+                vh.actionView.setTranslationX((Float) animation.getAnimatedValue("dxButtons"));
+            }
+        });
+        va.addListener(new Animator.AnimatorListener() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                vh.date.setVisibility(View.GONE);
+                vh.actionView.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                vh.avatar.setVisibility(View.GONE);
+                vh.date.setVisibility(View.GONE);
+                vh.avatar.setTranslationX(0f);
+                vh.comment.setTranslationX(0f);
+                vh.actionView.setTranslationX(0f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        return va;
+    }
+
+    public ValueAnimator createHideButtonsAnimator(View view) {
+        final ViewHolder vh = (ViewHolder)view.getTag(R.id.comment_view_holder);
+        if (vh == null) throw new NullPointerException();
+        vh.inflateActionViewStub();
+
+        int avatarWidth = vh.avatar.getWidth();
+        PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", -avatarWidth, 0);
+        PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", -avatarWidth, 0);
+        PropertyValuesHolder dxButtons = PropertyValuesHolder.ofFloat("dxButtons",0, vh.actionView.getWidth());
+
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dxButtons);
+        va.setDuration(200);
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
+                vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
+                vh.actionView.setTranslationX((Float) animation.getAnimatedValue("dxButtons"));
+            }
+        });
+        va.addListener(new Animator.AnimatorListener() {
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                vh.avatar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                vh.avatar.setTranslationX(0f);
+                vh.comment.setTranslationX(0f);
+                vh.actionView.setTranslationX(0f);
+                vh.date.setVisibility(View.VISIBLE);
+                vh.actionView.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+        return va;
     }
 
     public interface OnCommentButtonClickListener {

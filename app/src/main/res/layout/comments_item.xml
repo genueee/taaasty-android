@@ -6,11 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="48dp"
-    android:paddingLeft="@dimen/post_item_comments_padding_left"
     android:paddingRight="@dimen/post_item_comments_padding_right"
+    android:paddingLeft="@dimen/post_item_comments_padding_left"
     android:paddingTop="8dp"
     android:paddingBottom="16dp"
-    tools:ignore="UseCompoundDrawables"
+    tools:ignore="RtlSymmetry,UseCompoundDrawables"
     android:clickable="false"
     android:baselineAligned="true">
 
