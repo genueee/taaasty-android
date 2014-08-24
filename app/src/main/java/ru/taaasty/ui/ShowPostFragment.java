@@ -14,8 +14,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -41,7 +43,6 @@ import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -88,9 +89,6 @@ public class ShowPostFragment extends Fragment {
     private TlogDesign mDesign;
 
     private boolean mShowUserHeader = false;
-
-    // XXX: anti picasso weak ref
-    private TargetSetHeaderBackground mFeedDesignTarget;
 
     /**
      * Use this factory method to create a new instance of
@@ -166,11 +164,12 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mCommentsAdapter = new CommentsAdapter(getActivity());
+        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
 
         if (mShowUserHeader) mListView.addParallaxedHeaderView(mUserTitleView);
         mListView.addHeaderView(mPostContentView);
         mListView.setAdapter(mCommentsAdapter);
+        mListView.setOnItemClickListener(mOnCommentClickedListener);
 
         if (savedInstanceState != null) {
             mCurrentEntry = savedInstanceState.getParcelable(KEY_CURRENT_ENTRY);
@@ -203,7 +202,6 @@ public class ShowPostFragment extends Fragment {
         mPostSubscribtion.unsubscribe();
         mCommentsSubscribtion.unsubscribe();
         mTlogDesignSubscribtion.unsubscribe();
-        mFeedDesignTarget = null;
         mEntryBottomActionBar = null;
         mUserTitleView = null;
         mPostContentView = null;
@@ -232,7 +230,7 @@ public class ShowPostFragment extends Fragment {
     private void adjustPaddings() {
         final TypedArray styledAttributes = getActivity().getTheme().obtainStyledAttributes(
                 new int[] { android.R.attr.actionBarSize });
-        int abSize = (int) styledAttributes.getDimensionPixelSize(0, 0);
+        int abSize = styledAttributes.getDimensionPixelSize(0, 0);
         styledAttributes.recycle();
 
         if (willMyListScroll()) {
@@ -247,11 +245,7 @@ public class ShowPostFragment extends Fragment {
     private boolean willMyListScroll() {
         if (mListView.getChildCount() == 0) return false;
         int pos = mListView.getLastVisiblePosition();
-        if (mListView.getChildAt(pos).getBottom() > mListView.getHeight()) {
-            return true;
-        } else {
-            return false;
-        }
+        return mListView.getChildAt(pos).getBottom() > mListView.getHeight();
     }
 
     void setupAuthor() {
@@ -307,11 +301,11 @@ public class ShowPostFragment extends Fragment {
         }
         */
 
-        String backgroudUrl = design.getBackgroundUrl();
+        // String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
         FontManager fm = FontManager.getInstance(getActivity());
 
-        int textColor = design.getFeedTextColor(getResources());
+        // int textColor = design.getFeedTextColor(getResources());
         Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
 
         /*
@@ -401,7 +395,7 @@ public class ShowPostFragment extends Fragment {
         CharSequence title;
         CharSequence text;
         CharSequence source;
-        boolean hasTitle = false;
+        boolean hasTitle;
 
         if (Entry.ENTRY_TYPE_QUOTE.equals(mCurrentEntry.getType())) {
             title = null;
@@ -448,8 +442,10 @@ public class ShowPostFragment extends Fragment {
 
     private void setupAvatar(User author) {
         if (mUserTitleView == null) return;
+        View root = getView();
+        if (root == null) return;
         ImageUtils.getInstance().loadAvatar(author,
-                (ImageView)getView().findViewById(R.id.avatar),
+                (ImageView)root.findViewById(R.id.avatar),
                 R.dimen.avatar_normal_diameter);
     }
 
@@ -485,6 +481,33 @@ public class ShowPostFragment extends Fragment {
                 .subscribe(mCommentsObserver);
 
     }
+
+    private final AdapterView.OnItemClickListener mOnCommentClickedListener = new AdapterView.OnItemClickListener() {
+
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            if (DBG) Log.v(TAG, "Comment clicked " + id);
+            mCommentsAdapter.setSelectedCommentId(id, false, true);
+        }
+    };
+
+    private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
+
+        @Override
+        public void onReplyToCommentClicked(View view, Comment comment) {
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onDeleteCommentClicked(View view, Comment comment) {
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onReportContentClicked(View view, Comment comment) {
+            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        }
+    };
 
     private final AbsListView.OnScrollListener mScrollListener = new  AbsListView.OnScrollListener() {
         private boolean mBottomReachedCalled = false;

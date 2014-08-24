@@ -3,12 +3,14 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,20 +37,26 @@ public class CommentsAdapter extends BaseAdapter {
     private final ImageUtils mImageUtils;
 
     private final ArrayList<Comment> mComments;
+    private final OnCommentButtonClickListener mListener;
     private TlogDesign mFeedDesign;
 
     private DateFormat mTimeFormatInstance;
     private DateFormat mDdMmFormatInstance;
     private DateFormat mMmYyFormatInstance;
 
-    public CommentsAdapter(Context context) {
+    private Long mSelectedCommentId;
+    private boolean mShowDeleteCommentButton;
+    private boolean mShowReportButton;
+
+    public CommentsAdapter(Context context, OnCommentButtonClickListener listener) {
         super();
         mInfater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
         mResources = context.getResources();
         mFontManager = FontManager.getInstance(context);
         mImageUtils = ImageUtils.getInstance();
-        mComments = new ArrayList<Comment>();
+        mComments = new ArrayList<>();
+        mListener = listener;
         mTimeFormatInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault());
         mDdMmFormatInstance = new SimpleDateFormat("dd MMM");
         mMmYyFormatInstance = new SimpleDateFormat("LL/yyy");
@@ -77,6 +85,18 @@ public class CommentsAdapter extends BaseAdapter {
     public Long getTopCommentId() {
         if (mComments.isEmpty()) return null;
         return mComments.get(0).getId();
+    }
+
+    public void setSelectedCommentId(Long commentId, boolean showDeleteCommentButton, boolean showReportButton) {
+        mShowDeleteCommentButton = showDeleteCommentButton;
+        mShowReportButton = showReportButton;
+        mSelectedCommentId = commentId;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return true;
     }
 
     @Override
@@ -108,12 +128,22 @@ public class CommentsAdapter extends BaseAdapter {
             vh = (ViewHolder) res.getTag(R.id.comment_view_holder);
         }
 
-        applyFeedStyle(vh);
-
         Comment comment = mComments.get(position);
-        setAuthor(vh, comment);
-        setComment(vh, comment);
-        setDate(vh, comment);
+
+        if (mSelectedCommentId != null && mSelectedCommentId == comment.getId()) {
+            setupActionView(vh, comment);
+            vh.actionView.setVisibility(View.VISIBLE);
+            vh.avatar.setVisibility(View.GONE);
+            vh.date.setVisibility(View.GONE);
+        } else {
+            if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
+            setAuthor(vh, comment);
+            setDate(vh, comment);
+            vh.avatar.setVisibility(View.VISIBLE);
+            vh.date.setVisibility(View.VISIBLE);
+        }
+        applyFeedStyle(vh);
+        setCommentText(vh, comment);
 
         return res;
     }
@@ -126,12 +156,19 @@ public class CommentsAdapter extends BaseAdapter {
         vh.comment.setTypeface(tf);
     }
 
+    private void setupActionView(ViewHolder vh, Comment comment) {
+        vh.inflateActionViewStub();
+        vh.setActionViewListener(comment, mListener);
+        vh.deleteCommentButton.setVisibility(mShowDeleteCommentButton ? View.VISIBLE : View.GONE);
+        vh.reportButton.setVisibility(mShowReportButton ? View.VISIBLE : View.GONE);
+    }
+
     private void setAuthor(ViewHolder vh, Comment item) {
         User author = item.getAuthor();
         mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
     }
 
-    private void setComment(ViewHolder vh, Comment item) {
+    private void setCommentText(ViewHolder vh, Comment item) {
         Context context = vh.comment.getContext();
         if (context == null) return;
         TextAppearanceSpan tas = new TextAppearanceSpan(context, R.style.TextAppearanceSlugInlineBlack);
@@ -162,14 +199,94 @@ public class CommentsAdapter extends BaseAdapter {
         vh.date.setText(date);
     }
 
-    public class ViewHolder {
+    public interface OnCommentButtonClickListener {
+        public void onReplyToCommentClicked(View view, Comment comment);
+        public void onDeleteCommentClicked(View view, Comment comment);
+        public void onReportContentClicked(View view, Comment comment);
+    }
+
+    private static class ActionViewClickListener implements View.OnClickListener {
+
+        private Comment mComment;
+        private OnCommentButtonClickListener mListener;
+
+        public ActionViewClickListener(Comment comment, OnCommentButtonClickListener listener) {
+            setComment(comment, listener);
+        }
+
+        public void setComment(Comment comment, OnCommentButtonClickListener listener) {
+            mListener = listener;
+            mComment = comment;
+        }
+
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.reply_to_comment:
+                    if (mListener != null) mListener.onReplyToCommentClicked(v, mComment);
+                    break;
+                case R.id.delete_comment:
+                    if (mListener != null) mListener.onDeleteCommentClicked(v, mComment);
+                    break;
+                case R.id.report_to_moderator:
+                    if (mListener != null) mListener.onReportContentClicked(v, mComment);
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
+
+    public static class ViewHolder {
+        public final View root;
         public final ImageView avatar;
         public final TextView comment;
         public final TextView date;
+
+        @Nullable
+        private ViewStub actionViewStub;
+
+        @Nullable
+        private View actionView;
+
+        @Nullable
+        private View replyToCommentButton;
+
+        @Nullable
+        private View deleteCommentButton;
+
+        @Nullable
+        private View reportButton;
+
+        @Nullable
+        private ActionViewClickListener actionViewClickListener;
+
         public ViewHolder(View v) {
+            root = v;
             avatar = (ImageView) v.findViewById(R.id.avatar);
             comment = (TextView) v.findViewById(R.id.comment);
             date = (TextView) v.findViewById(R.id.date_relative);
+            actionViewStub = (ViewStub) v.findViewById(R.id.stub);
+        }
+
+        public void inflateActionViewStub() {
+            if (actionViewStub == null) return;
+            actionView = actionViewStub.inflate();
+            actionViewStub = null;
+            replyToCommentButton = actionView.findViewById(R.id.reply_to_comment);
+            deleteCommentButton = actionView.findViewById(R.id.delete_comment);
+            reportButton = actionView.findViewById(R.id.report_to_moderator);
+        }
+
+        public void setActionViewListener(Comment comment, OnCommentButtonClickListener listener) {
+            if (actionViewClickListener == null) {
+                actionViewClickListener = new ActionViewClickListener(comment, listener);
+                replyToCommentButton.setOnClickListener(actionViewClickListener);
+                deleteCommentButton.setOnClickListener(actionViewClickListener);
+                reportButton.setOnClickListener(actionViewClickListener);
+            } else {
+                actionViewClickListener.setComment(comment, listener);
+            }
         }
     }
 }
