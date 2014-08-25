@@ -48,16 +48,6 @@ android {
                 project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
                 project.ext.private.getProperty("default.ThumborKey", "\"golobog\"")
-        buildConfigField "Boolean", "ENABLE_ACRA", "true"
-        buildConfigField "String", "ACRA_FORM_URI",
-                project.ext.private.getProperty("default.AcraFormUri",
-                        "\"http://acra.icfdev.ru/acra-trainingprocesses/_design/acra-storage/_update/report\"")
-        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_LOGIN",
-                project.ext.private.getProperty("default.AcraFormUriBaseAuthLogin",
-                        "\"acra\"")
-        buildConfigField "String", "ACRA_FORM_URI_BASIC_AUTH_PASSWORD",
-                project.ext.private.getProperty("default.AcraFormUriBaseAuthPassword",
-                        "\"acra\"")
 
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -75,7 +65,6 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
             resValue "string", "app_name", "Тейсти dbg" + getRevision()
-            buildConfigField "Boolean", "ENABLE_ACRA", "false"
         }
         release {
             runProguard true
@@ -100,15 +89,13 @@ android {
         autoUpdate true
         notify true
         iconWatermark true
+        video "off";
     }
 
 }
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile(group: 'ch.acra', name: 'acra', version: '4.5.0') {
-        exclude(group: 'org.json', module: 'json')
-    }
 
     compile project(':ndkstackblur')
     compile project(':ViewPagerIndicator')
