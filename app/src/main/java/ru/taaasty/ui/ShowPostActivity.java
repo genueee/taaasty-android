@@ -3,6 +3,7 @@ package ru.taaasty.ui;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import ru.taaasty.model.User;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class ShowPostActivity extends Activity implements ShowPostFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -35,12 +37,10 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
 
     private Handler mHideActionBarHandler;
 
-    /*
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(new CalligraphyContextWrapper(newBase));
     }
-    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
