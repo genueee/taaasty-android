@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -23,6 +24,8 @@ import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
+import junit.framework.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -287,8 +290,10 @@ public class ShowPostFragment extends Fragment {
     }
 
     void setupFeedDesign() {
-        TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
+        if (mDesign == null || mDesign == TlogDesign.DUMMY) return;
+        TlogDesign design = mDesign;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
+
 
         /*
         Drawable currentDrawable = mListView.getBackground();
@@ -326,7 +331,10 @@ public class ShowPostFragment extends Fragment {
                 R.id.source,
         }) {
             TextView tw = (TextView)mPostContentView.findViewById(id);
-            tw.setTypeface(tf);
+            if (tw.getTypeface() != tf) {
+                if (DBG) Log.v(TAG, "set typeface " + tf + " on view " + tw);
+                tw.setTypeface(tf);
+            }
             // tw.setTextColor(textColor);
         }
         // mEntryBottomActionBar.setTlogDesign(design);
@@ -659,6 +667,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onNext(TlogDesign design) {
+            Assert.assertEquals(Looper.getMainLooper().getThread(), Thread.currentThread());
             mDesign = design;
             TlogDesign designLight = new TlogDesign();
             designLight.setFontTypeface(design.isFontTypefaceSerif());

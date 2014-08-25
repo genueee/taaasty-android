@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,6 +24,7 @@ import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.utils.NetworkUtils;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
@@ -36,6 +38,11 @@ public class ShowPhotoActivity extends Activity implements ShowPhotoFragment.OnF
     private volatile boolean userForcedToChangeOverlayMode = false;
 
     private PhotoAdapter mAdapter;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

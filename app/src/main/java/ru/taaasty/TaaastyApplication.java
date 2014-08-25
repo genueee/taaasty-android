@@ -2,6 +2,7 @@ package ru.taaasty;
 
 import android.app.Application;
 
+import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -13,7 +14,7 @@ public class TaaastyApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        CalligraphyConfig.initDefault("fonts/ProximaNova-Reg.otf", R.attr.fontPath);
+        CalligraphyConfig.initDefault(FontManager.FONT_SANS_PATH, R.attr.fontPath);
 
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);

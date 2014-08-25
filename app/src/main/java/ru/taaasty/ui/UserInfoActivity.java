@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.widgets.ErrorTextView;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class UserInfoActivity extends Activity implements UserInfoFragment.OnFragmentInteractionListener {
     private static final String TAG = "UserInfoActivity";
@@ -24,6 +26,11 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
     public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
 
     private User mUser;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

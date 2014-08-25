@@ -7,6 +7,9 @@ import android.graphics.Typeface;
 
 public class FontManager {
 
+    public static final String FONT_SANS_PATH = "fonts/PTS55F_W.ttf";
+    public static final String FONT_SERIF_PATH = "fonts/PTF55F_W.ttf";
+
     private static FontManager mFontManager;
 
     private final Typeface mFontSans;
@@ -14,8 +17,8 @@ public class FontManager {
 
     private FontManager(Context context) {
         AssetManager asm = context.getApplicationContext().getAssets();
-        mFontSans = Typeface.createFromAsset(asm, "fonts/PTS55F_W.ttf");
-        mFontSerif = Typeface.createFromAsset(asm, "fonts/PTF55F_W.ttf");
+        mFontSans = Typeface.createFromAsset(asm, FONT_SANS_PATH);
+        mFontSerif = Typeface.createFromAsset(asm, FONT_SERIF_PATH);
     }
 
     public static FontManager getInstance(Context context) {

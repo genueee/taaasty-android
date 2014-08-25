@@ -35,6 +35,13 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
 
     private Handler mHideActionBarHandler;
 
+    /*
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
+    }
+    */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
