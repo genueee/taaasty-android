@@ -19,6 +19,15 @@ public class Userpic implements Parcelable {
     @Nullable
     public String thumb64Url;
 
+    @Nullable
+    public String originalUrl;
+
+    @Nullable
+    public String thumb128Url;
+
+    @Nullable
+    public String thumborPath;
+
     public DefaultColors defaultColors = DefaultColors.DUMMY;
 
     public static class DefaultColors implements Parcelable {
@@ -85,8 +94,11 @@ public class Userpic implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.originalUrl);
         dest.writeString(this.largeUrl);
         dest.writeString(this.thumb64Url);
+        dest.writeString(this.thumb128Url);
+        dest.writeString(this.thumborPath);
         dest.writeParcelable(this.defaultColors, 0);
     }
 
@@ -94,8 +106,11 @@ public class Userpic implements Parcelable {
     }
 
     private Userpic(Parcel in) {
+        this.originalUrl = in.readString();
         this.largeUrl = in.readString();
         this.thumb64Url = in.readString();
+        this.thumb128Url = in.readString();
+        this.thumborPath = in.readString();
         this.defaultColors = in.readParcelable(DefaultColors.class.getClassLoader());
     }
 
@@ -109,11 +124,28 @@ public class Userpic implements Parcelable {
         }
     };
 
+    public String getOptimalUrlForSize(int width, int height) {
+        String url;
+        int diameter = Math.max(width, height);
+        if (diameter <= 64 * 1.5 && !TextUtils.isEmpty(thumb64Url)) {
+            url = thumb64Url;
+        } else if (diameter <= 128 * 1.5 && !TextUtils.isEmpty(thumb128Url)) {
+            url = thumb128Url;
+        } else {
+            url = largeUrl;
+        }
+        if (url == null) url = "";
+        return url;
+    }
+
     @Override
     public String toString() {
         return "Userpic{" +
+                "originalUrl='" + originalUrl + '\'' +
                 "largeUrl='" + largeUrl + '\'' +
                 ", thumb64Url='" + thumb64Url + '\'' +
+                ", thumb128Url='" + thumb128Url + '\'' +
+                ", thumborPath='" + thumborPath + '\'' +
                 ", defaultColors=" + defaultColors +
                 '}';
     }

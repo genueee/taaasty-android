@@ -76,38 +76,40 @@ public class ImageUtils {
             String userName,
             DrawableTarget target,
             @DimenRes int diameterResource) {
-        ThumborUrlBuilder b;
-        String userpicUrl;
+        ThumborUrlBuilder thumborUrl;
         int avatarDiameter;
+        Drawable defaultUserpicDrawable;
+        Drawable stubPlaceholder;
+        Picasso picasso;
 
-        userpicUrl = userpic == null ? null : userpic.largeUrl;
-        Picasso picasso = NetworkUtils.getInstance().getPicasso(context);
-
-        if (TextUtils.isEmpty(userpicUrl)) {
-            target.onDrawableReady(new DefaultUserpicDrawable(userpic, userName));
+        avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+        defaultUserpicDrawable = new DefaultUserpicDrawable(userpic, userName);
+        defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
+        if (userpic == null || (TextUtils.isEmpty(userpic.thumborPath) && TextUtils.isEmpty(userpic.thumb128Url))) {
+            target.onDrawableReady(defaultUserpicDrawable);
             return;
         }
 
-        b = NetworkUtils.createThumborUrl(userpicUrl);
-        // Ставим bounds врчучную, иначе мерцает при скролле
-        avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
-        Drawable errorPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub_dark);
-        errorPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter);
-        if (b != null) {
-            userpicUrl = b.resize(avatarDiameter, avatarDiameter)
+        picasso = NetworkUtils.getInstance().getPicasso(context);
+        stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
+        stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
+
+        if (!TextUtils.isEmpty(userpic.thumborPath)) {
+            thumborUrl = NetworkUtils.createThumborUrlFromPath(userpic.thumborPath);
+            String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
                     .toUrl();
             // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
             picasso.load(userpicUrl)
-                    .placeholder(errorPlaceholder)
-                    .error(errorPlaceholder)
+                    .placeholder(stubPlaceholder)
+                    .error(defaultUserpicDrawable)
                     .transform(mCircleTransformation)
                     .into(target);
         } else {
-            picasso.load(userpicUrl)
+            picasso.load(userpic.getOptimalUrlForSize(avatarDiameter, avatarDiameter))
                     .resize(avatarDiameter, avatarDiameter)
                     .centerCrop()
-                    .placeholder(errorPlaceholder)
-                    .error(errorPlaceholder)
+                    .placeholder(stubPlaceholder)
+                    .error(defaultUserpicDrawable)
                     .transform(mCircleTransformation)
                     .into(target);
         }

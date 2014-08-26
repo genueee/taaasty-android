@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -19,6 +20,7 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 
 /**
@@ -37,12 +39,19 @@ public class EntryBottomActionBar {
     private boolean mHideUserInfo;
     private OnEntryActionBarListener mListener;
     private Entry mOnItemListenerEntry;
+    private FontManager mFontManager;
 
     private TlogDesign mTlogDesign;
+
+    private boolean mIsVotable = false;
+    private boolean mIsVoted = false;
+    private boolean mIsRatingInUpdate = false;
+    private int mVotes;
 
     public EntryBottomActionBar(View root, boolean hideUserInfo) {
         mHideUserInfo = hideUserInfo;
         mTlogDesign = TlogDesign.DUMMY;
+        mFontManager = FontManager.getInstance(root.getContext());
         setRoot(root);
     }
 
@@ -58,7 +67,10 @@ public class EntryBottomActionBar {
         mCommentsCountView = (TextView)root.findViewById(R.id.comments_count);
         mLikesView = (TextView)root.findViewById(R.id.likes);
         mMoreButton = (ImageView)root.findViewById(R.id.more);
+        initUserInfo(root);
+    }
 
+    private void initUserInfo(View root) {
         if (mHideUserInfo) {
             root.findViewById(R.id.user_info).setVisibility(View.INVISIBLE);
             mUserInfo = null;
@@ -98,6 +110,23 @@ public class EntryBottomActionBar {
             mCommentsCountView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_comments_count_dark, 0, 0, 0);
             mMoreButton.setImageResource(R.drawable.ic_more_dark);
         }
+
+        Resources r = mCommentsCountView.getResources();
+        int textColor = mTlogDesign.getFeedActionsTextColor(r);
+        Typeface tf = mTlogDesign.isFontTypefaceSerif() ? mFontManager.getDefaultSerifTypeface() : mFontManager.getDefaultSansSerifTypeface();
+
+        mCommentsCountView.setTextColor(textColor);
+        mCommentsCountView.setTypeface(tf);
+
+        if (mUserInfo != null) {
+            mUserInfo.setTextColor(textColor);
+            mUserInfo.setTypeface(tf);
+        }
+
+        mLikesView.setTextColor(textColor);
+        mLikesView.setTypeface(tf);
+
+        refreshRating();
     }
 
     public void setupEntry(Entry item) {
@@ -118,31 +147,40 @@ public class EntryBottomActionBar {
     public void setRating(Entry item, boolean isRatingInUpdate) {
         Rating r = item.getRating();
 
-        if (!r.isVoteable) {
+        mIsVotable = r.isVoteable;
+        mIsVoted = r.isVoted;
+        mIsRatingInUpdate = isRatingInUpdate;
+        mVotes = r.votes;
+        refreshRating();
+    }
+
+    private void refreshRating() {
+        if (!mIsVotable) {
             mLikesView.setVisibility(View.INVISIBLE);
-        } else {
-            mLikesView.setVisibility(View.VISIBLE);
-
-            if (isRatingInUpdate) {
-                mLikesView.setText("—");
-                mLikesView.setEnabled(false);
-            } else {
-                mLikesView.setText(String.valueOf(r.votes));
-                mLikesView.setEnabled(true);
-            }
-
-            Resources resources = mLikesView.getResources();
-            if (r.isVoted) {
-                mLikesView.setTextColor(resources.getColor(R.color.text_color_feed_item_likes_gt1));
-                mLikesView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_like_voted, 0, 0, 0);
-                mLikesView.setBackgroundDrawable(null); // XXX: убрать нафиг, когда починят отмену голоса
-            } else {
-                mLikesView.setTextColor(Color.BLACK);
-                mLikesView.setCompoundDrawablesWithIntrinsicBounds(getNotVotedDrawable(), 0, 0, 0);
-                mLikesView.setClickable(true);
-                mLikesView.setBackgroundResource(R.drawable.clickable_item_background);
-            }
+            return;
         }
+
+        if (mIsRatingInUpdate) {
+            mLikesView.setText("—");
+            mLikesView.setEnabled(false);
+        } else {
+            mLikesView.setText(String.valueOf(mVotes));
+            mLikesView.setEnabled(true);
+        }
+
+        Resources resources = mLikesView.getResources();
+        if (mIsVoted) {
+            mLikesView.setTextColor(resources.getColor(R.color.text_color_feed_item_likes_gt1));
+            mLikesView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_like_voted, 0, 0, 0);
+            mLikesView.setBackgroundDrawable(null); // XXX: убрать нафиг, когда починят отмену голоса
+        } else {
+            TlogDesign design = mTlogDesign == null ? TlogDesign.DUMMY : mTlogDesign;
+            mLikesView.setTextColor(design.getFeedActionsTextColor(resources));
+            mLikesView.setCompoundDrawablesWithIntrinsicBounds(getNotVotedDrawable(), 0, 0, 0);
+            mLikesView.setClickable(true);
+            mLikesView.setBackgroundResource(R.drawable.clickable_item_background);
+        }
+        mLikesView.setVisibility(View.VISIBLE);
     }
 
     public void setCommentsClickable(boolean clickable) {

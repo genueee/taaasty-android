@@ -114,7 +114,7 @@ public final class NetworkUtils {
     public RestAdapter createRestAdapter() {
         RestAdapter.Builder b = new RestAdapter.Builder();
 
-        if (BuildConfig.DEBUG) b.setLogLevel(RestAdapter.LogLevel.FULL);
+        b.setLogLevel(Constants.RETROFIT_LOG_LEVEL);
         b.setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
                 .setConverter(mGsonConverter)
                 .setRequestInterceptor(mRequestInterceptor)

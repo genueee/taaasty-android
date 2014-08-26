@@ -24,7 +24,6 @@
         style="@style/ErrorTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         tools:text="Мазафака какая-то с сайтом"
         tools:visibility="visible" />
 

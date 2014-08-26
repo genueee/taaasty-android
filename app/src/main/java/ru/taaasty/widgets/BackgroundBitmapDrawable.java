@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
@@ -30,11 +31,13 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
     private boolean mRefreshBlurredBitmap = true;
 
     private Bitmap mBlurredBitmap;
+    private Paint mDrawBitmapPaint;
 
     private final NdkStackBlur mBlurer = NdkStackBlur.create();
 
     public BackgroundBitmapDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
+        mDrawBitmapPaint = new Paint();
     }
 
     public void setCoverAlign(int coverAlign) {
@@ -135,7 +138,7 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
         if (mCoverAlign == COVER_ALIGN_CENTER_CROP) {
             if (mRefreshBlurredBitmap) refreshBlurredBitmap();
             // canvas.drawColor(0xaa00ff00);
-            canvas.drawBitmap(mBlurredBitmap, mBlurScaleMatrix, null);
+            canvas.drawBitmap(mBlurredBitmap, mBlurScaleMatrix, getPaint());
         } else {
             super.draw(canvas);
         }

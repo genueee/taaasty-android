@@ -5,10 +5,16 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
 
@@ -16,11 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
@@ -30,7 +38,8 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
-    public static final String ARG_POST_ID = "post_id";
+    public static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
+    public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
     private ActionbarUserIconLoader mAbIconLoader;
@@ -58,10 +67,14 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
 
         if (savedInstanceState == null) {
             long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
-            if (postId < 0) throw new IllegalArgumentException("no ARG_POST_ID");
-            setupActionbar(null, null);
+            if (postId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
+            TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+            setupActionbar(null, null, design);
             getActionBar().hide();
-            Fragment postFragment = ShowPostFragment.newInstance(postId);
+            if (design != null) {
+                getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
+            }
+            Fragment postFragment = ShowPostFragment.newInstance(postId, design);
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, postFragment)
                     .commit();
@@ -93,9 +106,9 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
     @Override
     public void onPostLoaded(Entry entry) {
         if (entry == null) {
-            setupActionbar(null, null);
+            setupActionbar(null, null, null);
         } else {
-            setupActionbar(entry.getAuthor(), entry.getTitle());
+            setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getSlug(), entry.getAuthor().getDesign());
         }
     }
 
@@ -133,6 +146,22 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
     }
 
+    @Override
+    public void setPostBackgroundColor(int color) {
+        Drawable from, to;
+        TransitionDrawable trasition;
+
+        from = getWindow().getDecorView().getBackground();
+        if (from == null) {
+            getWindow().getDecorView().setBackgroundColor(color);
+            return;
+        }
+        to = new ColorDrawable(color);
+        trasition = new TransitionDrawable(new Drawable[]{from, to});
+        getWindow().setBackgroundDrawable(trasition);
+        trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
+    }
+
     private Runnable mHideActionBarRunnable = new Runnable() {
         @Override
         public void run() {
@@ -141,15 +170,24 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
         }
     };
 
-    void setupActionbar(User author, String postTitle) {
+    void setupActionbar(Userpic userpic, String username, TlogDesign design) {
         ActionBar ab = getActionBar();
-        if (ab != null) {
-            ab.setTitle(R.string.title_activity_show_post);
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setIcon(R.drawable.avatar_dummy);
-            if (author != null) {
-                mAbIconLoader.loadIcon(author.getUserpic(), author.getName());
-            }
+        if (ab == null) return;
+        SpannableString title = new SpannableString(getText(R.string.title_activity_show_post));
+
+        ab.setDisplayHomeAsUpEnabled(true);
+        ab.setIcon(Color.TRANSPARENT);
+        if (userpic != null) {
+            mAbIconLoader.loadIcon(userpic, username);
         }
+        if (design != null && design.isDarkTheme()) {
+            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar)));
+            ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
+            title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        } else {
+            ab.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        }
+
+        ab.setTitle(title);
     }
 }

@@ -73,4 +73,8 @@ public class UiUtils {
         return cnt == entries.size() ? -1 : cnt;
     }
 
+    public static float clamp(float value, float left, float right) {
+        return Math.max(Math.min(value, right), left);
+    }
+
 }

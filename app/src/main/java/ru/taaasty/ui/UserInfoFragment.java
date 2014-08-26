@@ -242,7 +242,9 @@ public class UserInfoFragment extends Fragment {
         int foregroundColor = design.getTitleForegroundColor(getResources());
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(getView(), design, getResources().getColor(R.color.additional_menu_background)));
+                .into(new TargetSetHeaderBackground(
+                        getActivity().getWindow().getDecorView(),
+                        design, getResources().getColor(R.color.additional_menu_background)));
 
         // XXX
     }

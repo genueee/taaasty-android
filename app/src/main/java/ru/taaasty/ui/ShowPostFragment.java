@@ -4,12 +4,12 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -63,7 +63,7 @@ public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostFragment";
     private static final String ARG_POST_ID = "post_id";
-    private static final String ARG_SHOW_USER_HEADER = "show_user_header";
+    private static final String ARG_TLOG_DESIGN = "tlog_design";
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
     private static final String KEY_COMMENTS = "comments";
@@ -80,8 +80,6 @@ public class ShowPostFragment extends Fragment {
     private ParallaxListView mListView;
     private CommentsAdapter mCommentsAdapter;
 
-    @Nullable
-    private ViewGroup mUserTitleView;
     private ViewGroup mPostContentView;
     private EntryBottomActionBar mEntryBottomActionBar;
     private TextView mTitleView;
@@ -93,25 +91,19 @@ public class ShowPostFragment extends Fragment {
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
 
-    private boolean mShowUserHeader = false;
-
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static ShowPostFragment newInstance(long postId, boolean showUserHeader) {
+    public static ShowPostFragment newInstance(long postId, TlogDesign design) {
         ShowPostFragment f = new  ShowPostFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
-        b.putBoolean(ARG_SHOW_USER_HEADER, showUserHeader);
+        b.putParcelable(ARG_TLOG_DESIGN, design);
         f.setArguments(b);
         return f;
-    }
-
-    public static ShowPostFragment newInstance(long postId) {
-        return newInstance(postId, false);
     }
 
     public ShowPostFragment() {
@@ -123,7 +115,7 @@ public class ShowPostFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         mPostId = args.getLong(ARG_POST_ID);
-        mShowUserHeader = args.getBoolean(ARG_SHOW_USER_HEADER);
+        mDesign = args.getParcelable(ARG_TLOG_DESIGN);
         mCommentsService = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
@@ -136,13 +128,6 @@ public class ShowPostFragment extends Fragment {
 
         mListView = (ParallaxListView) v.findViewById(R.id.list_view);
         mPostContentView = (ViewGroup) inflater.inflate(R.layout.post_item, mListView, false);
-
-        if (mShowUserHeader) {
-            mUserTitleView = (ViewGroup) inflater.inflate(R.layout.header_show_post, mListView, false);
-            mUserTitleView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
-        } else {
-            mUserTitleView = null;
-        }
 
         mEntryBottomActionBar = new EntryBottomActionBar(mPostContentView.findViewById(R.id.entry_bottom_action_bar), false);
         mEntryBottomActionBar.setOnItemClickListener(mEntryActionBarListener);
@@ -170,8 +155,8 @@ public class ShowPostFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
+        if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
-        if (mShowUserHeader) mListView.addParallaxedHeaderView(mUserTitleView);
         mListView.addHeaderView(mPostContentView);
         mListView.setAdapter(mCommentsAdapter);
         mListView.setOnItemClickListener(mOnCommentClickedListener);
@@ -184,7 +169,6 @@ public class ShowPostFragment extends Fragment {
             if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             setupEntry();
         }
-
         refreshEntry();
     }
 
@@ -208,7 +192,6 @@ public class ShowPostFragment extends Fragment {
         mCommentsSubscribtion.unsubscribe();
         mTlogDesignSubscribtion.unsubscribe();
         mEntryBottomActionBar = null;
-        mUserTitleView = null;
         mPostContentView = null;
         mSourceView = null;
         mTextView = null;
@@ -253,19 +236,6 @@ public class ShowPostFragment extends Fragment {
         return mListView.getChildAt(pos).getBottom() > mListView.getHeight();
     }
 
-    void setupAuthor() {
-        if (!mShowUserHeader) return;
-        if (mCurrentEntry == null || mCurrentEntry.getAuthor() == null) {
-            // XXX
-        } else {
-            User author = mCurrentEntry.getAuthor();
-            String name = author.getName();
-            name = UiUtils.capitalize(name);
-            ((TextView)mUserTitleView.findViewById(R.id.user_name)).setText(name);
-            setupAvatar(author);
-        }
-    }
-
     private void setupEntry() {
         mEntryBottomActionBar.setOnItemListenerEntry(mCurrentEntry);
         mEntryBottomActionBar.setupEntry(mCurrentEntry);
@@ -276,7 +246,6 @@ public class ShowPostFragment extends Fragment {
             // XXX
         } else {
             mPostContentView.setVisibility(View.VISIBLE);
-            setupAuthor();
             setupPostImage();
             setupPostText();
             mListView.postDelayed(new Runnable() {
@@ -294,36 +263,15 @@ public class ShowPostFragment extends Fragment {
         TlogDesign design = mDesign;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
+        if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()));
+        mEntryBottomActionBar.setTlogDesign(design);
+        mCommentsAdapter.setFeedDesign(design);
 
-        /*
-        Drawable currentDrawable = mListView.getBackground();
-        Drawable newDrawable = new ColorDrawable(design.getFeedBackgroundColor(getResources()));
-
-        if (currentDrawable == null) {
-            mListView.setBackgroundDrawable(newDrawable);
-        } else {
-            TransitionDrawable td = new TransitionDrawable(new Drawable[]{currentDrawable, newDrawable});
-            mListView.setBackgroundDrawable(td);
-            td.startTransition(200);
-        }
-        */
-
-        // String backgroudUrl = design.getBackgroundUrl();
         int foregroundColor = design.getTitleForegroundColor(getResources());
         FontManager fm = FontManager.getInstance(getActivity());
 
-        // int textColor = design.getFeedTextColor(getResources());
+        int textColor = design.getFeedTextColor(getResources());
         Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
-
-        /*
-        if (mUserTitleView != null) {
-            ((TextView) mUserTitleView.findViewById(R.id.user_name)).setTypeface(tf);
-            mFeedDesignTarget = new TargetSetHeaderBackground(mUserTitleView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
-            NetworkUtils.getInstance().getPicasso(getActivity())
-                    .load(backgroudUrl)
-                    .into(mFeedDesignTarget);
-        }
-        */
 
         for (int id: new int[] {
                 R.id.title,
@@ -335,10 +283,8 @@ public class ShowPostFragment extends Fragment {
                 if (DBG) Log.v(TAG, "set typeface " + tf + " on view " + tw);
                 tw.setTypeface(tf);
             }
-            // tw.setTextColor(textColor);
+            tw.setTextColor(textColor);
         }
-        // mEntryBottomActionBar.setTlogDesign(design);
-
     }
 
     // XXX
@@ -401,57 +347,60 @@ public class ShowPostFragment extends Fragment {
         });
     }
 
-    private void setupPostText() {
+    public static void setupPostText(Entry entry, TextView titleView, TextView textView, TextView sourceView, Resources resources) {
         CharSequence title;
         CharSequence text;
         CharSequence source;
         boolean hasTitle;
 
-        if (Entry.ENTRY_TYPE_QUOTE.equals(mCurrentEntry.getType())) {
+        if (Entry.ENTRY_TYPE_QUOTE.equals(entry.getType())) {
             title = null;
-            text = UiUtils.formatQuoteText(mCurrentEntry.getText());
-            source = UiUtils.formatQuoteSource(mCurrentEntry.getSource());
-        } else if (Entry.ENTRY_TYPE_IMAGE.endsWith(mCurrentEntry.getType())) {
+            text = UiUtils.formatQuoteText(entry.getText());
+            source = UiUtils.formatQuoteSource(entry.getSource());
+        } else if (Entry.ENTRY_TYPE_IMAGE.endsWith(entry.getType())) {
             title = null;
-            text = mCurrentEntry.getTitle();
+            text = entry.getTitle();
             if (!TextUtils.isEmpty(text)) text = Html.fromHtml(text.toString());
             source = null;
         } else {
-            title = mCurrentEntry.getTitle();
-            text = mCurrentEntry.getTextSpanned();
+            title = entry.getTitle();
+            text = entry.getTextSpanned();
             source = null;
         }
 
         if (TextUtils.isEmpty(title)) {
-            mTitleView.setVisibility(View.GONE);
+            titleView.setVisibility(View.GONE);
             hasTitle = false;
         } else {
-            mTitleView.setText(Html.fromHtml(title.toString()));
-            mTitleView.setVisibility(View.VISIBLE);
+            titleView.setText(Html.fromHtml(title.toString()));
+            titleView.setVisibility(View.VISIBLE);
             hasTitle = true;
         }
 
         if (text == null) {
-            mTextView.setVisibility(View.GONE);
+            textView.setVisibility(View.GONE);
         } else {
-            mTextView.setText(text);
-            mTextView.setVisibility(View.VISIBLE);
-            mTextView.setPadding(mTextView.getPaddingLeft(),
-                    hasTitle ? 0 : getResources().getDimensionPixelSize(R.dimen.post_no_title_padding),
-                    mTextView.getPaddingRight(),
-                    mTextView.getPaddingBottom());
+            textView.setText(text);
+            textView.setVisibility(View.VISIBLE);
+            textView.setPadding(textView.getPaddingLeft(),
+                    hasTitle ? 0 : resources.getDimensionPixelSize(R.dimen.post_no_title_padding),
+                    textView.getPaddingRight(),
+                    textView.getPaddingBottom());
         }
 
         if (source == null) {
-            mSourceView.setVisibility(View.GONE);
+            sourceView.setVisibility(View.GONE);
         } else {
-            mSourceView.setText(source);
-            mSourceView.setVisibility(View.VISIBLE);
+            sourceView.setText(source);
+            sourceView.setVisibility(View.VISIBLE);
         }
     }
 
+    private void setupPostText() {
+        setupPostText(mCurrentEntry, mTitleView, mTextView, mSourceView, getResources());
+    }
+
     private void setupAvatar(User author) {
-        if (mUserTitleView == null) return;
         View root = getView();
         if (root == null) return;
         ImageUtils.getInstance().loadAvatar(author,
@@ -523,6 +472,7 @@ public class ShowPostFragment extends Fragment {
                 });
                 va.start();
             } else {
+                if (mCommentsAdapter.isEmpty()) return;
                 final Comment comment = mCommentsAdapter.getItem(position - 1);
 
                 ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
@@ -619,7 +569,6 @@ public class ShowPostFragment extends Fragment {
         public void onError(Throwable e) {
             // XXX
             if (e instanceof NoSuchElementException) {
-                setupAuthor();
             }
             mListener.notifyError(getString(R.string.error_loading_user), e);
         }
@@ -750,5 +699,6 @@ public class ShowPostFragment extends Fragment {
 
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();
+        public void setPostBackgroundColor(int color);
     }
 }

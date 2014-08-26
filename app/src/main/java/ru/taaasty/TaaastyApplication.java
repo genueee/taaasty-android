@@ -1,6 +1,7 @@
 package ru.taaasty;
 
 import android.app.Application;
+import android.os.StrictMode;
 
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.NetworkUtils;
@@ -12,6 +13,18 @@ public class TaaastyApplication extends Application {
 
     @Override
     public void onCreate() {
+        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyFlashScreen()
+                    .penaltyLog()
+                    .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    // .penaltyDeath()
+                    .build());
+        }
         super.onCreate();
 
         CalligraphyConfig.initDefault(FontManager.FONT_SANS_PATH, R.attr.fontPath);

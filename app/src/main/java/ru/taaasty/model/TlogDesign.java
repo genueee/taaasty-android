@@ -100,6 +100,16 @@ public class TlogDesign implements Parcelable {
         return bgColor;
     }
 
+    /**
+     * @param r
+     * @return  Цвет фида, с прозрачностью
+     */
+    public int getFeedItemBackgroundColor(Resources r) {
+        int color = getFeedBackgroundColor(r);
+        int alpha = getFeedAlpha();
+        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
+    }
+
     public int getTitleForegroundColor(Resources r) {
         int color;
 
@@ -132,6 +142,10 @@ public class TlogDesign implements Parcelable {
         } else {
             return mBackgroundUrl;
         }
+    }
+
+    public int getFeedActionsTextColor(Resources r) {
+        return r.getColor(isDarkTheme() ? R.color.text_color_feed_actions_dark_theme : R.color.text_color_feed_actions_light_theme);
     }
 
     public String getCoverAlign() {

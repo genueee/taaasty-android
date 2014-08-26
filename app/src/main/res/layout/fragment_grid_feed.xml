@@ -15,7 +15,6 @@
         android:paddingBottom="8dp"
         app:item_margin="5dp"
         app:column_count="@integer/live_feed_column_count"
-        android:background="@color/life_feed_background"
         android:overScrollHeader="@android:color/black"
         tools:listheader="@layout/header_live_feed"
         tools:listitem="@layout/live_feed_item" />

@@ -75,7 +75,8 @@
         </activity>
         <activity
             android:name=".ui.UserInfoActivity"
-            android:parentActivityName=".ui.ShowPostActivity" >
+            android:parentActivityName=".ui.ShowPostActivity"
+            android:theme="@style/AppThemeDark">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.ShowPostActivity" />
@@ -98,11 +99,11 @@
             android:name=".ui.feeds.TlogActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_tlog"
-            android:parentActivityName=".ui.ShowPostActivity"
-            android:theme="@style/FullscreenTheme" >
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:theme="@style/TlogActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.ShowPostActivity" />
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
     </application>
 

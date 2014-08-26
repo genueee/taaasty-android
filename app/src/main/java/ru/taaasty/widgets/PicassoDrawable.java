@@ -29,11 +29,13 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 
+import ru.taaasty.Constants;
+
 import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 public final class PicassoDrawable extends BitmapDrawable {
   // Only accessed from main thread.
-  private static final float FADE_DURATION = 300f; //ms
+  private static final float FADE_DURATION = Constants.IMAGE_FADE_IN_DURATION; //ms
 
   /**
    * Create or update the drawable on the target {@link ImageView} to display the supplied bitmap

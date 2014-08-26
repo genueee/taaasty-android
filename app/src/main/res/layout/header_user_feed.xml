@@ -33,7 +33,7 @@
                 android:contentDescription="@string/user_avatar_content_description"
                 android:cropToPadding="false"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_user_stub_dark" />
+                android:src="@drawable/ic_user_stub" />
 
             <TextView
                 android:id="@+id/user_name"

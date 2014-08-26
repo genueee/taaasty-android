@@ -7,6 +7,10 @@
     <color name="tabbar_action_button_background_normal">@color/green_background_normal</color>
     <color name="tabbar_action_button_background_pressed">#37be72</color>
     <color name="text_color_feed_item_gray">#80939393</color>
+
+    <color name="text_color_feed_actions_dark_theme">#595959</color>
+    <color name="text_color_feed_actions_light_theme">#c9c9c9</color>
+
     <color name="text_color_feed_item_likes_gt1">#db7d05</color>
     <color name="text_color_semi_transparent_white">#62ffffff</color>
     <color name="login_activity_darken_layer">#50000000</color>
@@ -17,12 +21,12 @@
     <color name="refresh_widget_color4">#ff909090</color>
     <color name="feed_white_text">@android:color/white</color>
     <color name="feed_black_text">@android:color/black</color>
-    <color name="feed_dark_background_color">#ff1e1e1e</color>
-    <color name="feed_light_background_color">#ffeeeeee</color>
     <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
-    <color name="life_feed_background">#ffeaeaea</color>
-    <color name="show_post_background">#ffeeeeee</color>
+    <color name="feed_dark_background_color">#ff1e1e1e</color>
+    <color name="feed_light_background_color">#ffeeeeee</color>
+
+    <color name="semi_transparent_action_bar">#b6000000</color>
 
 </resources>

@@ -1,19 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/header_user_feed_main"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/feed_header_height"
-    android:orientation="vertical">
+    android:layout_height="@dimen/feed_header_height">
 
     <LinearLayout
         android:id="@+id/avatar_user_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_centerInParent="true"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp"
-        android:layout_marginTop="16dp"
         android:gravity="center"
         android:orientation="vertical"
         android:paddingBottom="8dp"
@@ -31,7 +30,6 @@
 
         <TextView
             android:id="@+id/user_name"
-            tools:text="Genue"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="22dp"
@@ -40,7 +38,9 @@
             android:paddingRight="8dp"
             android:singleLine="true"
             android:textColor="@android:color/white"
-            android:textSize="22sp" />
+            android:textSize="32sp"
+            tools:text="Genue" />
+
     </LinearLayout>
 
-</LinearLayout>
+</RelativeLayout>

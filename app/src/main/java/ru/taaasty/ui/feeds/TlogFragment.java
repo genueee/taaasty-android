@@ -3,37 +3,39 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.service.ApiMyFeeds;
+import ru.taaasty.model.TlogInfo;
+import ru.taaasty.model.User;
+import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ShowPostActivity;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -41,13 +43,10 @@ import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
-
-public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "MyFeedFragment";
-
-    private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
-    private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";
+    private static final String TAG = "TlogFragment";
+    private static final String ARG_USER_ID = "user_id";
 
     private OnFragmentInteractionListener mListener;
 
@@ -56,18 +55,19 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
-    private ApiMyFeeds mFeedsService;
+    private ApiTlog mTlogService;
     private FeedItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
-    private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
+    private Subscription mUserSubscribtion = SubscriptionHelper.empty();
 
-    private int mRefreshCounter;
-
-    private TlogDesign mTlogDesign;
+    private long mUserId;
+    private TlogInfo mTlogInfo;
 
     // XXX: anti picasso weak ref
     private TargetSetHeaderBackground mFeedDesignTarget;
+
+    private int mRefreshCounter;
 
     /**
      * Use this factory method to create a new instance of
@@ -75,31 +75,57 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static SubscribtionsFeedFragment newInstance() {
-        return new SubscribtionsFeedFragment();
+    public static TlogFragment newInstance(long userId) {
+        TlogFragment f = new  TlogFragment();
+        Bundle b = new Bundle();
+        b.putLong(ARG_USER_ID, userId);
+        f.setArguments(b);
+        return f;
     }
 
-    public SubscribtionsFeedFragment() {
+    public TlogFragment() {
         // Required empty public constructor
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+        Bundle args = getArguments();
+        mUserId = args.getLong(ARG_USER_ID);
+        mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
+        final View v = inflater.inflate(R.layout.fragment_tlog, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mListView = (ParallaxListView) v.findViewById(R.id.list_view);
-        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_title_subtitle, mListView, false);
-        ((TextView)mHeaderView.findViewById(R.id.title)).setText(R.string.my_subscriptions);
+        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_tlog, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
 
+        mHeaderView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
+
         mRefreshLayout.setOnRefreshListener(this);
+        mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                View child = view.getChildAt(0);
+                float firstVisibleFract;
+                if (child == null) {
+                    firstVisibleFract = 0;
+                } else {
+                    firstVisibleFract = -1f * (float)child.getTop() / (float)child.getHeight();
+                }
+
+                if (mListener != null) mListener.onListScroll(firstVisibleItem,
+                        UiUtils.clamp(firstVisibleFract, 0f, 0.99f), visibleItemCount, totalItemCount);
+            }
+        });
 
         return v;
     }
@@ -121,41 +147,28 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
         mListView.addParallaxedHeaderView(mHeaderView);
         mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
+        mAdapter.setShowUserAvatar(false);
         mListView.setAdapter(mAdapter);
-
-        if (savedInstanceState != null) {
-            ArrayList<Entry> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (entries != null) {
-                mAdapter.setFeed(entries);
-            }
-            TlogDesign design = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_DESIGN);
-            if (design != null) {
-                mTlogDesign = design;
-                setupFeedDesign();
-            }
-        }
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            List<Entry> entries = mAdapter.getFeed();
-            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
+    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.avatar:
+                    onAvatarClicked(v);
+                    break;
+            }
         }
-        if (mTlogDesign != null) {
-            outState.putParcelable(BUNDLE_KEY_FEED_DESIGN, mTlogDesign);
-        }
-    }
+    };
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
-        mCurrentUserSubscribtion.unsubscribe();
+        mUserSubscribtion.unsubscribe();
         mListView = null;
         mAdapter = null;
         mFeedDesignTarget = null;
@@ -191,26 +204,52 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         refreshFeed();
     }
 
+    void onAvatarClicked(View v) {
+        if (mListener != null) mListener.onAvatarClicked(
+                mTlogInfo == null ? null : mTlogInfo.author,
+                mTlogInfo == null ? null : mTlogInfo.design);
+    }
+
+    void setupUser(User user) {
+        if (user == null) {
+            // XXX
+        } else {
+            String name = user.getName();
+            if (name == null) name = "";
+            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
+            ((TextView)mHeaderView.findViewById(R.id.user_name)).setText(name);
+
+            setupAvatar(user);
+        }
+    }
+
     void setupFeedDesign() {
-        if (DBG) Log.e(TAG, "Setup feed design " + mTlogDesign);
+        if (mTlogInfo == null) return;
+        TlogDesign design = mTlogInfo.design;
 
-        if (mTlogDesign == null) return;
-
-        mAdapter.setFeedDesign(mTlogDesign);
-        mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
-        String backgroudUrl = mTlogDesign.getBackgroundUrl();
-        int foregroundColor = mTlogDesign.getTitleForegroundColor(getResources());
-        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, mTlogDesign, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+        if (DBG) Log.e(TAG, "Setup feed design " + design);
+        mAdapter.setFeedDesign(design);
+        if (mListener != null) mListener.setFeedBackgroundColor(design.getFeedBackgroundColor(getResources()));
+        String backgroudUrl = design.getBackgroundUrl();
+        int foregroundColor = design.getTitleForegroundColor(getResources());
+        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, design, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
                 .into(mFeedDesignTarget);
 
     }
 
+    private void setupAvatar(User user) {
+        ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
+                (ImageView)mHeaderView.findViewById(R.id.avatar),
+                R.dimen.avatar_normal_diameter
+        );
+    }
+
     public class LikesHelper extends ru.taaasty.utils.LikesHelper {
 
         public LikesHelper() {
-            super(SubscribtionsFeedFragment.this);
+            super(TlogFragment.this);
         }
 
         @Override
@@ -242,6 +281,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
             if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
             Intent i = new Intent(getActivity(), ShowPostActivity.class);
             i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+            if (mTlogInfo != null) i.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogInfo.design);
             startActivity(i);
         }
 
@@ -272,16 +312,15 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
     };
 
     public void refreshUser() {
-        if (!mCurrentUserSubscribtion.isUnsubscribed()) {
-            if (DBG) Log.v(TAG, "current user subscription is not unsubscribed " + mCurrentUserSubscribtion);
-            mCurrentUserSubscribtion.unsubscribe();
+        if (!mUserSubscribtion.isUnsubscribed()) {
+            mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
         setRefreshing(true);
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
-                UserManager.getInstance().getCurrentUser());
+        Observable<TlogInfo> observableCurrentUser = AndroidObservable.bindFragment(this,
+                mTlogService.getUserInfo(String.valueOf(mUserId)));
 
-        mCurrentUserSubscribtion = observableCurrentUser
+        mUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
@@ -289,14 +328,13 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
     private void refreshFeed() {
         if (!mFeedSubscription.isUnsubscribed()) {
-            if (DBG) Log.v(TAG, "feed subsription is not unsubscribed " + mFeedSubscription);
             mFeedSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
 
         setRefreshing(true);
         Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFriendsFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH));
+                mTlogService.getEntries(String.valueOf(mUserId), null, Constants.LIVE_FEED_INITIAL_LENGTH));
         mFeedSubscription = observableFeed
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
@@ -321,7 +359,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            if (mListener != null) mListener.notifyError(getText(R.string.server_error), e);
+            // XXX
         }
 
         @Override
@@ -331,7 +369,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         }
     };
 
-    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
+    private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {
 
         @Override
         public void onCompleted() {
@@ -343,13 +381,16 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
             if (DBG) Log.e(TAG, "refresh author error", e);
             // XXX
             if (e instanceof NoSuchElementException) {
+                setupUser(null);
             }
         }
 
         @Override
-        public void onNext(CurrentUser currentUser) {
-            mTlogDesign = currentUser.getDesign();
+        public void onNext(TlogInfo info) {
+            mTlogInfo = info;
             setupFeedDesign();
+            setupUser(info.author);
+            if (mListener != null) mListener.onAuthorLoaded(info.author);
         }
     };
 
@@ -364,5 +405,9 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void setFeedBackgroundColor(int color);
+        public void onAvatarClicked(User user, TlogDesign design);
+        public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
+        public void onAuthorLoaded(User autor);
     }
 }

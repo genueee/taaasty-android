@@ -1,0 +1,40 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
+
+    <ru.taaasty.widgets.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_widget"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <com.nirhart.parallaxscroll.views.ParallaxListView
+            android:id="@+id/list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:divider="@null"
+            android:overScrollHeader="@android:color/black"
+            android:paddingBottom="8dp"
+            android:smoothScrollbar="false"
+            tools:listheader="@layout/header_tlog"
+            tools:listitem="@layout/feed_item" />
+
+    </ru.taaasty.widgets.SwipeRefreshLayout>
+
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
+        android:paddingTop="@dimen/feed_header_height"
+        android:text="@string/user_have_not_written_anything"
+        android:textColor="#7d7d7d"
+        android:textSize="22sp"
+        android:visibility="gone" />
+
+</FrameLayout>

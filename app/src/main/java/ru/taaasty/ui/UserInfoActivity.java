@@ -14,6 +14,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -59,7 +60,9 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
     @Override
     public void onEntriesCountClicked() {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        Intent i = new Intent(this, TlogActivity.class);
+        i.putExtra(TlogActivity.ARG_USER_ID, mUser.getId());
+        startActivity(i);
     }
 
     @Override

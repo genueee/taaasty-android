@@ -13,7 +13,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.feeds.SubscribtionsFeedFragment;
-import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
@@ -106,8 +105,8 @@ public class SubscribtionsActivity extends Activity implements SubscribtionsFeed
         public void onTabbarButtonClicked(View v) {
             switch (v.getId()) {
                 case R.id.btn_tabbar_subscribtions:
-                    MyAdditionalFeedFragment maf = (MyAdditionalFeedFragment)getFragmentManager().findFragmentById(R.id.container);
-                    maf.refreshData();
+                    SubscribtionsFeedFragment fragment = (SubscribtionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
+                    fragment.refreshData();
                     break;
                 case R.id.btn_tabbar_my_feed:
                     switchToMyFeed();

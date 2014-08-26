@@ -3,8 +3,6 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
-import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,12 +26,12 @@ import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.ui.ShowPostFragment;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
+import ru.taaasty.widgets.EntryBottomActionBar;
 
 public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
 
@@ -164,6 +162,10 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         vh.author.setTypeface(tf);
         vh.title.setTextColor(textColor);
         vh.title.setTypeface(tf);
+        vh.entryActionBar.setTlogDesign(mFeedDesign);
+
+        // XXX: ставим только чтобы нормально перекрывать параллаксвый хидер
+        // vh.root.setBackgroundColor(mFeedDesign.getFeedBackgroundColor(mResources));
     }
 
     @Override
@@ -187,7 +189,6 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         Entry item = mFeed.get(position);
         setAuthor(vh, item);
         setImage(vh, item, parent);
-        setTitle(vh, item);
         setText(vh, item);
         vh.entryActionBar.setOnItemListenerEntry(item);
         vh.entryActionBar.setupEntry(item);
@@ -244,46 +245,12 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
                 .load(vh.mImageUrl)
                 .placeholder(R.drawable.image_loading_drawable)
                 .error(R.drawable.image_loading_drawable)
-                .noFade()
                 .into(vh.image);
 
     }
 
-    private void setTitle(ViewHolder vh, Entry item) {
-        String title = item.getTitle();
-        if (TextUtils.isEmpty(title)) {
-            vh.title.setVisibility(View.GONE);
-        } else {
-            vh.title.setText(Html.fromHtml(title));
-            vh.title.setVisibility(View.VISIBLE);
-        }
-    }
-
     private void setText(ViewHolder vh, Entry item) {
-        CharSequence text;
-        CharSequence source;
-
-        if (Entry.ENTRY_TYPE_QUOTE.equals(item.getType())) {
-            text = UiUtils.formatQuoteText(item.getText());
-            source = UiUtils.formatQuoteSource(item.getSource());
-        } else {
-            text = item.getTextSpanned();
-            source = null;
-        }
-
-        if (text == null) {
-            vh.text.setVisibility(View.GONE);
-        } else {
-            vh.text.setText(text);
-            vh.text.setVisibility(View.VISIBLE);
-        }
-
-        if (source == null) {
-            vh.source.setVisibility(View.GONE);
-        } else {
-            vh.source.setText(source);
-            vh.source.setVisibility(View.VISIBLE);
-        }
+        ShowPostFragment.setupPostText(item, vh.title, vh.text, vh.source, mResources);
     }
 
     private final View.OnClickListener mOnFeedItemClickListener = new View.OnClickListener() {
@@ -295,6 +262,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
     };
 
     public class ViewHolder {
+        private final View root;
         private final ViewGroup avarar_author;
         public final ImageView avatar;
         public final TextView author;
@@ -307,6 +275,7 @@ public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
         private String mImageUrl = null;
 
         public ViewHolder(View v) {
+            root = v;
             avarar_author = (ViewGroup) v.findViewById(R.id.avatar_author);
             avatar = (ImageView) avarar_author.findViewById(R.id.avatar);
             author = (TextView) avarar_author.findViewById(R.id.author);

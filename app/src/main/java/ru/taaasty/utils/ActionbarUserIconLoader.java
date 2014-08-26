@@ -36,7 +36,7 @@ public abstract class ActionbarUserIconLoader {
             if (Picasso.LoadedFrom.MEMORY.equals(from)) {
                 mActionBar.setIcon(new BitmapDrawable(mContext.getResources(), bitmap));
             } else {
-                Drawable placeholder = mContext.getResources().getDrawable(R.drawable.ic_user_stub_dark);
+                Drawable placeholder = mContext.getResources().getDrawable(R.drawable.ic_user_stub);
                 if (placeholder instanceof AnimationDrawable) {
                     ((AnimationDrawable) placeholder).stop();
                 }

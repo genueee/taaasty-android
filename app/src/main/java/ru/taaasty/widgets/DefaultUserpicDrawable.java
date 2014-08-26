@@ -6,7 +6,7 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import java.util.Random;
@@ -17,7 +17,7 @@ import ru.taaasty.utils.FontManager;
 /**
  * Created by alexey on 31.07.14.
  */
-public class DefaultUserpicDrawable extends BitmapDrawable {
+public class DefaultUserpicDrawable extends Drawable {
     public static final int AVATAR_DIAMETER = 128;
     public static final int TEXT_SIZE = 42;
     private final Paint mBackgroundPaint;
@@ -25,6 +25,7 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
 
     private int mBackgroundColor;
     private int mTextColor;
+    private int mAlpha;
     private String mUsername;
     private Rect mBounds;
 
@@ -33,6 +34,7 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
     public DefaultUserpicDrawable(String username, int backgroundColor, int textColor) {
         mBackgroundPaint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
         mTextPaint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
+        mAlpha = 255;
         setUser(username, backgroundColor, textColor);
     }
 
@@ -67,6 +69,8 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
             invalidatePaints();
         }
 
+        if (getOpacity() == 0) return;
+
         Rect bounds = getBounds();
 
         float diameter = Math.min(bounds.width(), bounds.height());
@@ -85,8 +89,10 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
 
     @Override
     public void setAlpha(int alpha) {
-        if (mBackgroundPaint.getAlpha() != alpha) {
+        if (mAlpha != alpha) {
+            mAlpha = alpha;
             mBackgroundPaint.setAlpha(alpha);
+            mTextPaint.setAlpha(mAlpha);
             invalidateSelf();
         }
     }
@@ -110,9 +116,9 @@ public class DefaultUserpicDrawable extends BitmapDrawable {
     }
 
     private void invalidatePaints() {
-        mBackgroundPaint.setColor(mBackgroundColor);
+        mBackgroundPaint.setColor(Color.argb(mAlpha, Color.red(mBackgroundColor), Color.green(mBackgroundColor), Color.blue(mBackgroundColor)));
         mBackgroundPaint.setAntiAlias(true);
-        mTextPaint.setColor(mTextColor);
+        mTextPaint.setColor(Color.argb(mAlpha, Color.red(mTextColor), Color.green(mTextColor), Color.blue(mTextColor)));
         mTextPaint.setTypeface(FontManager.getInstance(null).getDefaultSansSerifTypeface()); // XXX
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
