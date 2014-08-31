@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -77,12 +76,6 @@ public class UserInfoActivity extends Activity implements UserInfoFragment.OnFra
         Intent i = new Intent(this, FollowingFollowersActivity.class);
         i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
         startActivity(i);
-    }
-
-    @Override
-    public void onDaysCountClicked() {
-        if (DBG) Log.v(TAG, "onDaysCountClicked");
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
     @Override

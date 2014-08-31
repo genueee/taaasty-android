@@ -125,6 +125,7 @@ public class ImageUtils {
 
         public ImageViewTarget(ImageView view) {
             mView = view;
+            mView.setTag(R.id.picasso_target, this); // anti-picasso weak ref
         }
 
         @Override

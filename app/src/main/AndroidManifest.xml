@@ -76,7 +76,8 @@
         <activity
             android:name=".ui.UserInfoActivity"
             android:parentActivityName=".ui.ShowPostActivity"
-            android:theme="@style/AppThemeDark">
+            android:theme="@style/AppThemeDark"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.ShowPostActivity" />

@@ -53,6 +53,9 @@ public class UserInfoFragment extends Fragment {
     private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
     private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
 
+    // Antoid picasso weak ref
+    private TargetSetHeaderBackground mTargetSetHeaderBackground;
+
     public static UserInfoFragment newInstance(User user) {
         UserInfoFragment fragment = new UserInfoFragment();
         Bundle args = new Bundle();
@@ -104,7 +107,6 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.entries_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscriptions_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribers_count).setOnClickListener(mOnClickListener);
-        view.findViewById(R.id.days_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
 
@@ -125,6 +127,7 @@ public class UserInfoFragment extends Fragment {
         mUserTitle = null;
         mSubscribeButton = null;
         mUnsubscribeButton = null;
+        mTargetSetHeaderBackground = null;
     }
 
     @Override
@@ -239,12 +242,13 @@ public class UserInfoFragment extends Fragment {
 
         // getView().setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         String backgroudUrl = design.getBackgroundUrl();
-        int foregroundColor = design.getTitleForegroundColor(getResources());
+        mTargetSetHeaderBackground = new TargetSetHeaderBackground(
+                getActivity().getWindow().getDecorView(),
+                design, getResources().getColor(R.color.additional_menu_background));
+
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
-                .into(new TargetSetHeaderBackground(
-                        getActivity().getWindow().getDecorView(),
-                        design, getResources().getColor(R.color.additional_menu_background)));
+                .into(mTargetSetHeaderBackground);
 
         // XXX
     }
@@ -336,9 +340,6 @@ public class UserInfoFragment extends Fragment {
                 case R.id.subscribers_count:
                     if (mListener != null) mListener.onSubscribersCountClicked();
                     break;
-                case R.id.days_count:
-                    if (mListener != null) mListener.onDaysCountClicked();
-                    break;
                 case R.id.subscribe:
                     follow();
                     break;
@@ -365,7 +366,6 @@ public class UserInfoFragment extends Fragment {
         public void onEntriesCountClicked();
         public void onSubscribtionsCountClicked();
         public void onSubscribersCountClicked();
-        public void onDaysCountClicked();
     }
 
 }
