@@ -112,6 +112,7 @@ public class ImageUtils {
                     .error(defaultUserpicDrawable)
                     .transform(mCircleTransformation)
                     .into(target);
+
         }
     }
 
@@ -131,22 +132,29 @@ public class ImageUtils {
         @Override
         public void onDrawableReady(Drawable drawable) {
             mView.setImageDrawable(drawable);
+            removeTag();
         }
 
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             if (mView.getContext() == null) return;
             PicassoDrawable.setBitmap(mView, mView.getContext(), bitmap, from, false, false);
+            removeTag();
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
             if (errorDrawable != null) mView.setImageDrawable(errorDrawable);
+            removeTag();
         }
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
             if (placeHolderDrawable != null) mView.setImageDrawable(placeHolderDrawable);
+        }
+
+        private void removeTag() {
+            if (mView.getTag(R.id.picasso_target) == this) mView.setTag(R.id.picasso_target, null);
         }
     }
 

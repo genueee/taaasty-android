@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="ru.taaasty"
-    tools:ignore="UnusedAttribute">
+    tools:ignore="UnusedAttribute" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -33,12 +33,12 @@
             android:name=".ui.tabbar.SubscribtionsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.tabbar.MyFeedActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".ui.login.LoginActivity"
             android:label="@string/title_activity_login"
@@ -66,9 +66,9 @@
         <activity
             android:name=".ui.ShowPostActivity"
             android:label="@string/title_activity_show_post"
-            android:theme="@style/ShowPostTheme"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:theme="@style/ShowPostTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
@@ -76,8 +76,8 @@
         <activity
             android:name=".ui.UserInfoActivity"
             android:parentActivityName=".ui.ShowPostActivity"
-            android:theme="@style/AppThemeDark"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeDark" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.ShowPostActivity" />
@@ -86,6 +86,7 @@
             android:name=".ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppThemeLightActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -98,13 +99,17 @@
         </activity>
         <activity
             android:name=".ui.feeds.TlogActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_tlog"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/TlogActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
+        </activity>
+        <activity
+            android:name=".ui.post.CreatePostActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:screenOrientation="portrait">
         </activity>
     </application>
 

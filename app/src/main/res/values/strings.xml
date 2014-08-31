@@ -47,9 +47,7 @@
     <string name="error_vote">Ошибка голосования</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
-
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>
-
     <string name="friends_have_not_written_anything">Ваши друзья пока ничего не написали</string>
     <string name="you_have_no_private_records">У вас нет скрытых записей</string>
     <string name="you_have_no_favorite_records">У вас нет избранных записей</string>
@@ -93,9 +91,11 @@
     <string name="title_followings">Вы подписаны</string>
     <string name="title_followers">Ваши подписчики</string>
     <string name="title_friends">Друзья</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="title_activity_tlog">TlogActivity</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="edit_text_title">Заголовок</string>
+    <string name="edit_text_post_text">Текст поста</string>
+    <string name="text_post_content_description">Текстовый пост</string>
+    <string name="image_post_content_description">Пост — изображение</string>
+    <string name="quote_post_content_description">Пост — цитата</string>
+    <string name="is_private_post_content_description">Приватный пост</string>
 
 </resources>

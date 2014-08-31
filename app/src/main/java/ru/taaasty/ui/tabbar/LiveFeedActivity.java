@@ -25,6 +25,7 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.feeds.GridFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -139,6 +140,11 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
         overridePendingTransition(0, 0);
     }
 
+    void openCreatePost() {
+        Intent i = new Intent(this, CreatePostActivity.class);
+        startActivity(i);
+    }
+
     private Tabbar.onTabbarButtonListener mTabbarListener = new Tabbar.onTabbarButtonListener() {
         @Override
         public void onTabbarButtonClicked(View v) {
@@ -155,6 +161,9 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
                     break;
                 case R.id.btn_tabbar_subscribtions:
                     switchToSubscribtions();
+                    break;
+                case R.id.btn_tabbar_post:
+                    openCreatePost();
                     break;
                 default:
                     Toast.makeText(LiveFeedActivity.this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();

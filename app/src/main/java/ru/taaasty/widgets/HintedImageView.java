@@ -70,7 +70,7 @@ public class HintedImageView extends ImageView implements OnLongClickListener
 
     private void handleLongClick()
     {
-        String contentDesc = getContentDescription().toString();
+        CharSequence contentDesc = getContentDescription();
         if (!TextUtils.isEmpty(contentDesc))
         {
             int[] pos = new int[2];
