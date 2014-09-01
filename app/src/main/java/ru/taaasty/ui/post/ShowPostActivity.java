@@ -1,4 +1,4 @@
-package ru.taaasty.ui;
+package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -29,6 +29,7 @@ import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
+import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;

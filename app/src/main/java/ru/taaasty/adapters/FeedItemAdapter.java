@@ -26,7 +26,7 @@ import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.ui.ShowPostFragment;
+import ru.taaasty.ui.post.ShowPostFragment;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;

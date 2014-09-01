@@ -30,7 +30,7 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.ui.ShowPostActivity;
+import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -119,7 +119,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 if (child == null) {
                     firstVisibleFract = 0;
                 } else {
-                    firstVisibleFract = -1f * (float)child.getTop() / (float)child.getHeight();
+                    firstVisibleFract = -1f * (float) child.getTop() / (float) child.getHeight();
                 }
 
                 if (mListener != null) mListener.onListScroll(firstVisibleItem,

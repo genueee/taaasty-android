@@ -64,7 +64,7 @@
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
-            android:name=".ui.ShowPostActivity"
+            android:name=".ui.post.ShowPostActivity"
             android:label="@string/title_activity_show_post"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
@@ -75,7 +75,7 @@
         </activity>
         <activity
             android:name=".ui.UserInfoActivity"
-            android:parentActivityName=".ui.ShowPostActivity"
+            android:parentActivityName=".ui.post.ShowPostActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeDark" >
             <meta-data

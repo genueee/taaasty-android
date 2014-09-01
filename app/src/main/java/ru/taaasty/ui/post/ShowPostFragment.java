@@ -1,4 +1,4 @@
-package ru.taaasty.ui;
+package ru.taaasty.ui.post;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -44,6 +44,7 @@ import ru.taaasty.model.User;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;

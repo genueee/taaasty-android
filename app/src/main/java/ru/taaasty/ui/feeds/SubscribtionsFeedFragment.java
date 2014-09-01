@@ -30,7 +30,7 @@ import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.ui.ShowPostActivity;
+import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
