@@ -20,7 +20,7 @@ if (rootProject.file('private.properties').exists()) {
 def getRevision = { ->
     def stdout = new ByteArrayOutputStream()
     exec {
-        commandLine 'git', 'rev-parse', '--short', 'HEAD'
+        commandLine 'git', 'describe'
         standardOutput = stdout
     }
     return stdout.toString().trim()
