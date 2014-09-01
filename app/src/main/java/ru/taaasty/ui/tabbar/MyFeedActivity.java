@@ -3,9 +3,9 @@ package ru.taaasty.ui.tabbar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import java.util.Locale;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
@@ -23,32 +24,36 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.AdditionalMenuActivity;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.MyAdditionalFeedActivity;
 import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
-public class MyFeedActivity extends Activity implements
+public class MyFeedActivity extends ActivityBase implements
         MyAdditionalFeedFragment.OnFragmentInteractionListener,
         MyFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedActivity";
-    private static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
+
+    public static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
+    public static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
+
+    public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.tabbar.MyAdditionalFeedFragment.KEY_SHOW_PAGE";
+
+    public static final int SECTION_MY_TLOG = 0;
+    public static final int SECTION_FAVORITES = 1;
+    public static final int SECTION_HIDDEN = 2;
 
     private UserManager mUserManager = UserManager.getInstance();
     private Tabbar mTabbar;
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,16 +76,40 @@ public class MyFeedActivity extends Activity implements
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_MY_TLOG);
+        mViewPager.setCurrentItem(initialSection, false);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ADDITIONAL_MENU_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                int viewId = data.getIntExtra(AdditionalMenuActivity.RESULT_REQUESTED_VIEW_ID, 0);
-                onAdditionMenuItemClicked(viewId);
-            }
+        switch (requestCode) {
+            case ADDITIONAL_MENU_REQUEST_CODE:
+                if (resultCode == Activity.RESULT_OK) {
+                    int viewId = data.getIntExtra(AdditionalMenuActivity.RESULT_REQUESTED_VIEW_ID, 0);
+                    onAdditionMenuItemClicked(viewId);
+                }
+                break;
+            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+                switch (resultCode) {
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
+                        if (mViewPager != null) mViewPager.setCurrentItem(SECTION_MY_TLOG, false);
+                        break;
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
+                        if (mViewPager != null) mViewPager.setCurrentItem(SECTION_HIDDEN, false);
+                        break;
+                }
+                // говно
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mSectionsPagerAdapter == null) return;
+                        Fragment current = mSectionsPagerAdapter.getCurrentPrimaryItem();
+                        if (current != null) ((IRereshable)current).refreshData();
+                    }
+                }, 200);
+                break;
         }
     }
 
@@ -113,6 +142,11 @@ public class MyFeedActivity extends Activity implements
         overridePendingTransition(0, 0);
     }
 
+    void openCreatePost() {
+        Intent i = new Intent(this, CreatePostActivity.class);
+        startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
+    }
+
     private Tabbar.onTabbarButtonListener mTabbarListener = new Tabbar.onTabbarButtonListener() {
         @Override
         public void onTabbarButtonClicked(View v) {
@@ -125,6 +159,9 @@ public class MyFeedActivity extends Activity implements
                     break;
                 case R.id.btn_tabbar_subscribtions:
                     switchToSubscribtions();
+                    break;
+                case R.id.btn_tabbar_post:
+                    openCreatePost();
                     break;
                 default:
                     if (DBG) Log.v(TAG, "onTabbarButtonListener " + v.getId());
@@ -146,7 +183,7 @@ public class MyFeedActivity extends Activity implements
     }
 
     @Override
-    public void onShowAdditionalmenuClicked() {
+    public void onShowAdditionalMenuClicked() {
         Intent i = new Intent(this, AdditionalMenuActivity.class);
         startActivityForResult(i, ADDITIONAL_MENU_REQUEST_CODE);
     }
@@ -200,11 +237,11 @@ public class MyFeedActivity extends Activity implements
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case 0:
+                case SECTION_MY_TLOG:
                     return MyFeedFragment.newInstance();
-                case 1:
+                case SECTION_FAVORITES:
                     return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedActivity.FEED_TYPE_FAVORITES, position, getCount());
-                case 2:
+                case SECTION_HIDDEN:
                     return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedActivity.FEED_TYPE_PRIVATE, position, getCount());
                 default:
                     throw new IllegalArgumentException();
@@ -232,11 +269,11 @@ public class MyFeedActivity extends Activity implements
         @Override
         public CharSequence getPageTitle(int position) {
             switch (position) {
-                case 0:
+                case SECTION_MY_TLOG:
                     return getString(R.string.title_my_feed).toUpperCase(Locale.getDefault());
-                case 1:
+                case SECTION_FAVORITES:
                     return getString(R.string.title_favorites).toUpperCase(Locale.getDefault());
-                case 2:
+                case SECTION_HIDDEN:
                     return getString(R.string.title_hidden_entries).toUpperCase(Locale.getDefault());
             }
             return null;

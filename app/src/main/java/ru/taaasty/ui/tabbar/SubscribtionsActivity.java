@@ -1,7 +1,5 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,22 +7,25 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.feeds.SubscribtionsFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
  * Избранное и скрытые записи
  */
-public class SubscribtionsActivity extends Activity implements SubscribtionsFeedFragment.OnFragmentInteractionListener {
+public class SubscribtionsActivity extends ActivityBase implements SubscribtionsFeedFragment.OnFragmentInteractionListener {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "SubscribtionsActivity";
+
+    public static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
     private UserManager mUserManager = UserManager.getInstance();
     private Tabbar mTabbar;
@@ -56,8 +57,20 @@ public class SubscribtionsActivity extends Activity implements SubscribtionsFeed
     }
 
     @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+                switch (resultCode) {
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
+                        switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG);
+                        break;
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
+                        switchToMyFeed(MyFeedActivity.SECTION_HIDDEN);
+                        break;
+                }
+                break;
+        }
     }
 
     @Override
@@ -92,12 +105,20 @@ public class SubscribtionsActivity extends Activity implements SubscribtionsFeed
         overridePendingTransition(0, 0);
     }
 
-    void switchToMyFeed() {
+    void switchToMyFeed() { switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG); }
+
+    void switchToMyFeed(int initialSection) {
         Intent i = new Intent(this, MyFeedActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        i.putExtra(MyFeedActivity.ARG_KEY_SHOW_SECTION, initialSection);
         startActivity(i);
         finish();
         overridePendingTransition(0, 0);
+    }
+
+    void openCreatePost() {
+        Intent i = new Intent(this, CreatePostActivity.class);
+        startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
     }
 
     private Tabbar.onTabbarButtonListener mTabbarListener = new Tabbar.onTabbarButtonListener() {
@@ -113,6 +134,9 @@ public class SubscribtionsActivity extends Activity implements SubscribtionsFeed
                     break;
                 case R.id.btn_tabbar_live:
                     switchToLiveFeed();
+                    break;
+                case R.id.btn_tabbar_post:
+                    openCreatePost();
                     break;
                 default:
                     Toast.makeText(SubscribtionsActivity.this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();

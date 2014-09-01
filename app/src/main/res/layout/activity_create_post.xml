@@ -3,15 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
         android:layout_above="@+id/buttons"
-        tools:context="ru.taaasty.ui.post.CreatePostActivity"
-        tools:ignore="MergeRootFrame" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
-    <LinearLayout
+    <ru.taaasty.widgets.CreatePostButtons
         android:id="@id/buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,57 +20,22 @@
         android:layout_marginTop="4dp"
         android:baselineAligned="false"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"/>
 
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/text_post"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:contentDescription="@string/text_post_content_description"
-            android:minHeight="48dp"
-            android:minWidth="48dp"
-            android:src="@drawable/ic_text_post"
-            tools:activated="true" >
-            <requestFocus />
-        </ru.taaasty.widgets.HintedImageView>
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone"
+        tools:visibility="visible"
+        style="?android:progressBarStyleLarge"
+        />
 
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/image_post"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:contentDescription="@string/image_post_content_description"
-            android:minHeight="48dp"
-            android:minWidth="48dp"
-            android:src="@drawable/ic_image_post" />
-
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/quote_post"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:contentDescription="@string/quote_post_content_description"
-            android:minHeight="48dp"
-            android:minWidth="48dp"
-            android:src="@drawable/ic_quote_post" />
-
-        <View
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"/>
-
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/private_post_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="4dp"
-            android:contentDescription="@string/is_private_post_content_description"
-            android:minHeight="48dp"
-            android:minWidth="48dp"
-            android:src="@drawable/ic_private_post_indicator"
-            android:layout_gravity="center_vertical" />
-
-    </LinearLayout>
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        tools:text="Что-то не так в форме"
+        tools:visibility="visible"
+        style="@style/ErrorTextView" />
 
 </RelativeLayout>

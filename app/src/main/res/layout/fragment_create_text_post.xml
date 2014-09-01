@@ -1,17 +1,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:paddingLeft="10dp"
-    android:paddingRight="4dp"
-    android:paddingTop="8dp"
-    android:scrollbarStyle="insideInset"
-    android:requiresFadingEdge="none"
-    android:fadingEdge="none"
-    android:overScrollMode="never"
-    tools:context="ru.taaasty.ui.post.CreateTextPostFragment">
+    tools:context="ru.taaasty.ui.post.CreateTextPostFragment"
+    style="@style/CreatePostScrollView">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,36 +12,20 @@
 
         <EditText
             android:id="@+id/title"
-            style="@style/PostTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:hint="@string/edit_text_title"
-            android:paddingLeft="0dp"
-            android:paddingRight="0dp"
-            android:background="@null"
-            android:minLines="1"
-            android:textIsSelectable="false"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp" />
+            android:inputType="textCapSentences"
+            style="@style/CreatePostEditText"
+            android:textSize="32sp"
+            android:minLines="1" />
 
         <EditText
             android:id="@+id/text"
-            style="@style/PostText"
+            style="@style/CreatePostEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="top"
-            android:background="@null"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:textIsSelectable="false"
-            android:hint="@string/edit_text_post_text"
-            android:minLines="5"
-            android:paddingLeft="0dp"
-            android:paddingRight="0dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp" />
+            android:hint="@string/edit_text_post_text" />
     </LinearLayout>
 </ScrollView>
 

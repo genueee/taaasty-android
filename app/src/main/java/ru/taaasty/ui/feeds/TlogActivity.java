@@ -1,9 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -19,6 +17,7 @@ import android.view.MenuItem;
 
 import com.squareup.picasso.Picasso;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.TlogDesign;
@@ -28,10 +27,9 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
-public class TlogActivity extends Activity implements TlogFragment.OnFragmentInteractionListener {
+public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogActivity";
 
@@ -43,11 +41,6 @@ public class TlogActivity extends Activity implements TlogFragment.OnFragmentInt
 
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
     private SpannableString mAbTitle;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

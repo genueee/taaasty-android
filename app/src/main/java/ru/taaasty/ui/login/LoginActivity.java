@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.ui.tabbar.LiveFeedActivity;
@@ -44,7 +44,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
  * A login screen that offers login via email/password.
 
  */
-public class LoginActivity extends Activity implements
+public class LoginActivity extends ActivityBase implements
         SelectSignMethodFragment.OnFragmentInteractionListener,
         SignViaEmailFragment.OnFragmentInteractionListener,
         RecoverPasswordFragment.OnFragmentInteractionListener,
@@ -64,11 +64,6 @@ public class LoginActivity extends Activity implements
 
     @DrawableRes
     private int mCurrentBackgroundId;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:constantSize="true"
+    android:enterFadeDuration="@integer/longAnimTime"
+    android:exitFadeDuration="@integer/longAnimTime"
+    >
+    <item android:state_enabled="false" android:drawable="@drawable/ic_create_post_disabled"/>
+    <item android:state_activated="true" android:drawable="@drawable/ic_create_post_pressed"/>
+    <item android:state_pressed="true" android:state_activated="false" android:drawable="@drawable/ic_create_post_pressed"/>
+    <item android:state_focused="true" android:drawable="@drawable/ic_create_post_pressed"/>
+    <item android:drawable="@drawable/ic_create_post_normal"/>
+</selector>

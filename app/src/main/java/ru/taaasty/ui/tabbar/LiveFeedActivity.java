@@ -1,9 +1,7 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,6 +18,7 @@ import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.Locale;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
@@ -28,12 +27,13 @@ import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 
-public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFragmentInteractionListener {
+public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
+
+    private static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
     private UserManager mUserManager = UserManager.getInstance();
     private Tabbar mTabbar;
@@ -42,11 +42,6 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
     ViewPager mViewPager;
     CirclePageIndicator mCircleIndicator;
     ParallaxedView mCircleIndicatorParallaxedView;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,6 +73,23 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
             protected void translatePreICS(View view, float offset) { throw new IllegalStateException("Not implemented"); }
         };
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+                switch (resultCode) {
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
+                        switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG);
+                        break;
+                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
+                        switchToMyFeed(MyFeedActivity.SECTION_HIDDEN);
+                        break;
+                }
+                break;
+        }
     }
 
     @Override
@@ -132,8 +144,11 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
         overridePendingTransition(0, 0);
     }
 
-    void switchToMyFeed() {
+    void switchToMyFeed() { switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG); }
+
+    void switchToMyFeed(int initialSection) {
         Intent i = new Intent(LiveFeedActivity.this, MyFeedActivity.class);
+        i.putExtra(MyFeedActivity.ARG_KEY_SHOW_SECTION, initialSection);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
         finish();
@@ -141,8 +156,8 @@ public class LiveFeedActivity extends Activity implements GridFeedFragment.OnFra
     }
 
     void openCreatePost() {
-        Intent i = new Intent(this, CreatePostActivity.class);
-        startActivity(i);
+        Intent i = new Intent(this,     CreatePostActivity.class);
+        startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
     }
 
     private Tabbar.onTabbarButtonListener mTabbarListener = new Tabbar.onTabbarButtonListener() {

@@ -44,7 +44,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
 
-public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
 
@@ -188,7 +188,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     void onAdditionalMenuButtonClicked(View v) {
-        if (mListener != null) mListener.onShowAdditionalmenuClicked();
+        if (mListener != null) mListener.onShowAdditionalMenuClicked();
     }
 
     void onMagickWandButtonClicked(View v) {
@@ -390,7 +390,7 @@ public class MyFeedFragment extends Fragment implements SwipeRefreshLayout.OnRef
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onShowAdditionalmenuClicked();
+        public void onShowAdditionalMenuClicked();
         public void onAvatarClicked(User user, TlogDesign design);
     }
 }

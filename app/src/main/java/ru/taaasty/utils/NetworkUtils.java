@@ -26,13 +26,17 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
+import retrofit.ErrorHandler;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 import retrofit.client.OkClient;
+import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.UserManager;
+import ru.taaasty.model.ResponseError;
 
 public final class NetworkUtils {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -47,6 +51,8 @@ public final class NetworkUtils {
     private UserManager mUserManager = UserManager.getInstance();
 
     private OkHttpClient mOkHttpClient;
+
+    private OkClient mOkClient;
 
     private LruCache mPicassoCache;
 
@@ -90,6 +96,7 @@ public final class NetworkUtils {
                 e.printStackTrace();
             }
         }
+        mOkClient = new OkClient(mOkHttpClient);
     }
 
     private void initLruMemoryCache(Context context) {
@@ -103,10 +110,6 @@ public final class NetworkUtils {
         mPicassoCache.evictAll();
     }
 
-    public OkHttpClient getOkHttpClient() {
-        return mOkHttpClient;
-     }
-
     public Gson getGson() {
         return mGson;
     }
@@ -118,7 +121,8 @@ public final class NetworkUtils {
         b.setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
                 .setConverter(mGsonConverter)
                 .setRequestInterceptor(mRequestInterceptor)
-                .setClient(new OkClient(mOkHttpClient))
+                .setErrorHandler(mErrorHandler)
+                .setClient(mOkClient)
         ;
         return b.build();
     }
@@ -165,6 +169,35 @@ public final class NetworkUtils {
         }
     };
 
+    public final ErrorHandler mErrorHandler = new ErrorHandler() {
+        @Override
+        public Throwable handleError(RetrofitError cause) {
+            ResponseError responseError = null;
+            try {
+                responseError = (ResponseError) cause.getBodyAs(ResponseError.class);
+            } catch (Exception ignore) {
+                if (DBG) Log.v(TAG, "ignore exception", ignore);
+            }
+
+            Response r = cause.getResponse();
+            if (r != null) {
+                switch (r.getStatus()) {
+                    case 401:
+                        return new UnauthorizedException(cause, responseError);
+                    case 417:
+                        if (responseError != null && "no_token".equals(responseError.errorCode)) {
+                            return new UnauthorizedException(cause, responseError);
+                        }
+                }
+            }
+            if (responseError != null) {
+                return new ResponseErrorException(cause, responseError);
+            } else {
+                return cause;
+            }
+        }
+    };
+
     public static long calculateDiskCacheSize(File dir) {
         long size = Constants.MIN_DISK_CACHE_SIZE;
 
@@ -189,6 +222,33 @@ public final class NetworkUtils {
         if (cacheDir == null) return null;
 
         return new File(cacheDir, "taaasty");
+    }
+
+    /**
+     * 401 код
+     */
+    public static class UnauthorizedException extends RuntimeException {
+
+        @Nullable
+        public final ResponseError error;
+
+        public UnauthorizedException(Throwable throwable, ResponseError error) {
+            super(throwable);
+            this.error = error;
+        }
+    }
+
+    /**
+     * Ошибка, которая парсится по ResponseError
+     */
+    public static class ResponseErrorException extends  RuntimeException {
+
+        public final ResponseError error;
+
+        public ResponseErrorException(Throwable throwable, ResponseError error) {
+            super(throwable);
+            this.error = error;
+        }
     }
 
 }

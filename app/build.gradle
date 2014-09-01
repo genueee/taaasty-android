@@ -68,14 +68,14 @@ android {
         }
         release {
             runProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
         beta {
             versionNameSuffix "b-" + getRevision()
             resValue "string", "app_name", "Тейсти beta"
             runProguard true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.beta
         }
     }
@@ -113,6 +113,7 @@ dependencies {
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.etsy.android.grid:library:1.0.5'
+    compile 'de.greenrobot:eventbus:2.2.1'
 
 }
 

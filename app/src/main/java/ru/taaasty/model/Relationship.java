@@ -27,6 +27,9 @@ public class Relationship implements Parcelable {
     @SerializedName("reader")
     private User mReader = User.DUMMY;
 
+    @SerializedName("user")
+    private User mUser = User.DUMMY;
+
     public Relationship() {
     }
 
@@ -50,6 +53,9 @@ public class Relationship implements Parcelable {
         return mReader;
     }
 
+    public User getUser() {
+        return mUser;
+    }
 
     @Override
     public int describeContents() {
@@ -63,6 +69,7 @@ public class Relationship implements Parcelable {
         dest.writeLong(this.mReaderId);
         dest.writeString(this.mState);
         dest.writeParcelable(this.mReader, 0);
+        dest.writeParcelable(this.mUser, 0);
     }
 
     private Relationship(Parcel in) {
@@ -71,6 +78,7 @@ public class Relationship implements Parcelable {
         this.mReaderId = in.readLong();
         this.mState = in.readString();
         this.mReader = in.readParcelable(User.class.getClassLoader());
+        this.mUser = in.readParcelable(User.class.getClassLoader());
     }
 
     public static final Parcelable.Creator<Relationship> CREATOR = new Parcelable.Creator<Relationship>() {

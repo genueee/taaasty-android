@@ -1,24 +1,15 @@
 package ru.taaasty.ui;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class AdditionalMenuActivity extends Activity {
+public class AdditionalMenuActivity extends ActivityBase {
 
     public static final String RESULT_REQUESTED_VIEW_ID = "ru.taaasty.ui.feeds.RESULT_REQUESTED_VIEW_ID";
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -47,9 +47,7 @@ public abstract class LikesHelper {
 
         Observable<Rating> observable;
         if (rating.isVoted) {
-            // XXX: убрать нафиг, когда починат отмену голоса
-            return;
-            // observable = mApiEntriesService.unvote(entry.getId());
+            observable = mApiEntriesService.unvote(entry.getId());
         } else {
             observable = mApiEntriesService.vote(entry.getId());
         }

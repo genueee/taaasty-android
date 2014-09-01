@@ -75,10 +75,14 @@ public class FollowingsFragment extends ListFragment {
         }
     }
 
+    RelationshipsAdapter createRelationshipsAdapter() {
+        return new RelationshipsAdapter(getActivity(), false);
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mRelationshipsAdapter = new RelationshipsAdapter(getActivity());
+        mRelationshipsAdapter = createRelationshipsAdapter();
 
         if (savedInstanceState != null) {
             ArrayList<Relationship> relationships = savedInstanceState.getParcelableArrayList(KEY_RELATIONSHIPS);

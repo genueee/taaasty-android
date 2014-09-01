@@ -2,6 +2,7 @@ package ru.taaasty.ui.relationships;
 
 import android.os.Bundle;
 
+import ru.taaasty.adapters.RelationshipsAdapter;
 import ru.taaasty.model.Relationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.utils.NetworkUtils;
@@ -16,6 +17,10 @@ public class FollowersFragment extends FollowingsFragment {
         args.putLong(ARG_USER_ID, userId);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    RelationshipsAdapter createRelationshipsAdapter() {
+        return new RelationshipsAdapter(getActivity(), true);
     }
 
     Observable<Relationships> createRelationshipsObservable() {

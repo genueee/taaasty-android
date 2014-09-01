@@ -1,9 +1,7 @@
 package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -21,6 +19,7 @@ import android.view.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -33,9 +32,8 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class ShowPostActivity extends Activity implements ShowPostFragment.OnFragmentInteractionListener {
+public class ShowPostActivity extends ActivityBase implements ShowPostFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
@@ -46,11 +44,6 @@ public class ShowPostActivity extends Activity implements ShowPostFragment.OnFra
     private ActionbarUserIconLoader mAbIconLoader;
 
     private Handler mHideActionBarHandler;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

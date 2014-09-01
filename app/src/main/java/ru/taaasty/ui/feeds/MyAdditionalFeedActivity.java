@@ -1,7 +1,5 @@
 package ru.taaasty.ui.feeds;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
@@ -11,18 +9,18 @@ import android.util.Log;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.widgets.ErrorTextView;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
  * Избранное и скрытые записи
  */
-public class MyAdditionalFeedActivity extends Activity implements MyAdditionalFeedFragment.OnFragmentInteractionListener {
+public class MyAdditionalFeedActivity extends ActivityBase implements MyAdditionalFeedFragment.OnFragmentInteractionListener {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyAdditionalFeedActivity";
@@ -53,11 +51,6 @@ public class MyAdditionalFeedActivity extends Activity implements MyAdditionalFe
                     .add(R.id.container, feedFragment)
                     .commit();
         }
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(new CalligraphyContextWrapper(newBase));
     }
 
     @Override

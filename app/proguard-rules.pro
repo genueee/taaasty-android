@@ -16,9 +16,16 @@
 #   public *;
 #}
 
+-optimizations !code/simplification/cast,!field/*,!class/merging/*,!code/allocation/variable
 -dontobfuscate
 
+
 -keep class ru.taaasty.model.** { *; }
+
+# Eventbus
+-keepclassmembers class ** {
+    public void onEvent*(**);
+}
 
 # GSON
 -keepattributes Signature

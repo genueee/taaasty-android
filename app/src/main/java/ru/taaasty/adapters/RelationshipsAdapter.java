@@ -21,12 +21,18 @@ public class RelationshipsAdapter extends BaseAdapter {
     private final ImageUtils mImageUtils;
 
     private final ArrayList<Relationship> mRelationships;
+    private final boolean mUseReader;
 
     public RelationshipsAdapter(Context context) {
+        this(context, true);
+    }
+
+    public RelationshipsAdapter(Context context, boolean useReader) {
         super();
         mInfater = LayoutInflater.from(context);
         mImageUtils = ImageUtils.getInstance();
         mRelationships = new ArrayList<Relationship>();
+        mUseReader = useReader;
     }
 
     public void setRelationships(List<Relationship> relationships) {
@@ -42,11 +48,6 @@ public class RelationshipsAdapter extends BaseAdapter {
         // XXX: sort, remove duplicates
         mRelationships.addAll(relationships);
         notifyDataSetChanged();
-    }
-
-    public Long getTopCommentId() {
-        if (mRelationships.isEmpty()) return null;
-        return mRelationships.get(0).getId();
     }
 
     @Override
@@ -79,7 +80,7 @@ public class RelationshipsAdapter extends BaseAdapter {
         }
 
         Relationship rel = getItem(position);
-        User author = rel.getReader();
+        User author = mUseReader ? rel.getReader() : rel.getUser();
         mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
 
         vh.userName.setText(author.getName());

@@ -13,6 +13,13 @@
     <string name="title_anonymous_feed">Анонимки</string>
     <string name="title_my_feed">Мой дневник</string>
     <string name="title_news">Новости</string>
+    <string name="title_activity_following_followers">Подписки</string>
+    <string name="title_followings">Вы подписаны</string>
+    <string name="title_followers">Ваши подписчики</string>
+    <string name="title_friends">Друзья</string>
+    <string name="title_text_post">Текстовый пост</string>
+    <string name="title_image_post">Изображение</string>
+    <string name="title_quote_post">Цитата</string>
 
     <plurals name="records_last_hour">
         <item quantity="one">%d запись за час</item>
@@ -45,6 +52,7 @@
     <string name="error_loading_image">Ошибка загрузки изображения</string>
     <string name="error_follow">Ошибка подписки</string>
     <string name="error_vote">Ошибка голосования</string>
+    <string name="error_create_post">Ошибка создания поста</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>
@@ -87,15 +95,16 @@
         <item quantity="other">%d записей</item>
     </plurals>
 
-    <string name="title_activity_following_followers">Подписки</string>
-    <string name="title_followings">Вы подписаны</string>
-    <string name="title_followers">Ваши подписчики</string>
-    <string name="title_friends">Друзья</string>
     <string name="edit_text_title">Заголовок</string>
     <string name="edit_text_post_text">Текст поста</string>
+    <string name="edit_text_image_caption_text">Подпись</string>
     <string name="text_post_content_description">Текстовый пост</string>
     <string name="image_post_content_description">Пост — изображение</string>
     <string name="quote_post_content_description">Пост — цитата</string>
     <string name="is_private_post_content_description">Приватный пост</string>
+    <string name="quote_source_hint">Подпись</string>
+    <string name="quote_text_hint">Текст цитаты</string>
+    <string name="create_post_button_content_description">Опубликовать пость</string>
+    <string name="post_created">Пост добавлен</string>
 
 </resources>

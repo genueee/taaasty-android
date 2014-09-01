@@ -46,7 +46,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
 
-public class MyAdditionalFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class MyAdditionalFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedFragment";
