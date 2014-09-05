@@ -122,8 +122,9 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
         } else {
             mBlurScaleMatrix.preScale(mBlurScaleFactor, mBlurScaleFactor);
             Bitmap b = getBitmap();
-            mBlurredBitmap = Bitmap.createScaledBitmap(b, (int)(b.getWidth() / (float)mBlurScaleFactor),
-                    (int)(b.getHeight() / (float)mBlurScaleFactor), true);
+            int widthScaled = Math.max((int)Math.ceil(b.getWidth() / (float)mBlurScaleFactor), 1);
+            int heightScaled = Math.max((int)Math.ceil(b.getHeight() / (float)mBlurScaleFactor), 1);
+            mBlurredBitmap = Bitmap.createScaledBitmap(b, widthScaled, heightScaled, true);
             // mBlurredBitmap = b.copy(Bitmap.Config.ARGB_8888, true);
             mBlurer.blur(mBlurRarius, mBlurredBitmap);
         }
