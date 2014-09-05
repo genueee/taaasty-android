@@ -72,12 +72,6 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             });
             mCreatePostButton.setEnabled(false);
         }
-        findViewById(R.id.private_post_indicator).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                v.setActivated(!v.isActivated());
-            }
-        });
 
         EventBus.getDefault().register(this);
     }
@@ -156,8 +150,14 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private final CreatePostButtons.onCreatePostButtonsListener mCreatePostButtonsListener = new CreatePostButtons.onCreatePostButtonsListener() {
         @Override
         public void onCreatePostButtonClicked(View v) {
-            if (v.isActivated()) return;
-            mViewPager.setCurrentItem(getButtonPosition(v.getId()), true);
+           switch (v.getId()) {
+               case R.id.private_post_indicator:
+                   v.setActivated(!v.isActivated());
+                   break;
+               default:
+                   if (v.isActivated()) return;
+                   mViewPager.setCurrentItem(getButtonPosition(v.getId()), true);
+           }
         }
     };
 
