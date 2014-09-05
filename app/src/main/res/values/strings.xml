@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="tabbar_my_feed_content_description">Мой Дневинк</string>
+    <string name="images_directory">Тейсти</string>
+    <string name="tabbar_my_feed_content_description">Мой Дневник</string>
     <string name="btn_tabbar_live_description">Прямой эфир</string>
     <string name="btn_tabbar_action_post">Написать</string>
     <string name="btn_tabbar_action_notifications">Оповещения</string>
@@ -106,5 +107,13 @@
     <string name="quote_text_hint">Текст цитаты</string>
     <string name="create_post_button_content_description">Опубликовать пость</string>
     <string name="post_created">Пост добавлен</string>
+    <string name="error_camera_not_available">Камера недоступна</string>
+    <string name="error_no_place_to_save">Некуда сохранять</string>
+    <string name="error_can_not_create_file_for_photo">Не удалось создать файл для фотографии</string>
+
+    <array name="photo_sources_array">
+        <item>Выбрать из галереи</item>
+        <item>Сфотографировать</item>
+    </array>
 
 </resources>

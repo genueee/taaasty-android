@@ -1,16 +1,25 @@
 package ru.taaasty.utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Environment;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import ru.taaasty.R;
 import ru.taaasty.model.User;
@@ -69,6 +78,49 @@ public class ImageUtils {
                            @DimenRes int diameterResource) {
         loadAvatar(dst.getContext(), userpic, userName, new ImageViewTarget(dst), diameterResource);
     }
+
+    /**
+     * Директория для фотографий
+     * @param context
+     * @return
+     */
+    @Nullable
+    public static File getPicturesDirectory(Context context) {
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), context.getString(R.string.images_directory));
+
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d("ImageUtils", "failed to create directory");
+                return null;
+            }
+        }
+        return mediaStorageDir;
+    }
+
+    /**
+     * Имя файла для фотографии из времени timestamp, без .jpg
+     * @param timestamp
+     * @return
+     */
+    public static String getOutputMediaFileName(Date timestamp) {
+        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(timestamp);
+        return "IMG_" + ts;
+    }
+
+    /**
+     * Добавление фоторгафии в галерею после фотографии
+     * @param context
+     * @param photoPath путь к файлу (file:/media...)
+     */
+    public static void galleryAddPic(Context context, String photoPath) {
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        File f = new File(photoPath);
+        Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(contentUri);
+        context.sendBroadcast(mediaScanIntent);
+    }
+
 
     public void loadAvatar(
             Context context,

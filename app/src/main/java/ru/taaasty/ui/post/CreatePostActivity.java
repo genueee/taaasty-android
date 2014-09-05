@@ -2,18 +2,22 @@ package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.app.DialogFragment;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
@@ -22,15 +26,20 @@ import ru.taaasty.R;
 import ru.taaasty.UploadService;
 import ru.taaasty.events.PostUploadStatus;
 import ru.taaasty.model.PostEntry;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class CreatePostActivity extends ActivityBase implements OnCreatePostInteractionListener {
+public class CreatePostActivity extends ActivityBase implements OnCreatePostInteractionListener, SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreatePostActivity";
 
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED = Activity.RESULT_FIRST_USER;
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
+    private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 2;
+    private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 3;
+
+    private static final String KEY_CURRENT_PHOTO_PATH = "ru.taaasty.ui.post.KEY_CURRENT_PHOTO_PATH";
 
     private static final int POSTITION_2_VIEW_ID[] = new int[] {
             R.id.text_post, R.id.image_post, R.id.quote_post
@@ -41,12 +50,18 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private CreatePostButtons mCreatePostButtons;
     private ImageView mCreatePostButton;
 
+    private String mCurrentPhotoPath;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getFragmentManager());
+
+        if (savedInstanceState != null) {
+            mCurrentPhotoPath = savedInstanceState.getString(KEY_CURRENT_PHOTO_PATH);
+        }
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -74,6 +89,30 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         }
 
         EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_PICK_PHOTO:
+                    Uri selectedImageUri = data.getData();
+                    if (DBG) Log.v(TAG,"image uri: " + selectedImageUri);
+                    break;
+                case REQUEST_MAKE_PHOTO:
+                    if (DBG) Log.v(TAG,"image uri: " + mCurrentPhotoPath);
+                    ImageUtils.galleryAddPic(this, mCurrentPhotoPath);
+                    mCurrentPhotoPath = null;
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mCurrentPhotoPath != null) {
+            outState.putString(KEY_CURRENT_PHOTO_PATH, mCurrentPhotoPath);
+        }
     }
 
     @Override
@@ -207,81 +246,57 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButton.setEnabled(postValid);
     }
 
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
-
-        private CreatePostFragmentBase mCurrentPrimaryItem;
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case 0:
-                    return CreateTextPostFragment.newInstance();
-                case 1:
-                    return CreateImagePostFragment.newInstance();
-                case 2:
-                    return CreateQuotePostFragment.newInstance();
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            super.setPrimaryItem(container, position, object);
-            if (mCurrentPrimaryItem != object) {
-                mCurrentPrimaryItem = (CreatePostFragmentBase) object;
-            }
-        }
-
-        public CreatePostFragmentBase getCurrentPrimaryItem() {
-            return mCurrentPrimaryItem;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return getString(R.string.title_text_post);
-                case 1:
-                    return getString(R.string.title_image_post);
-                case 2:
-                    return getString(R.string.title_quote_post);
-            }
-            return null;
-        }
+    @Override
+    public void onChoosePhotoButtonClicked() {
+        DialogFragment dialog = new SelectPhotoSourceDialogFragment();
+        dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
-    /**
-     * Новый фрагмент наезжает на старый, старый исчезает и уезжает медленнее обычного
-     */
-    public class FadePageTransformer implements ViewPager.PageTransformer {
-
-        public void transformPage(View view, float position) {
-            int pageWidth = view.getWidth();
-
-            if (position <= -1) { // [-Infinity,-1]
-                // This page is way off-screen to the left.
-                view.setAlpha(0);
-                view.setTranslationX(0);
-            } else if (position <= 0) { // (-1,0]
-                view.setAlpha(position + 1f);
-                view.setTranslationX(0.85f * (pageWidth * -position));
-            } else if (position <= 1) { // (0,1]
-            } else { // (1,+Infinity]
-                // This page is way off-screen to the right.
-                view.setAlpha(0);
-                view.setTranslationX(0);
-            }
-        }
+    @Override
+    public void onPickPhotoSelected() {
+        if (DBG) Log.v(TAG, "onPickPhotoSelected");
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent
+                , REQUEST_MAKE_PHOTO);
     }
 
+    @Override
+    public void onMakePhotoSelected() {
+        File storageDir;
+        Intent takePictureIntent;
+        String imageFileName;
+        Date currentDate;
+        File image;
+
+        if (DBG) Log.v(TAG, "onMakePhotoSelected");
+        takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) == null) {
+            Toast.makeText(this, R.string.error_camera_not_available, Toast.LENGTH_LONG).show();
+            return;
+        }
+        storageDir = ImageUtils.getPicturesDirectory(this);
+        if (storageDir == null) {
+            Toast.makeText(this, R.string.error_no_place_to_save, Toast.LENGTH_LONG).show();
+            return;
+        }
+        currentDate = new Date();
+        imageFileName = ImageUtils.getOutputMediaFileName(currentDate);
+        try {
+            image = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    ".jpg",         /* suffix */
+                    storageDir      /* directory */
+            );
+            mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(image));
+
+            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, R.string.error_can_not_create_file_for_photo, Toast.LENGTH_LONG).show();
+        }
+    }
 }

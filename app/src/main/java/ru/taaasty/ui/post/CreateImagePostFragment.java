@@ -48,7 +48,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onMakeImageButtonClicked();
+                if (mListener != null) mListener.onChoosePhotoButtonClicked();
             }
         });
         return root;
@@ -79,11 +79,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             if (mTitleView != null) mTitleView.setText("");
             clearSharedPrefs();
         }
-    }
-
-
-    public void onMakeImageButtonClicked() {
-
     }
 
     @Override
