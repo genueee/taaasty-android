@@ -170,7 +170,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
         SpannableString title = new SpannableString(getText(R.string.title_activity_show_post));
 
         ab.setDisplayHomeAsUpEnabled(true);
-        ab.setIcon(Color.TRANSPARENT);
+        ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
         if (userpic != null) {
             mAbIconLoader.loadIcon(userpic, username);
         }

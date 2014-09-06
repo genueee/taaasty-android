@@ -29,4 +29,6 @@
 
     <color name="semi_transparent_action_bar">#b6000000</color>
 
+    <color name="grid_item_image_loading_color">#ffd5d5d5</color>
+
 </resources>

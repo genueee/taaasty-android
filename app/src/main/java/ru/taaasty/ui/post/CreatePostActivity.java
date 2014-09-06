@@ -258,7 +258,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
         photoPickerIntent.setType("image/*");
         startActivityForResult(photoPickerIntent
-                , REQUEST_MAKE_PHOTO);
+                , REQUEST_PICK_PHOTO);
     }
 
     @Override
@@ -288,6 +288,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                     ".jpg",         /* suffix */
                     storageDir      /* directory */
             );
+
             mCurrentPhotoPath = "file:" + image.getAbsolutePath();
 
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,

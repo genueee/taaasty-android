@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@android:color/white"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:minWidth="42dp" >
 
     <ImageView
@@ -15,7 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:cropToPadding="false"
-        android:adjustViewBounds="true"
+        android:adjustViewBounds="false"
         android:visibility="invisible" />
 
     <ru.taaasty.widgets.EllipsizingTextView

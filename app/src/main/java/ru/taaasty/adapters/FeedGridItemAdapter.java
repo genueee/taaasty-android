@@ -3,9 +3,10 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.Spanned;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -161,6 +162,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
         ImageInfo image = item.getImages().get(0);
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
+        b.filter(ThumborUrlBuilder.quality(60));
 
         float dstWidth, dstHeight;
         float imgWidth, imgHeight;
@@ -186,15 +188,17 @@ public class FeedGridItemAdapter extends BaseAdapter {
         dstHeight = imgHeight * (dstWidth / imgWidth);
 
         vh.mImageUrl = b.toUrl();
-        if (DBG) Log.v(TAG, "setimagesize " + dstWidth + " " + dstHeight);
-        ViewGroup.LayoutParams lp = vh.image.getLayoutParams();
-        lp.height = (int)Math.ceil(dstHeight);
-        vh.image.setLayoutParams(lp);
+        // if (DBG) Log.v(TAG, "setimagesize " + dstWidth + " " + dstHeight);
+        vh.image.setMinimumHeight((int)Math.floor(dstHeight));
         vh.image.setVisibility(View.VISIBLE);
+
+        if (vh.imagePlaceholderDrawable == null) {
+            vh.imagePlaceholderDrawable = new ColorDrawable(mResources.getColor(R.color.grid_item_image_loading_color));
+        }
 
         mPicasso
                 .load(vh.mImageUrl)
-                .placeholder(R.drawable.image_loading_drawable)
+                .placeholder(vh.imagePlaceholderDrawable)
                 .error(R.drawable.image_loading_drawable)
                 .into(vh.image);
 
@@ -246,6 +250,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
     public class ViewHolder {
         public final View root;
         public final ImageView image;
+        public Drawable imagePlaceholderDrawable;
         public final EllipsizingTextView title;
         public final EllipsizingTextView text;
         public final TextView source;
