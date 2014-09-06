@@ -14,6 +14,7 @@ import ru.taaasty.model.PostImageEntry;
 import ru.taaasty.model.PostQuoteEntry;
 import ru.taaasty.model.PostTextEntry;
 import ru.taaasty.service.ApiEntries;
+import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.NetworkUtils;
 
 /**
@@ -82,7 +83,11 @@ public class UploadService extends IntentService {
                 response = mApiEntriesService.createQuoteEntrySync(pqe.text, pqe.source, entry.privacy);
             } else if (entry instanceof PostImageEntry) {
                 PostImageEntry pie = (PostImageEntry)entry;
-                // XXX
+                response = mApiEntriesService.createImagePostSync(
+                        pie.title,
+                        entry.privacy,
+                        pie.imageUri == null ? null : new ContentTypedOutput(this, pie.imageUri, null)
+                );
             } else {
                 throw new IllegalStateException();
             }

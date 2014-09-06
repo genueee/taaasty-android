@@ -7,11 +7,9 @@ import android.content.res.Resources;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.view.ViewGroup;
 
-import ru.taaasty.R;
-
 /**
-* Created by alexey on 05.09.14.
-*/
+ * Created by alexey on 05.09.14.
+ */
 public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     private final Resources mResources;
@@ -25,21 +23,21 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        switch (position) {
-            case 0:
+        switch (Page.values()[position]) {
+            case TEXT_POST:
                 return CreateTextPostFragment.newInstance();
-            case 1:
+            case IMAGE_POST:
                 return CreateImagePostFragment.newInstance();
-            case 2:
+            case QUOTE_POST:
                 return CreateQuotePostFragment.newInstance();
             default:
-                throw new IllegalArgumentException();
+                throw  new IllegalStateException();
         }
     }
 
     @Override
     public int getCount() {
-        return 3;
+        return Page.values().length;
     }
 
     @Override
@@ -56,14 +54,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        switch (position) {
-            case 0:
-                return mResources.getString(R.string.title_text_post);
-            case 1:
-                return mResources.getString(R.string.title_image_post);
-            case 2:
-                return mResources.getString(R.string.title_quote_post);
-        }
-        return null;
+        return mResources.getString(Page.values()[position].titleViewId);
     }
 }

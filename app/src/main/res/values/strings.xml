@@ -116,4 +116,10 @@
         <item>Сфотографировать</item>
     </array>
 
+    <array name="photo_sources_array_with_image">
+        <item>Выбрать из галереи</item>
+        <item>Сфотографировать</item>
+        <item>Убрать</item>
+    </array>
+
 </resources>

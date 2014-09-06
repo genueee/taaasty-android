@@ -1,5 +1,6 @@
 package ru.taaasty.model;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.support.annotation.Nullable;
 
@@ -11,7 +12,7 @@ public class PostImageEntry extends PostEntry implements android.os.Parcelable {
     public String title;
 
     @Nullable
-    public String imageUrl;
+    public Uri imageUri;
 
 
     @Override
@@ -22,7 +23,7 @@ public class PostImageEntry extends PostEntry implements android.os.Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.title);
-        dest.writeString(this.imageUrl);
+        dest.writeParcelable(this.imageUri, flags);
         dest.writeString(this.privacy);
     }
 
@@ -31,7 +32,7 @@ public class PostImageEntry extends PostEntry implements android.os.Parcelable {
 
     private PostImageEntry(Parcel in) {
         this.title = in.readString();
-        this.imageUrl = in.readString();
+        this.imageUri = in.readParcelable(Uri.class.getClassLoader());
         this.privacy = in.readString();
     }
 

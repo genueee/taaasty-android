@@ -2,7 +2,6 @@ package ru.taaasty.ui.post;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.os.Bundle;
 import android.util.Log;
 
 import ru.taaasty.BuildConfig;
@@ -28,11 +27,10 @@ public abstract class CreatePostFragmentBase extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        validateForm(true);
+    public void onResume() {
+        super.onResume();
+        validateFormIfVisible();
     }
-
 
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {
@@ -48,6 +46,10 @@ public abstract class CreatePostFragmentBase extends Fragment {
     }
 
     public abstract PostEntry getForm();
+
+    void validateFormIfVisible() {
+        if (getUserVisibleHint()) validateForm();
+    }
 
     void validateForm() { validateForm(false); }
 

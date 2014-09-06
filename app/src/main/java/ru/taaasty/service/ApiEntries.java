@@ -11,8 +11,7 @@ import retrofit.http.PUT;
 import retrofit.http.Part;
 import retrofit.http.Path;
 import retrofit.http.Query;
-import retrofit.mime.TypedFile;
-import retrofit.mime.TypedString;
+import retrofit.mime.TypedOutput;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import rx.Observable;
@@ -25,17 +24,10 @@ public interface ApiEntries {
 
     @Multipart
     @POST("/entries/image.json")
-    Observable<Object> createImagePost(
-            @Part("form")
-            TypedString title, TypedString privacy, TypedString imageUrl,
-            @Part("file")
-            TypedFile file);
-
     Response createImagePostSync(
-            @Part("form")
-            TypedString title, TypedString privacy, TypedString imageUrl,
-            @Part("file")
-            TypedFile file);
+            @Part("title") String title,
+            @Part("privacy") String privacy,
+            @Part("file") TypedOutput file);
 
 
     @FormUrlEncoded

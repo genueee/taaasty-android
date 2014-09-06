@@ -14,9 +14,25 @@ import ru.taaasty.R;
 */
 public class SelectPhotoSourceDialogFragment extends DialogFragment {
 
+    private boolean mHasPicture;
+
+    private final static String ARG_HAS_PICTURE = "has_picture";
+
+    public static SelectPhotoSourceDialogFragment createInstance(boolean hasPicture) {
+        SelectPhotoSourceDialogFragment fragment = new SelectPhotoSourceDialogFragment();
+        Bundle arguments = new Bundle(1);
+        arguments.putBoolean(ARG_HAS_PICTURE, hasPicture);
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
+    public SelectPhotoSourceDialogFragment() {
+    }
+
     public interface SelectPhotoSourceDialogListener {
         public void onPickPhotoSelected();
         public void onMakePhotoSelected();
+        public void onDeletePhotoSelected();
     }
 
     SelectPhotoSourceDialogListener mListener;
@@ -42,11 +58,16 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class for convenient dialog construction
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+            mHasPicture = arguments.getBoolean(ARG_HAS_PICTURE);
+        } else {
+            mHasPicture = false;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder
-            .setItems(R.array.photo_sources_array, mOnClickListener);
-        // Create the AlertDialog object and return it
+            .setItems(mHasPicture ? R.array.photo_sources_array_with_image : R.array.photo_sources_array, mOnClickListener);
         return builder.create();
     }
 
@@ -60,6 +81,9 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
                     break;
                 case 1:
                     mListener.onMakePhotoSelected();
+                    break;
+                case 2:
+                    mListener.onDeletePhotoSelected();
                     break;
                 default:
                     throw new IllegalStateException();

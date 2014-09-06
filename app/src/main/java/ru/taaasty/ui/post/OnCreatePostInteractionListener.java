@@ -5,5 +5,5 @@ public interface OnCreatePostInteractionListener {
 
     public void onValidationStatusChanged(boolean postValid);
 
-    public void onChoosePhotoButtonClicked(); // Отдельный интерфейс?
+    public void onChoosePhotoButtonClicked(boolean hasPicture); // Отдельный интерфейс?
 }

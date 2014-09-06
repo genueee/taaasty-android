@@ -3,7 +3,9 @@ package ru.taaasty.ui.post;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -36,31 +38,44 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED = Activity.RESULT_FIRST_USER;
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
+
     private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 2;
     private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 3;
 
-    private static final String KEY_CURRENT_PHOTO_PATH = "ru.taaasty.ui.post.KEY_CURRENT_PHOTO_PATH";
+    private static final String SHARED_PREFS_NAME = "CreatePostActivity";
+    private static final String SHARED_PREFS_KEY_PRIVATE_POST_STATUS = "provate_post_status";
+    private static final String SHARED_PREFS_KEY_INITIAL_SECTION = "initial_section";
 
-    private static final int POSTITION_2_VIEW_ID[] = new int[] {
-            R.id.text_post, R.id.image_post, R.id.quote_post
-    };
+
+    private static final String KEY_CURRENT_PHOTO_URI = "ru.taaasty.ui.post.KEY_CURRENT_PHOTO_URI";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private CreatePostButtons mCreatePostButtons;
     private ImageView mCreatePostButton;
 
-    private String mCurrentPhotoPath;
+    private Uri mCurrentPhotoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_post);
 
+        Page currentItem = Page.TEXT_POST;
+        boolean postPrivate = false;
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(this, getFragmentManager());
 
         if (savedInstanceState != null) {
-            mCurrentPhotoPath = savedInstanceState.getString(KEY_CURRENT_PHOTO_PATH);
+            mCurrentPhotoUri = savedInstanceState.getParcelable(KEY_CURRENT_PHOTO_URI);
+        } else {
+            // Восстанавливаем значения последнего поста
+            SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
+            postPrivate = prefs.getBoolean(SHARED_PREFS_KEY_PRIVATE_POST_STATUS, false);
+            String currentItemString = prefs.getString(SHARED_PREFS_KEY_INITIAL_SECTION, null);
+            if (currentItemString != null) {
+                currentItem = Page.valueOfPrefsName(currentItemString);
+            }
         }
 
         // Set up the ViewPager with the sections adapter.
@@ -70,14 +85,14 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mCreatePostButtons = (CreatePostButtons)findViewById(R.id.buttons);
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
-        mCreatePostButtons.setActivated(getButtonViewId(mViewPager.getCurrentItem()));
+        mCreatePostButtons.findViewById(R.id.private_post_indicator).setActivated(postPrivate);
 
         final ActionBar ab = getActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
-            ab.setTitle(mSectionsPagerAdapter.getPageTitle(mViewPager.getCurrentItem()));
             ab.setCustomView(R.layout.create_post_ab_custom_view);
+
             mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
             mCreatePostButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -87,22 +102,33 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             });
             mCreatePostButton.setEnabled(false);
         }
+        mViewPager.setCurrentItem(currentItem.ordinal(), false);
 
         EventBus.getDefault().register(this);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Uri imageUri = null;
+
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_PICK_PHOTO:
                     Uri selectedImageUri = data.getData();
                     if (DBG) Log.v(TAG,"image uri: " + selectedImageUri);
+                    imageUri = selectedImageUri;
                     break;
                 case REQUEST_MAKE_PHOTO:
-                    if (DBG) Log.v(TAG,"image uri: " + mCurrentPhotoPath);
-                    ImageUtils.galleryAddPic(this, mCurrentPhotoPath);
-                    mCurrentPhotoPath = null;
+                    if (DBG) Log.v(TAG,"image uri: " + mCurrentPhotoUri);
+                    ImageUtils.galleryAddPic(this, mCurrentPhotoUri);
+                    imageUri = mCurrentPhotoUri;
+                    mCurrentPhotoUri = null;
+            }
+        }
+        if (imageUri != null && mSectionsPagerAdapter != null) {
+            Fragment fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
+            if (fragment instanceof  CreateImagePostFragment) {
+                ((CreateImagePostFragment)fragment).onImageSelected(imageUri);
             }
         }
     }
@@ -110,8 +136,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mCurrentPhotoPath != null) {
-            outState.putString(KEY_CURRENT_PHOTO_PATH, mCurrentPhotoPath);
+        if (mCurrentPhotoUri != null) {
+            outState.putParcelable(KEY_CURRENT_PHOTO_URI, mCurrentPhotoUri);
         }
     }
 
@@ -128,24 +154,27 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        saveState();
         EventBus.getDefault().unregister(this);
     }
 
     void onCreatePostClicked() {
-        boolean isPostLocked;
         PostEntry post;
         CreatePostFragmentBase fragment;
 
-        isPostLocked = findViewById(R.id.private_post_indicator).isActivated();
         fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
         if (!fragment.isFormValid()) {
             // XXX: предупреждать юзера?
             return;
         }
         post = fragment.getForm();
-        post.setIsPrivate(isPostLocked);
+        post.setIsPrivate(isPostPrivate());
         UploadService.startPostEntry(this, post);
         setUploadingStatus(true);
+    }
+
+    public boolean isPostPrivate() {
+        return findViewById(R.id.private_post_indicator).isActivated();
     }
 
     public void onEventMainThread(PostUploadStatus status) {
@@ -195,7 +224,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                    break;
                default:
                    if (v.isActivated()) return;
-                   mViewPager.setCurrentItem(getButtonPosition(v.getId()), true);
+                   mViewPager.setCurrentItem(Page.valueOfButtonViewId(v.getId()).ordinal(), true);
            }
         }
     };
@@ -209,8 +238,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
         @Override
         public void onPageSelected(int i) {
-            mCreatePostButtons.setActivated(getButtonViewId(i));
-            getActionBar().setTitle(mSectionsPagerAdapter.getPageTitle(i));
+            Page selected = Page.values()[i];
+            mCreatePostButtons.setActivated(selected.buttonViewId);
+            getActionBar().setTitle(selected.titleViewId);
         }
 
         @Override
@@ -219,27 +249,6 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         }
     };
 
-    /**
-     * ViewID иконфи фрагмента по позиции фрагмента в  {@SectionsPagerAdapter}
-     * @param position
-     * @return
-     */
-    public int getButtonViewId(int position) {
-        return POSTITION_2_VIEW_ID[position];
-    }
-
-    /**
-     * Позиция фрагмента в {@SectionsPagerAdapter} по ViewID
-     * @param viewId
-     * @return
-     */
-    public int getButtonPosition(int viewId) {
-        for (int i = 0; i < POSTITION_2_VIEW_ID.length; ++i) {
-            if (POSTITION_2_VIEW_ID[i] == viewId) return i;
-        }
-        throw new IllegalArgumentException();
-    }
-
     @Override
     public void onValidationStatusChanged(boolean postValid) {
         // Изменилась валидность данных формы. Обновляем статус кнопки создания поста
@@ -247,8 +256,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     @Override
-    public void onChoosePhotoButtonClicked() {
-        DialogFragment dialog = new SelectPhotoSourceDialogFragment();
+    public void onChoosePhotoButtonClicked(boolean hasPicture) {
+        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
         dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
@@ -289,15 +298,33 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                     storageDir      /* directory */
             );
 
-            mCurrentPhotoPath = "file:" + image.getAbsolutePath();
+            mCurrentPhotoUri = Uri.fromFile(image);
 
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                    Uri.fromFile(image));
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCurrentPhotoUri);
 
             startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, R.string.error_can_not_create_file_for_photo, Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onDeletePhotoSelected() {
+        if (mSectionsPagerAdapter != null) {
+            Fragment fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
+            if (fragment instanceof  CreateImagePostFragment) {
+                ((CreateImagePostFragment)fragment).onDeleteImageClicked();
+            }
+        }
+    }
+
+    private void saveState() {
+        getSharedPreferences(SHARED_PREFS_NAME, 0)
+                .edit()
+                .putBoolean(SHARED_PREFS_KEY_PRIVATE_POST_STATUS, isPostPrivate())
+                .putString(SHARED_PREFS_KEY_INITIAL_SECTION,
+                        Page.values()[mViewPager.getCurrentItem()].namePrefs)
+                .commit();
     }
 }

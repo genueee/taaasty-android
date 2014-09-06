@@ -36,7 +36,7 @@ public class CreatePostButtons extends LinearLayout {
         int childCount = getChildCount();
         for (int i=0; i < childCount; ++i) {
             View v = getChildAt(i);
-            v.setOnClickListener(mOnClickListener);
+            if (v.getId() != R.id.fill_gap) v.setOnClickListener(mOnClickListener);
         }
 
         refreshActivated();

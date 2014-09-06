@@ -111,13 +111,13 @@ public class ImageUtils {
     /**
      * Добавление фоторгафии в галерею после фотографии
      * @param context
-     * @param photoPath путь к файлу (file:/media...)
+     * @param photoUri путь к файлу (file:/media...)
      */
-    public static void galleryAddPic(Context context, String photoPath) {
+    public static void galleryAddPic(Context context, Uri photoUri) {
         Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        File f = new File(photoPath);
-        Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(contentUri);
+        // File f = new File(photoPath);
+        // Uri contentUri = Uri.fromFile(f);
+        mediaScanIntent.setData(photoUri);
         context.sendBroadcast(mediaScanIntent);
     }
 
