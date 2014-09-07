@@ -391,7 +391,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mTlogInfo = info;
             setupFeedDesign();
             setupUser(info.author);
-            if (mListener != null) mListener.onAuthorLoaded(info.author);
+            if (mListener != null) mListener.onTlogInfoLoaded(info);
         }
     };
 
@@ -409,6 +409,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void setFeedBackgroundColor(int color);
         public void onAvatarClicked(User user, TlogDesign design);
         public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
-        public void onAuthorLoaded(User autor);
+        public void onTlogInfoLoaded(TlogInfo info);
     }
 }

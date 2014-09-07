@@ -110,6 +110,8 @@
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
     <string name="error_can_not_create_file_for_photo">Не удалось создать файл для фотографии</string>
+    <string name="subscribe_content_description">Подписаться</string>
+    <string name="unsubscribe_content_description">Отписаться</string>
 
     <array name="photo_sources_array">
         <item>Выбрать из галереи</item>

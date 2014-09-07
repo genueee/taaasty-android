@@ -188,9 +188,7 @@ public class UserInfoFragment extends Fragment {
 
     private void setupSubscribeButton() {
         mFollowUnfollowProgress.setVisibility(View.GONE);
-        if (Relationship.RELATIONSHIP_FRIEND.equals(mMyRelationship)
-                || Relationship.RELATIONSHIP_REQUESTED.equals(mMyRelationship)
-                ) {
+        if (TlogInfo.isMeSubscribed(mMyRelationship)) {
             mSubscribeButton.setVisibility(View.GONE);
             mUnsubscribeButton.setVisibility(View.VISIBLE);
         } else {
@@ -249,8 +247,6 @@ public class UserInfoFragment extends Fragment {
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
                 .into(mTargetSetHeaderBackground);
-
-        // XXX
     }
 
     public void refreshUser() {

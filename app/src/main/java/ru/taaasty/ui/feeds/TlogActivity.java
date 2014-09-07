@@ -14,19 +14,30 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.squareup.picasso.Picasso;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.Relationship;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
+import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 
 public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmentInteractionListener {
@@ -35,6 +46,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     public static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
 
+    private long mUserId;
+
     private Drawable mAbBackgroundDrawable;
     private Drawable mAbIconDrawable;
     int mLastAlpha = 0;
@@ -42,10 +55,24 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
     private SpannableString mAbTitle;
 
+    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
+
+    private View mSubscribeView;
+    private View mUnsubscribeView;
+    private View mFollowUnfollowProgressView;
+
+    boolean mPerformSubscription;
+
+    @Nullable
+    private String mMyRelationship;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tlog);
+
+        mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
+        if (mUserId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
 
         mAbTitle = new SpannableString("");
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
@@ -57,12 +84,20 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         ActionBar ab = getActionBar();
         if (ab != null) {
             ab.setBackgroundDrawable(mAbBackgroundDrawable);
+            ab.setDisplayShowCustomEnabled(true);
+            ab.setCustomView(R.layout.ab_custom_tlog);
+            mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
+            mSubscribeView.setOnClickListener(mOnSubscribtionClickListener);
+
+            mUnsubscribeView = ab.getCustomView().findViewById(R.id.unsubscribe);
+            mUnsubscribeView.setOnClickListener(mOnSubscribtionClickListener);
+
+            mFollowUnfollowProgressView = ab.getCustomView().findViewById(R.id.follow_unfollow_progress);
+            refreshFollowUnfollowView();
         }
 
         if (savedInstanceState == null) {
-            long userId = getIntent().getLongExtra(ARG_USER_ID, -1);
-            if (userId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
-            Fragment tlogFragment = TlogFragment.newInstance(userId);
+            Fragment tlogFragment = TlogFragment.newInstance(mUserId);
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, tlogFragment)
                     .commit();
@@ -77,6 +112,12 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mFollowSubscribtion.unsubscribe();
     }
 
     @Override
@@ -105,11 +146,14 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void onAuthorLoaded(User author) {
+    public void onTlogInfoLoaded(TlogInfo tlogInfo) {
+        mMyRelationship = tlogInfo.getMyRelationship();
+        User author = tlogInfo.author;
         mAbTitle = new SpannableString(author.getSlug());
         mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         ImageUtils.getInstance().loadAvatar(this, author.getUserpic(), author.getSlug(),
                 mPicassoTarget, android.R.dimen.app_icon_size);
+        refreshFollowUnfollowView();
     }
 
     @Override
@@ -139,6 +183,86 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             }
         }
     }
+
+    void refreshFollowUnfollowView() {
+        if (mPerformSubscription) {
+            mSubscribeView.setVisibility(View.INVISIBLE);
+            mUnsubscribeView.setVisibility(View.INVISIBLE);
+            mFollowUnfollowProgressView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        if (mMyRelationship == null) {
+            mSubscribeView.setVisibility(View.INVISIBLE);
+            mUnsubscribeView.setVisibility(View.INVISIBLE);
+            mFollowUnfollowProgressView.setVisibility(View.GONE);
+            return;
+        }
+
+        boolean meSubscribed = TlogInfo.isMeSubscribed(mMyRelationship);
+        mSubscribeView.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
+        mUnsubscribeView.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
+        mFollowUnfollowProgressView.setVisibility(View.GONE);
+    }
+
+    void doFollow() {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindActivity(this,
+                relApi.follow(String.valueOf(mUserId)));
+        mPerformSubscription = true;
+        refreshFollowUnfollowView();
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mFollowObserver);
+    }
+
+    void doUnfollow() {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindActivity(this,
+                relApi.unfollow(String.valueOf(mUserId)));
+        mPerformSubscription = true;
+        refreshFollowUnfollowView();
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mFollowObserver);
+    }
+
+    private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
+        @Override
+        public void onCompleted() {
+            mPerformSubscription = false;
+            refreshFollowUnfollowView();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            notifyError(getString(R.string.error_follow), e);
+            mPerformSubscription = false;
+            refreshFollowUnfollowView();
+        }
+
+        @Override
+        public void onNext(Relationship relationship) {
+            mMyRelationship = relationship.getState();
+        }
+    };
+
+
+    private final View.OnClickListener mOnSubscribtionClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.subscribe:
+                    doFollow();
+                    break;
+                case R.id.unsubscribe:
+                    doUnfollow();
+                    break;
+            }
+        }
+    };
 
     private final ImageUtils.DrawableTarget mPicassoTarget = new ImageUtils.DrawableTarget() {
         @Override

@@ -28,9 +28,13 @@ public class TlogInfo implements Parcelable {
         return mHisRelationship;
     }
 
+    public static boolean isMeSubscribed(String myRelationship) {
+        return Relationship.RELATIONSHIP_FRIEND.equals(myRelationship)
+                || Relationship.RELATIONSHIP_REQUESTED.equals(myRelationship);
+    }
+
     public boolean isMeSubscribed() {
-        return Relationship.RELATIONSHIP_FRIEND.equals(mMyRelationship)
-                || Relationship.RELATIONSHIP_REQUESTED.equals(mMyRelationship);
+        return isMeSubscribed(mMyRelationship);
     }
 
     public void setMyRelationship(String relationship) {
