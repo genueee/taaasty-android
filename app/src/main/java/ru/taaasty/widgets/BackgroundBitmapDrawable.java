@@ -2,6 +2,7 @@ package ru.taaasty.widgets;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -16,7 +17,7 @@ import ru0xdc.NdkStackBlur;
 public class BackgroundBitmapDrawable extends BitmapDrawable {
     private Matrix mMatrix = new Matrix();
     private Matrix mBlurScaleMatrix = new Matrix();
-    private int moldHeight;
+    private int mOldHeight;
 
     public static final int COVER_ALIGN_CENTER_CROP = 0;
     public static final int COVER_ALIGN_TILES = 1;
@@ -28,8 +29,12 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
     private int mBlurScaleFactor = 3;
 
     private boolean mRefreshBlurredBitmap = true;
+    private boolean mRebuildShader = false;
+    private boolean mApplyGravity = false;
 
     private Bitmap mBlurredBitmap;
+
+    private final Rect mDstRect = new Rect();   // Gravity.apply() sets this
 
     private final NdkStackBlur mBlurer = NdkStackBlur.create();
 
@@ -82,11 +87,29 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
     }
 
     @Override
+    public void setTileModeXY(Shader.TileMode xmode, Shader.TileMode ymode) {
+        if (getTileModeX() != xmode && getTileModeY() != ymode) {
+            mRebuildShader = true;
+        }
+        super.setTileModeXY(xmode, ymode);
+    }
+
+    @Override
+    public void setGravity(int gravity) {
+        if (getGravity() != gravity) {
+            mApplyGravity = true;
+        }
+        super.setGravity(gravity);
+    }
+
+    @Override
     protected void onBoundsChange(Rect bounds) {
         super.onBoundsChange(bounds);
+        mApplyGravity = true;
+        mRefreshBlurredBitmap = true;
 
-        if (bounds.height() > moldHeight) {
-            moldHeight = bounds.height();
+        if (bounds.height() > mOldHeight) {
+            mOldHeight = bounds.height();
             Bitmap b = getBitmap();
             RectF src = new RectF(0, 0, b.getWidth(), b.getHeight());
 
@@ -110,7 +133,6 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
             mMatrix.setScale(scale, scale);
             mMatrix.postTranslate(dx, dy);
         }
-        mRefreshBlurredBitmap = true;
     }
 
     private void refreshBlurredBitmap() {
@@ -122,8 +144,8 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
         } else {
             mBlurScaleMatrix.preScale(mBlurScaleFactor, mBlurScaleFactor);
             Bitmap b = getBitmap();
-            int widthScaled = Math.max((int)Math.ceil(b.getWidth() / (float)mBlurScaleFactor), 1);
-            int heightScaled = Math.max((int)Math.ceil(b.getHeight() / (float)mBlurScaleFactor), 1);
+            int widthScaled = Math.max((int) Math.ceil(b.getWidth() / (float) mBlurScaleFactor), 1);
+            int heightScaled = Math.max((int) Math.ceil(b.getHeight() / (float) mBlurScaleFactor), 1);
             mBlurredBitmap = Bitmap.createScaledBitmap(b, widthScaled, heightScaled, true);
             // mBlurredBitmap = b.copy(Bitmap.Config.ARGB_8888, true);
             mBlurer.blur(mBlurRarius, mBlurredBitmap);
@@ -132,12 +154,43 @@ public class BackgroundBitmapDrawable extends BitmapDrawable {
 
     @Override
     public void draw(Canvas canvas) {
+        if (mRefreshBlurredBitmap) refreshBlurredBitmap();
         if (mCoverAlign == COVER_ALIGN_CENTER_CROP) {
-            if (mRefreshBlurredBitmap) refreshBlurredBitmap();
-            // canvas.drawColor(0xaa00ff00);
             canvas.drawBitmap(mBlurredBitmap, mBlurScaleMatrix, getPaint());
         } else {
-            super.draw(canvas);
+            Bitmap bitmap = mBlurredBitmap;
+            if (bitmap != null) {
+                if (mRebuildShader) {
+                    Shader.TileMode tmx = getTileModeX();
+                    Shader.TileMode tmy = getTileModeY();
+
+                    if (tmx == null && tmy == null) {
+                        getPaint().setShader(null);
+                    } else {
+                        getPaint().setShader(new BitmapShader(bitmap,
+                                tmx == null ? Shader.TileMode.CLAMP : tmx,
+                                tmy == null ? Shader.TileMode.CLAMP : tmy));
+                    }
+                    mRebuildShader = false;
+                    copyBounds(mDstRect);
+                }
+
+                Shader shader = getPaint().getShader();
+                if (shader == null) {
+                    if (mApplyGravity) {
+                        Gravity.apply(getGravity(), getIntrinsicWidth(), getIntrinsicHeight(),
+                                getBounds(), mDstRect);
+                        mApplyGravity = false;
+                    }
+                    canvas.drawBitmap(bitmap, null, mDstRect, getPaint());
+                } else {
+                    if (mApplyGravity) {
+                        copyBounds(mDstRect);
+                        mApplyGravity = false;
+                    }
+                    canvas.drawRect(mDstRect, getPaint());
+                }
+            }
         }
     }
 }

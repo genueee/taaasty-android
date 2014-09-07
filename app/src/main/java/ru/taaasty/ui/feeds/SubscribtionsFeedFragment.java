@@ -3,6 +3,7 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -199,8 +200,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         mAdapter.setFeedDesign(mTlogDesign);
         mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
         String backgroudUrl = mTlogDesign.getBackgroundUrl();
-        int foregroundColor = mTlogDesign.getTitleForegroundColor(getResources());
-        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, mTlogDesign, foregroundColor, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, mTlogDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
                 .into(mFeedDesignTarget);

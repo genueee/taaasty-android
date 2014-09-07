@@ -1,6 +1,7 @@
 package ru.taaasty.utils;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -43,12 +44,10 @@ public class TargetSetHeaderBackground implements Target {
     @Override
     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
         BackgroundBitmapDrawable background;
-        ColorDrawable foreground;
-        LayerDrawable layerDrawable;
+        Drawable backgroundDrawable;
 
         background = new BackgroundBitmapDrawable(mTarget.getResources(), bitmap);
         background.setBlurRadius(mBlurRadius);
-        foreground = new ColorDrawable(mForegroundColor);
         if (TlogDesign.COVER_ALIGN_CENTER.equals(mDesign.getCoverAlign())) {
             background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_CENTER_CROP);
         } else {
@@ -57,19 +56,24 @@ public class TargetSetHeaderBackground implements Target {
         if (DBG) Log.v(TAG, "setBackgroundDrawable design: " + mDesign +
                 " foregroundColor: 0x" + Integer.toHexString(mForegroundColor) + "blur radius: " + mBlurRadius);
 
-        layerDrawable = new LayerDrawable(new Drawable[] {background, foreground});
+        if (mForegroundColor != Color.TRANSPARENT) {
+            ColorDrawable foreground = new ColorDrawable(mForegroundColor);
+            backgroundDrawable = new LayerDrawable(new Drawable[] {background, foreground});
+        } else {
+            backgroundDrawable = background;
+        }
 
         if (Picasso.LoadedFrom.MEMORY.equals(from)) {
-            mTarget.setBackgroundDrawable(layerDrawable);
+            mTarget.setBackgroundDrawable(backgroundDrawable);
         } else {
             Drawable oldBackground = mTarget.getBackground();
             if (oldBackground == null) {
-                mTarget.setBackgroundDrawable(layerDrawable);
+                mTarget.setBackgroundDrawable(backgroundDrawable);
             } else {
                 if (oldBackground instanceof AnimationDrawable) {
                     ((AnimationDrawable) oldBackground).stop();
                 }
-                TransitionDrawable td = new TransitionDrawable(new Drawable[]{oldBackground, layerDrawable});
+                TransitionDrawable td = new TransitionDrawable(new Drawable[]{oldBackground, backgroundDrawable});
                 mTarget.setBackgroundDrawable(td);
                 td.startTransition(Constants.IMAGE_FADE_IN_DURATION);
             }

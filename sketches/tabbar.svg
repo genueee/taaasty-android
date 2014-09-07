@@ -474,9 +474,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.7027601"
-     inkscape:cx="591.41405"
-     inkscape:cy="773.60533"
+     inkscape:zoom="2.4080664"
+     inkscape:cx="631.64566"
+     inkscape:cy="666.76832"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -2375,6 +2375,26 @@
          stroke-miterlimit="10"
          transform="matrix(1.502924,0,0,1.5268718,-216.68491,-1001.4801)"
          style="fill:none;stroke:#ffffff;stroke-width:1.51830149;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
+    </g>
+    <g
+       id="ic_ab_subscribe_normal"
+       transform="translate(1.661084,2.9068968)">
+      <line
+         id="line4011"
+         y2="442.32001"
+         x2="621.42358"
+         y1="421.52002"
+         x1="621.42358"
+         stroke-miterlimit="10"
+         style="fill:none;stroke:#ffffff;stroke-width:2.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
+      <line
+         id="line4013"
+         y2="431.92004"
+         x2="611.02356"
+         y1="431.92004"
+         x1="631.82355"
+         stroke-miterlimit="10"
+         style="fill:none;stroke:#ffffff;stroke-width:2.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
     </g>
   </g>
 </svg>
