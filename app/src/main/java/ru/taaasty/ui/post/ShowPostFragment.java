@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -352,7 +351,6 @@ public class ShowPostFragment extends Fragment {
         CharSequence title;
         CharSequence text;
         CharSequence source;
-        boolean hasTitle;
 
         if (Entry.ENTRY_TYPE_QUOTE.equals(entry.getType())) {
             title = null;
@@ -360,22 +358,19 @@ public class ShowPostFragment extends Fragment {
             source = UiUtils.formatQuoteSource(entry.getSource());
         } else if (Entry.ENTRY_TYPE_IMAGE.endsWith(entry.getType())) {
             title = null;
-            text = entry.getTitle();
-            if (!TextUtils.isEmpty(text)) text = Html.fromHtml(text.toString());
+            text = UiUtils.removeTrailingWhitespaces(entry.getTitleSpanned());
             source = null;
         } else {
-            title = entry.getTitle();
-            text = entry.getTextSpanned();
+            title = UiUtils.removeTrailingWhitespaces(entry.getTitleSpanned());
+            text = UiUtils.removeTrailingWhitespaces(entry.getTextSpanned());
             source = null;
         }
 
-        if (TextUtils.isEmpty(title)) {
+        if (title == null) {
             titleView.setVisibility(View.GONE);
-            hasTitle = false;
         } else {
             titleView.setText(Html.fromHtml(title.toString()));
             titleView.setVisibility(View.VISIBLE);
-            hasTitle = true;
         }
 
         if (text == null) {
@@ -384,7 +379,7 @@ public class ShowPostFragment extends Fragment {
             textView.setText(text);
             textView.setVisibility(View.VISIBLE);
             textView.setPadding(textView.getPaddingLeft(),
-                    hasTitle ? 0 : resources.getDimensionPixelSize(R.dimen.post_no_title_padding),
+                    title == null ? 0 : resources.getDimensionPixelSize(R.dimen.post_no_title_padding),
                     textView.getPaddingRight(),
                     textView.getPaddingBottom());
         }

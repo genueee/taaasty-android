@@ -16,7 +16,7 @@ import ru.taaasty.model.Entry;
 public class UiUtils {
 
     public static boolean isBlank(CharSequence text) {
-        return text != null && TextUtils.isEmpty(text.toString().trim());
+        return text == null || TextUtils.isEmpty(removeTrailingWhitespaces(text));
     }
 
     public static String capitalize(String text) {
@@ -26,10 +26,10 @@ public class UiUtils {
 
     @Nullable
     public static String trimUnblank(CharSequence sequence) {
-        String text;
+        CharSequence text;
         if (sequence == null) return null;
-        text = sequence.toString().trim();
-        return isBlank(text) ? null : text;
+        text = removeTrailingWhitespaces(sequence);
+        return "".equals(text) ? null : text.toString();
     }
 
     @Nullable
@@ -38,7 +38,6 @@ public class UiUtils {
 
         text = trimUnblank(sequence);
         if (text == null) return null;
-
         if (Character.isLetterOrDigit(text.charAt(0))) {
             text = capitalize(text);
             if (text.endsWith(".")) text = text.substring(0, text.length()-1);
@@ -61,6 +60,29 @@ public class UiUtils {
         }
 
         return Html.fromHtml(text);
+    }
+
+    public static CharSequence removeTrailingWhitespaces(CharSequence source) {
+        int origLength, length;
+        if (source == null) return null;
+        origLength = source.length();
+        if (origLength == 0) return source;
+
+        length = origLength;
+        while (length > 0 && Character.isWhitespace(source.charAt(length - 1))) {
+            length -= 1;
+        }
+
+        if (origLength == length) {
+            return source;
+        } else {
+            return source.subSequence(0, length);
+        }
+    }
+
+    public static Spanned removeTrailingWhitespaces(@Nullable Spanned source) {
+        // XXX
+        return (Spanned)removeTrailingWhitespaces((CharSequence)source);
     }
 
     public static int getEntriesLastHour(List<Entry> entries) {

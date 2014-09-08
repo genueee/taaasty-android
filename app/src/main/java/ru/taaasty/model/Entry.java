@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import ru.taaasty.utils.UiUtils;
+
 public class Entry implements Parcelable {
 
     public static final String ENTRY_TYPE_TEXT = "text";
@@ -66,9 +68,11 @@ public class Entry implements Parcelable {
     @SerializedName("image_attachments")
     private List<ImageInfo> mImages;
 
-    private transient Spanned mTextSpanned = null;
+    private transient volatile Spanned mTextSpanned = null;
 
-    private transient Spanned mSourceSpanned = null;
+    private transient volatile Spanned mSourceSpanned = null;
+
+    private transient volatile Spanned mTitleSpanned = null;
 
     public long getId() {
         return mId;
@@ -115,7 +119,7 @@ public class Entry implements Parcelable {
     }
 
     @Nullable
-    public Spanned getTextSpanned() {
+    public synchronized Spanned getTextSpanned() {
         if (TextUtils.isEmpty(mText)) return null;
         if (mTextSpanned == null) {
             mTextSpanned = Html.fromHtml(mText);
@@ -124,7 +128,7 @@ public class Entry implements Parcelable {
     }
 
     @Nullable
-    public Spanned getSourceSpanned() {
+    public synchronized Spanned getSourceSpanned() {
         if (TextUtils.isEmpty(mSource)) return null;
         if (mSourceSpanned == null) {
             mSourceSpanned = Html.fromHtml(mSource);
@@ -132,12 +136,21 @@ public class Entry implements Parcelable {
         return mSourceSpanned;
     }
 
+    @Nullable
+    public synchronized Spanned getTitleSpanned() {
+        if (TextUtils.isEmpty(mTitle)) return null;
+        if (mTitleSpanned == null) {
+            mTitleSpanned = Html.fromHtml(mTitle);
+        }
+        return mTitleSpanned;
+    }
+
     public boolean hasTitle() {
-        return !TextUtils.isEmpty(mTitle);
+        return !UiUtils.isBlank(getTitleSpanned());
     }
 
     public boolean hasText() {
-        return !TextUtils.isEmpty(mText);
+        return !UiUtils.isBlank(getTextSpanned());
     }
 
     public boolean hasNoAnyText() {
@@ -145,7 +158,7 @@ public class Entry implements Parcelable {
     }
 
     public boolean hasSource() {
-        return !TextUtils.isEmpty(mSource);
+        return !UiUtils.isBlank(getSourceSpanned());
     }
 
     public boolean hasImages() {

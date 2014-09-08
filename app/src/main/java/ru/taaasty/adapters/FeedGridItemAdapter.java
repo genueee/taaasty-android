@@ -74,11 +74,19 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
-        for (Entry i: mFeed) {
-            i.getTextSpanned();
-            i.getSourceSpanned();
-        }
         notifyDataSetChanged();
+
+        // Отдельным потоком выполняем getTextSpanned() (ибо долгий процесс)
+        final ArrayList<Entry> feedCopy = new ArrayList<>(mFeed);
+        new Thread() {
+            @Override
+            public void run() {
+                for (Entry i: feedCopy) {
+                    i.getTextSpanned();
+                    i.getSourceSpanned();
+                }
+            }
+        }.start();
     }
 
     public void setFeedDesign(TlogDesign design) {
@@ -230,7 +238,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
             // Все остальное
             vh.source.setVisibility(View.GONE);
             if (item.hasTitle()) {
-                CharSequence title = item.getTitle();
+                CharSequence title = UiUtils.removeTrailingWhitespaces(item.getTitleSpanned());
                 vh.title.setMaxLines(MAX_LINES_TITLE);
                 vh.title.setText(Html.fromHtml(title.toString()));
                 vh.title.setVisibility(View.VISIBLE);
@@ -238,7 +246,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
                 vh.title.setVisibility(View.GONE);
             }
             if (item.hasText()) {
-                CharSequence text = item.getTextSpanned();
+                CharSequence text = UiUtils.removeTrailingWhitespaces(item.getTextSpanned());
                 vh.text.setText(text);
                 vh.text.setVisibility(View.VISIBLE);
             } else {
