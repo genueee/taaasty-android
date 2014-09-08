@@ -1,5 +1,7 @@
 package ru.taaasty.model;
 
+import android.support.annotation.Nullable;
+
 import java.util.List;
 
 /**
@@ -8,4 +10,14 @@ import java.util.List;
 public class Comments {
 
     public List<Comment> comments;
+
+    @Nullable
+    public long fromCommentId;
+
+    @Nullable
+    public long toCommentId;
+
+    public String order;
+
+    public int totalCount;
 }

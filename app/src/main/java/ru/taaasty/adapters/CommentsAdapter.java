@@ -22,9 +22,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import ru.taaasty.R;
 import ru.taaasty.model.Comment;
@@ -68,6 +71,8 @@ public class CommentsAdapter extends BaseAdapter {
     public void setComments(List<Comment> comments) {
         mComments.clear();
         appendComments(comments);
+        sortUniqComments();
+        notifyDataSetChanged();
     }
 
     public ArrayList<Comment> getComments() {
@@ -80,9 +85,17 @@ public class CommentsAdapter extends BaseAdapter {
     }
 
     public void appendComments(List<Comment> comments) {
-        // XXX: sort, remove duplicates
         mComments.addAll(comments);
+        sortUniqComments();
         notifyDataSetChanged();
+    }
+
+    private void sortUniqComments() {
+        Map<Long, Comment> map = new HashMap<>(mComments.size());
+        for (Comment c: mComments) map.put(c.getId(), c);
+        mComments.clear();
+        mComments.addAll(map.values());
+        Collections.sort(mComments, Comment.SORT_BY_DATE_COMARATOR);
     }
 
     public Long getTopCommentId() {

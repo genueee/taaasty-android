@@ -18,10 +18,10 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nirhart.parallaxscroll.views.ParallaxListView;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import junit.framework.Assert;
@@ -45,7 +45,6 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.FontManager;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.UiUtils;
@@ -67,6 +66,8 @@ public class ShowPostFragment extends Fragment {
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
     private static final String KEY_COMMENTS = "comments";
+    private static final String KEY_TOTAL_COMMENTS_COUNT = "total_comments_count";
+    private static final String KEY_LOAD_COMMENTS = "load_comments";
 
     private OnFragmentInteractionListener mListener;
 
@@ -77,10 +78,13 @@ public class ShowPostFragment extends Fragment {
     private ApiComments mCommentsService;
     private ApiDesignSettings mTlogDesignService;
 
-    private ParallaxListView mListView;
+    private ListView mListView;
     private CommentsAdapter mCommentsAdapter;
 
     private ViewGroup mPostContentView;
+    private View mCommentsLoadMoreContainer;
+    private TextView mCommentsLoadMoreButton;
+    private View mCommentsLoadMoreProgress;
     private EntryBottomActionBar mEntryBottomActionBar;
     private TextView mTitleView;
     private TextView mTextView;
@@ -90,6 +94,9 @@ public class ShowPostFragment extends Fragment {
 
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
+
+    private boolean mLoadComments;
+    private int mTotalCommentsCount = -1;
 
     /**
      * Use this factory method to create a new instance of
@@ -126,8 +133,11 @@ public class ShowPostFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_show_post, container, false);
 
-        mListView = (ParallaxListView) v.findViewById(R.id.list_view);
+        mListView = (ListView) v.findViewById(R.id.list_view);
         mPostContentView = (ViewGroup) inflater.inflate(R.layout.post_item, mListView, false);
+        mCommentsLoadMoreContainer = inflater.inflate(R.layout.comments_load_more, mListView, false);
+        mCommentsLoadMoreButton = (TextView)mCommentsLoadMoreContainer.findViewById(R.id.comments_load_more);
+        mCommentsLoadMoreProgress = mCommentsLoadMoreContainer.findViewById(R.id.comments_load_more_progress);
 
         mEntryBottomActionBar = new EntryBottomActionBar(mPostContentView.findViewById(R.id.entry_bottom_action_bar), false);
         mEntryBottomActionBar.setOnItemClickListener(mEntryActionBarListener);
@@ -136,6 +146,8 @@ public class ShowPostFragment extends Fragment {
         mTitleView = (TextView)mPostContentView.findViewById(R.id.title);
         mTextView = (TextView)mPostContentView.findViewById(R.id.text);
         mSourceView = (TextView)mPostContentView.findViewById(R.id.source);
+
+        mCommentsLoadMoreButton.setOnClickListener(mOnClickListener);
 
         return v;
     }
@@ -157,7 +169,8 @@ public class ShowPostFragment extends Fragment {
         mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
         if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
-        mListView.addHeaderView(mPostContentView);
+        mListView.addHeaderView(mPostContentView, null, false);
+        mListView.addHeaderView(mCommentsLoadMoreContainer, null, false);
         mListView.setAdapter(mCommentsAdapter);
         mListView.setOnItemClickListener(mOnCommentClickedListener);
 
@@ -167,6 +180,8 @@ public class ShowPostFragment extends Fragment {
             ArrayList<Comment> comments = savedInstanceState.getParcelableArrayList(KEY_COMMENTS);
             mCommentsAdapter.setComments(comments);
             if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
+            mTotalCommentsCount = savedInstanceState.getInt(KEY_TOTAL_COMMENTS_COUNT);
+            mLoadComments = savedInstanceState.getBoolean(KEY_LOAD_COMMENTS);
             setupEntry();
         }
         refreshEntry();
@@ -176,6 +191,8 @@ public class ShowPostFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (DBG) Log.v(TAG, "onSaveInstanceState");
+        outState.putInt(KEY_TOTAL_COMMENTS_COUNT, mTotalCommentsCount);
+        outState.putBoolean(KEY_LOAD_COMMENTS, mLoadComments);
         outState.putParcelable(KEY_CURRENT_ENTRY, mCurrentEntry);
         outState.putParcelable(KEY_TLOG_DESIGN, mDesign);
         if (mCommentsAdapter != null) {
@@ -183,6 +200,7 @@ public class ShowPostFragment extends Fragment {
         } else {
             outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
         }
+
     }
 
     @Override
@@ -204,12 +222,19 @@ public class ShowPostFragment extends Fragment {
         mListener = null;
     }
 
+    void onCommentsLoadMoreButtonClicked() {
+        loadComments();
+    }
+
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.avatar:
                     if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+                    break;
+                case R.id.comments_load_more:
+                    onCommentsLoadMoreButtonClicked();
                     break;
             }
         }
@@ -220,14 +245,8 @@ public class ShowPostFragment extends Fragment {
                 new int[] { android.R.attr.actionBarSize });
         int abSize = styledAttributes.getDimensionPixelSize(0, 0);
         styledAttributes.recycle();
-
-        if (willMyListScroll()) {
-            mListView.setPadding(mListView.getPaddingLeft(), 0, mListView.getPaddingRight(), mListView.getPaddingBottom());
-        } else {
-            mListView.setPadding(mListView.getPaddingLeft(), abSize, mListView.getPaddingRight(), mListView.getPaddingBottom());
-        }
-
-        // XXX
+        int paddingTop = willMyListScroll() ? 0 : abSize;
+        mListView.setPadding(mListView.getPaddingLeft(), paddingTop, mListView.getPaddingRight(), mListView.getPaddingBottom());
     }
 
     private boolean willMyListScroll() {
@@ -396,14 +415,6 @@ public class ShowPostFragment extends Fragment {
         setupPostText(mCurrentEntry, mTitleView, mTextView, mSourceView, getResources());
     }
 
-    private void setupAvatar(User author) {
-        View root = getView();
-        if (root == null) return;
-        ImageUtils.getInstance().loadAvatar(author,
-                (ImageView)root.findViewById(R.id.avatar),
-                R.dimen.avatar_normal_diameter);
-    }
-
     public void refreshEntry() {
         mPostSubscribtion.unsubscribe();
 
@@ -427,21 +438,57 @@ public class ShowPostFragment extends Fragment {
     private void loadComments() {
         mCommentsSubscribtion.unsubscribe();
 
+        Long topCommentId = mCommentsAdapter.getTopCommentId();
         Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
-                mCommentsService.getComments(mPostId, mCommentsAdapter.getTopCommentId(),
-                        Constants.SHOW_POST_COMMENTS_COUNT));
+                mCommentsService.getComments(mPostId, topCommentId,
+                        topCommentId == null ? Constants.SHOW_POST_COMMENTS_COUNT : Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP));
 
+        mLoadComments = true;
         mCommentsSubscribtion = observableComments
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCommentsObserver);
+        refreshCommentsStatus();
 
+    }
+
+    void refreshCommentsStatus() {
+        int commentsToLoad;
+
+        // Пока не определились с количеством, ничего не показываем
+        if (mTotalCommentsCount < 0) {
+            mCommentsLoadMoreProgress.setVisibility(View.GONE);
+            mCommentsLoadMoreButton.setVisibility(View.GONE);
+            return;
+        }
+
+        // Загружем комментарии
+        if (mLoadComments) {
+            mCommentsLoadMoreProgress.setVisibility(View.VISIBLE);
+            mCommentsLoadMoreButton.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        commentsToLoad = mTotalCommentsCount - mCommentsAdapter.getCount();
+        if (commentsToLoad <= 0) {
+            mCommentsLoadMoreProgress.setVisibility(View.GONE);
+            mCommentsLoadMoreButton.setVisibility(View.GONE);
+        } else {
+            if (commentsToLoad < Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP) {
+                mCommentsLoadMoreButton.setText(R.string.load_all_comments);
+            } else {
+                String desc = getResources().getQuantityString(R.plurals.load_n_comments, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
+                mCommentsLoadMoreButton.setText(desc);
+            }
+            mCommentsLoadMoreProgress.setVisibility(View.INVISIBLE);
+            mCommentsLoadMoreButton.setVisibility(View.VISIBLE);
+        }
     }
 
     private final AdapterView.OnItemClickListener mOnCommentClickedListener = new AdapterView.OnItemClickListener() {
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
-            if (DBG) Log.v(TAG, "Comment clicked " + id);
+            if (DBG) Log.v(TAG, "Comment clicked position: " + position + " id: " + id + " item: " + parent.getItemAtPosition(position));
             if (mCommentsAdapter.getCommentSelected() != null && mCommentsAdapter.getCommentSelected() == id) {
                 ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(view);
                 va.addListener(new Animator.AnimatorListener() {
@@ -469,7 +516,7 @@ public class ShowPostFragment extends Fragment {
                 va.start();
             } else {
                 if (mCommentsAdapter.isEmpty()) return;
-                final Comment comment = mCommentsAdapter.getItem(position - 1);
+                final Comment comment = (Comment)parent.getItemAtPosition(position);
 
                 ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
                 va.addListener(new Animator.AnimatorListener() {
@@ -584,17 +631,27 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onCompleted() {
-
+            mLoadComments = false;
+            mListView.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    adjustPaddings();
+                }
+            }, 128);
+            refreshCommentsStatus();
         }
 
         @Override
         public void onError(Throwable e) {
             mListener.notifyError(getString(R.string.error_loading_comments), e);
+            mLoadComments = false;
+
         }
 
         @Override
         public void onNext(Comments comments) {
             mCommentsAdapter.appendComments(comments.comments);
+            mTotalCommentsCount = comments.totalCount;
         }
     };
 

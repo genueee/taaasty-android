@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -40,6 +41,21 @@ public class Comment implements Parcelable {
 
     @SerializedName("can_delete")
     boolean mCanDelete;
+
+    public static transient Comparator<Comment> SORT_BY_DATE_COMARATOR = new Comparator<Comment>() {
+        @Override
+        public int compare(Comment lhs, Comment rhs) {
+            if (lhs == null && rhs == null) {
+                return 0;
+            } else if (lhs == null) {
+                return 1;
+            } else if (rhs == null) {
+                return -1;
+            } else {
+                return lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
+            }
+        }
+    };
 
     public long getId() {
         return mId;

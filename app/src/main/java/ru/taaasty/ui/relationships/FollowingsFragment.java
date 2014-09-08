@@ -126,7 +126,7 @@ public class FollowingsFragment extends ListFragment {
         if (DBG) Log.v(TAG, " onListItemClick: " + id);
 
         if (null != mListener) {
-            mListener.onRelationshipClicked(mRelationshipsAdapter.getItem(position));
+            mListener.onRelationshipClicked((Relationship)l.getItemAtPosition(position));
         }
     }
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/comments_load_more_layout">
+
+    <TextView
+        android:id="@+id/comments_load_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/clickable_item_background"
+        android:gravity="center"
+        android:minHeight="50dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:textColor="@color/text_color_feed_item_gray"
+        android:textSize="14sp"
+        tools:text="Загрузить ещё 15 комментариев..." />
+
+    <ProgressBar
+        android:id="@+id/comments_load_more_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        />
+
+</FrameLayout>

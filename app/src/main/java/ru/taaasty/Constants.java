@@ -24,6 +24,11 @@ public interface Constants {
     public static final int SHOW_POST_COMMENTS_COUNT = 10;
 
     /**
+     * Максимальное кол-во комментариев, подгружаемых при тыке "загрузить комментарии"
+     */
+    public static final int SHOW_POST_COMMENTS_COUNT_LOAD_STEP = 50;
+
+    /**
      * Кол-во постов в прямом эфире
      */
     public static final int LIVE_FEED_INITIAL_LENGTH = 50;

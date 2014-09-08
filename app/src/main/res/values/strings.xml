@@ -105,13 +105,21 @@
     <string name="is_private_post_content_description">Приватный пост</string>
     <string name="quote_source_hint">Подпись</string>
     <string name="quote_text_hint">Текст цитаты</string>
-    <string name="create_post_button_content_description">Опубликовать пость</string>
+    <string name="create_post_button_content_description">Опубликовать пост</string>
     <string name="post_created">Пост добавлен</string>
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
     <string name="error_can_not_create_file_for_photo">Не удалось создать файл для фотографии</string>
     <string name="subscribe_content_description">Подписаться</string>
     <string name="unsubscribe_content_description">Отписаться</string>
+    <string name="load_all_comments">Загрузить все комментарии…</string>
+
+    <plurals name="load_n_comments">
+        <item quantity="one">Загрузить ещё %d комментарий…</item>
+        <item quantity="few">Загрузить ещё %d комментария…</item>
+        <item quantity="many">Загрузить ещё %d комментариев…</item>
+        <item quantity="other">Загрузить ещё %d комментариев…</item>
+    </plurals>
 
     <array name="photo_sources_array">
         <item>Выбрать из галереи</item>
@@ -123,5 +131,6 @@
         <item>Сфотографировать</item>
         <item>Убрать</item>
     </array>
+
 
 </resources>
