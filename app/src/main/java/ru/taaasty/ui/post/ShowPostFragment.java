@@ -313,7 +313,7 @@ public class ShowPostFragment extends Fragment {
             imgHeight = image.image.geometry.height;
         }
         dstWidth = parentWidth;
-        dstHeight = imgHeight * (dstWidth / imgWidth);
+        dstHeight =  parentWidth / (imgWidth / imgHeight);
 
         if (DBG) Log.v(TAG, "setimagesize " + dstWidth + " " + dstHeight);
         ViewGroup.LayoutParams lp = imageView.getLayoutParams();
