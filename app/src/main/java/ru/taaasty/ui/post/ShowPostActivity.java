@@ -28,7 +28,7 @@ import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
-import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
@@ -108,9 +108,8 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
 
     @Override
     public void onAvatarClicked(User user, TlogDesign design) {
-        Intent i = new Intent(this, UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER, user);
-        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        Intent i = new Intent(this, TlogActivity.class);
+        i.putExtra(TlogActivity.ARG_USER_ID, user.getId());
         startActivity(i);
     }
 
