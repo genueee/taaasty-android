@@ -48,6 +48,7 @@
     <string name="title_activity_additional_menu">Дополнительное меню</string>
     <string name="server_error">Ошибка связи с сервером</string>
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
+    <string name="error_post_comment">Ошибка отправки комментария</string>
     <string name="error_loading_user">Ошибка загрузки пользователя</string>
     <string name="error_loading_relationships">Ошибка загрузки подписок</string>
     <string name="error_loading_image">Ошибка загрузки изображения</string>
@@ -113,6 +114,9 @@
     <string name="subscribe_content_description">Подписаться</string>
     <string name="unsubscribe_content_description">Отписаться</string>
     <string name="load_all_comments">Загрузить все комментарии…</string>
+    <string name="add_comment_hint">Добавить комментарий</string>
+    <string name="send_button_short">Отпр</string>
+    <string name="please_write_somethig">Напишите что-нибудь</string>
 
     <plurals name="load_n_comments">
         <item quantity="one">Загрузить ещё %d комментарий…</item>

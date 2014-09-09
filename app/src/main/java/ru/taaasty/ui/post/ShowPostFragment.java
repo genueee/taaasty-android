@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
@@ -12,11 +13,15 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,6 +32,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 import junit.framework.Assert;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -54,6 +60,7 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 
 /**
  * Пост с комментариями
@@ -74,6 +81,8 @@ public class ShowPostFragment extends Fragment {
     private Subscription mPostSubscribtion = SubscriptionHelper.empty();
     private Subscription mCommentsSubscribtion = SubscriptionHelper.empty();
     private Subscription mTlogDesignSubscribtion = SubscriptionHelper.empty();
+    private Subscription mPostCommentSubscribtion = SubscriptionHelper.empty();
+
     private ApiEntries mEntriesService;
     private ApiComments mCommentsService;
     private ApiDesignSettings mTlogDesignService;
@@ -89,6 +98,11 @@ public class ShowPostFragment extends Fragment {
     private TextView mTitleView;
     private TextView mTextView;
     private TextView mSourceView;
+
+    private View mReplyToCommentContainer;
+    private EditText mReplyToCommentText;
+    private View mPostButon;
+    private View mPostProgress;
 
     private long mPostId;
 
@@ -148,6 +162,23 @@ public class ShowPostFragment extends Fragment {
         mSourceView = (TextView)mPostContentView.findViewById(R.id.source);
 
         mCommentsLoadMoreButton.setOnClickListener(mOnClickListener);
+
+        mReplyToCommentContainer = v.findViewById(R.id.reply_to_comment_container);
+        mReplyToCommentText = (EditText)mReplyToCommentContainer.findViewById(R.id.reply_to_comment_text);
+        mPostButon = mReplyToCommentContainer.findViewById(R.id.reply_to_comment_button);
+        mPostProgress = mReplyToCommentContainer.findViewById(R.id.reply_to_comment_progress);
+
+        mReplyToCommentText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == R.id.send_reply_to_comment) {
+                    sendRepyToComment();
+                    return true;
+                }
+                return false;
+            }
+        });
+        mPostButon.setOnClickListener(mOnClickListener);
 
         return v;
     }
@@ -209,6 +240,7 @@ public class ShowPostFragment extends Fragment {
         mPostSubscribtion.unsubscribe();
         mCommentsSubscribtion.unsubscribe();
         mTlogDesignSubscribtion.unsubscribe();
+        mPostCommentSubscribtion.unsubscribe();
         mEntryBottomActionBar = null;
         mPostContentView = null;
         mSourceView = null;
@@ -235,6 +267,9 @@ public class ShowPostFragment extends Fragment {
                     break;
                 case R.id.comments_load_more:
                     onCommentsLoadMoreButtonClicked();
+                    break;
+                case R.id.reply_to_comment_button:
+                    sendRepyToComment();
                     break;
             }
         }
@@ -440,7 +475,10 @@ public class ShowPostFragment extends Fragment {
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
         Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
-                mCommentsService.getComments(mPostId, topCommentId,
+                mCommentsService.getComments(mPostId,
+                        null,
+                        topCommentId,
+                        ApiComments.ORDER_DESC,
                         topCommentId == null ? Constants.SHOW_POST_COMMENTS_COUNT : Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP));
 
         mLoadComments = true;
@@ -484,36 +522,105 @@ public class ShowPostFragment extends Fragment {
         }
     }
 
+    private void appendUserSlugToReplyComment(String slug) {
+        String message = "@" + slug +  ", ";
+        mReplyToCommentText.append(message);
+        mReplyToCommentText.requestFocus();
+    }
+
+    void replyToComment(Comment comment) {
+        unselectCurrentComment();
+        appendUserSlugToReplyComment(comment.getAuthor().getSlug());
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    void sendRepyToComment() {
+        String comment = mReplyToCommentText.getText().toString();
+
+        if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
+            // XXX: сообщать юзеру,что ничего не написано?
+            Toast t = Toast.makeText(getActivity(), R.string.please_write_somethig, Toast.LENGTH_SHORT);
+            t.setGravity(Gravity.CENTER, 0, 0);
+            t.show();
+            return;
+        }
+
+        mPostCommentSubscribtion.unsubscribe();
+
+        Observable<Comment> observablePost = AndroidObservable.bindFragment(this,
+                mCommentsService.postComment(mPostId, comment));
+
+        mReplyToCommentText.setEnabled(false);
+        mPostProgress.setVisibility(View.VISIBLE);
+        mPostButon.setVisibility(View.INVISIBLE);
+        mPostCommentSubscribtion = observablePost
+                .observeOn(AndroidSchedulers.mainThread())
+                .finallyDo(new Action0() {
+                    @Override
+                    public void call() {
+                        mReplyToCommentText.setEnabled(true);
+                        mPostProgress.setVisibility(View.INVISIBLE);
+                        mPostButon.setVisibility(View.VISIBLE);
+                    }
+                })
+                .subscribe(mPostCommentObserver);
+
+    }
+
+    void unselectCurrentComment() {
+        View currentView = null;
+        int firstVisible = mListView.getFirstVisiblePosition();
+        int lastVisible = mListView.getLastVisiblePosition();
+        Long selectedComment = mCommentsAdapter.getCommentSelected();
+
+        if (selectedComment == null) return;
+
+        for (int pos = firstVisible; pos <= lastVisible; ++pos) {
+            if (selectedComment == mListView.getItemIdAtPosition(pos)) {
+                currentView = mListView.getChildAt(pos - firstVisible);
+            }
+        }
+
+        if (currentView == null) {
+            mCommentsAdapter.setSelectedCommentId(null, false, false);
+        } else {
+            ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(currentView);
+            va.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mListView.setEnabled(false);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mListView.setEnabled(true);
+                    mCommentsAdapter.setSelectedCommentId(null, false, false);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            va.start();
+        }
+    }
+
     private final AdapterView.OnItemClickListener mOnCommentClickedListener = new AdapterView.OnItemClickListener() {
 
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
             if (DBG) Log.v(TAG, "Comment clicked position: " + position + " id: " + id + " item: " + parent.getItemAtPosition(position));
             if (mCommentsAdapter.getCommentSelected() != null && mCommentsAdapter.getCommentSelected() == id) {
-                ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(view);
-                va.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        mListView.setEnabled(false);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        mListView.setEnabled(true);
-                        mCommentsAdapter.setSelectedCommentId(null, false, false);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animator animation) {
-
-                    }
-                });
-                va.start();
+                unselectCurrentComment();
             } else {
                 if (mCommentsAdapter.isEmpty()) return;
                 final Comment comment = (Comment)parent.getItemAtPosition(position);
@@ -550,7 +657,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onReplyToCommentClicked(View view, Comment comment) {
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            replyToComment(comment);
         }
 
         @Override
@@ -619,6 +726,7 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(Entry entry) {
             mCurrentEntry = entry;
+            mTotalCommentsCount = entry.getCommentsCount();
             if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             setupEntry();
             loadComments();
@@ -652,6 +760,23 @@ public class ShowPostFragment extends Fragment {
         public void onNext(Comments comments) {
             mCommentsAdapter.appendComments(comments.comments);
             mTotalCommentsCount = comments.totalCount;
+        }
+    };
+
+    private final Observer<Comment> mPostCommentObserver = new Observer<Comment>() {
+        @Override
+        public void onCompleted() {
+            if (mReplyToCommentText != null) mReplyToCommentText.setText("");
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            mListener.notifyError(getString(R.string.error_post_comment), e);
+        }
+
+        @Override
+        public void onNext(Comment comment) {
+            mCommentsAdapter.appendComments(Collections.singletonList(comment));
         }
     };
 
@@ -726,7 +851,14 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+            // Если клавиатура на экране - значит, скорее всего, пользователь пишет пост. При тыке на авторе поста
+            // добавляем его в пост
+            if (mListener == null) return;
+            if (mListener.isImeVisible()) {
+                appendUserSlugToReplyComment(entry.getAuthor().getSlug());
+            } else {
+                mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+            }
         }
 
         @Override
@@ -753,5 +885,7 @@ public class ShowPostFragment extends Fragment {
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();
         public void setPostBackgroundColor(int color);
+
+        public boolean isImeVisible();
     }
 }

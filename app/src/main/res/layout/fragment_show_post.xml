@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -12,7 +12,67 @@
         android:clipToPadding="false"
         android:divider="@null"
         android:overScrollHeader="@android:color/black"
-        android:paddingBottom="8dp"
+        android:paddingBottom="80dp"
         tools:listitem="@layout/feed_item" />
 
-</FrameLayout>
+    <LinearLayout
+        android:id="@+id/reply_to_comment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="visible"
+        android:background="@android:color/white"
+        android:minHeight="48dp"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/reply_to_comment_text"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:inputType="textCapSentences|textShortMessage|textMultiLine"
+            android:background="@null"
+            android:textSize="14sp"
+            android:layout_marginLeft="@dimen/post_item_comments_padding_left"
+            android:imeOptions="actionSend"
+            android:imeActionLabel="@string/send_button_short"
+            android:imeActionId="@+id/send_reply_to_comment"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:lineSpacingMultiplier="1.25"
+            android:layout_gravity="center_vertical"
+            android:hint="@string/add_comment_hint"
+            />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/reply_to_comment_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/clickable_item_background"
+                android:clickable="true"
+                android:minHeight="48dp"
+                android:padding="16dp"
+                android:layout_marginRight="@dimen/post_item_comments_padding_right"
+                android:text="@string/send_button_short"
+                android:textColor="#22d877"
+                android:textSize="14sp" />
+
+            <ProgressBar
+                android:id="@+id/reply_to_comment_progress"
+                android:visibility="invisible"
+                tools:visibility="visible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

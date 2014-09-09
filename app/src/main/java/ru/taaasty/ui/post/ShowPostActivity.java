@@ -15,6 +15,8 @@ import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewTreeObserver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,8 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
 
     private Handler mHideActionBarHandler;
 
+    private boolean mImeVisible;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +78,19 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
                     .commit();
         }
 
+        final View activityRootView = findViewById(R.id.activity_root);
+        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
+                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
+                    mImeVisible = true;
+                } else {
+                    mImeVisible = false;
+                }
+                // if (DBG) Log.v(TAG, "ime visible: " + mImeVisible);
+            }
+        });
     }
 
     @Override
@@ -153,6 +170,11 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
         trasition = new TransitionDrawable(new Drawable[]{from, to});
         getWindow().setBackgroundDrawable(trasition);
         trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
+    }
+
+    @Override
+    public boolean isImeVisible() {
+        return mImeVisible;
     }
 
     private Runnable mHideActionBarRunnable = new Runnable() {
