@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -88,6 +89,19 @@ public class CommentsAdapter extends BaseAdapter {
         mComments.addAll(comments);
         sortUniqComments();
         notifyDataSetChanged();
+    }
+
+    public void deleteComment(long commentId) {
+        boolean dataChanged = false;
+        Iterator<Comment> i = mComments.iterator();
+        while (i.hasNext()) {
+            if (i.next().getId() == commentId) {
+                i.remove();
+                dataChanged = true;
+                break;
+            }
+        }
+        if (dataChanged) notifyDataSetChanged();
     }
 
     private void sortUniqComments() {

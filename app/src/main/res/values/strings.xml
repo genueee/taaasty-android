@@ -129,12 +129,14 @@
         <item>Выбрать из галереи</item>
         <item>Сфотографировать</item>
     </array>
-
     <array name="photo_sources_array_with_image">
         <item>Выбрать из галереи</item>
         <item>Сфотографировать</item>
         <item>Убрать</item>
     </array>
 
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="delete_comment_button">Удалить комментарий</string>
+    <string name="delete_comment_description">Вы действительно хотите удалить\u00A0комментарий?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
 
 </resources>

@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -25,6 +26,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
@@ -41,7 +43,9 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
 
     public static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
     public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
+
     private static final int HIDE_ACTION_BAR_DELAY = 500;
+    private static final String FRAGMENT_TAG_DELETE_COMMENT = "FRAGMENT_TAG_DELETE_COMMENT";
 
     private ActionbarUserIconLoader mAbIconLoader;
 
@@ -170,6 +174,14 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
         trasition = new TransitionDrawable(new Drawable[]{from, to});
         getWindow().setBackgroundDrawable(trasition);
         trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
+    }
+
+    @Override
+    public void onDeleteCommentClicked(Comment comment) {
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_COMMENT) != null) return;
+        DeleteCommentFragment f = DeleteCommentFragment.newInstance(comment.getId());
+        f.show(fm, FRAGMENT_TAG_DELETE_COMMENT);
     }
 
     @Override

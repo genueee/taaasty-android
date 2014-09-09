@@ -36,10 +36,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
+import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
@@ -78,10 +80,10 @@ public class ShowPostFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mPostSubscribtion = SubscriptionHelper.empty();
-    private Subscription mCommentsSubscribtion = SubscriptionHelper.empty();
-    private Subscription mTlogDesignSubscribtion = SubscriptionHelper.empty();
-    private Subscription mPostCommentSubscribtion = SubscriptionHelper.empty();
+    private Subscription mPostSubscription = SubscriptionHelper.empty();
+    private Subscription mCommentsSubscription = SubscriptionHelper.empty();
+    private Subscription mTlogDesignSubscription = SubscriptionHelper.empty();
+    private Subscription mPostCommentSubscription = SubscriptionHelper.empty();
 
     private ApiEntries mEntriesService;
     private ApiComments mCommentsService;
@@ -140,6 +142,7 @@ public class ShowPostFragment extends Fragment {
         mCommentsService = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -237,10 +240,10 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mPostSubscribtion.unsubscribe();
-        mCommentsSubscribtion.unsubscribe();
-        mTlogDesignSubscribtion.unsubscribe();
-        mPostCommentSubscribtion.unsubscribe();
+        mPostSubscription.unsubscribe();
+        mCommentsSubscription.unsubscribe();
+        mTlogDesignSubscription.unsubscribe();
+        mPostCommentSubscription.unsubscribe();
         mEntryBottomActionBar = null;
         mPostContentView = null;
         mSourceView = null;
@@ -249,9 +252,19 @@ public class ShowPostFragment extends Fragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void onEventMainThread(CommentRemoved event) {
+        if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
     }
 
     void onCommentsLoadMoreButtonClicked() {
@@ -451,27 +464,27 @@ public class ShowPostFragment extends Fragment {
     }
 
     public void refreshEntry() {
-        mPostSubscribtion.unsubscribe();
+        mPostSubscription.unsubscribe();
 
         Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
                 mEntriesService.getEntry(mPostId, false));
 
-        mPostSubscribtion = observablePost
+        mPostSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCurrentEntryObserver);
     }
 
     private void loadDesign(String slug) {
-        mTlogDesignSubscribtion.unsubscribe();
+        mTlogDesignSubscription.unsubscribe();
         Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
                 mTlogDesignService.getDesignSettings(slug));
-        mTlogDesignSubscribtion = observable
+        mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mTlogDesignObserver);
     }
 
     private void loadComments() {
-        mCommentsSubscribtion.unsubscribe();
+        mCommentsSubscription.unsubscribe();
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
         Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
@@ -482,7 +495,7 @@ public class ShowPostFragment extends Fragment {
                         topCommentId == null ? Constants.SHOW_POST_COMMENTS_COUNT : Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP));
 
         mLoadComments = true;
-        mCommentsSubscribtion = observableComments
+        mCommentsSubscription = observableComments
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCommentsObserver);
         refreshCommentsStatus();
@@ -541,14 +554,13 @@ public class ShowPostFragment extends Fragment {
         String comment = mReplyToCommentText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
-            // XXX: сообщать юзеру,что ничего не написано?
             Toast t = Toast.makeText(getActivity(), R.string.please_write_somethig, Toast.LENGTH_SHORT);
             t.setGravity(Gravity.CENTER, 0, 0);
             t.show();
             return;
         }
 
-        mPostCommentSubscribtion.unsubscribe();
+        mPostCommentSubscription.unsubscribe();
 
         Observable<Comment> observablePost = AndroidObservable.bindFragment(this,
                 mCommentsService.postComment(mPostId, comment));
@@ -556,7 +568,7 @@ public class ShowPostFragment extends Fragment {
         mReplyToCommentText.setEnabled(false);
         mPostProgress.setVisibility(View.VISIBLE);
         mPostButon.setVisibility(View.INVISIBLE);
-        mPostCommentSubscribtion = observablePost
+        mPostCommentSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override
@@ -662,7 +674,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onDeleteCommentClicked(View view, Comment comment) {
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            if (mListener != null) mListener.onDeleteCommentClicked(comment);
         }
 
         @Override
@@ -885,6 +897,8 @@ public class ShowPostFragment extends Fragment {
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();
         public void setPostBackgroundColor(int color);
+
+        public void onDeleteCommentClicked(Comment comment);
 
         public boolean isImeVisible();
     }

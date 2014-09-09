@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ru.taaasty.ui.post.DeleteCommentFragment"
+    >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/delete_comment_container"
+        android:text="@string/delete_comment_description"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:padding="16dp"
+        android:lineSpacingMultiplier="1.5"
+        android:textColor="@android:color/white"
+        android:id="@+id/textView" />
+
+    <FrameLayout
+        android:id="@id/delete_comment_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_centerInParent="true">
+
+        <TextView
+            android:id="@+id/delete_comment_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_green_background"
+            android:gravity="center"
+            android:minHeight="50dp"
+            android:padding="16dp"
+            android:text="@string/delete_comment_button"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/delete_comment_progress"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+</RelativeLayout>

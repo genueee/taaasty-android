@@ -58,7 +58,12 @@ public interface ApiComments {
     @PUT("/comments/{id}.json")
     Observable<ru.taaasty.model.Comment> putComment(@Path("id")long commentId, @Field("text") String text);
 
+    /**
+     * Удаление комментариня
+     * @param commentId
+     * @return
+     */
     @DELETE("/comments/{id}.json")
-    Observable<Object> putComment(@Path("id") long commentId);
+    Observable<Object> deleteComment(@Path("id") long commentId);
 
 }
