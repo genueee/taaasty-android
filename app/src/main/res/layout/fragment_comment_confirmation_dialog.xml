@@ -6,17 +6,17 @@
     >
 
     <TextView
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/delete_comment_container"
-        android:text="@string/delete_comment_description"
+        tools:text="@string/delete_comment_description"
         android:gravity="center"
         android:textSize="16sp"
         android:padding="16dp"
         android:lineSpacingMultiplier="1.5"
-        android:textColor="@android:color/white"
-        android:id="@+id/textView" />
+        android:textColor="@android:color/white" />
 
     <FrameLayout
         android:id="@id/delete_comment_container"
@@ -33,7 +33,7 @@
             android:gravity="center"
             android:minHeight="50dp"
             android:padding="16dp"
-            android:text="@string/delete_comment_button"
+            tools:text="@string/delete_comment_button"
             android:textColor="@android:color/white"
             android:textStyle="bold" />
 

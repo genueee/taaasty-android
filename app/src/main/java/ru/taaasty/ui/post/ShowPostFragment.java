@@ -42,6 +42,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
+import ru.taaasty.events.ReportCommentSent;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
@@ -265,6 +266,16 @@ public class ShowPostFragment extends Fragment {
 
     public void onEventMainThread(CommentRemoved event) {
         if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
+    }
+
+    public void onEventMainThread(ReportCommentSent event) {
+        // Прячем кнопки после жалобы на комментарий
+        if (mCommentsAdapter != null) {
+            Long commentSelected = mCommentsAdapter.getCommentSelected();
+            if (commentSelected != null && commentSelected.equals(event.commentId)) {
+                mCommentsAdapter.clearSelectedCommentId();
+            }
+        }
     }
 
     void onCommentsLoadMoreButtonClicked() {
@@ -679,7 +690,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onReportContentClicked(View view, Comment comment) {
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+            if (mListener != null) mListener.onReportCommentClicked(comment);
         }
     };
 
@@ -899,6 +910,7 @@ public class ShowPostFragment extends Fragment {
         public void setPostBackgroundColor(int color);
 
         public void onDeleteCommentClicked(Comment comment);
+        public void onReportCommentClicked(Comment comment);
 
         public boolean isImeVisible();
     }

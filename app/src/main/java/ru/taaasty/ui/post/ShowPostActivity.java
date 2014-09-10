@@ -1,6 +1,7 @@
 package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -45,7 +46,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
     public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
-    private static final String FRAGMENT_TAG_DELETE_COMMENT = "FRAGMENT_TAG_DELETE_COMMENT";
+    private static final String FRAGMENT_TAG_DELETE_REPORT_COMMENT = "FRAGMENT_TAG_DELETE_REPORT_COMMENT";
 
     private ActionbarUserIconLoader mAbIconLoader;
 
@@ -179,9 +180,17 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
     @Override
     public void onDeleteCommentClicked(Comment comment) {
         FragmentManager fm = getFragmentManager();
-        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_COMMENT) != null) return;
-        DeleteCommentFragment f = DeleteCommentFragment.newInstance(comment.getId());
-        f.show(fm, FRAGMENT_TAG_DELETE_COMMENT);
+        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
+        DialogFragment f = DeleteCommentFragment.newInstance(comment.getId());
+        f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
+    }
+
+    @Override
+    public void onReportCommentClicked(Comment comment) {
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
+        DialogFragment f = ReportCommentFragment.newInstance(comment.getId());
+        f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
     }
 
     @Override

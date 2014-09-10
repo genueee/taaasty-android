@@ -8,15 +8,15 @@ import android.widget.Toast;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
-import ru.taaasty.events.CommentRemoved;
+import ru.taaasty.events.ReportCommentSent;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 
 /**
- * Диалог подтверждения и удаление комментария
+ * Диалог подтверждения и отправки жалобы
  */
-public class DeleteCommentFragment extends CommentDialogFragmentBase {
+public class ReportCommentFragment extends CommentDialogFragmentBase {
 
     /**
      * Use this factory method to create a new instance of
@@ -26,14 +26,14 @@ public class DeleteCommentFragment extends CommentDialogFragmentBase {
      * @return A new instance of fragment DeletePostFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static DeleteCommentFragment newInstance(long commentId) {
-        DeleteCommentFragment fragment = new DeleteCommentFragment();
+    public static ReportCommentFragment newInstance(long commentId) {
+        ReportCommentFragment fragment = new ReportCommentFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_COMMENT_ID, commentId);
         fragment.setArguments(args);
         return fragment;
     }
-    public DeleteCommentFragment() {
+    public ReportCommentFragment() {
         // Required empty public constructor
     }
 
@@ -42,8 +42,8 @@ public class DeleteCommentFragment extends CommentDialogFragmentBase {
                              Bundle savedInstanceState) {
         View root = super.onCreateView(inflater, container, savedInstanceState);
 
-        mTitle.setText(R.string.delete_comment_description);
-        mButton.setText(R.string.delete_comment_button);
+        mTitle.setText(R.string.report_comment_description);
+        mButton.setText(R.string.report_comment_button);
 
         return root;
     }
@@ -51,17 +51,17 @@ public class DeleteCommentFragment extends CommentDialogFragmentBase {
     @Override
     Observable<Object> createObservable() {
         ApiComments service = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
-        return service.deleteComment(mCommentId);
+        return service.reportComment(mCommentId);
     }
 
     @Override
     void onError(Throwable e) {
-        if (mListener != null) mListener.notifyError(getString(R.string.error_loading_comments), e);
+        if (mListener != null) mListener.notifyError(getString(R.string.error_report_to_comment), e);
     }
 
     @Override
     void onCompleted() {
-        EventBus.getDefault().post(new CommentRemoved(mCommentId));
-        Toast.makeText(getActivity(), R.string.comment_removed, Toast.LENGTH_LONG).show();
+        EventBus.getDefault().post(new ReportCommentSent(mCommentId));
+        Toast.makeText(getActivity(), R.string.comment_complaint_is_sent, Toast.LENGTH_LONG).show();
     }
 }

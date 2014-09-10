@@ -48,6 +48,7 @@
     <string name="title_activity_additional_menu">Дополнительное меню</string>
     <string name="server_error">Ошибка связи с сервером</string>
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
+    <string name="error_report_to_comment">Ошибка отправки жалобы</string>
     <string name="error_post_comment">Ошибка отправки комментария</string>
     <string name="error_loading_user">Ошибка загрузки пользователя</string>
     <string name="error_loading_relationships">Ошибка загрузки подписок</string>
@@ -138,5 +139,10 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="delete_comment_button">Удалить комментарий</string>
     <string name="delete_comment_description">Вы действительно хотите удалить\u00A0комментарий?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
+    <string name="comment_removed">Комментарий удален</string>
+
+    <string name="report_comment_button">Пожаловаться</string>
+    <string name="report_comment_description">Вы действительно хотите пожаловаться на\u00A0комментарий?</string>
+    <string name="comment_complaint_is_sent">Жалоба на комментарий отправлена</string>
 
 </resources>

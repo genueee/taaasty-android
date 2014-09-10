@@ -124,6 +124,13 @@ public class CommentsAdapter extends BaseAdapter {
         notifyDataSetChanged();
     }
 
+    public void clearSelectedCommentId() {
+        if (mSelectedCommentId != null) {
+            mSelectedCommentId = null;
+            notifyDataSetChanged();
+        }
+    }
+
     @Nullable
     public Long getCommentSelected() {
         return mSelectedCommentId;

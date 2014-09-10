@@ -66,4 +66,13 @@ public interface ApiComments {
     @DELETE("/comments/{id}.json")
     Observable<Object> deleteComment(@Path("id") long commentId);
 
+
+    /**
+     * Пожаловаться на комментарий
+     * @param id
+     * @return а блядь хуй его знает, что там с сервера возвращается
+     */
+    @POST("/comments/{id}/report.json")
+    Observable<Object> reportComment(@Path("id")long id);
+
 }
