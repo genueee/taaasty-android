@@ -55,6 +55,7 @@
     <string name="error_loading_image">Ошибка загрузки изображения</string>
     <string name="error_follow">Ошибка подписки</string>
     <string name="error_vote">Ошибка голосования</string>
+    <string name="error_upload_userpic">Ошибка загрузки изображения</string>
     <string name="error_create_post">Ошибка создания поста</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
@@ -145,5 +146,6 @@
     <string name="report_comment_description">Вы действительно хотите пожаловаться на\u00A0комментарий?</string>
     <string name="comment_complaint_is_sent">Жалоба на комментарий отправлена</string>
     <string name="change_background">Сменить фон</string>
+    <string name="error_loading_background">Ошибка загрузки фона</string>
 
 </resources>

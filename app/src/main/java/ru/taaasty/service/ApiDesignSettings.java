@@ -5,10 +5,10 @@ import retrofit.http.GET;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.PUT;
+import retrofit.http.Part;
 import retrofit.http.Path;
-import retrofit.http.Query;
 import retrofit.mime.TypedFile;
-import ru.taaasty.model.Entry;
+import retrofit.mime.TypedOutput;
 import ru.taaasty.model.TlogDesign;
 import rx.Observable;
 
@@ -36,4 +36,13 @@ public interface ApiDesignSettings {
     Observable<Object> postCover(
             @Path("slug") String slug,
             TypedFile photo);
+
+    /**
+     * Загрузка бэкграунда
+     * @param file
+     * @return
+     */
+    @Multipart
+    @POST("/design_settings/{slug}/cover.json")
+    TlogDesign uploadBackgroundSync(@Path("slug") String slug, @Part("file") TypedOutput file);
 }

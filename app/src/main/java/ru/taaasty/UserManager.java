@@ -44,6 +44,11 @@ public class UserManager {
         return mAuthtoken;
     }
 
+    @Nullable
+    public String getCurrentUserSlug() {
+        return mCurrentUser == null ? null : mCurrentUser.getSlug();
+    }
+
     public void setCurrentUser(CurrentUser user) {
         mAuthtoken = user.getApiKey().accessToken;
         mCurrentUser = user;

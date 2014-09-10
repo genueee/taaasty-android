@@ -100,7 +100,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         mHeaderView.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
         mHeaderView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
-        mHeaderView.findViewById(R.id.magick_wand_button).setOnClickListener(mOnClickListener);
 
         mRefreshLayout.setOnRefreshListener(this);
 
@@ -126,7 +125,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
         mAdapter.setShowUserAvatar(false);
         mListView.setAdapter(mAdapter);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
         if (!mRefreshLayout.isRefreshing()) refreshData();
     }
 
@@ -139,9 +142,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                     break;
                 case R.id.avatar:
                     onAvatarClicked(v);
-                    break;
-                case R.id.magick_wand_button:
-                    onMagickWandButtonClicked(v);
                     break;
             }
         }
@@ -190,10 +190,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
     void onAdditionalMenuButtonClicked(View v) {
         if (mListener != null) mListener.onShowAdditionalMenuClicked();
-    }
-
-    void onMagickWandButtonClicked(View v) {
-        Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
     void onAvatarClicked(View v) {
@@ -359,7 +355,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         @Override
         public void onCompleted() {
-
         }
 
         @Override
@@ -376,6 +371,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             mCurrentUser = currentUser;
             setupFeedDesign(currentUser.getDesign());
             setupUser(currentUser);
+            if (mListener != null) mListener.onCurrentUserLoaded(currentUser, currentUser.getDesign());
         }
     };
 
@@ -392,5 +388,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onShowAdditionalMenuClicked();
         public void onAvatarClicked(User user, TlogDesign design);
+        public void onCurrentUserLoaded(User user, TlogDesign design);
     }
 }

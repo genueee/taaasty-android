@@ -166,6 +166,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     };
 
     @Override
+    public void onResume() {
+        super.onResume();
+        refreshData();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();

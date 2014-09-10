@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
@@ -29,10 +30,10 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
     public SelectPhotoSourceDialogFragment() {
     }
 
-    public interface SelectPhotoSourceDialogListener {
-        public void onPickPhotoSelected();
-        public void onMakePhotoSelected();
-        public void onDeletePhotoSelected();
+    public static interface SelectPhotoSourceDialogListener {
+        public void onPickPhotoSelected(Fragment fragment);
+        public void onMakePhotoSelected(Fragment fragment);
+        public void onDeletePhotoSelected(Fragment fragment);
     }
 
     SelectPhotoSourceDialogListener mListener;
@@ -77,13 +78,13 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
             if (mListener == null) return;
             switch (which) {
                 case 0:
-                    mListener.onPickPhotoSelected();
+                    mListener.onPickPhotoSelected(SelectPhotoSourceDialogFragment.this);
                     break;
                 case 1:
-                    mListener.onMakePhotoSelected();
+                    mListener.onMakePhotoSelected(SelectPhotoSourceDialogFragment.this);
                     break;
                 case 2:
-                    mListener.onDeletePhotoSelected();
+                    mListener.onDeletePhotoSelected(SelectPhotoSourceDialogFragment.this);
                     break;
                 default:
                     throw new IllegalStateException();

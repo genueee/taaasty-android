@@ -40,15 +40,27 @@
         android:paddingBottom="8dp"
         android:paddingTop="8dp">
 
-        <ru.taaasty.widgets.HintedImageView
-            android:id="@+id/avatar"
-            android:layout_width="@dimen/avatar_large_diameter"
-            android:layout_height="@dimen/avatar_large_diameter"
-            android:clickable="true"
-            android:contentDescription="@string/user_avatar_content_description"
-            android:cropToPadding="false"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_user_stub" />
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ru.taaasty.widgets.HintedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_large_diameter"
+                android:layout_height="@dimen/avatar_large_diameter"
+                android:clickable="true"
+                android:contentDescription="@string/user_avatar_content_description"
+                android:cropToPadding="false"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_user_stub" />
+
+            <ProgressBar
+                android:id="@+id/progress_refresh_avatar"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/user_name"

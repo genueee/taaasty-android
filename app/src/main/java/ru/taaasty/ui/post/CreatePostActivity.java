@@ -17,10 +17,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -263,55 +259,28 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     @Override
-    public void onPickPhotoSelected() {
+    public void onPickPhotoSelected(Fragment fragment) {
         if (DBG) Log.v(TAG, "onPickPhotoSelected");
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-        photoPickerIntent.setType("image/*");
-        startActivityForResult(photoPickerIntent
-                , REQUEST_PICK_PHOTO);
+        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
+        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
     }
 
     @Override
-    public void onMakePhotoSelected() {
-        File storageDir;
+    public void onMakePhotoSelected(Fragment fragment) {
         Intent takePictureIntent;
-        String imageFileName;
-        Date currentDate;
-        File image;
 
         if (DBG) Log.v(TAG, "onMakePhotoSelected");
-        takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(getPackageManager()) == null) {
-            Toast.makeText(this, R.string.error_camera_not_available, Toast.LENGTH_LONG).show();
-            return;
-        }
-        storageDir = ImageUtils.getPicturesDirectory(this);
-        if (storageDir == null) {
-            Toast.makeText(this, R.string.error_no_place_to_save, Toast.LENGTH_LONG).show();
-            return;
-        }
-        currentDate = new Date();
-        imageFileName = ImageUtils.getOutputMediaFileName(currentDate);
         try {
-            image = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
-
-            mCurrentPhotoUri = Uri.fromFile(image);
-
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, mCurrentPhotoUri);
-
+            takePictureIntent = ImageUtils.createMakePhotoIntent(this,false);
+            mCurrentPhotoUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
             startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, R.string.error_can_not_create_file_for_photo, Toast.LENGTH_LONG).show();
+        } catch (ImageUtils.MakePhotoException e) {
+            Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
         }
     }
 
     @Override
-    public void onDeletePhotoSelected() {
+    public void onDeletePhotoSelected(Fragment sourceFragment) {
         if (mSectionsPagerAdapter != null) {
             Fragment fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
             if (fragment instanceof  CreateImagePostFragment) {

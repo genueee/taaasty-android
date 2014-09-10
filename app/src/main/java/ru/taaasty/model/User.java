@@ -117,6 +117,10 @@ public class User implements Parcelable {
         return mDesign;
     }
 
+    public void setUserpic(Userpic userpic) {
+        mUserpic = userpic;
+    }
+
     @Override
     public int describeContents() {
         return 0;

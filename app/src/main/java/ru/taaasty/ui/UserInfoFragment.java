@@ -3,6 +3,8 @@ package ru.taaasty.ui;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -13,9 +15,14 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.events.TlogBackgroundUploadStatus;
+import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.RelationshipsSummary;
 import ru.taaasty.model.TlogDesign;
@@ -23,10 +30,10 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.service.ApiTlog;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -50,11 +57,13 @@ public class UserInfoFragment extends Fragment {
     private String mMyRelationship = Relationship.RELATIONSHIP_NONE;
 
     private ImageView mAvatarView;
+    private View mAvatarRefreshProgressView;
     private ImageView mSelectBackgroundButtonView;
     private TextView mUserName, mUserTitle;
     private View mSubscribeButton, mUnsubscribeButton, mFollowUnfollowProgress;
     private TextView mEntriesCount, mSubscriptionsCount, mSubscribersCount, mDaysCount;
     private TextView mEntriesCountTitle, mSubscriptionsCountTitle, mSubscribersCountTitle, mDaysCountTitle;
+
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,6 +72,9 @@ public class UserInfoFragment extends Fragment {
 
     // Antoid picasso weak ref
     private TargetSetHeaderBackground mTargetSetHeaderBackground;
+
+    private boolean mRefreshingUserpic;
+    private boolean mRefreshingBackground;
 
     public static UserInfoFragment newInstance(User user) {
         UserInfoFragment fragment = new UserInfoFragment();
@@ -85,6 +97,7 @@ public class UserInfoFragment extends Fragment {
             if (mDesign == null && mUser.getDesign() != null) mDesign = mUser.getDesign();
             if (DBG) Log.v(TAG, "author: " + mUser + " design: " + mDesign);
         }
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -94,6 +107,7 @@ public class UserInfoFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_user_info, container, false);
 
         mAvatarView = (ImageView)view.findViewById(R.id.avatar);
+        mAvatarRefreshProgressView = view.findViewById(R.id.progress_refresh_avatar);
         mUserName = (TextView)view.findViewById(R.id.user_name);
         mUserTitle = (TextView)view.findViewById(R.id.user_title);
         mSubscribeButton = view.findViewById(R.id.subscribe);
@@ -127,6 +141,12 @@ public class UserInfoFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mSelectBackgroundButtonView.setVisibility(isMyProfile() ? View.VISIBLE : View.GONE);
+        if (isMyProfile()) {
+            mSelectBackgroundButtonView.setVisibility(View.VISIBLE);
+            mAvatarView.setOnClickListener(mOnClickListener);
+        } else {
+            mSelectBackgroundButtonView.setVisibility(View.GONE);
+        }
         setupUserInfo();
     }
 
@@ -146,6 +166,7 @@ public class UserInfoFragment extends Fragment {
         super.onDestroy();
         mFollowSubscribtion.unsubscribe();
         mUserInfoSubscription.unsubscribe();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -171,9 +192,97 @@ public class UserInfoFragment extends Fragment {
         refreshUser();
     }
 
+    /**
+     * Нотификация EventBus от {@link ru.taaasty.UploadService} о статусе смены аватарки
+     * @param status статус
+     */
+    public void onEventMainThread(UserpicUploadStatus status) {
+        if (!status.isFinished()) {
+            mRefreshingUserpic = true;
+            refreshProgressVisibility();
+        } else {
+            mRefreshingUserpic = false;
+            if (!status.successfully) {
+                if (mListener != null) mListener.notifyError(status.error, status.exception);
+                return;
+            }
+            if (mUser.getId() == status.userId) {
+                mUser.setUserpic(status.newUserpic);
+                setupAvatar();
+            }
+        }
+    }
+
+    private void refreshProgressVisibility() {
+        if (mAvatarRefreshProgressView == null
+                || mSelectBackgroundButtonView == null
+                || mAvatarView == null) {
+            return;
+        }
+        boolean refresh = mRefreshingBackground || mRefreshingUserpic;
+        mAvatarRefreshProgressView.setVisibility(refresh ? View.VISIBLE : View.GONE);
+        mSelectBackgroundButtonView.setEnabled(!mRefreshingBackground);
+        mAvatarView.setEnabled(!mRefreshingUserpic);
+    }
+
+    /**
+     * Нотификация EventBus от {@link ru.taaasty.UploadService} о статусе смены заднего фона
+     * @param status статус
+     */
+    public void onEventMainThread(TlogBackgroundUploadStatus status) {
+        if (!status.isFinished()) {
+            mRefreshingBackground = true;
+            refreshProgressVisibility();
+        } else {
+            mRefreshingBackground = false;
+            // Не вызываем refreshProgressVisibility - иначе оно спрячет прогрессбар, а нам еще
+            // новый бэкграунд загрузить надо
+            if (!status.successfully) {
+                if (mListener != null) mListener.notifyError(status.error, status.exception);
+                return;
+            }
+            if (mUser.getId() == status.userId) {
+                mDesign = status.design;
+                setupDesign();
+            }
+        }
+    }
+
     private void setupAvatar() {
-        ImageUtils.getInstance().loadAvatar(mUser.getUserpic(), mUser.getName(),
-                mAvatarView,
+        if (DBG) Log.v(TAG, "load avatar: " + mUser.getUserpic());
+
+        if (mRefreshingUserpic) {
+            mAvatarRefreshProgressView.setVisibility(View.VISIBLE);
+            mAvatarView.setImageResource(R.drawable.ic_user_stub);
+            return;
+        }
+
+        ImageUtils.ImageViewTarget target = new ImageUtils.ImageViewTarget(mAvatarView) {
+
+            @Override
+            public void onDrawableReady(Drawable drawable) {
+                super.onDrawableReady(drawable);
+                refreshProgressVisibility();
+            }
+
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                super.onBitmapLoaded(bitmap, from);
+                refreshProgressVisibility();
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                super.onBitmapFailed(errorDrawable);
+                refreshProgressVisibility();
+            }
+        };
+
+        ImageUtils.getInstance().loadAvatar(
+                getActivity(),
+                mUser.getUserpic(),
+                mUser.getName(),
+                target,
                 R.dimen.avatar_large_diameter
         );
     }
@@ -265,7 +374,21 @@ public class UserInfoFragment extends Fragment {
         String backgroudUrl = design.getBackgroundUrl();
         mTargetSetHeaderBackground = new TargetSetHeaderBackground(
                 getActivity().getWindow().getDecorView(),
-                design, getResources().getColor(R.color.additional_menu_background));
+                design, getResources().getColor(R.color.additional_menu_background)) {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                super.onBitmapLoaded(bitmap, from);
+                refreshProgressVisibility();
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                super.onBitmapFailed(errorDrawable);
+                if (DBG) Log.v(TAG, "onBitmapFailed");
+                if (mListener != null) mListener.notifyError(getString(R.string.error_loading_background), null);
+                refreshProgressVisibility();
+            }
+        };
 
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(backgroudUrl)
@@ -368,6 +491,9 @@ public class UserInfoFragment extends Fragment {
                 case R.id.select_background_button:
                     if (mListener != null) mListener.onSelectBackgroundClicked();
                     break;
+                case R.id.avatar:
+                    if (mListener != null) mListener.onUserAvatarClicked();
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -389,6 +515,7 @@ public class UserInfoFragment extends Fragment {
         public void onSubscribtionsCountClicked();
         public void onSubscribersCountClicked();
         public void onSelectBackgroundClicked();
+        public void onUserAvatarClicked();
     }
 
 }

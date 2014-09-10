@@ -49,11 +49,17 @@ public class MyFeedActivity extends ActivityBase implements
     public static final int SECTION_FAVORITES = 1;
     public static final int SECTION_HIDDEN = 2;
 
+    private static final String KEY_CURRENT_USER = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER";
+    private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER_DESIGN";
+
     private UserManager mUserManager = UserManager.getInstance();
     private Tabbar mTabbar;
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
+
+    private User mCurrentUser;
+    private TlogDesign mCurrentUserDesign;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +72,11 @@ public class MyFeedActivity extends ActivityBase implements
         }
 
         setContentView(R.layout.activity_my_feed);
+
+        if (savedInstanceState != null) {
+            mCurrentUser = savedInstanceState.getParcelable(KEY_CURRENT_USER);
+            mCurrentUserDesign = savedInstanceState.getParcelable(KEY_CURRENT_USER_DESIGN);
+        }
 
         mTabbar = (Tabbar) findViewById(R.id.tabbar);
         mTabbar.setOnTabbarButtonListener(mTabbarListener);
@@ -111,6 +122,13 @@ public class MyFeedActivity extends ActivityBase implements
                 }, 200);
                 break;
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mCurrentUser != null) outState.putParcelable(KEY_CURRENT_USER, mCurrentUser);
+        if (mCurrentUserDesign != null) outState.putParcelable(KEY_CURRENT_USER_DESIGN, mCurrentUserDesign);
     }
 
     private void switchToLoginForm() {
@@ -190,7 +208,19 @@ public class MyFeedActivity extends ActivityBase implements
 
     @Override
     public void onAvatarClicked(User user, TlogDesign design) {
-        if (user == null) return;
+        Intent i = new Intent(this, UserInfoActivity.class);
+        i.putExtra(UserInfoActivity.ARG_USER, user);
+        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        startActivity(i);
+    }
+
+    @Override
+    public void onCurrentUserLoaded(User user, TlogDesign design) {
+        mCurrentUser = user;
+        mCurrentUserDesign = design;
+    }
+
+    public void openUserFeed(User user, TlogDesign design) {
         Intent i = new Intent(this, UserInfoActivity.class);
         i.putExtra(UserInfoActivity.ARG_USER, user);
         i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
@@ -200,6 +230,8 @@ public class MyFeedActivity extends ActivityBase implements
     public void onAdditionMenuItemClicked(int viewId) {
         switch (viewId) {
             case R.id.profile:
+                if (mCurrentUser != null) openUserFeed(mCurrentUser, mCurrentUserDesign);
+                break;
             case R.id.back_button:
                 break;
             case R.id.favorites:

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -17,6 +18,7 @@ import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -64,21 +66,6 @@ public class ImageUtils {
         return inSampleSize;
     }
 
-    public void loadAvatar(User a, ImageView dst, @DimenRes int diameterResource) {
-        loadAvatar(
-                a == null ? Userpic.DUMMY : a.getUserpic(),
-                a == null ? "" : a.getName(),
-                dst,
-                diameterResource);
-    }
-
-    public void loadAvatar(@Nullable Userpic userpic,
-                           String userName,
-                           ImageView dst,
-                           @DimenRes int diameterResource) {
-        loadAvatar(dst.getContext(), userpic, userName, new ImageViewTarget(dst), diameterResource);
-    }
-
     /**
      * Директория для фотографий
      * @param context
@@ -121,6 +108,61 @@ public class ImageUtils {
         context.sendBroadcast(mediaScanIntent);
     }
 
+    public static Intent createPickImageActivityIntent() {
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        return photoPickerIntent;
+    }
+
+    public static Intent createMakePhotoIntent(Context context, boolean usefrontCamera) throws MakePhotoException {
+        File storageDir;
+        File image;
+        Intent takePictureIntent;
+        Date currentDate;
+        String imageFileName;
+        Uri currentPhotoUri;
+
+        takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(context.getPackageManager()) == null) {
+            throw new MakePhotoException(R.string.error_camera_not_available);
+        }
+        storageDir = ImageUtils.getPicturesDirectory(context);
+        if (storageDir == null) {
+            throw new MakePhotoException(R.string.error_no_place_to_save);
+        }
+        currentDate = new Date();
+        imageFileName = ImageUtils.getOutputMediaFileName(currentDate);
+        try {
+            image = File.createTempFile(
+                    imageFileName,  /* prefix */
+                    ".jpg",         /* suffix */
+                    storageDir      /* directory */
+            );
+
+            currentPhotoUri = Uri.fromFile(image);
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri);
+            if (usefrontCamera) takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", 1);
+            return takePictureIntent;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new MakePhotoException(R.string.error_can_not_create_file_for_photo, e);
+        }
+    }
+
+    public void loadAvatar(User a, ImageView dst, @DimenRes int diameterResource) {
+        loadAvatar(
+                a == null ? Userpic.DUMMY : a.getUserpic(),
+                a == null ? "" : a.getName(),
+                dst,
+                diameterResource);
+    }
+
+    public void loadAvatar(@Nullable Userpic userpic,
+                           String userName,
+                           ImageView dst,
+                           @DimenRes int diameterResource) {
+        loadAvatar(dst.getContext(), userpic, userName, new ImageViewTarget(dst), diameterResource);
+    }
 
     public void loadAvatar(
             Context context,
@@ -172,7 +214,22 @@ public class ImageUtils {
         public void onDrawableReady(Drawable drawable);
     }
 
-    private static class ImageViewTarget implements DrawableTarget {
+    public static class MakePhotoException extends Exception {
+        public int errorResourceId;
+
+        public MakePhotoException(int resourceId) {
+            super();
+            errorResourceId = resourceId;
+        }
+
+        public MakePhotoException(int resourceId, Throwable e) {
+            super(e);
+            errorResourceId = resourceId;
+        }
+
+    }
+
+    public static class ImageViewTarget implements DrawableTarget {
 
         private final ImageView mView;
 

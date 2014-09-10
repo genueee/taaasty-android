@@ -73,20 +73,5 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="8dp" />
 
-    <ru.taaasty.widgets.HintedImageView
-        android:id="@+id/magick_wand_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/circle_page_indicator"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="16dp"
-        android:contentDescription="@string/design_settings"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:scaleType="center"
-        android:clickable="true"
-        android:src="@drawable/ic_magick_wand" />
-
-
 
 </RelativeLayout>
