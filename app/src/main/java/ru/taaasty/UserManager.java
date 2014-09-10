@@ -50,6 +50,10 @@ public class UserManager {
         persist();
     }
 
+    public Long getCurrentUserId() {
+        return mCurrentUser == null ? null : mCurrentUser.getId();
+    }
+
     public Observable<CurrentUser> getCurrentUser() {
         return NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class).getMyInfo();
         // return Observable.from(mCurrentUser);

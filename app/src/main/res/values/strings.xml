@@ -144,5 +144,6 @@
     <string name="report_comment_button">Пожаловаться</string>
     <string name="report_comment_description">Вы действительно хотите пожаловаться на\u00A0комментарий?</string>
     <string name="comment_complaint_is_sent">Жалоба на комментарий отправлена</string>
+    <string name="change_background">Сменить фон</string>
 
 </resources>

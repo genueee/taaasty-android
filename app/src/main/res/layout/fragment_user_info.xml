@@ -8,6 +8,25 @@
     android:layout_marginTop="@dimen/activity_vertical_margin"
     tools:context="ru.taaasty.ui.UserInfoActivity">
 
+    <ru.taaasty.widgets.HintedImageView
+        android:id="@+id/select_background_button"
+        android:visibility="visible"
+        tools:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:contentDescription="@string/change_background"
+        android:minHeight="42dp"
+        android:minWidth="42dp"
+        android:scaleType="center"
+        android:clickable="true"
+        android:background="@drawable/clickable_item_background"
+        android:src="@drawable/ic_magick_wand" />
+
+
     <LinearLayout
         android:id="@+id/avatar_user_name"
         android:layout_width="match_parent"

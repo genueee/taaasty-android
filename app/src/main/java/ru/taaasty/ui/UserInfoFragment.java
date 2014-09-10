@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.UserManager;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.RelationshipsSummary;
 import ru.taaasty.model.TlogDesign;
@@ -38,11 +40,17 @@ public class UserInfoFragment extends Fragment {
     private static final String ARG_DESIGN = "design";
 
     private User mUser;
+
+    @Nullable
     private TlogDesign mDesign;
+
+    @Nullable
     private RelationshipsSummary mRelationshipsSummary;
+
     private String mMyRelationship = Relationship.RELATIONSHIP_NONE;
 
     private ImageView mAvatarView;
+    private ImageView mSelectBackgroundButtonView;
     private TextView mUserName, mUserTitle;
     private View mSubscribeButton, mUnsubscribeButton, mFollowUnfollowProgress;
     private TextView mEntriesCount, mSubscriptionsCount, mSubscribersCount, mDaysCount;
@@ -91,6 +99,7 @@ public class UserInfoFragment extends Fragment {
         mSubscribeButton = view.findViewById(R.id.subscribe);
         mUnsubscribeButton = view.findViewById(R.id.unsubscribe);
         mFollowUnfollowProgress = view.findViewById(R.id.follow_unfollow_progress);
+        mSelectBackgroundButtonView = (ImageView)view.findViewById(R.id.select_background_button);
 
         mEntriesCount = (TextView)view.findViewById(R.id.entries_count_value);
         mEntriesCountTitle = (TextView)view.findViewById(R.id.entries_count_title);
@@ -109,6 +118,7 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.subscribers_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
+        mSelectBackgroundButtonView.setOnClickListener(mOnClickListener);
 
         return view;
     }
@@ -116,6 +126,7 @@ public class UserInfoFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        mSelectBackgroundButtonView.setVisibility(isMyProfile() ? View.VISIBLE : View.GONE);
         setupUserInfo();
     }
 
@@ -147,7 +158,6 @@ public class UserInfoFragment extends Fragment {
                     + " must implement OnFragmentInteractionListener");
         }
     }
-
 
     @Override
     public void onDetach() {
@@ -185,15 +195,28 @@ public class UserInfoFragment extends Fragment {
         mUserTitle.setText(mUser.getTitle() == null ? "" : Html.fromHtml(mUser.getTitle()));
     }
 
+    boolean isMyProfile() {
+        Long myUserId = UserManager.getInstance().getCurrentUserId();
+        return (myUserId != null) && (myUserId.equals(mUser.getId()));
+    }
 
+    /**
+     * Кнопки "подписаться / отписаться"
+     */
     private void setupSubscribeButton() {
+        if (isMyProfile() || mRelationshipsSummary == null) {
+            mSubscribeButton.setVisibility(View.INVISIBLE);
+            mUnsubscribeButton.setVisibility(View.INVISIBLE);
+            return;
+        }
+
         mFollowUnfollowProgress.setVisibility(View.GONE);
         if (TlogInfo.isMeSubscribed(mMyRelationship)) {
-            mSubscribeButton.setVisibility(View.GONE);
+            mSubscribeButton.setVisibility(View.INVISIBLE);
             mUnsubscribeButton.setVisibility(View.VISIBLE);
         } else {
             mSubscribeButton.setVisibility(View.VISIBLE);
-            mUnsubscribeButton.setVisibility(View.GONE);
+            mUnsubscribeButton.setVisibility(View.INVISIBLE);
         }
     }
 
