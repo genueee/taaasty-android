@@ -58,7 +58,9 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
             ActionBar ab = getActionBar();
             ab.setTitle(title == null ?  "" : Html.fromHtml(title));
             ab.setDisplayHomeAsUpEnabled(true);
-            ab.setIcon(R.drawable.avatar_dummy);
+
+            Drawable dummyAvatar = getResources().getDrawable(R.drawable.ic_user_stub);
+            ab.setIcon(dummyAvatar);
 
             ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
                 @Override
