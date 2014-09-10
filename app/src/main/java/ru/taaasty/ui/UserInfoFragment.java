@@ -365,6 +365,9 @@ public class UserInfoFragment extends Fragment {
                 case R.id.unsubscribe:
                     unfollow();
                     break;
+                case R.id.select_background_button:
+                    if (mListener != null) mListener.onSelectBackgroundClicked();
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -385,6 +388,7 @@ public class UserInfoFragment extends Fragment {
         public void onEntriesCountClicked();
         public void onSubscribtionsCountClicked();
         public void onSubscribersCountClicked();
+        public void onSelectBackgroundClicked();
     }
 
 }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -69,6 +70,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         Intent i = new Intent(this, FollowingFollowersActivity.class);
         i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
         startActivity(i);
+    }
+
+    @Override
+    public void onSelectBackgroundClicked() {
+        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_LONG).show();
     }
 
     @Override
