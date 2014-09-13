@@ -170,6 +170,10 @@ public class TlogDesign implements Parcelable {
         return !isLightTheme();
     }
 
+    public void setIsLightTheme(boolean isLightTheme) {
+        mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
+    }
+
     public void setFontTypeface(boolean serif) {
         mFontTypeface = serif ? FONT_TYPE_SERIF : FONT_TYPE_SANS;
     }
@@ -198,6 +202,15 @@ public class TlogDesign implements Parcelable {
     }
 
     public TlogDesign() {
+    }
+
+    public TlogDesign(TlogDesign source) {
+        this.mBackgroundUrl = source.mBackgroundUrl;
+        this.mCoverAlign = source.mCoverAlign;
+        this.mFeedColor = source.mFeedColor;
+        this.mHeaderColor = source.mHeaderColor;
+        this.mFontTypeface = source.mFontTypeface;
+        this.mFeedOpacity = source.mFeedOpacity;
     }
 
     private TlogDesign(Parcel in) {

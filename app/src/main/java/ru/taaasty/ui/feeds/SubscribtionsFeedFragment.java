@@ -43,9 +43,12 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
 
+/**
+ * Мои подписки
+ */
 public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "MyFeedFragment";
+    private static final String TAG = "SubscribtionsFeedFragment";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
     private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";
@@ -348,7 +351,8 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         public void onNext(CurrentUser currentUser) {
-            mTlogDesign = currentUser.getDesign();
+            mTlogDesign = new TlogDesign(currentUser.getDesign());
+            mTlogDesign.setIsLightTheme(true); // Мои подписки всегда светлые
             setupFeedDesign();
         }
     };
