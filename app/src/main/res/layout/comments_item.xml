@@ -1,56 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="48dp"
-    android:paddingRight="@dimen/post_item_comments_padding_right"
-    android:paddingLeft="@dimen/post_item_comments_padding_left"
-    android:paddingTop="8dp"
-    android:paddingBottom="16dp"
-    tools:ignore="RtlSymmetry,UseCompoundDrawables"
-    android:clickable="false"
-    android:baselineAligned="true">
+    android:orientation="horizontal">
 
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/avatar_small_diameter"
-        android:layout_height="@dimen/avatar_small_diameter"
-        android:src="@drawable/avatar_dummy"
-        android:layout_marginRight="10dp" />
-
-    <TextView
-        android:id="@+id/comment"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textIsSelectable="false"
+        android:baselineAligned="true"
+        android:clickable="false"
         android:minHeight="48dp"
-        android:gravity="center_vertical"
-        tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен"
-        android:layout_gravity="center_vertical" />
+        android:paddingBottom="16dp"
+        android:layout_marginLeft="@dimen/post_item_comments_padding_left"
+        android:layout_marginRight="@dimen/post_item_comments_padding_right"
+        android:paddingTop="8dp"
+        tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
-    <TextView
-        android:id="@+id/date_relative"
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_small_diameter"
+            android:layout_height="@dimen/avatar_small_diameter"
+            android:layout_marginRight="10dp"
+            android:src="@drawable/avatar_dummy" />
+
+        <TextView
+            android:id="@+id/comment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:minHeight="48dp"
+            android:textIsSelectable="false"
+            android:textSize="14sp"
+            tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+
+        <TextView
+            android:id="@+id/date_relative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_marginTop="3dp"
+            android:gravity="fill_vertical"
+            android:maxWidth="64dp"
+            android:textColor="@color/text_color_feed_item_gray"
+            android:textSize="10sp"
+            tools:ignore="RtlSymmetry,SmallSp"
+            tools:text="28 мрт" />
+    </LinearLayout>
+
+    <ViewStub
+        android:id="@+id/stub"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="3dp"
-        android:textColor="@color/text_color_feed_item_gray"
-        android:gravity="fill_vertical"
-        android:maxWidth="64dp"
-        android:textSize="10sp"
-        tools:text="28 мрт"
-        tools:ignore="RtlSymmetry,SmallSp"
-        android:layout_marginTop="3dp" />
-
-    <ViewStub android:id="@+id/stub"
+        android:layout_gravity="right|top"
         android:inflatedId="@+id/subTree"
         android:layout="@layout/include_comment_actions"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
 
-</LinearLayout>
+</FrameLayout>

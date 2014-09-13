@@ -14,6 +14,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -176,13 +178,20 @@ public class CommentsAdapter extends BaseAdapter {
             setupActionView(vh, comment);
             vh.actionView.setVisibility(View.VISIBLE);
             vh.avatar.setVisibility(View.GONE);
-            vh.date.setVisibility(View.GONE);
+            vh.date.setVisibility(View.INVISIBLE);
+            if (vh.actionView.getWidth() != 0) {
+                vh.date.setMinWidth(vh.actionView.getWidth());
+            } else {
+                // XXX: а чо делать?
+                throw new IllegalStateException();
+            }
         } else {
             if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
             setAuthor(vh, comment);
             setDate(vh, comment);
             vh.avatar.setVisibility(View.VISIBLE);
             vh.date.setVisibility(View.VISIBLE);
+            vh.date.setMinWidth(0);
         }
         applyFeedStyle(vh);
         setCommentText(vh, comment);
@@ -245,34 +254,40 @@ public class CommentsAdapter extends BaseAdapter {
         final ViewHolder vh = (ViewHolder)view.getTag(R.id.comment_view_holder);
         if (vh == null) throw new NullPointerException();
         vh.inflateActionViewStub();
+        assert vh.actionView != null;
 
-        int avatarWidth = vh.avatar.getWidth();
-        PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", 0, -avatarWidth);
-        PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", 0, -avatarWidth);
+        // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
+        int textLeft = vh.comment.getLeft();
+        PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", 0, -textLeft);
         PropertyValuesHolder dAlphaButtons = PropertyValuesHolder.ofFloat("dAlphaButtons",0f, 1f);
 
-        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dAlphaButtons);
-        va.setDuration(200);
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxTextLeft, dAlphaButtons);
+        va.setDuration(view.getResources().getInteger(R.integer.shortAnimTime));
+        va.setInterpolator(new DecelerateInterpolator());
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
-                vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
-                vh.actionView.setAlpha((Float) animation.getAnimatedValue("dAlphaButtons"));
+                Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
+                Float alhaButtons = (Float) animation.getAnimatedValue("dAlphaButtons");
+                vh.avatar.setTranslationX(dxTextLeft);
+                vh.comment.setTranslationX(dxTextLeft);
+                vh.actionView.setAlpha(alhaButtons);
             }
         });
         va.addListener(new Animator.AnimatorListener() {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                vh.date.setVisibility(View.GONE);
                 vh.actionView.setVisibility(View.VISIBLE);
+                vh.actionView.setAlpha(0);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                assert vh.actionView != null;
                 vh.avatar.setVisibility(View.GONE);
-                vh.date.setVisibility(View.GONE);
+                vh.date.setVisibility(View.INVISIBLE);
+                vh.date.setMinWidth(vh.actionView.getWidth());
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1f);
@@ -296,18 +311,19 @@ public class CommentsAdapter extends BaseAdapter {
         if (vh == null) throw new NullPointerException();
         vh.inflateActionViewStub();
 
-        int avatarWidth = vh.avatar.getWidth();
-        PropertyValuesHolder dxAvatar = PropertyValuesHolder.ofFloat("dxAvatar", -avatarWidth, 0);
-        PropertyValuesHolder dxComment = PropertyValuesHolder.ofFloat("dxComment", -avatarWidth, 0);
+        final int textLeft = vh.comment.getLeft();
+        PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
         PropertyValuesHolder dalphaButtons = PropertyValuesHolder.ofFloat("dalpha",1f, 0f);
 
-        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxAvatar, dxComment, dalphaButtons);
-        va.setDuration(200);
+        ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxTextLeft, dalphaButtons);
+        va.setDuration(view.getResources().getInteger(R.integer.shortAnimTime));
+        va.setInterpolator(new AccelerateInterpolator());
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                vh.avatar.setTranslationX((Float)animation.getAnimatedValue("dxAvatar"));
-                vh.comment.setTranslationX((Float)animation.getAnimatedValue("dxComment"));
+                Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
+                vh.avatar.setTranslationX(dxTextLeft);
+                vh.comment.setTranslationX(dxTextLeft);
                 vh.actionView.setAlpha((Float) animation.getAnimatedValue("dalpha"));
             }
         });
@@ -315,7 +331,10 @@ public class CommentsAdapter extends BaseAdapter {
 
             @Override
             public void onAnimationStart(Animator animation) {
+                vh.avatar.setTranslationX(-textLeft);
+                vh.comment.setTranslationX(-textLeft);
                 vh.avatar.setVisibility(View.VISIBLE);
+                vh.date.setMinWidth(0);
             }
 
             @Override

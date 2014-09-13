@@ -594,6 +594,10 @@ public class ShowPostFragment extends Fragment {
     }
 
     void unselectCurrentComment() {
+        unselectCurrentComment(true);
+    }
+
+    void unselectCurrentComment(final boolean setNullAtAnd) {
         View currentView = null;
         int firstVisible = mListView.getFirstVisiblePosition();
         int lastVisible = mListView.getLastVisiblePosition();
@@ -620,7 +624,7 @@ public class ShowPostFragment extends Fragment {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     mListView.setEnabled(true);
-                    mCommentsAdapter.setSelectedCommentId(null, false, false);
+                    if (setNullAtAnd) mCommentsAdapter.setSelectedCommentId(null, false, false);
                 }
 
                 @Override
@@ -647,6 +651,7 @@ public class ShowPostFragment extends Fragment {
             } else {
                 if (mCommentsAdapter.isEmpty()) return;
                 final Comment comment = (Comment)parent.getItemAtPosition(position);
+                unselectCurrentComment(false);
 
                 ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
                 va.addListener(new Animator.AnimatorListener() {
