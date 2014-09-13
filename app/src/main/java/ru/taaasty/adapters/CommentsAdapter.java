@@ -269,9 +269,9 @@ public class CommentsAdapter extends BaseAdapter {
             public void onAnimationUpdate(ValueAnimator animation) {
                 Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
                 Float alhaButtons = (Float) animation.getAnimatedValue("dAlphaButtons");
-                vh.avatar.setTranslationX(dxTextLeft);
-                vh.comment.setTranslationX(dxTextLeft);
+                vh.avatarCommentRoot.setTranslationX(dxTextLeft);
                 vh.actionView.setAlpha(alhaButtons);
+                vh.date.setAlpha(1 - alhaButtons);
             }
         });
         va.addListener(new Animator.AnimatorListener() {
@@ -285,9 +285,11 @@ public class CommentsAdapter extends BaseAdapter {
             @Override
             public void onAnimationEnd(Animator animation) {
                 assert vh.actionView != null;
+                vh.avatarCommentRoot.setTranslationX(0);
                 vh.avatar.setVisibility(View.GONE);
                 vh.date.setVisibility(View.INVISIBLE);
                 vh.date.setMinWidth(vh.actionView.getWidth());
+                vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1f);
@@ -312,7 +314,7 @@ public class CommentsAdapter extends BaseAdapter {
         vh.inflateActionViewStub();
 
         final int textLeft = vh.comment.getLeft();
-        PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
+        final PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
         PropertyValuesHolder dalphaButtons = PropertyValuesHolder.ofFloat("dalpha",1f, 0f);
 
         ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxTextLeft, dalphaButtons);
@@ -321,28 +323,27 @@ public class CommentsAdapter extends BaseAdapter {
         va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                Float dalpha = (Float) animation.getAnimatedValue("dalpha");
                 Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
-                vh.avatar.setTranslationX(dxTextLeft);
-                vh.comment.setTranslationX(dxTextLeft);
-                vh.actionView.setAlpha((Float) animation.getAnimatedValue("dalpha"));
+                vh.avatarCommentRoot.setTranslationX(dxTextLeft);
+                vh.date.setAlpha(1f - dalpha);
+                vh.actionView.setAlpha(dalpha);
             }
         });
         va.addListener(new Animator.AnimatorListener() {
 
             @Override
             public void onAnimationStart(Animator animation) {
-                vh.avatar.setTranslationX(-textLeft);
-                vh.comment.setTranslationX(-textLeft);
+                vh.avatarCommentRoot.setTranslationX(-textLeft);
                 vh.avatar.setVisibility(View.VISIBLE);
+                vh.date.setVisibility(View.VISIBLE);
                 vh.date.setMinWidth(0);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                vh.avatar.setTranslationX(0f);
-                vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1);
-                vh.date.setVisibility(View.VISIBLE);
+                vh.date.setAlpha(1f);
                 vh.actionView.setVisibility(View.GONE);
             }
 
@@ -399,6 +400,7 @@ public class CommentsAdapter extends BaseAdapter {
 
     public static class ViewHolder {
         public final View root;
+        public final View avatarCommentRoot;
         public final ImageView avatar;
         public final TextView comment;
         public final TextView date;
@@ -423,6 +425,7 @@ public class CommentsAdapter extends BaseAdapter {
 
         public ViewHolder(View v) {
             root = v;
+            avatarCommentRoot = v.findViewById(R.id.avatar_comment_root);
             avatar = (ImageView) v.findViewById(R.id.avatar);
             comment = (TextView) v.findViewById(R.id.comment);
             date = (TextView) v.findViewById(R.id.date_relative);
