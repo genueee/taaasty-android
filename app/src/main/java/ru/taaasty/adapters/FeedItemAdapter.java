@@ -33,7 +33,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
 import ru.taaasty.widgets.EntryBottomActionBar;
 
-public class FeedItemAdapter extends BaseAdapter implements IFeedItemAdapter {
+public class FeedItemAdapter extends BaseAdapter {
 
     private final List<Entry> mFeed;
     private final LayoutInflater mInfater;

@@ -20,7 +20,7 @@ import rx.Subscription;
 /**
  * Created by alexey on 17.07.14.
  */
-public abstract class EndlessFeedItemAdapter extends EndlessAdapter implements  IFeedItemAdapter {
+public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
     private static final String TAG = "EndlessFeedItemAdapter";
     private static final boolean DBG = BuildConfig.DEBUG;
 
