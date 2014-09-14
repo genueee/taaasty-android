@@ -2,6 +2,7 @@ package ru.taaasty.utils;
 
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextUtils;
 
@@ -36,7 +37,10 @@ public class UiUtils {
     public static Spanned formatQuoteText(CharSequence sequence) {
         String text;
 
-        text = trimUnblank(sequence);
+        if (sequence == null) return null;
+        // XXX: теряем html форматирование
+        text = Html.fromHtml(sequence.toString()).toString();
+        text = trimUnblank(text);
         if (text == null) return null;
         if (Character.isLetterOrDigit(text.charAt(0))) {
             text = capitalize(text);
@@ -44,14 +48,17 @@ public class UiUtils {
             text = "«" + text + "»";
         }
 
-        return Html.fromHtml(text);
+        return new SpannableString(text);
     }
 
     @Nullable
     public static Spanned formatQuoteSource(CharSequence sequence) {
         String text;
 
-        text = trimUnblank(sequence);
+        if (sequence == null) return null;
+        // XXX: теряем html форматирование
+        text = Html.fromHtml(sequence.toString()).toString();
+        text = trimUnblank(text);
         if (text == null) return null;
 
         if (Character.isLetterOrDigit(text.charAt(0))) {
