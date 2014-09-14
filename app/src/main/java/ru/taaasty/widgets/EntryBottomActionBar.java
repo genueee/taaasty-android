@@ -156,7 +156,7 @@ public class EntryBottomActionBar {
 
     private void refreshRating() {
         if (!mIsVotable) {
-            mLikesView.setVisibility(View.INVISIBLE);
+            mLikesView.setVisibility(View.GONE);
             return;
         }
 
@@ -172,7 +172,6 @@ public class EntryBottomActionBar {
         if (mIsVoted) {
             mLikesView.setTextColor(resources.getColor(R.color.text_color_feed_item_likes_gt1));
             mLikesView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_like_voted, 0, 0, 0);
-            mLikesView.setBackgroundDrawable(null); // XXX: убрать нафиг, когда починят отмену голоса
         } else {
             TlogDesign design = mTlogDesign == null ? TlogDesign.DUMMY : mTlogDesign;
             mLikesView.setTextColor(design.getFeedActionsTextColor(resources));
