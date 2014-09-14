@@ -30,6 +30,7 @@
         android:ellipsize="end"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.PostSans"
         android:paddingLeft="@dimen/feed_grid_item_padding_left"
         android:paddingRight="@dimen/feed_grid_item_padding_right" />
 
@@ -44,6 +45,7 @@
         android:paddingRight="@dimen/feed_grid_item_padding_right"
         android:textSize="12sp"
         android:textIsSelectable="false"
+        android:textAppearance="@style/TextAppearance.PostSans"
         android:paddingBottom="4dp" />
 
     <TextView
@@ -56,6 +58,7 @@
         android:paddingLeft="@dimen/feed_grid_item_padding_left"
         android:paddingRight="@dimen/feed_grid_item_padding_right"
         android:textSize="12sp"
+        android:textAppearance="@style/TextAppearance.PostSans"
         android:lines="1"
         android:ellipsize="marquee"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />

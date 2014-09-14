@@ -27,7 +27,7 @@ public class TaaastyApplication extends Application {
         }
         super.onCreate();
 
-        CalligraphyConfig.initDefault(FontManager.FONT_SANS_PATH, R.attr.fontPath);
+        CalligraphyConfig.initDefault(FontManager.FONT_SYSTEM_DEFAULT_PATH, R.attr.fontPath);
 
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);

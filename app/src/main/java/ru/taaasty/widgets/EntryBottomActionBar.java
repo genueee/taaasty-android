@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -113,18 +112,12 @@ public class EntryBottomActionBar {
 
         Resources r = mCommentsCountView.getResources();
         int textColor = mTlogDesign.getFeedActionsTextColor(r);
-        Typeface tf = mTlogDesign.isFontTypefaceSerif() ? mFontManager.getDefaultSerifTypeface() : mFontManager.getDefaultSansSerifTypeface();
 
         mCommentsCountView.setTextColor(textColor);
-        mCommentsCountView.setTypeface(tf);
 
-        if (mUserInfo != null) {
-            mUserInfo.setTextColor(textColor);
-            mUserInfo.setTypeface(tf);
-        }
+        if (mUserInfo != null) mUserInfo.setTextColor(textColor);
 
         mLikesView.setTextColor(textColor);
-        mLikesView.setTypeface(tf);
 
         refreshRating();
     }

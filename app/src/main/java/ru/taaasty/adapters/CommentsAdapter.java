@@ -201,10 +201,9 @@ public class CommentsAdapter extends BaseAdapter {
 
     private void applyFeedStyle(ViewHolder vh) {
         int textColor = mFeedDesign.getFeedTextColor(mResources);
-        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getDefaultSerifTypeface() : mFontManager.getDefaultSansSerifTypeface();
+        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getPostSerifTypeface() : mFontManager.getPostSansSerifTypeface();
 
         vh.comment.setTextColor(textColor);
-        vh.comment.setTypeface(tf);
     }
 
     private void setupActionView(ViewHolder vh, Comment comment) {

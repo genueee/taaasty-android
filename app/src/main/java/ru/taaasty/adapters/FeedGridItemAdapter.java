@@ -120,12 +120,10 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     private void applyFeedStyle(ViewHolder vh) {
         int textColor = mFeedDesign.getFeedTextColor(mResources);
-        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getDefaultSerifTypeface() : mFontManager.getDefaultSansSerifTypeface();
+        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getPostSerifTypeface() : mFontManager.getPostSansSerifTypeface();
 
         vh.text.setTextColor(textColor);
-        vh.text.setTypeface(tf);
         vh.title.setTextColor(textColor);
-        vh.title.setTypeface(tf);
     }
 
     @Override

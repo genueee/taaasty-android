@@ -86,6 +86,7 @@
             android:paddingRight="8dp"
             android:textColor="@color/text_color_semi_transparent_white"
             android:textSize="16sp"
+            android:textAppearance="@style/TextAppearance.PostSans"
             tools:text="Не переставай улыбаться. Для кого-то ты лучик света." />
 
         <FrameLayout

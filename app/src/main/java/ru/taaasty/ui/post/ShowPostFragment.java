@@ -349,7 +349,7 @@ public class ShowPostFragment extends Fragment {
         FontManager fm = FontManager.getInstance(getActivity());
 
         int textColor = design.getFeedTextColor(getResources());
-        Typeface tf = design.isFontTypefaceSerif() ? fm.getDefaultSerifTypeface() : fm.getDefaultSansSerifTypeface();
+        Typeface tf = design.isFontTypefaceSerif() ? fm.getPostSerifTypeface() : fm.getPostSansSerifTypeface();
 
         for (int id: new int[] {
                 R.id.title,
