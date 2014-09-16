@@ -1,9 +1,14 @@
 package ru.taaasty.ui.tabbar;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -31,6 +36,7 @@ import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 
@@ -239,6 +245,9 @@ public class MyFeedActivity extends ActivityBase implements
                 if (DBG) Log.v(TAG, "onAdditionMenuItemClicked settings");
                 Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
                 break;
+            case R.id.logout:
+                logout();
+                break;
             default:
                 throw new IllegalStateException();
         }
@@ -250,6 +259,34 @@ public class MyFeedActivity extends ActivityBase implements
         i.putExtra(FollowingFollowersActivity.ARG_USER, mCurrentUser);
         i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_FRIENDS);
         startActivity(i);
+    }
+
+    void logout() {
+
+        final ProgressDialog progressDialog = new ProgressDialog(this);
+        progressDialog.setMessage(getText(R.string.clean_cache));
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+
+        new AsyncTask<Void, Void, Void>(){
+            @Override
+            protected Void doInBackground(Void... params) {
+                NetworkUtils.getInstance().factoryReset(MyFeedActivity.this);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                progressDialog.dismiss();
+                Intent mStartActivity = new Intent(MyFeedActivity.this, LiveFeedActivity.class);
+                int mPendingIntentId = 123456;
+                PendingIntent mPendingIntent = PendingIntent.getActivity(MyFeedActivity.this, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                AlarmManager mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
+                finish();
+                System.exit(0);
+            }
+        }.execute();
     }
 
     public class SectionsPagerAdapter extends FragmentStatePagerAdapter {

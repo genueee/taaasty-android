@@ -146,6 +146,37 @@ public final class NetworkUtils {
         }
     }
 
+    public void factoryReset(Context context) {
+        mUserManager.logout();
+        try {
+            mOkHttpClient.getCache().delete();
+        } catch (Exception ignore) {}
+
+        try {
+            File extCacheDir = context.getExternalCacheDir();
+            if (extCacheDir != null) deleteDir(extCacheDir);
+        } catch (Exception ex) { Log.e(TAG, "clear external cache error", ex); }
+
+        try {
+            File cacheDir = context.getCacheDir();
+            if (cacheDir != null) deleteDir(cacheDir);
+        } catch (Exception ex) {Log.e(TAG, "clear internal cache error", ex); }
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        // The directory is now empty so delete it
+        return dir.delete();
+    }
+
     @Nullable
     public static ThumborUrlBuilder createThumborUrl(String url) {
         Matcher m = Constants.THUMBOR_MATCHER_PATTERN.matcher(url);

@@ -55,6 +55,12 @@ public class UserManager {
         persist();
     }
 
+    public void logout() {
+        mCurrentUser = null;
+        mAuthtoken = null;
+        mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE).edit().clear().commit();
+    }
+
     public Long getCurrentUserId() {
         return mCurrentUser == null ? null : mCurrentUser.getId();
     }

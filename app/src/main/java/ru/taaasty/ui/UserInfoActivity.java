@@ -24,7 +24,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
-import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.ErrorTextView;
 

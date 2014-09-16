@@ -155,5 +155,7 @@
     <string name="no_subscribers">Нет подписчиков</string>
     <string name="no_subscribtions">нет подписок</string>
     <string name="no_friends">Список пуст</string>
+    <string name="logout">Выйти</string>
+    <string name="clean_cache">Очистка кэша</string>
 
 </resources>

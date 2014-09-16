@@ -52,6 +52,12 @@
                 android:drawableLeft="@drawable/ic_friends"
                 style="@style/AdditionalMenuItem" />
 
+            <TextView
+                android:id="@+id/logout"
+                android:text="@string/logout"
+                android:drawableLeft="@drawable/ic_power_off"
+                style="@style/AdditionalMenuItem" />
+
         </LinearLayout>
 
     </ScrollView>
