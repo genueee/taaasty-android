@@ -41,24 +41,6 @@
             android:paddingBottom="88dp">
 
             <TextView
-                android:id="@+id/profile"
-                android:text="@string/profile"
-                android:drawableLeft="@drawable/ic_profile"
-                style="@style/AdditionalMenuItem" />
-
-            <TextView
-                android:id="@+id/favorites"
-                android:text="@string/title_favorites"
-                android:drawableLeft="@drawable/ic_favorites"
-                style="@style/AdditionalMenuItem" />
-
-            <TextView
-                android:id="@+id/hidden"
-                android:text="@string/title_hidden_entries"
-                android:drawableLeft="@drawable/ic_hidden"
-                style="@style/AdditionalMenuItem" />
-
-            <TextView
                 android:id="@+id/settings"
                 android:text="@string/settings"
                 android:drawableLeft="@drawable/ic_settings"

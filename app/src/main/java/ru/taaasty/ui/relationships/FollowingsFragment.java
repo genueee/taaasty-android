@@ -93,6 +93,13 @@ public class FollowingsFragment extends ListFragment {
 
         Drawable divider = getResources().getDrawable(R.drawable.followings_list_divider);
         getListView().setDivider(divider);
+        //getListView().setVerticalFadingEdgeEnabled(false);
+        //getListView().setOverScrollMode(View.OVER_SCROLL_NEVER);
+        getListView().setClipToPadding(false);
+        getListView().setPadding(0,
+                getResources().getDimensionPixelSize(R.dimen.following_followers_list_padding_top),
+                0, 0);
+        setEmptyText(getResources().getText(R.string.no_subscribers));
 
         refreshRelationships();
     }
@@ -142,6 +149,12 @@ public class FollowingsFragment extends ListFragment {
         // XXX
         Observable<Relationships> observable = createRelationshipsObservable();
 
+        if (isResumed()) {
+            setListShownNoAnimation(false);
+        } else {
+            setListShown(false);
+        }
+
         mRelationshipsSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mRelstionshipsObserver);
@@ -156,6 +169,7 @@ public class FollowingsFragment extends ListFragment {
 
         @Override
         public void onError(Throwable e) {
+            setListShown(true);
             mListener.notifyError(getString(R.string.error_loading_relationships), e);
         }
 

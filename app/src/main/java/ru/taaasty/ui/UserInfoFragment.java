@@ -128,8 +128,6 @@ public class UserInfoFragment extends Fragment {
         mDaysCountTitle = (TextView)view.findViewById(R.id.days_count_title);
 
         view.findViewById(R.id.entries_count).setOnClickListener(mOnClickListener);
-        view.findViewById(R.id.subscriptions_count).setOnClickListener(mOnClickListener);
-        view.findViewById(R.id.subscribers_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
         mSelectBackgroundButtonView.setOnClickListener(mOnClickListener);
@@ -476,12 +474,6 @@ public class UserInfoFragment extends Fragment {
                 case R.id.entries_count:
                     if (mListener != null) mListener.onEntriesCountClicked();
                     break;
-                case R.id.subscriptions_count:
-                    if (mListener != null) mListener.onSubscribtionsCountClicked();
-                    break;
-                case R.id.subscribers_count:
-                    if (mListener != null) mListener.onSubscribersCountClicked();
-                    break;
                 case R.id.subscribe:
                     follow();
                     break;
@@ -512,8 +504,6 @@ public class UserInfoFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onEntriesCountClicked();
-        public void onSubscribtionsCountClicked();
-        public void onSubscribersCountClicked();
         public void onSelectBackgroundClicked();
         public void onUserAvatarClicked();
     }

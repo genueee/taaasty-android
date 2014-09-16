@@ -17,9 +17,6 @@ public class AdditionalMenuActivity extends ActivityBase {
         setContentView(R.layout.activity_additional_menu);
 
         for (int vid: new int[] {
-                R.id.profile,
-                R.id.favorites,
-                R.id.hidden,
                 R.id.settings,
                 R.id.friends,
                 R.id.back_button

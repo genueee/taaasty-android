@@ -86,6 +86,9 @@ public class User implements Parcelable {
         return mTlogUrl;
     }
 
+    /**
+     * @return Подпись под аватаркой
+     */
     public String getTitle() {
         return mTitle;
     }
@@ -100,6 +103,10 @@ public class User implements Parcelable {
 
     public long getTotalEntriesCount() {
         return mTotalEntriesCount;
+    }
+
+    public boolean isFemale() {
+        return mIsFemale;
     }
 
     public long getDaysOnTasty() {

@@ -30,6 +30,7 @@ import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
+import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 
@@ -229,19 +230,10 @@ public class MyFeedActivity extends ActivityBase implements
 
     public void onAdditionMenuItemClicked(int viewId) {
         switch (viewId) {
-            case R.id.profile:
-                if (mCurrentUser != null) openUserFeed(mCurrentUser, mCurrentUserDesign);
-                break;
             case R.id.back_button:
                 break;
-            case R.id.favorites:
-                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_FAVORITES);
-                break;
-            case R.id.hidden:
-                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_PRIVATE);
-                break;
             case R.id.friends:
-                openAdditionalFeed(MyAdditionalFeedActivity.FEED_TYPE_FRIENDS);
+                openFriends();
                 break;
             case R.id.settings:
                 if (DBG) Log.v(TAG, "onAdditionMenuItemClicked settings");
@@ -252,9 +244,11 @@ public class MyFeedActivity extends ActivityBase implements
         }
     }
 
-    void openAdditionalFeed(@MyAdditionalFeedActivity.FeedType int type) {
-        Intent i = new Intent(this, MyAdditionalFeedActivity.class);
-        i.putExtra(MyAdditionalFeedActivity.ARG_KEY_FEED_TYPE, type);
+    void openFriends() {
+        if (mCurrentUser == null) return;
+        Intent i = new Intent(this, FollowingFollowersActivity.class);
+        i.putExtra(FollowingFollowersActivity.ARG_USER, mCurrentUser);
+        i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_FRIENDS);
         startActivity(i);
     }
 

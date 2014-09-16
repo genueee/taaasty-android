@@ -18,8 +18,11 @@
         android:src="@drawable/avatar_dummy"
         android:layout_marginRight="16dp" />
 
+
+    <!-- кнопку откладываем пока не разберемся, как с API получить нужные данные -->
     <FrameLayout
         android:id="@+id/add_remove_relationship_container"
+        android:visibility="gone"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_width="wrap_content"

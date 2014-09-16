@@ -2,6 +2,8 @@ package ru.taaasty.ui.relationships;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -10,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.Locale;
 
@@ -18,25 +19,43 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Relationship;
+import ru.taaasty.model.User;
+import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class FollowingFollowersActivity extends ActivityBase implements  FollowingsFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FollowingFollowersActivity";
-    public static final String ARG_USER_ID = "ru.taaasty.ui.relationships.FollowingFollowersActivity.user_id";
+    public static final String ARG_USER = "ru.taaasty.ui.relationships.FollowingFollowersActivity.user";
+
+    public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.relationships.FollowingFollowersActivity.ARG_KEY_SHOW_SECTION";
+
+    /**
+     * Подписки
+     */
+    public static final int SECTION_FOLLOWINGS = 0;
+    /**
+     * Подписчики
+     */
+    public static final int SECTION_FOLLOWERS = 1;
+    /**
+     * Друзья
+     */
+    public static final int SECTION_FRIENDS = 2;
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
 
-    private long mUserId;
+    private User mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_following_followers);
 
-        mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
-        if (mUserId < 0) throw new IllegalArgumentException("no user id");
+        mUser = getIntent().getParcelableExtra(ARG_USER);
+        if (mUser == null) throw new IllegalArgumentException("no user");
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -45,6 +64,20 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(2);
+
+        int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_FOLLOWINGS);
+        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager, mUser);
+        indicator.setSection(initialSection);
+
+        ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                notifyError(getText(R.string.error_loading_image), null);
+            }
+        };
+
+        abIconLoader.loadIcon(mUser.getUserpic(), mUser.getName());
 
     }
 
@@ -61,8 +94,21 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
 
     @Override
     public void onRelationshipClicked(Relationship relationship) {
-        // XXX
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        long userId;
+        Intent intent = new Intent(this, TlogActivity.class);
+        switch (mViewPager.getCurrentItem()) {
+            case SECTION_FOLLOWERS:
+                userId = relationship.getReaderId();
+                break;
+            case SECTION_FOLLOWINGS:
+            case SECTION_FRIENDS:
+                userId = relationship.getUserId();
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+        intent.putExtra(TlogActivity.ARG_USER_ID, userId);
+        startActivity(intent);
     }
 
     /**
@@ -78,12 +124,12 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         @Override
         public Fragment getItem(int position) {
             switch (position) {
-                case 0:
-                    return FollowersFragment.newInstance(mUserId);
-                case 1:
-                    return FollowingsFragment.newInstance(mUserId);
-                case 2:
-                    return PlaceholderFragment.newInstance(2);
+                case SECTION_FOLLOWERS:
+                    return FollowersFragment.newInstance(mUser.getId());
+                case SECTION_FOLLOWINGS:
+                    return FollowingsFragment.newInstance(mUser.getId());
+                case SECTION_FRIENDS:
+                    return FriendsFragment.newInstance();
                 default:
                     throw new IllegalArgumentException();
             }
@@ -98,11 +144,11 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         public CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
             switch (position) {
-                case 0:
+                case SECTION_FOLLOWERS:
                     return getString(R.string.title_followers).toUpperCase(l);
-                case 1:
+                case SECTION_FOLLOWINGS:
                     return getString(R.string.title_followings).toUpperCase(l);
-                case 2:
+                case SECTION_FRIENDS:
                     return getString(R.string.title_friends).toUpperCase(l);
             }
             return null;
@@ -137,8 +183,83 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_following_followers, container, false);
+            View rootView;
+            rootView = inflater.inflate(R.layout.fragment_following_followers, container, false);
             return rootView;
+        }
+    }
+
+    /**
+     * Индикатор сверху: "Подписки - подписчики - друзья"
+     */
+    private static class PagerIndicator implements ViewPager.OnPageChangeListener, View.OnClickListener {
+        private final ViewGroup mRoot;
+        private final ViewPager mPager;
+        private final User mUser;
+
+        public PagerIndicator(ViewGroup root, ViewPager pager, User user) {
+            mRoot = root;
+            mPager = pager;
+            mUser = user;
+            mPager.setOnPageChangeListener(this);
+            int count = mRoot.getChildCount();
+            for (int i = 0; i < count; ++i) mRoot.getChildAt(i).setOnClickListener(this);
+        }
+
+        public void setSection(int section) {
+            mPager.setCurrentItem(section, false);
+            setActivatedView(section);
+        }
+
+        private static int section2ViewId(int section) {
+            int viewId;
+            switch (section) {
+                case SECTION_FOLLOWERS: viewId = R.id.your_followers_indicator; break;
+                case SECTION_FOLLOWINGS: viewId = R.id.you_follow_indicator; break;
+                case SECTION_FRIENDS: viewId = R.id.your_friends_indicator; break;
+                default: throw new IllegalArgumentException();
+            }
+            return viewId;
+        }
+
+        private static int viewId2Section(int viewId) {
+            int section;
+            switch (viewId) {
+                case R.id.your_followers_indicator: section = SECTION_FOLLOWERS; break;
+                case R.id.you_follow_indicator: section = SECTION_FOLLOWINGS; break;
+                case R.id.your_friends_indicator: section = SECTION_FRIENDS; break;
+                default: throw new IllegalStateException();
+            }
+            return section;
+        }
+
+        private void setActivatedView(int section) {
+            int viewId = section2ViewId(section);
+            int count = mRoot.getChildCount();
+            for (int i = 0; i < count; ++i) {
+                View child = mRoot.getChildAt(i);
+                child.setActivated(child.getId() == viewId);
+            }
+        }
+
+        @Override
+        public void onPageScrolled(int i, float v, int i2) {
+
+        }
+
+        @Override
+        public void onPageSelected(int i) {
+            setActivatedView(i);
+        }
+
+        @Override
+        public void onPageScrollStateChanged(int i) {
+
+        }
+
+        @Override
+        public void onClick(View v) {
+            mPager.setCurrentItem(viewId2Section(v.getId()), true);
         }
     }
 

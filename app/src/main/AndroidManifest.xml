@@ -92,7 +92,7 @@
             android:label="@string/title_activity_following_followers"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppThemeLightActionBar" >
+            android:theme="@style/AppThemeGreenActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />

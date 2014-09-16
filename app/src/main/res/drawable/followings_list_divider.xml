@@ -3,5 +3,5 @@
 <inset xmlns:android="http://schemas.android.com/apk/res/android"
     android:drawable="@drawable/followings_list_divider_line"
     android:insetLeft="80dp"
-    android:insetRight="12dp"
+    android:insetRight="@dimen/following_followers_padding_right"
     />

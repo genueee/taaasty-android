@@ -29,7 +29,7 @@
             android:minWidth="42dp"
             android:scaleType="center"
             android:background="@drawable/clickable_item_background"
-            android:src="@drawable/ab_back" />
+            android:src="@drawable/ic_back_white" />
 
         <TextView
             android:id="@+id/window_title"

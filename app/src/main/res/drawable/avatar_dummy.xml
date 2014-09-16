@@ -14,7 +14,7 @@
 
         </shape>
     </item>
-    <item android:drawable="@drawable/btn_tabbar_myfeed"/>
+    <item android:drawable="@drawable/ic_user_stub"/>
 
 </layer-list>
 

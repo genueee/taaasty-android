@@ -16,10 +16,10 @@ public class Relationship implements Parcelable {
     private long mId;
 
     @SerializedName("user_id")
-    private long mUserId;
+    private long mUserId = -1;
 
     @SerializedName("reader_id")
-    private long mReaderId;
+    private long mReaderId = -1;
 
     @SerializedName("state")
     private String mState = "";

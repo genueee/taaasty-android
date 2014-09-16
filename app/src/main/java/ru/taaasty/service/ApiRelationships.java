@@ -4,7 +4,6 @@ import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
 import retrofit.http.Query;
-import ru.taaasty.model.Feed;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.Relationships;
 import ru.taaasty.model.RelationshipsSummary;
@@ -32,9 +31,15 @@ public interface ApiRelationships {
             @Query("limit") Integer limit
     );
 
+    /**
+     *
+     * @param idOrSlug
+     * @return Узнать, какое у меня с ним отношение
+     */
     @GET("/relationships/to/tlog/{id_or_slug}.json")
     Observable<Relationships> getRelationshipsToTlog(
             @Path("id_or_slug") String idOrSlug);
+
 
     @POST("/relationships/to/tlog/{id_or_slug}/follow.json")
     Observable<Relationship> follow(

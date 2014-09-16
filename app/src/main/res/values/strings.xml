@@ -148,4 +148,12 @@
     <string name="change_background">Сменить фон</string>
     <string name="error_loading_background">Ошибка загрузки фона</string>
 
+    <string name="you_follow">Вы подписаны</string>
+    <string name="your_followers">Ваши подписчики</string>
+    <string name="your_friends">Друзья</string>
+
+    <string name="no_subscribers">Нет подписчиков</string>
+    <string name="no_subscribtions">нет подписок</string>
+    <string name="no_friends">Список пуст</string>
+
 </resources>

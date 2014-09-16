@@ -42,5 +42,8 @@
 
     <dimen name="post_no_title_padding">16dp</dimen>
 
+    <dimen name="following_followers_indicator_stroke_radius">6dp</dimen>
+    <dimen name="following_followers_padding_right">12dp</dimen>
+    <dimen name="following_followers_list_padding_top">24dp</dimen>
 
 </resources>

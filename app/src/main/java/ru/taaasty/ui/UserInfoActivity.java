@@ -125,20 +125,6 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    public void onSubscribtionsCountClicked() {
-        Intent i = new Intent(this, FollowingFollowersActivity.class);
-        i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
-        startActivity(i);
-    }
-
-    @Override
-    public void onSubscribersCountClicked() {
-        Intent i = new Intent(this, FollowingFollowersActivity.class);
-        i.putExtra(FollowingFollowersActivity.ARG_USER_ID, mUser.getId());
-        startActivity(i);
-    }
-
-    @Override
     public void onSelectBackgroundClicked() {
         FragmentManager fm = getFragmentManager();
         if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null

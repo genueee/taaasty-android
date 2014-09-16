@@ -2,6 +2,7 @@ package ru.taaasty.ui.relationships;
 
 import android.os.Bundle;
 
+import ru.taaasty.R;
 import ru.taaasty.adapters.RelationshipsAdapter;
 import ru.taaasty.model.Relationships;
 import ru.taaasty.service.ApiTlog;
@@ -18,6 +19,13 @@ public class FollowersFragment extends FollowingsFragment {
         fragment.setArguments(args);
         return fragment;
     }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setEmptyText(getResources().getText(R.string.no_subscribers));
+    }
+
 
     RelationshipsAdapter createRelationshipsAdapter() {
         return new RelationshipsAdapter(getActivity(), true);

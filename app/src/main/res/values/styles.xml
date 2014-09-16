@@ -17,7 +17,12 @@
 
     <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light">
         <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
-        <item name="android:actionBarStyle">@style/ActionBar.Taaasty</item>>
+        <item name="android:actionBarStyle">@style/ActionBar.Taaasty</item>
+    </style>
+
+    <style name="AppThemeGreenActionBar" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_white</item>
+        <item name="android:actionBarStyle">@style/ActionBar.Taaasty.Green</item>
     </style>
 
     <style name="AppThemeOverlayingActionBar" parent="AppThemeLightActionBar">
@@ -54,6 +59,11 @@
 
     <style name="ActionBar.Taaasty" parent="android:Widget.Holo.Light.ActionBar">
         <item name="android:background">@android:color/white</item>
+    </style>
+
+    <style name="ActionBar.Taaasty.Green" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
+        <item name="android:background">@color/green_background_normal</item>
+        <item name="android:icon">@drawable/avatar_dummy</item>
     </style>
 
     <style name="ActionBar.Taaasty.Transparent" parent="android:Widget.Holo.Light.ActionBar">
@@ -171,8 +181,6 @@
         <item name="android:minWidth">64dp</item>
         <item name="android:paddingLeft">4dp</item>
         <item name="android:paddingRight">4dp</item>
-        <item name="android:clickable">true</item>
-        <item name="android:background">@drawable/clickable_item_background</item>
     </style>
 
     <style name="UserInfoContentValue">
@@ -321,6 +329,16 @@
 
     <style name="TextAppearance.PostSerif" parent="android:TextAppearance">
         <item name="fontPath">fonts/PTF55F_W.ttf</item>
+    </style>
+
+    <style name="FollowingFollowersIndicatorItem">
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@drawable/green_background_text_color</item>
+        <item name="android:clickable">true</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:padding">10dp</item>
     </style>
 
 </resources>
