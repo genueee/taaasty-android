@@ -14,11 +14,15 @@ public interface ApiSessions {
     /**
      * Логин
      * @param login
-     * @param spassword
+     * @param password
      * @return
      */
     @FormUrlEncoded
     @POST("/sessions.json")
-    Observable<CurrentUser> signIn(@Field("email") String login, @Field("password") String spassword);
+    Observable<CurrentUser> signIn(@Field("email") String login, @Field("password") String password);
+
+    @FormUrlEncoded
+    @POST("/sessions/vkontakte.json")
+    Observable<CurrentUser> signInVkontakte(@Field("user_id") String userId, @Field("token") String token);
 
 }

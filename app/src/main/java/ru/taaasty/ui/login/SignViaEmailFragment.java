@@ -6,10 +6,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,9 +30,9 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.service.ApiSessions;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UserEmailLoader;
-import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.android.observables.AndroidObservable;
@@ -51,7 +51,6 @@ public class SignViaEmailFragment extends Fragment {
     private EditText mPasswordView;
     private View mProgressView;
     private View mSignInButtonView;
-    private ErrorTextView mErrorView;
 
     private Observable<CurrentUser> mAuthTask;
 
@@ -98,7 +97,6 @@ public class SignViaEmailFragment extends Fragment {
         root.findViewById(R.id.back_button).setOnClickListener(mOnClickListener);
         root.findViewById(R.id.button_i_forgot_password).setOnClickListener(mOnClickListener);
         root.findViewById(R.id.button_i_have_not_registered).setOnClickListener(mOnClickListener);
-        mErrorView = (ErrorTextView)root.findViewById(R.id.error_text);
 
         mProgressView = root.findViewById(R.id.login_progress);
 
@@ -187,9 +185,6 @@ public class SignViaEmailFragment extends Fragment {
             return;
         }
 
-        // Reset errors.
-        mErrorView.setError(null);
-
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
@@ -199,22 +194,22 @@ public class SignViaEmailFragment extends Fragment {
 
         // Check for a valid password, if the author entered one.
         if (TextUtils.isEmpty(password)) {
-            mErrorView.setError(getString(R.string.error_password_field_required));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_password_field_required), null);
             focusView = mPasswordView;
             cancel = true;
         } else if (!isPasswordValid(password)) {
-            mErrorView.setError(getString(R.string.error_invalid_password));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_password), null);
             focusView = mPasswordView;
             cancel = true;
         }
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mErrorView.setError(getString(R.string.error_email_field_required));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_email_field_required), null);
             focusView = mEmailView;
             cancel = true;
         } else if (!isEmailValid(email)) {
-            mErrorView.setError(getString(R.string.error_invalid_email));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email), null);
             focusView = mEmailView;
             cancel = true;
         }
@@ -249,7 +244,7 @@ public class SignViaEmailFragment extends Fragment {
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            mErrorView.setError(getString(R.string.error_invalid_email_or_password));
+                            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email_or_password), null);
                             mPasswordView.requestFocus();
                         }
 
@@ -321,7 +316,7 @@ public class SignViaEmailFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onSignSuccess();
         public void onSignViaEmailBackPressed();
         public void onIForgotPasswordPressed();

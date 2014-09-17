@@ -157,5 +157,6 @@
     <string name="no_friends">Список пуст</string>
     <string name="logout">Выйти</string>
     <string name="clean_cache">Очистка кэша</string>
+    <string name="sigin_up_using_vkontakte_title">Вход с помощью Вконтакте…</string>
 
 </resources>

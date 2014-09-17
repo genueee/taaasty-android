@@ -31,6 +31,7 @@ public class TaaastyApplication extends Application {
 
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);
+        VkontakteHelper.getInstance().onAppInit();
     }
 
     @Override

@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
+import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.TimingLogger;
 import android.view.Gravity;
@@ -35,10 +37,11 @@ import java.util.Random;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.tabbar.LiveFeedActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.widgets.ErrorTextView;
 import ru0xdc.NdkStackBlur;
-import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 /**
  * A login screen that offers login via email/password.
@@ -48,7 +51,9 @@ public class LoginActivity extends ActivityBase implements
         SelectSignMethodFragment.OnFragmentInteractionListener,
         SignViaEmailFragment.OnFragmentInteractionListener,
         RecoverPasswordFragment.OnFragmentInteractionListener,
-        SignUpFragment.OnFragmentInteractionListener
+        SignUpFragment.OnFragmentInteractionListener,
+        SignViaVkontakteFragment.OnFragmentInteractionListener,
+        CustomErrorView
 {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LoginActivity";
@@ -56,9 +61,11 @@ public class LoginActivity extends ActivityBase implements
     private static final String FRAGMENT_BACK_STACK_TAG1 = "fragment_back_stack_Tag1";
 
     private static final String BUNDLE_CURRENT_BACKGROUND_ID = "current_background_id";
+
     public static final int PRIMARY_BACKGROUND_IN_SAMPLE_SIZE = 0;
     public static final int SECONDARY_BACKGROUND_IN_SAMPLE_SIZE = 1;
     public static final int SECONDARY_BACKGROUND_BLUR_KERNEL = 24;
+    private static final String DIALOG_LOGIN_VKONTAKTE = "dialog_login_vkontakte";
 
     private final Background mBackground = new Background();
 
@@ -91,7 +98,6 @@ public class LoginActivity extends ActivityBase implements
                 }
             }
         });
-
     }
 
     @Override
@@ -119,7 +125,21 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignViaVkontakteClicked() {
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(DIALOG_LOGIN_VKONTAKTE) != null) return;
+        DialogFragment dialog = SignViaVkontakteFragment.createInstance();
+        dialog.show(getFragmentManager(), DIALOG_LOGIN_VKONTAKTE);
+    }
+
+    @Override
+    public void notifyError(CharSequence error, @Nullable Throwable exception) {
+        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
+        if (exception != null) Log.e(TAG, error.toString(), exception);
+        if (DBG) {
+            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));
+        } else {
+            ert.setError(error);
+        }
     }
 
     @Override
@@ -228,6 +248,11 @@ public class LoginActivity extends ActivityBase implements
     public void onIHaveRegisteredPressed() {
         closeAllFragments();
         onSignViaEmailClicked();
+    }
+
+    @Override
+    public void onSignViaVkontakteSuccess() {
+        switchToMainScreen();
     }
 
 
@@ -485,8 +510,6 @@ public class LoginActivity extends ActivityBase implements
             }
         }
     }
-
-
 }
 
 

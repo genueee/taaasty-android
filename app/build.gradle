@@ -44,6 +44,8 @@ android {
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
                         "\"http://api.taaasty.ru\"")
+        buildConfigField "String", "VKONTAKTE_APP_ID",
+                project.ext.private.getProperty("default.VkontakteAppId", "\"4553661\"")
         buildConfigField "String", "THUMBOR_SERVER",
                 project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
@@ -62,7 +64,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix ".debug"
+            // applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
             resValue "string", "app_name", "Тейсти dbg" + getRevision()
         }
@@ -114,13 +116,15 @@ dependencies {
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.etsy.android.grid:library:1.0.5'
     compile 'de.greenrobot:eventbus:2.2.1'
-
+    compile 'com.vk:androidsdk:1.3.2'
 }
 
 ['beta', 'release'].each { typeName ->
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
             project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru\"")
+    bt.buildConfigField "String", "VKONTAKTE_APP_ID",
+            project.ext.private.getProperty("${typeName}.VkontakteAppId", "\"4553661\"")
     bt.buildConfigField "String", "THUMBOR_KEY",
             project.ext.private.getProperty("${typeName}.ThumborKey", "\"golobog\"")
     bt.buildConfigField "String", "THUMBOR_SERVER",

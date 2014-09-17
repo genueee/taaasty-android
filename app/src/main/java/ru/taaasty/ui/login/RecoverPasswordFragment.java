@@ -4,10 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,9 +24,9 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.RecoveryPasswordResponse;
 import ru.taaasty.service.ApiUsers;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UserEmailLoader;
-import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.android.observables.AndroidObservable;
@@ -44,7 +44,6 @@ public class RecoverPasswordFragment extends Fragment {
     private AutoCompleteTextView mEmailView;
     private View mProgressView;
     private View mSendPassword;
-    private ErrorTextView mErrorView;
 
     private Observable<RecoveryPasswordResponse> mAuthTask;
 
@@ -78,7 +77,6 @@ public class RecoverPasswordFragment extends Fragment {
         mSendPassword.setOnClickListener(mOnClickListener);
 
         root.findViewById(R.id.back_button).setOnClickListener(mOnClickListener);
-        mErrorView = (ErrorTextView)root.findViewById(R.id.error_text);
 
         mProgressView = root.findViewById(R.id.login_progress);
 
@@ -130,9 +128,6 @@ public class RecoverPasswordFragment extends Fragment {
             return;
         }
 
-        // Reset errors.
-        mErrorView.setError(null);
-
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
 
@@ -141,11 +136,11 @@ public class RecoverPasswordFragment extends Fragment {
 
         // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mErrorView.setError(getString(R.string.error_email_field_required));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_email_field_required), null);
             focusView = mEmailView;
             cancel = true;
         } else if (!isEmailValid(email)) {
-            mErrorView.setError(getString(R.string.error_invalid_email));
+            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email), null);
             focusView = mEmailView;
             cancel = true;
         }
@@ -183,7 +178,7 @@ public class RecoverPasswordFragment extends Fragment {
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
                             // XXX
-                            mErrorView.setError(getString(R.string.error_invalid_email_or_password));
+                            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email_or_password), null);
                             mEmailView.requestFocus();
                         }
 
@@ -250,7 +245,7 @@ public class RecoverPasswordFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onForgotPasswordRequestSent();
         public void onForgotPasswordBackPressed();
     }
