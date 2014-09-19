@@ -3,14 +3,19 @@ package ru.taaasty.ui.post;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.Fragment;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.Gravity;
@@ -18,15 +23,26 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.youtube.player.YouTubeInitializationResult;
+import com.google.android.youtube.player.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import junit.framework.Assert;
@@ -43,17 +59,20 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.ReportCommentSent;
+import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.model.iframely.Link;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.FontManager;
+import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.UiUtils;
@@ -67,6 +86,7 @@ import rx.functions.Action0;
 
 /**
  * Пост с комментариями
+ * XXX: Используем android.support фрагменты дял работы с ютубом
  */
 public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -106,6 +126,9 @@ public class ShowPostFragment extends Fragment {
     private EditText mReplyToCommentText;
     private View mPostButon;
     private View mPostProgress;
+
+    private WebView mWebview;
+    private MyWebChromeClient mChromeClient;
 
     private long mPostId;
 
@@ -235,7 +258,19 @@ public class ShowPostFragment extends Fragment {
         } else {
             outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
         }
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mChromeClient != null) mChromeClient.onHideCustomView();
+        if (mWebview != null) mWebview.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (mWebview != null) mWebview.onResume();
     }
 
     @Override
@@ -250,6 +285,11 @@ public class ShowPostFragment extends Fragment {
         mSourceView = null;
         mTextView = null;
         mTitleView = null;
+        if (mWebview != null) {
+            mWebview.destroy();
+            mWebview = null;
+        }
+        mChromeClient = null;
     }
 
     @Override
@@ -342,6 +382,7 @@ public class ShowPostFragment extends Fragment {
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
         if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()));
+        if (mWebview != null) mWebview.setBackgroundColor(design.getFeedBackgroundColor(getResources()));
         mEntryBottomActionBar.setTlogDesign(design);
         mCommentsAdapter.setFeedDesign(design);
 
@@ -365,39 +406,214 @@ public class ShowPostFragment extends Fragment {
         }
     }
 
-    // XXX
     private void setupPostImage() {
-        ImageView imageView = (ImageView)mPostContentView.findViewById(R.id.image);
+        if (mCurrentEntry.isYoutubeVideo()) {
+            setupYoutubePostImage();
+        } else if (mCurrentEntry.isVideo()) {
+            setVideoPostImage();
+        } else {
+            setupImagePostImage();
+        }
+    }
+
+    /**
+     * Ютуб открываем API ютуба
+     */
+    private void setupYoutubePostImage() {
+        FragmentManager fm = getChildFragmentManager();
+        FrameLayout contentLayout = (FrameLayout)mPostContentView.findViewById(R.id.dynamic_content_layout);
+        contentLayout.setVisibility(View.VISIBLE);
+
+        YouTubePlayerSupportFragment fragment;
+        fragment = (YouTubePlayerSupportFragment)fm.findFragmentById(R.id.dynamic_content_layout);
+
+        if (fragment == null) {
+            fragment = YouTubePlayerSupportFragment.newInstance();
+            fm.beginTransaction().replace(R.id.dynamic_content_layout, fragment).commit();
+        }
+
+        fragment.initialize(BuildConfig.YOUTUBE_APP_ID, mYoutubeOnInitializedListener);
+    }
+
+    /**
+     * Пользователь выполнил действия, котоыре просил ютую чтобы продолжить работать
+     * @param event
+     */
+    public void onEventMainThread(YoutubeRecoveryActionPerformed event) {
+        FragmentManager fm = getChildFragmentManager();
+        YouTubePlayerSupportFragment fragment = (YouTubePlayerSupportFragment)fm.findFragmentById(R.id.dynamic_content_layout);
+        if (fragment != null) fragment.initialize(BuildConfig.YOUTUBE_APP_ID, mYoutubeOnInitializedListener);
+    }
+
+    private final YouTubePlayer.OnInitializedListener mYoutubeOnInitializedListener = new YouTubePlayer.OnInitializedListener() {
+        @Override
+        public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored) {
+            if (mCurrentEntry == null || !mCurrentEntry.isYoutubeVideo()) return;
+            final String youtubeId = UiUtils.parseYoutubeVideoId(mCurrentEntry.getIframely().url);
+            if (DBG) Log.v(TAG, "youtubeId: " + youtubeId);
+            // player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_CUSTOM_LAYOUT);
+            player.addFullscreenControlFlag(YouTubePlayer.FULLSCREEN_FLAG_ALWAYS_FULLSCREEN_IN_LANDSCAPE);
+            player.setOnFullscreenListener(mYoutubeFullscreenListener);
+            player.cueVideo(youtubeId);
+        }
+
+        @Override
+        public void onInitializationFailure(YouTubePlayer.Provider provider, YouTubeInitializationResult errorReason) {
+            if (errorReason.isUserRecoverableError()) {
+                errorReason.getErrorDialog(getActivity(), ShowPostActivity.YOUTUBE_RECOVERY_DIALOG_REQUEST).show();
+            } else {
+                mListener.notifyError(String.format(getString(R.string.error_youtube_init), errorReason.toString()), null);
+            }
+        }
+    };
+
+    private final YouTubePlayer.OnFullscreenListener mYoutubeFullscreenListener = new YouTubePlayer.OnFullscreenListener() {
+        @Override
+        public void onFullscreen(boolean isFullscreen) {
+            if (mListener != null) mListener.onYoutubeFullscreen(isFullscreen);
+        }
+    };
+
+    private void setVideoPostImage() {
+        FrameLayout contentLayout = (FrameLayout)mPostContentView.findViewById(R.id.dynamic_content_layout);
+
+        Link link = mCurrentEntry.getIframely().getHtmlLink();
+        if (link == null) {
+            List<Link> links = mCurrentEntry.getIframely().links.getMergedList();
+            if (links.isEmpty()) {
+                contentLayout.setVisibility(View.GONE);
+                return;
+            } else {
+                link = links.get(0);
+            }
+        }
+
+        if (DBG) Log.v(TAG, "link: " + link);
+
+        if (mWebview == null) {
+            ViewStub vs = (ViewStub)contentLayout.findViewById(R.id.web_view_stub);
+            mWebview = (WebView)vs.inflate();
+        }
+
+        mWebview.setScrollContainer(false);
+        final WebSettings wbs = mWebview.getSettings();
+        wbs.setPluginState(WebSettings.PluginState.ON);
+        wbs.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        wbs.setSaveFormData(true);
+        wbs.setDomStorageEnabled(true);
+        wbs.setJavaScriptEnabled(true);
+        wbs.setBuiltInZoomControls(true);
+        wbs.setAllowFileAccess(true);
+        //wbs.setUseWideViewPort(true);
+        wbs.setLoadWithOverviewMode(true);
+        wbs.setSupportZoom(true);
+
+        mChromeClient = new MyWebChromeClient();
+        mWebview.setWebChromeClient(mChromeClient);
+
+        final String linkHref = link.getHref();
+        mWebview.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                // Причуды инстаграмма
+                try {
+                    Uri linkHrefUri = Uri.parse(linkHref);
+                    Uri uri = Uri.parse(url).buildUpon().scheme(linkHrefUri.getScheme()).build();
+                    if (uri.equals(linkHrefUri)) {
+                        Log.v(TAG, "ignore http-https redirect " + url);
+                        return false;
+                    }
+                } catch (Exception ignore) {}
+                try {
+                    Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    startActivity(myIntent);
+                    return true;
+                } catch (ActivityNotFoundException ane) {
+                    return false;
+                }
+            }
+        });
+
+
+        // Пытаемся определить высоту
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mWebview.getLayoutParams();
+        int width = mPostContentView.getWidth();
+        int height = 0;
+        if (width != 0) {
+            if (link.media.aspect_ratio != 0) {
+                height = (int)(1.01f * Math.ceil((float)width / link.media.aspect_ratio));
+            } else if (link.media.width != 0 && link.media.height != 0) {
+                float aspectRatio = (float) link.media.width / link.media.height;
+                height = (int)(1.01f * Math.ceil((float)width / aspectRatio));
+            }
+        }
+        if (height != 0) {
+            lp.height = height;
+        } else {
+            lp.height = getResources().getDimensionPixelSize(R.dimen.post_item_web_view_default_height);
+        }
+        mWebview.setLayoutParams(lp);
+
+        mWebview.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+
+        if (link.isTextHtml()) {
+            mWebview.loadUrl(link.getHref());
+        } else {
+            mWebview.loadDataWithBaseURL("http://taaasty.ru", mCurrentEntry.getIframely().html,
+                    "text/html", "UTF-8", null);
+        }
+
+    }
+
+    // XXX: копия из FeedItemAdapter
+    private void setupImagePostImage() {
+        FrameLayout contentLayout = (FrameLayout)mPostContentView.findViewById(R.id.dynamic_content_layout);
+        ImageView imageView = (ImageView)contentLayout.findViewById(R.id.image);
+        if (imageView == null) {
+            ViewStub vs = (ViewStub)contentLayout.findViewById(R.id.image_stub);
+            imageView = (ImageView)vs.inflate();
+        }
+
+        ImageSize imgSize;
+        int resizeToWidth = 0;
+        int imgViewHeight;
 
         if (mCurrentEntry.getImages().isEmpty()) {
+            contentLayout.setVisibility(View.GONE);
             imageView.setVisibility(View.GONE);
             return;
         }
 
         ImageInfo image = mCurrentEntry.getImages().get(0);
-        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-
-        float dstWidth, dstHeight;
-        float imgWidth, imgHeight;
-
         // XXX: check for 0
-        float parentWidth = mListView.getMeasuredWidth();
-        if (parentWidth < image.image.geometry.width) {
-            imgWidth = parentWidth;
-            imgHeight = (float)image.image.geometry.height * parentWidth / (float)image.image.geometry.width;
-            b.resize((int)Math.ceil(imgWidth), 0);
-        } else {
-            imgWidth = image.image.geometry.width;
-            imgHeight = image.image.geometry.height;
-        }
-        dstWidth = parentWidth;
-        dstHeight =  parentWidth / (imgWidth / imgHeight);
+        int parentWidth = mListView.getMeasuredWidth();
+        imgSize = image.image.geometry.toImageSize();
+        imgSize.shrinkToWidth(parentWidth);
+        imgSize.shrinkToMaxTextureSize();
 
-        if (DBG) Log.v(TAG, "setimagesize " + dstWidth + " " + dstHeight);
+        if (imgSize.width < image.image.geometry.width) {
+            // Изображение было уменьшено под размеры imageView
+            resizeToWidth = parentWidth;
+            imgViewHeight = (int)Math.ceil(imgSize.height);
+        } else {
+            // Изображение должно быть увеличено под размеры ImageView
+            imgSize.stretchToWidth(parentWidth);
+            imgSize.cropToMaxTextureSize();
+            imgViewHeight = (int)Math.ceil(imgSize.height);
+        }
+
         ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-        lp.height = (int)Math.ceil(dstHeight);
+        lp.height = imgViewHeight;
         imageView.setLayoutParams(lp);
+        imageView.setAdjustViewBounds(true);
         imageView.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.VISIBLE);
+
+        // XXX: У некоторых картинок может не быть image.image.path
+        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
+        b.filter(ThumborUrlBuilder.quality(60));
+        if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(b.toUrl())
@@ -430,11 +646,12 @@ public class ShowPostFragment extends Fragment {
         CharSequence text;
         CharSequence source;
 
-        if (Entry.ENTRY_TYPE_QUOTE.equals(entry.getType())) {
+        if (entry.isQuote()) {
             title = null;
             text = UiUtils.formatQuoteText(entry.getText());
             source = UiUtils.formatQuoteSource(entry.getSource());
-        } else if (Entry.ENTRY_TYPE_IMAGE.endsWith(entry.getType())) {
+        } else if (entry.isImage() || entry.isVideo()) {
+            // У видео и текста титул - это подпись под записью, оформляем как обычный текст
             title = null;
             text = UiUtils.removeTrailingWhitespaces(entry.getTitleSpanned());
             source = null;
@@ -895,6 +1112,99 @@ public class ShowPostFragment extends Fragment {
         }
     };
 
+    private class MyWebChromeClient extends WebChromeClient {
+
+        private View mCustomView;
+        private WebChromeClient.CustomViewCallback mCustomViewCallback;
+
+        @Override
+        public void onShowCustomView(View view, int requestedOrientation, WebChromeClient.CustomViewCallback callback) {
+
+            if (DBG) Log.v(TAG, "onShowCustomView(deprecated)");
+
+            if (mCustomView != null) {
+                callback.onCustomViewHidden();
+                return;
+            }
+
+            final Activity a = getActivity();
+            if (a == null) return;
+
+            /*
+            final FrameLayout fullscreenContainer = (FrameLayout) a.findViewById(R.id.full_screen_video_container);
+            if (fullscreenContainer == null)
+                throw new IllegalStateException("no full_screen_video_container on activity");
+
+
+            NewsDetailFragment.this.mContentView.setVisibility(View.GONE);
+
+            fullscreenContainer.addView(view);
+            mCustomView = view;
+            mCustomViewCallback = callback;
+            fullscreenContainer.setVisibility(View.VISIBLE);
+
+            //a.setRequestedOrientation(requestedOrientation);
+            */
+
+            setFullscreen(a.getWindow(), true);
+        }
+
+
+        @Override
+        public void onShowCustomView(View view, CustomViewCallback callback) {
+            if (DBG) Log.v(TAG, "onShowCustomView(3)");
+            onShowCustomView(view, ActivityInfo.SCREEN_ORIENTATION_SENSOR, callback);
+        }
+
+        @Override
+        public void onHideCustomView() {
+
+            if (DBG) Log.v(TAG, "onHideCustomView()");
+
+            if (mCustomView == null) {
+                return;
+            }
+
+            mCustomViewCallback.onCustomViewHidden();
+
+            final Activity a = getActivity();
+            if (a == null) return;
+
+            /*
+            final FrameLayout fullscreenContainer = (FrameLayout) a.findViewById(R.id.full_screen_video_container);
+            if (fullscreenContainer == null)
+                throw new IllegalStateException("no full_screen_video_container on avtivity");
+
+
+            fullscreenContainer.setVisibility(View.GONE);
+
+            mCustomView.setVisibility(View.GONE);
+            fullscreenContainer.removeView(mCustomView);
+            mCustomView = null;
+            */
+
+            setFullscreen(a.getWindow(), false);
+
+            // NewsDetailFragment.this.mContentView.setVisibility(View.VISIBLE);
+        }
+
+        public boolean isFullscreenNow() {
+            return mCustomView != null;
+        }
+
+        private void setFullscreen(Window win, boolean enabled) {
+            WindowManager.LayoutParams winParams = win.getAttributes();
+            final int bits = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+            if (enabled) {
+                winParams.flags |= bits;
+            } else {
+                winParams.flags &= ~bits;
+            }
+            win.setAttributes(winParams);
+        }
+    }
+
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -916,6 +1226,8 @@ public class ShowPostFragment extends Fragment {
 
         public void onDeleteCommentClicked(Comment comment);
         public void onReportCommentClicked(Comment comment);
+
+        public void onYoutubeFullscreen(boolean isFullscreen);
 
         public boolean isImeVisible();
     }

@@ -482,9 +482,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.2040332"
-     inkscape:cx="110.02264"
-     inkscape:cy="246.72542"
+     inkscape:zoom="0.6020166"
+     inkscape:cx="228.73136"
+     inkscape:cy="435.97943"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -2455,5 +2455,11 @@
         </g>
       </g>
     </g>
+    <path
+       stroke-miterlimit="10"
+       d="m 159.48457,687.70664 v -34.91281 c 0,-2.22551 1.6372,-3.61646 3.06975,-2.78189 l 30.39056,17.38686 c 1.84185,1.11276 1.84185,4.59013 0,5.56379 l -30.39056,17.66504 c -1.43255,0.83457 -3.06975,-0.69547 -3.06975,-2.92099 z"
+       id="embedd_play_normal"
+       inkscape:connector-curvature="0"
+       style="fill:none;stroke:#ebebeb;stroke-width:0.90843278;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:0.81568627;stroke-dasharray:none" />
   </g>
 </svg>

@@ -33,6 +33,8 @@ public class ImageUtils {
 
     private final CircleTransformation mCircleTransformation;
 
+    private int mMaxTextureSize ;
+
     private static ImageUtils sInstance;
 
     private ImageUtils() {
@@ -265,6 +267,42 @@ public class ImageUtils {
         private void removeTag() {
             if (mView.getTag(R.id.picasso_target) == this) mView.setTag(R.id.picasso_target, null);
         }
+    }
+
+    public void onAppInit() {
+        initMaxTextureSize();
+    }
+
+    private void initMaxTextureSize() {
+        // XXX: не работает нихера
+        /*
+        int[] maxTextureSize = new int[]{0};
+        try {
+            GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
+            mMaxTextureSize = maxTextureSize[0];
+            if (maxTextureSize[0] == 0) {
+                Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE is 0");
+                EGL10 egl = (EGL10) EGLContext.getEGL();
+                EGLContext ctx = egl.eglGetCurrentContext();
+                GL10 gl = (GL10) ctx.getGL();
+                IntBuffer val = IntBuffer.allocate(1);
+                gl.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, val);
+                mMaxTextureSize = val.get();
+                if (mMaxTextureSize == 0) {
+                    Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE - 2 is 0");
+                    mMaxTextureSize = 2048;
+                }
+            }
+        } catch (Throwable ex) {
+            Log.i("ImageUtils", "initMaxTextureSize() error", ex);
+            mMaxTextureSize = 2048;
+        }
+        */
+        mMaxTextureSize = 2048;
+    }
+
+    public int getMaxTextureSize() {
+        return mMaxTextureSize;
     }
 
 }

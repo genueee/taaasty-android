@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingTop="8dp"
+    android:layout_marginTop="@dimen/feed_item_padding_top"
+    android:layout_marginBottom="@dimen/feed_item_padding_bottom"
     >
 
     <LinearLayout
@@ -36,15 +37,21 @@
             tools:text="alyonaruban" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/image"
-        android:contentDescription="@string/feed_item_image_content_description"
+    <FrameLayout
+        android:id="@+id/image_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scaleType="fitCenter"
-        android:cropToPadding="false"
-        android:adjustViewBounds="false"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:cropToPadding="false"
+            android:adjustViewBounds="false"
+            android:contentDescription="@string/feed_item_image_content_description" />
+    </FrameLayout>
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_title"
@@ -59,8 +66,7 @@
         android:id="@+id/feed_item_text"
         style="@style/PostText"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
-        android:textIsSelectable="false"
-        android:paddingBottom="8dp" />
+        android:textIsSelectable="false" />
 
     <TextView
         android:id="@+id/source"

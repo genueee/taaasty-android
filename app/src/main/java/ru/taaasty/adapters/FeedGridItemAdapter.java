@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,7 +28,9 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.iframely.Link;
 import ru.taaasty.utils.FontManager;
+import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
@@ -143,76 +146,149 @@ public class FeedGridItemAdapter extends BaseAdapter {
         }
         applyFeedStyle(vh);
         Entry item = mFeed.get(position);
-        adjustPaddings(vh, item);
+        adjustMargins(vh, item);
         setImage(vh, item, parent);
         setText(vh, item);
 
         return res;
     }
 
-    private void adjustPaddings(ViewHolder vh, Entry item) {
+    private void adjustMargins(ViewHolder vh, Entry item) {
         if (item.hasNoAnyText()) {
             vh.root.setPadding(vh.root.getPaddingLeft(), 0, vh.root.getPaddingRight(), 0);
         } else {
-            int paddingTop  = item.hasImages() ? 0 : mGridItemPaddingTop;
+            // Для видео поста стараемся показывать хоть какую-нибудь картинку.
+            boolean hasImage = item.isVideo() || !item.getImages().isEmpty();
+            int paddingTop  = hasImage ? 0 : mGridItemPaddingTop;
             vh.root.setPadding(vh.root.getPaddingLeft(), paddingTop,
                     vh.root.getPaddingRight(), mGridItemPaddingBottom);
         }
     }
 
+    // TODO: практически точная копия из FeedItemAdapter. Избавиться от дублирования
     private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {
-        if (item.getImages().isEmpty()) {
-            vh.image.setVisibility(View.GONE);
+        if (item.isVideo()) {
+            setVideoPostImage(vh, item, parent);
+        } else {
+            setImagePostImage(vh, item, parent);
+        }
+    }
+
+    private void setVideoPostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+        ImageSize imgSize;
+        Link imageLink;
+        int imgViewHeight;
+
+        if (vh.embeddForegroundDrawable == null) {
+            vh.embeddForegroundDrawable = mResources.getDrawable(R.drawable.embedd_play_foreground);
+        }
+
+        int parentWidth = getImageViewWith(parent);
+        if (parentWidth == 0) {
+            imageLink = item.getIframely().getImageLink();
+        } else {
+            imageLink = item.getIframely().getImageLink(parentWidth);
+        }
+        if (imageLink == null) {
+            vh.imageLayout.setVisibility(View.VISIBLE);
+            vh.imageLayout.setForeground(vh.embeddForegroundDrawable);
             return;
         }
 
-        ImageInfo image = item.getImages().get(0);
-        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-        b.filter(ThumborUrlBuilder.quality(60));
+        imgSize = new ImageSize(imageLink.media.width, imageLink.media.height);
+        imgSize.shrinkToWidth(parentWidth);
+        imgSize.shrinkToMaxTextureSize();
 
-        float dstWidth, dstHeight;
-        float imgWidth, imgHeight;
-
-        // XXX: check for 0
-        float parentWidth;
-        if (parent instanceof StaggeredGridView) {
-            StaggeredGridView sgv = (StaggeredGridView) parent;
-            parentWidth = sgv.getColumnWidth();
+        if (imgSize.width < imageLink.media.width) {
+            // Изображение было уменьшено под размеры imageView
+            imgViewHeight = (int)Math.ceil(imgSize.height);
         } else {
-            parentWidth = parent.getMeasuredWidth();
+            // Изображение должно быть увеличено под размеры ImageView
+            imgSize.stretchToWidth(parentWidth);
+            imgSize.cropToMaxTextureSize();
+            imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        if (parentWidth < image.image.geometry.width) {
-            imgWidth = parentWidth;
-            imgHeight = (float)image.image.geometry.height * parentWidth / (float)image.image.geometry.width;
-            b.resize((int)Math.ceil(imgWidth), 0);
-        } else {
-            imgWidth = image.image.geometry.width;
-            imgHeight = image.image.geometry.height;
-        }
-        dstWidth = parentWidth;
-        dstHeight = imgHeight * (dstWidth / imgWidth);
-
-        vh.mImageUrl = b.toUrl();
-        // if (DBG) Log.v(TAG, "setimagesize " + dstWidth + " " + dstHeight);
-        vh.image.setMinimumHeight((int)Math.floor(dstHeight));
-        vh.image.setVisibility(View.VISIBLE);
+        vh.image.setMinimumHeight(imgViewHeight);
+        vh.image.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
+        vh.imageLayout.setVisibility(View.VISIBLE);
+        vh.imageLayout.setForeground(vh.embeddForegroundDrawable);
 
         if (vh.imagePlaceholderDrawable == null) {
             vh.imagePlaceholderDrawable = new ColorDrawable(mResources.getColor(R.color.grid_item_image_loading_color));
         }
+
+        vh.mImageUrl = imageLink.getHref();
 
         mPicasso
                 .load(vh.mImageUrl)
                 .placeholder(vh.imagePlaceholderDrawable)
                 .error(R.drawable.image_loading_drawable)
                 .into(vh.image);
+    }
 
+    private void setImagePostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+        ImageSize imgSize;
+        int resizeToWidth = 0;
+        int imgViewHeight;
+
+        if (item.getImages().isEmpty()) {
+            vh.imageLayout.setVisibility(View.GONE);
+            return;
+        }
+
+        ImageInfo image = item.getImages().get(0);
+        // XXX: check for 0
+        int parentWidth = getImageViewWith(parent);
+        imgSize = image.image.geometry.toImageSize();
+        imgSize.shrinkToWidth(parentWidth);
+        imgSize.shrinkToMaxTextureSize();
+
+        if (imgSize.width < image.image.geometry.width) {
+            // Изображение было уменьшено под размеры imageView
+            resizeToWidth = parentWidth;
+            imgViewHeight = (int)Math.ceil(imgSize.height);
+        } else {
+            // Изображение должно быть увеличено под размеры ImageView
+            imgSize.stretchToWidth(parentWidth);
+            imgSize.cropToMaxTextureSize();
+            imgViewHeight = (int)Math.ceil(imgSize.height);
+        }
+
+        vh.image.setMinimumHeight(imgViewHeight);
+        vh.image.setAdjustViewBounds(false); // Иначе мерцает
+        vh.imageLayout.setForeground(null);
+        vh.imageLayout.setVisibility(View.VISIBLE);
+
+        if (vh.imagePlaceholderDrawable == null) {
+            vh.imagePlaceholderDrawable = new ColorDrawable(mResources.getColor(R.color.grid_item_image_loading_color));
+        }
+
+        // XXX: У некоторых картинок может не быть image.image.path
+        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
+        b.filter(ThumborUrlBuilder.quality(60));
+        if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
+        vh.mImageUrl = b.toUrl();
+
+        mPicasso
+                .load(vh.mImageUrl)
+                .placeholder(vh.imagePlaceholderDrawable)
+                .error(R.drawable.image_loading_drawable)
+                .into(vh.image);
+    }
+
+    private int getImageViewWith(View parent) {
+        if (parent instanceof StaggeredGridView) {
+            StaggeredGridView sgv = (StaggeredGridView) parent;
+            return sgv.getColumnWidth();
+        } else {
+            return parent.getWidth();
+        }
     }
 
     private void setText(ViewHolder vh, Entry item) {
 
-        if (Entry.ENTRY_TYPE_QUOTE.equals(item.getType())) {
+        if (item.isQuote()) {
             // Цитата
             Spanned text = UiUtils.formatQuoteText(item.getText());
             Spanned source = UiUtils.formatQuoteSource(item.getSource());
@@ -255,8 +331,10 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     public class ViewHolder {
         public final View root;
+        public final FrameLayout imageLayout;
         public final ImageView image;
         public Drawable imagePlaceholderDrawable;
+        public Drawable embeddForegroundDrawable;
         public final EllipsizingTextView title;
         public final EllipsizingTextView text;
         public final TextView source;
@@ -265,7 +343,8 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
         public ViewHolder(View v) {
             root = v;
-            image = (ImageView) v.findViewById(R.id.image);
+            imageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
+            image = (ImageView) imageLayout.findViewById(R.id.image);
             title = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
             text = (EllipsizingTextView) v.findViewById(R.id.feed_item_text);
             source = (TextView) v.findViewById(R.id.source);

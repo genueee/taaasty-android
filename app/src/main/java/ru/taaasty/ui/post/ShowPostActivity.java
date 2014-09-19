@@ -1,9 +1,7 @@
 package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +10,9 @@ import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -23,10 +24,12 @@ import android.view.ViewTreeObserver;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.taaasty.ActivityBase;
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.FragmentActivityBase;
 import ru.taaasty.R;
+import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
@@ -38,7 +41,7 @@ import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class ShowPostActivity extends ActivityBase implements ShowPostFragment.OnFragmentInteractionListener {
+public class ShowPostActivity extends FragmentActivityBase implements ShowPostFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
@@ -48,11 +51,15 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
     private static final int HIDE_ACTION_BAR_DELAY = 500;
     private static final String FRAGMENT_TAG_DELETE_REPORT_COMMENT = "FRAGMENT_TAG_DELETE_REPORT_COMMENT";
 
+    public static final int YOUTUBE_RECOVERY_DIALOG_REQUEST = Activity.RESULT_FIRST_USER;
+
     private ActionbarUserIconLoader mAbIconLoader;
 
     private Handler mHideActionBarHandler;
 
     private boolean mImeVisible;
+
+    private boolean mYoutubeFullscreen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +85,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
             Fragment postFragment = ShowPostFragment.newInstance(postId, design);
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, postFragment)
                     .commit();
         }
@@ -97,6 +104,14 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
             }
         });
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == YOUTUBE_RECOVERY_DIALOG_REQUEST) {
+            EventBus.getDefault().post(new YoutubeRecoveryActionPerformed());
+        }
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -150,6 +165,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
     public void onBottomReached(int listBottom, int listViewHeight) {
         if (DBG) Log.v(TAG, "onBottomReached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
+        if (mYoutubeFullscreen) return;
         ActionBar ab = getActionBar();
         if (ab != null) ab.show();
     }
@@ -158,6 +174,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
     public void onBottomUnreached() {
         if (DBG) Log.v(TAG, "onBottomUnreached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
+        if (mYoutubeFullscreen) return;
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
     }
 
@@ -179,7 +196,7 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
 
     @Override
     public void onDeleteCommentClicked(Comment comment) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
         DialogFragment f = DeleteCommentFragment.newInstance(comment.getId());
         f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
@@ -187,10 +204,15 @@ public class ShowPostActivity extends ActivityBase implements ShowPostFragment.O
 
     @Override
     public void onReportCommentClicked(Comment comment) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
         DialogFragment f = ReportCommentFragment.newInstance(comment.getId());
         f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
+    }
+
+    @Override
+    public void onYoutubeFullscreen(boolean isFullscreen) {
+        mYoutubeFullscreen = isFullscreen;
     }
 
     @Override

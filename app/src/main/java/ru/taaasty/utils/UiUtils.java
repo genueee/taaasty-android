@@ -8,6 +8,8 @@ import android.text.TextUtils;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import ru.taaasty.model.Entry;
 
@@ -104,6 +106,16 @@ public class UiUtils {
 
     public static float clamp(float value, float left, float right) {
         return Math.max(Math.min(value, right), left);
+    }
+
+    public static String parseYoutubeVideoId(String youtubeUrl) {
+        Pattern youtubePattern = Pattern.compile(".*(?:youtu.be\\/|v\\/|u\\/\\w\\/|embed\\/|watch\\?v=)([^#\\&\\?]*).*");
+        Matcher m = youtubePattern.matcher(youtubeUrl);
+        if (m.matches()) {
+            return m.group(1);
+        } else {
+            return youtubeUrl;
+        }
     }
 
 }

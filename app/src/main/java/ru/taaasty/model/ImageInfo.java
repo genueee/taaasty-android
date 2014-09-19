@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
+import ru.taaasty.utils.ImageSize;
+
 /**
 * Created by alexey on 12.08.14.
 */
@@ -110,6 +112,10 @@ public class ImageInfo implements Parcelable {
         @Override
         public int describeContents() {
             return 0;
+        }
+
+        public ImageSize toImageSize() {
+            return new ImageSize(width, height);
         }
 
         @Override

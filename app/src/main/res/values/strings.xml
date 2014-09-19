@@ -57,6 +57,7 @@
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
     <string name="error_create_post">Ошибка создания поста</string>
+    <string name="error_youtube_init">Ошибка YouTube (%1$s)</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>

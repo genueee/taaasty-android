@@ -4,6 +4,7 @@ import android.app.Application;
 import android.os.StrictMode;
 
 import ru.taaasty.utils.FontManager;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -31,6 +32,7 @@ public class TaaastyApplication extends Application {
 
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);
+        ImageUtils.getInstance().onAppInit();
         VkontakteHelper.getInstance().onAppInit();
     }
 

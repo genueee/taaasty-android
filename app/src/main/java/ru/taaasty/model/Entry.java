@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import ru.taaasty.model.iframely.IFramely;
 import ru.taaasty.utils.UiUtils;
 
 public class Entry implements Parcelable {
@@ -56,6 +57,15 @@ public class Entry implements Parcelable {
     @SerializedName("title")
     private String mTitle;
 
+    @SerializedName("video_url")
+    private String mVideoUrl;
+
+    @SerializedName("cover_url")
+    private String mCoverUrl;
+
+    @SerializedName("iframely")
+    private IFramely mIframely;
+
     @SerializedName("text")
     private String mText;
 
@@ -80,6 +90,26 @@ public class Entry implements Parcelable {
 
     public String getType() {
         return mType;
+    }
+
+    public boolean isVideo() {
+        return ENTRY_TYPE_VIDEO.equals(mType);
+    }
+
+    public boolean isYoutubeVideo() {
+        return isVideo() && "YouTube".equalsIgnoreCase(mIframely.meta.site);
+    }
+
+    public boolean isQuote() {
+        return ENTRY_TYPE_QUOTE.equals(mType);
+    }
+
+    public boolean isImage() {
+        return ENTRY_TYPE_IMAGE.equals(mType);
+    }
+
+    public boolean isEntryTypeText() {
+        return ENTRY_TYPE_TEXT.equals(mType);
     }
 
     public User getAuthor() {
@@ -117,6 +147,18 @@ public class Entry implements Parcelable {
     public String getSource() {
         return mSource;
     }
+
+    public String getCoverUrl() {
+        return mCoverUrl;
+    }
+
+    public IFramely getIframely() {
+        return mIframely;
+    }
+
+
+    @Nullable
+    public String getVideoUrl() { return mVideoUrl; }
 
     @Nullable
     public synchronized Spanned getTextSpanned() {
@@ -159,10 +201,6 @@ public class Entry implements Parcelable {
 
     public boolean hasSource() {
         return !UiUtils.isBlank(getSourceSpanned());
-    }
-
-    public boolean hasImages() {
-        return mImages != null && !mImages.isEmpty();
     }
 
     public List<ImageInfo> getImages() {

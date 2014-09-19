@@ -79,6 +79,7 @@
             android:label="@string/title_activity_show_post"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/ShowPostTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -87,7 +88,6 @@
         <activity
             android:name=".ui.UserInfoActivity"
             android:parentActivityName=".ui.post.ShowPostActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/AppThemeDark" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

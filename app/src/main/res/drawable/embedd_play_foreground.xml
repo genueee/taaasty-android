@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- XXX: заменить 9-patch'ем? -->
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:drawable="@color/embedd_play_gray_background" />
+    <item>
+        <bitmap android:src="@drawable/embedd_play_normal" android:gravity="center" />
+    </item>
+</layer-list>

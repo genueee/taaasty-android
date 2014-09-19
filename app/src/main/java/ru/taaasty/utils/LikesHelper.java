@@ -1,6 +1,5 @@
 package ru.taaasty.utils;
 
-import android.app.Fragment;
 import android.util.Log;
 
 import ru.taaasty.BuildConfig;
@@ -16,10 +15,10 @@ public abstract class LikesHelper {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LikesHelper";
 
-    private final Fragment mFragment;
+    private final Object mFragment;
     private final ApiEntries mApiEntriesService;
 
-    public LikesHelper(Fragment fragment) {
+    public LikesHelper(Object fragment) {
         mFragment = fragment;
         mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
     }

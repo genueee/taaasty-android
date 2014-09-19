@@ -18,6 +18,10 @@
     <!-- padding слева и справа у текста в ленте -->
     <dimen name="feed_item_padding_left">28dp</dimen>
     <dimen name="feed_item_padding_right">28dp</dimen>
+    <dimen name="feed_item_padding_top">4dp</dimen>
+    <dimen name="feed_item_padding_bottom">4dp</dimen>
+
+    <dimen name="feed_item_padding_image_text">8dp</dimen>
 
     <dimen name="feed_grid_item_padding_left">7dp</dimen>
     <dimen name="feed_grid_item_padding_right">7dp</dimen>
@@ -33,6 +37,8 @@
 
     <dimen name="post_item_comments_padding_left">10dp</dimen>
     <dimen name="post_item_comments_padding_right">10dp</dimen>
+
+    <dimen name="post_item_web_view_default_height">400dp</dimen>
 
     <!-- Высота заголовка над лентой -->
     <dimen name="header_title_subtitle_height">195dp</dimen>

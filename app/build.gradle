@@ -46,6 +46,8 @@ android {
                         "\"http://api.taaasty.ru\"")
         buildConfigField "String", "VKONTAKTE_APP_ID",
                 project.ext.private.getProperty("default.VkontakteAppId", "\"4553661\"")
+        buildConfigField "String", "YOUTUBE_APP_ID",
+                project.ext.private.getProperty("default.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
         buildConfigField "String", "THUMBOR_SERVER",
                 project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
@@ -129,6 +131,8 @@ dependencies {
             project.ext.private.getProperty("${typeName}.ThumborKey", "\"golobog\"")
     bt.buildConfigField "String", "THUMBOR_SERVER",
             project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
+    bt.buildConfigField "String", "YOUTUBE_APP_ID",
+            project.ext.private.getProperty("${typeName}.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

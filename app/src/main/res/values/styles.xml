@@ -234,8 +234,7 @@
     <style name="PostTitle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingTop">4dp</item>
         <item name="android:ellipsize">end</item>
         <item name="android:textAppearance">@style/TextAppearance.PostSans</item>
         <item name="android:textIsSelectable">true</item>
@@ -254,7 +253,8 @@
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
         <item name="android:paddingRight">@dimen/feed_item_padding_right</item>
         <item name="android:textIsSelectable">true</item>
-        <item name="android:paddingBottom">8dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:paddingTop">2dp</item>
     </style>
 
     <style name="PostQuoteSource">
@@ -267,6 +267,8 @@
         <item name="android:lines">1</item>
         <item name="android:ellipsize">marquee</item>
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:paddingTop">2dp</item>
     </style>
 
     <style name="TextAppearanceSlugInlineBlack">
