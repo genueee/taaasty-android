@@ -1,3 +1,6 @@
 include ':app'
 include ':ndkstackblur'
 include ':ViewPagerIndicator'
+
+project(':ndkstackblur').projectDir = new File('vendor/ndkstackblur')
+project(':ViewPagerIndicator').projectDir = new File('vendor/ViewPagerIndicator')
