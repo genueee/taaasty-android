@@ -196,11 +196,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 break;
             case MyAdditionalFeedActivity.FEED_TYPE_FAVORITES:
                 name.setText(R.string.title_favorites);
-                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_favorites_normal, 0, 0, 0);
+                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_favorites_small, 0, 0, 0);
                 break;
             case MyAdditionalFeedActivity.FEED_TYPE_PRIVATE:
                 name.setText(R.string.title_hidden_entries);
-                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_hidden_normal, 0, 0, 0);
+                name.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_hidden_small, 0, 0, 0);
                 break;
         }
     }
