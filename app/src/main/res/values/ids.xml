@@ -5,4 +5,5 @@
     <item type="id" name="picasso_target" />
     <item type="id" name="comment_view_holder" />
     <item type="id" name="relationships_view_holder" />
+    <item type="id" name="tag_text_view_img_loader"/>
 </resources>

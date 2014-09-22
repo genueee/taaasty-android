@@ -140,7 +140,8 @@ public final class NetworkUtils {
                                             return super.openConnection(uri);
                                         }
                                     }
-                        ).build();
+                        )
+                        .build();
             }
             return mPicasso;
         }

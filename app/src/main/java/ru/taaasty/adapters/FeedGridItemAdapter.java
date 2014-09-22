@@ -29,9 +29,11 @@ import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.iframely.Link;
+import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
 
@@ -43,6 +45,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
     private final List<Entry> mFeed;
     private final LayoutInflater mInfater;
     private final Picasso mPicasso;
+    private final Context mContext;
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedItemAdapter";
@@ -60,6 +63,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     public FeedGridItemAdapter(Context context) {
         super();
+        mContext = context;
         mFeed = new ArrayList<Entry>();
         mInfater = LayoutInflater.from(context);
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
@@ -78,18 +82,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
     public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
         notifyDataSetChanged();
-
-        // Отдельным потоком выполняем getTextSpanned() (ибо долгий процесс)
-        final ArrayList<Entry> feedCopy = new ArrayList<>(mFeed);
-        new Thread() {
-            @Override
-            public void run() {
-                for (Entry i: feedCopy) {
-                    i.getTextSpanned();
-                    i.getSourceSpanned();
-                }
-            }
-        }.start();
     }
 
     public void setFeedDesign(TlogDesign design) {
@@ -146,9 +138,10 @@ public class FeedGridItemAdapter extends BaseAdapter {
         }
         applyFeedStyle(vh);
         Entry item = mFeed.get(position);
+        int parentWidth = getImageViewWith(parent);
         adjustMargins(vh, item);
-        setImage(vh, item, parent);
-        setText(vh, item);
+        setImage(vh, item, parentWidth);
+        setText(vh, item, parentWidth);
 
         return res;
     }
@@ -166,15 +159,15 @@ public class FeedGridItemAdapter extends BaseAdapter {
     }
 
     // TODO: практически точная копия из FeedItemAdapter. Избавиться от дублирования
-    private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setImage(ViewHolder vh, Entry item, int parentWidth) {
         if (item.isVideo()) {
-            setVideoPostImage(vh, item, parent);
+            setVideoPostImage(vh, item, parentWidth);
         } else {
-            setImagePostImage(vh, item, parent);
+            setImagePostImage(vh, item, parentWidth);
         }
     }
 
-    private void setVideoPostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setVideoPostImage(ViewHolder vh, Entry item, int parentWidth) {
         ImageSize imgSize;
         Link imageLink;
         int imgViewHeight;
@@ -183,7 +176,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
             vh.embeddForegroundDrawable = mResources.getDrawable(R.drawable.embedd_play_foreground);
         }
 
-        int parentWidth = getImageViewWith(parent);
         if (parentWidth == 0) {
             imageLink = item.getIframely().getImageLink();
         } else {
@@ -223,11 +215,11 @@ public class FeedGridItemAdapter extends BaseAdapter {
         mPicasso
                 .load(vh.mImageUrl)
                 .placeholder(vh.imagePlaceholderDrawable)
-                .error(R.drawable.image_loading_drawable)
+                .error(R.drawable.image_load_error)
                 .into(vh.image);
     }
 
-    private void setImagePostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setImagePostImage(ViewHolder vh, Entry item, int parentWidth) {
         ImageSize imgSize;
         int resizeToWidth = 0;
         int imgViewHeight;
@@ -239,7 +231,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
         ImageInfo image = item.getImages().get(0);
         // XXX: check for 0
-        int parentWidth = getImageViewWith(parent);
         imgSize = image.image.geometry.toImageSize();
         imgSize.shrinkToWidth(parentWidth);
         imgSize.shrinkToMaxTextureSize();
@@ -286,8 +277,13 @@ public class FeedGridItemAdapter extends BaseAdapter {
         }
     }
 
-    private void setText(ViewHolder vh, Entry item) {
-
+    /**
+     * Текст для всех типов постов
+     * @param vh
+     * @param item
+     * @param parentWidth
+     */
+    private void setText(ViewHolder vh, Entry item, int parentWidth) {
         if (item.isQuote()) {
             // Цитата
             Spanned text = UiUtils.formatQuoteText(item.getText());
@@ -311,17 +307,20 @@ public class FeedGridItemAdapter extends BaseAdapter {
         } else {
             // Все остальное
             vh.source.setVisibility(View.GONE);
+            if (vh.imageGetter == null) vh.imageGetter = new ImageLoadingGetter(parentWidth, mContext);
             if (item.hasTitle()) {
-                CharSequence title = UiUtils.removeTrailingWhitespaces(item.getTitleSpanned());
+                CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), vh.imageGetter, null));
                 vh.title.setMaxLines(MAX_LINES_TITLE);
-                vh.title.setText(Html.fromHtml(title.toString()));
+                vh.title.setText(Html.fromHtml(title.toString(), vh.imageGetter, null));
+                TextViewImgLoader.bindAndLoadImages(vh.text);
                 vh.title.setVisibility(View.VISIBLE);
             } else {
                 vh.title.setVisibility(View.GONE);
             }
             if (item.hasText()) {
-                CharSequence text = UiUtils.removeTrailingWhitespaces(item.getTextSpanned());
+                CharSequence text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getText(), vh.imageGetter, null));
                 vh.text.setText(text);
+                TextViewImgLoader.bindAndLoadImages(vh.text);
                 vh.text.setVisibility(View.VISIBLE);
             } else {
                 vh.text.setVisibility(View.GONE);
@@ -338,6 +337,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
         public final EllipsizingTextView title;
         public final EllipsizingTextView text;
         public final TextView source;
+        private ImageLoadingGetter imageGetter;
 
         private String mImageUrl = null;
 

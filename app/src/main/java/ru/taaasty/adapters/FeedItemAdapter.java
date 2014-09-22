@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
@@ -39,6 +40,7 @@ import ru.taaasty.widgets.EntryBottomActionBar;
 
 public class FeedItemAdapter extends BaseAdapter {
 
+    private final Context mContext;
     private final List<Entry> mFeed;
     private final LayoutInflater mInfater;
     private final Picasso mPicasso;
@@ -69,6 +71,7 @@ public class FeedItemAdapter extends BaseAdapter {
     public FeedItemAdapter(Context context, OnItemListener mListener) {
         super();
         mFeed = new ArrayList<Entry>();
+        mContext = context;
         mInfater = LayoutInflater.from(context);
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
         mFeedDesign = TlogDesign.DUMMY;
@@ -88,10 +91,6 @@ public class FeedItemAdapter extends BaseAdapter {
 
     public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
-        for (Entry i: mFeed) {
-            i.getTextSpanned();
-            i.getSourceSpanned();
-        }
         notifyDataSetChanged();
     }
 
@@ -199,10 +198,11 @@ public class FeedItemAdapter extends BaseAdapter {
         }
         applyFeedStyle(vh);
         Entry item = mFeed.get(position);
+        int parentWidth = getImageViewWith(parent);
         adjustMargins(vh, item);
         setAuthor(vh, item);
-        setImage(vh, item, parent);
-        setText(vh, item);
+        setImage(vh, item, parentWidth);
+        setText(vh, item, parentWidth);
         vh.entryActionBar.setOnItemListenerEntry(item);
         vh.entryActionBar.setupEntry(item);
 
@@ -235,11 +235,11 @@ public class FeedItemAdapter extends BaseAdapter {
         }
     }
 
-    private void setImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setImage(ViewHolder vh, Entry item, int parentWidth) {
         if (item.isVideo()) {
-            setVideoPostImage(vh, item, parent);
+            setVideoPostImage(vh, item, parentWidth);
         } else {
-            setImagePostImage(vh, item, parent);
+            setImagePostImage(vh, item, parentWidth);
         }
     }
 
@@ -252,7 +252,7 @@ public class FeedItemAdapter extends BaseAdapter {
         }
     }
 
-    private void setVideoPostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setVideoPostImage(ViewHolder vh, Entry item, int parentWidth) {
         ImageSize imgSize;
         Link imageLink;
         int imgViewHeight;
@@ -261,7 +261,6 @@ public class FeedItemAdapter extends BaseAdapter {
             vh.embeddForegroundDrawable = mResources.getDrawable(R.drawable.embedd_play_foreground);
         }
 
-        int parentWidth = getImageViewWith(parent);
         if (parentWidth == 0) {
             imageLink = item.getIframely().getImageLink();
         } else {
@@ -287,7 +286,9 @@ public class FeedItemAdapter extends BaseAdapter {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        vh.image.setMinimumHeight(imgViewHeight);
+        ViewGroup.LayoutParams lp = vh.image.getLayoutParams();
+        lp.height = imgViewHeight;
+        vh.image.setLayoutParams(lp);
         vh.image.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
         vh.imageLayout.setVisibility(View.VISIBLE);
         vh.imageLayout.setForeground(vh.embeddForegroundDrawable);
@@ -297,11 +298,11 @@ public class FeedItemAdapter extends BaseAdapter {
         mPicasso
                 .load(vh.mImageUrl)
                 .placeholder(R.drawable.image_loading_drawable)
-                .error(R.drawable.image_loading_drawable)
+                .error(R.drawable.image_load_error)
                 .into(vh.image);
     }
 
-    private void setImagePostImage(ViewHolder vh, Entry item, ViewGroup parent) {
+    private void setImagePostImage(ViewHolder vh, Entry item, int parentWidth) {
         ImageSize imgSize;
         int resizeToWidth = 0;
         int imgViewHeight;
@@ -312,8 +313,6 @@ public class FeedItemAdapter extends BaseAdapter {
         }
 
         ImageInfo image = item.getImages().get(0);
-        // XXX: check for 0
-        int parentWidth = getImageViewWith(parent);
         imgSize = image.image.geometry.toImageSize();
         imgSize.shrinkToWidth(parentWidth);
         imgSize.shrinkToMaxTextureSize();
@@ -325,7 +324,6 @@ public class FeedItemAdapter extends BaseAdapter {
         } else {
             // Изображение должно быть увеличено под размеры ImageView
             imgSize.stretchToWidth(parentWidth);
-            imgSize.cropToMaxTextureSize();
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
@@ -344,14 +342,21 @@ public class FeedItemAdapter extends BaseAdapter {
 
         mPicasso
                 .load(vh.mImageUrl)
+                .fit()
+                .centerInside()
                 .placeholder(R.drawable.image_loading_drawable)
-                .error(R.drawable.image_loading_drawable)
+                .error(R.drawable.image_load_error)
                 .into(vh.image);
 
     }
 
-    private void setText(ViewHolder vh, Entry item) {
-        ShowPostFragment.setupPostText(item, vh.title, vh.text, vh.source, mResources);
+    private void setText(ViewHolder vh, Entry item, int parentWidth) {
+        if (vh.imageGetter == null) vh.imageGetter = new ImageLoadingGetter(
+                (parentWidth == 0 ? 0 : parentWidth
+                        - mResources.getDimensionPixelSize(R.dimen.feed_item_padding_left)
+                        - mResources.getDimensionPixelSize(R.dimen.feed_item_padding_left)),
+                mContext);
+        ShowPostFragment.setupPostText(item, vh.title, vh.text, vh.source, vh.imageGetter, mResources);
     }
 
     private final View.OnClickListener mOnFeedItemClickListener = new View.OnClickListener() {
@@ -374,6 +379,7 @@ public class FeedItemAdapter extends BaseAdapter {
         public final EllipsizingTextView text;
         public final TextView source;
         public final EntryBottomActionBar entryActionBar;
+        private ImageLoadingGetter imageGetter;
 
         private String mImageUrl = null;
 

@@ -86,11 +86,15 @@ public class EllipsizingTextView extends TextView {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        // XXX: пока не используем. Ломает картинки в тексте (тегами <img>)
+        super.onDraw(canvas);
+        /*
         if (isStale) {
             super.setEllipsize(null);
             resetText();
         }
         super.onDraw(canvas);
+        */
     }
 
     private void resetText() {

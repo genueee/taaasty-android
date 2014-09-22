@@ -14,9 +14,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Html;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -71,10 +76,12 @@ import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -187,6 +194,10 @@ public class ShowPostFragment extends Fragment {
         mTitleView = (TextView)mPostContentView.findViewById(R.id.title);
         mTextView = (TextView)mPostContentView.findViewById(R.id.text);
         mSourceView = (TextView)mPostContentView.findViewById(R.id.source);
+
+        mTitleView.setMovementMethod(LinkMovementMethod.getInstance());
+        mTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        mSourceView.setMovementMethod(LinkMovementMethod.getInstance());
 
         mCommentsLoadMoreButton.setOnClickListener(mOnClickListener);
 
@@ -618,10 +629,11 @@ public class ShowPostFragment extends Fragment {
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(b.toUrl())
                 .placeholder(R.drawable.image_loading_drawable)
-                .error(R.drawable.image_loading_drawable)
+                .error(R.drawable.image_load_error)
                 .into(imageView);
 
-        final List<ImageInfo> images = mCurrentEntry.getImages();
+        final ArrayList<String> images = new ArrayList<>(mCurrentEntry.getImages().size());
+        for (ImageInfo imageInfo: mCurrentEntry.getImages()) images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
         final String title;
         final User author;
         if (mCurrentEntry != null) {
@@ -641,9 +653,24 @@ public class ShowPostFragment extends Fragment {
         });
     }
 
-    public static void setupPostText(Entry entry, TextView titleView, TextView textView, TextView sourceView, Resources resources) {
-        CharSequence title;
-        CharSequence text;
+    public static void setupPostText(Entry entry,
+                                     TextView titleView,
+                                     TextView textView,
+                                     TextView sourceView,
+                                     @Nullable Html.ImageGetter imageGetter,
+                                     Resources resources) {
+        setupPostText(entry, titleView,textView, sourceView, imageGetter, null, resources);
+    }
+
+    public static void setupPostText(Entry entry,
+                                     TextView titleView,
+                                     TextView textView,
+                                     TextView sourceView,
+                                     @Nullable Html.ImageGetter imageGetter,
+                                     TextViewImgLoader.OnClickListener onImgClickListener,
+                                     Resources resources) {
+        Spanned title;
+        Spanned text;
         CharSequence source;
 
         if (entry.isQuote()) {
@@ -653,33 +680,31 @@ public class ShowPostFragment extends Fragment {
         } else if (entry.isImage() || entry.isVideo()) {
             // У видео и текста титул - это подпись под записью, оформляем как обычный текст
             title = null;
-            text = UiUtils.removeTrailingWhitespaces(entry.getTitleSpanned());
+            text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(entry.getTitle()));
             source = null;
         } else {
-            title = UiUtils.removeTrailingWhitespaces(entry.getTitleSpanned());
-            text = UiUtils.removeTrailingWhitespaces(entry.getTextSpanned());
+            title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(entry.getTitle(), imageGetter, null));
+            text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(entry.getText(), imageGetter,null));
             source = null;
         }
 
-        if (title == null) {
+        if (TextUtils.isEmpty(title)) {
             titleView.setVisibility(View.GONE);
         } else {
             titleView.setText(Html.fromHtml(title.toString()));
+            TextViewImgLoader.bindAndLoadImages(titleView, onImgClickListener);
             titleView.setVisibility(View.VISIBLE);
         }
 
-        if (text == null) {
+        if (TextUtils.isEmpty(text)) {
             textView.setVisibility(View.GONE);
         } else {
             textView.setText(text);
+            TextViewImgLoader.bindAndLoadImages(textView, onImgClickListener);
             textView.setVisibility(View.VISIBLE);
-            textView.setPadding(textView.getPaddingLeft(),
-                    title == null ? 0 : resources.getDimensionPixelSize(R.dimen.post_no_title_padding),
-                    textView.getPaddingRight(),
-                    textView.getPaddingBottom());
         }
 
-        if (source == null) {
+        if (TextUtils.isEmpty(source)) {
             sourceView.setVisibility(View.GONE);
         } else {
             sourceView.setText(source);
@@ -688,7 +713,44 @@ public class ShowPostFragment extends Fragment {
     }
 
     private void setupPostText() {
-        setupPostText(mCurrentEntry, mTitleView, mTextView, mSourceView, getResources());
+        Html.ImageGetter imageGetter = null;
+        if (mPostContentView != null && getActivity() != null) {
+            imageGetter = new ImageLoadingGetter(
+                    mTextView.getWidth() - mTextView.getPaddingLeft() - mTextView.getPaddingRight(), getActivity());
+        } else {
+            imageGetter = null;
+        }
+
+        TextViewImgLoader.OnClickListener onImgClickListener = new TextViewImgLoader.OnClickListener() {
+
+            @Override
+            public void onImageClicked(TextView widget, String source) {
+                if (DBG) Log.v(TAG, "onImageClicked. widget: " + widget + " soruce: " + source);
+                CharSequence seq = widget.getText();
+                if (seq instanceof  Spanned) {
+                    Spanned spanned = (Spanned)seq;
+                    ImageSpan images[] = spanned.getSpans(0, spanned.length(), ImageSpan.class);
+                    ArrayList<String> sources = new ArrayList<>(images.length);
+                    for (ImageSpan imageSpan: images) {
+                        if (!TextUtils.isEmpty(imageSpan.getSource())) sources.add(imageSpan.getSource());
+                    }
+                    if (!sources.isEmpty() && mListener != null) {
+                        final String title;
+                        final User author;
+                        if (mCurrentEntry != null) {
+                            title = mCurrentEntry.getTitle();
+                            author = mCurrentEntry.getAuthor();
+                        } else {
+                            title = "";
+                            author = null;
+                        }
+                        mListener.onShowImageClicked(author, sources, title);
+                    }
+                }
+            }
+        };
+
+        setupPostText(mCurrentEntry, mTitleView, mTextView, mSourceView, imageGetter, onImgClickListener, getResources());
     }
 
     public void refreshEntry() {
@@ -1219,7 +1281,7 @@ public class ShowPostFragment extends Fragment {
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onPostLoaded(Entry entry);
         public void onAvatarClicked(User user, TlogDesign design);
-        public void onShowImageClicked(User author, List<ImageInfo> images, String title);
+        public void onShowImageClicked(User author, List<String> images, String title);
 
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();

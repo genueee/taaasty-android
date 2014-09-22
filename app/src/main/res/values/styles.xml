@@ -241,6 +241,7 @@
         <item name="android:textSize">32sp</item>
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
         <item name="android:paddingRight">@dimen/feed_item_padding_right</item>
+        <item name="android:bufferType">spannable</item>
     </style>
 
     <style name="PostText">
@@ -255,6 +256,7 @@
         <item name="android:textIsSelectable">true</item>
         <item name="android:paddingBottom">2dp</item>
         <item name="android:paddingTop">2dp</item>
+        <item name="android:bufferType">spannable</item>
     </style>
 
     <style name="PostQuoteSource">
@@ -269,6 +271,7 @@
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
         <item name="android:paddingBottom">2dp</item>
         <item name="android:paddingTop">2dp</item>
+        <item name="android:bufferType">spannable</item>
     </style>
 
     <style name="TextAppearanceSlugInlineBlack">
