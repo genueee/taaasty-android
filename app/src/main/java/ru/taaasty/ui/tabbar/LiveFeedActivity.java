@@ -212,9 +212,9 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
                 case 1:
                     return GridFeedFragment.createBestFeedInstance();
                 case 2:
-                    return GridFeedFragment.createNewsFeedInstance();
-                case 3:
                     return GridFeedFragment.createAnonymousFeedInstance();
+                case 3:
+                    return GridFeedFragment.createNewsFeedInstance();
                 default:
                     throw new IllegalArgumentException();
             }

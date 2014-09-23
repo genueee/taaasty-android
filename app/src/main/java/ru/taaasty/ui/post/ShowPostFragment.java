@@ -976,7 +976,8 @@ public class ShowPostFragment extends Fragment {
             setupEntry();
             loadComments();
             //
-            loadDesign(entry.getAuthor().getSlug());
+            if(entry.getAuthor() != User.DUMMY)
+                loadDesign(entry.getAuthor().getSlug());
         }
     };
 
