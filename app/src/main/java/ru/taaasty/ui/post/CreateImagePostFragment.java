@@ -131,8 +131,18 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             mMakeImageButtonLayout.setVisibility(View.INVISIBLE);
             mImageView.setVisibility(View.VISIBLE);
             mImageView.setImageResource(R.drawable.image_loading_drawable);
-            Picasso.with(getActivity())
-                    .load(mImageUri)
+
+            Picasso picasso = new Picasso.Builder(getActivity()).listener(
+                    new Picasso.Listener() {
+                        @Override
+                        public void onImageLoadFailed(Picasso picasso, Uri uri,
+                                                      Exception exception) {
+                            exception.printStackTrace();
+                        }
+
+                    }).debugging(true).build();
+
+            picasso.load(mImageUri)
                     .placeholder(R.drawable.image_loading_drawable)
                     .error(R.drawable.image_loading_drawable)
                     .into(mImageView);
