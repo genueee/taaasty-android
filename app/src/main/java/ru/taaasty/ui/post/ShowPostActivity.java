@@ -139,7 +139,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         if (entry == null) {
             setupActionbar(null, null, null);
         } else {
-            setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getSlug(), entry.getAuthor().getDesign());
+            if( entry.getAuthor() != User.DUMMY )
+                setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getSlug(), entry.getAuthor().getDesign());
         }
     }
 

@@ -19,6 +19,7 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 
@@ -46,6 +47,7 @@ public class EntryBottomActionBar {
     private boolean mIsVoted = false;
     private boolean mIsRatingInUpdate = false;
     private int mVotes;
+
 
     public EntryBottomActionBar(View root, boolean hideUserInfo) {
         mHideUserInfo = hideUserInfo;
@@ -181,6 +183,11 @@ public class EntryBottomActionBar {
 
     public void setUserAvatar(Entry item) {
         if (mUserInfo == null) return;
+
+        if( item.getAuthor() == User.DUMMY) {
+            mUserInfo.setVisibility(View.INVISIBLE);
+            return;
+        }
 
         mUserInfo.setText(item.getAuthor().getSlug());
         mUserInfo.setVisibility(View.VISIBLE);
