@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -179,11 +180,14 @@ public class CommentsAdapter extends BaseAdapter {
             vh.actionView.setVisibility(View.VISIBLE);
             vh.avatar.setVisibility(View.GONE);
             vh.date.setVisibility(View.INVISIBLE);
+
+            // При помощи date выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
+            // Т.е. он должен быть такой же ширины, как и кнопки.
+            // Если ширина кнопок ещё неизвестна, то надо, по идее, дождаться её определения
             if (vh.actionView.getWidth() != 0) {
                 vh.date.setMinWidth(vh.actionView.getWidth());
             } else {
-                // XXX: а чо делать?
-                throw new IllegalStateException();
+                Log.e("CommentsAdapter", "actionView width is 0", new IllegalStateException());
             }
         } else {
             if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
