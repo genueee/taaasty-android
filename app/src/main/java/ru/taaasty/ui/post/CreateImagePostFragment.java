@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
@@ -140,11 +141,12 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
                             exception.printStackTrace();
                         }
 
-                    }).debugging(true).build();
+                    }).indicatorsEnabled(true).build();
 
             picasso.load(mImageUri)
                     .placeholder(R.drawable.image_loading_drawable)
                     .error(R.drawable.image_loading_drawable)
+                    .fit().centerInside()
                     .into(mImageView);
         }
     }
