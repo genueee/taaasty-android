@@ -94,9 +94,9 @@ public class UiUtils {
         return (Spanned)removeTrailingWhitespaces((CharSequence)source);
     }
 
-    public static int getEntriesLastHour(List<Entry> entries) {
+    public static int getEntriesLastDay(List<Entry> entries) {
         int cnt = 0;
-        long minTime = System.currentTimeMillis() - 60 * 60 * 1000;
+        long minTime = System.currentTimeMillis() - 60 * 60 * 1000 * 24;
         if (entries == null || entries.isEmpty()) return 0;
         for (Entry e: entries) {
             if (minTime <= e.getCreatedAt().getTime() ) cnt += 1;
