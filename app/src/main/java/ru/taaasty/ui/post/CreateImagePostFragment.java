@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
