@@ -19,10 +19,8 @@ import java.util.List;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ActionbarUserIconLoader;
-import ru.taaasty.utils.NetworkUtils;
 
 public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
@@ -42,7 +40,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_photo);
 
-        ArrayList<ImageInfo> images = getIntent().getParcelableArrayListExtra(ARG_IMAGE_URL_LIST);
+        ArrayList<String> images = getIntent().getStringArrayListExtra(ARG_IMAGE_URL_LIST);
         String title = getIntent().getStringExtra(ARG_TITLE);
         User author = getIntent().getParcelableExtra(ARG_AUTHOR);
 
@@ -138,9 +136,9 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
     public static class PhotoAdapter extends FragmentStatePagerAdapter {
 
-        private final List<ImageInfo> mImages;
+        private final List<String> mImages;
 
-        public PhotoAdapter(FragmentManager fm, List<ImageInfo> images) {
+        public PhotoAdapter(FragmentManager fm, List<String> images) {
             super(fm);
             mImages = images;
         }
@@ -152,8 +150,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
         @Override
         public Fragment getItem(int position) {
-            String url = NetworkUtils.createThumborUrlFromPath(mImages.get(position).image.path).toUrl();
-            return ShowPhotoFragment.newInstance(url);
+            return ShowPhotoFragment.newInstance(mImages.get(position));
         }
     }
 }

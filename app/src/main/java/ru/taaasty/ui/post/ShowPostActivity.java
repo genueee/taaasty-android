@@ -32,7 +32,6 @@ import ru.taaasty.R;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
-import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
@@ -152,11 +151,16 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
-    public void onShowImageClicked(User author, List<ImageInfo> images, String title) {
+    public void onShowImageClicked(User author, List<String> images, String title) {
+        ArrayList<String> imagesList;
         Intent i = new Intent(this, ShowPhotoActivity.class);
 
-        ArrayList<ImageInfo> imagesList = new ArrayList<>(images);
-        i.putParcelableArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
+        if (images instanceof ArrayList) {
+            imagesList = (ArrayList<String>) images;
+        } else {
+            imagesList = new ArrayList<>(images);
+        }
+        i.putStringArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
         i.putExtra(ShowPhotoActivity.ARG_TITLE, title);
         i.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
         startActivity(i);

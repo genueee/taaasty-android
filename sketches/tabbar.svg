@@ -482,16 +482,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.6020166"
-     inkscape:cx="228.73136"
-     inkscape:cy="435.97943"
+     inkscape:zoom="1.2040332"
+     inkscape:cx="639.97633"
+     inkscape:cy="735.53985"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1680"
-     inkscape:window-height="999"
+     inkscape:window-width="1280"
+     inkscape:window-height="977"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="25"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3020">
@@ -2461,5 +2461,34 @@
        id="embedd_play_normal"
        inkscape:connector-curvature="0"
        style="fill:none;stroke:#ebebeb;stroke-width:0.90843278;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:0.81568627;stroke-dasharray:none" />
+    <g
+       transform="matrix(0.66772653,0,0,0.66772653,-227.78453,-164.97717)"
+       id="ic_image_load_error"
+       style="stroke:#808080;stroke-opacity:0.43921569">
+      <circle
+         style="fill:none;stroke:#808080;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:0.43921569"
+         sodipodi:ry="30.200001"
+         sodipodi:rx="30.200001"
+         sodipodi:cy="301.89999"
+         sodipodi:cx="1296.4"
+         d="m 1326.6,301.89999 c 0,16.679 -13.521,30.2 -30.2,30.2 -16.679,0 -30.2,-13.521 -30.2,-30.2 0,-16.679 13.521,-30.2 30.2,-30.2 16.679,0 30.2,13.521 30.2,30.2 z"
+         id="circle3866-7"
+         r="30.200001"
+         cy="301.89999"
+         cx="1296.4"
+         stroke-miterlimit="10" />
+      <path
+         style="fill:none;stroke:#808080;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:0.43921569"
+         inkscape:connector-curvature="0"
+         id="path3868-2"
+         d="m 1288.2,285 c -3,0 -5.5,2.3 -6,5.3 -0.4,-0.2 -0.8,-0.3 -1.3,-0.3 -2,0 -3.6,1.7 -3.6,3.8 0,2.1 1.6,3.8 3.6,3.6 h 7.3 c 3.4,0.2 6.1,-2.6 6.1,-6.1 0,-3.5 -2.8,-6.3 -6.1,-6.3 z"
+         stroke-miterlimit="10" />
+      <path
+         style="fill:none;stroke:#808080;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:0.43921569"
+         inkscape:connector-curvature="0"
+         id="path3870-0"
+         d="m 1272.4,318.7 c 0,0 5.6,-13 11.9,-13 6.3,0 11.3,7.1 11.3,7.1 l 7.6,-12.3 c 0.8,-1.2 2.1,-2 3.7,-2 1.6,0 3.1,0.9 3.8,2.2 l 9.7,17.9"
+         stroke-miterlimit="10" />
+    </g>
   </g>
 </svg>

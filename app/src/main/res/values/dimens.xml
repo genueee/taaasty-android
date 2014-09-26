@@ -52,4 +52,6 @@
     <dimen name="following_followers_padding_right">12dp</dimen>
     <dimen name="following_followers_list_padding_top">24dp</dimen>
 
+    <dimen name="image_loading_placeholder_default_size">64dp</dimen>
+
 </resources>

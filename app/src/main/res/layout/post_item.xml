@@ -37,7 +37,7 @@
 
     </FrameLayout>
 
-    <ru.taaasty.widgets.EllipsizingTextView
+    <TextView
         android:id="@+id/title"
         style="@style/PostTitle"
         android:paddingLeft="@dimen/post_item_padding_left"
@@ -46,7 +46,7 @@
         tools:text="Ролики"
         tools:visibility="visible" />
 
-    <ru.taaasty.widgets.EllipsizingTextView
+    <TextView
         android:id="@+id/text"
         style="@style/PostText"
         android:paddingLeft="@dimen/post_item_padding_left"
@@ -56,6 +56,9 @@
     <TextView
         android:id="@+id/source"
         style="@style/PostQuoteSource"
+        android:focusable="true"
+        android:clickable="true"
+        android:longClickable="true"
         android:paddingLeft="@dimen/post_item_padding_left"
         android:paddingRight="@dimen/post_item_padding_right"
         tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />

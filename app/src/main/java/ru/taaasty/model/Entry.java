@@ -161,7 +161,7 @@ public class Entry implements Parcelable {
     public String getVideoUrl() { return mVideoUrl; }
 
     @Nullable
-    public synchronized Spanned getTextSpanned() {
+    private synchronized Spanned getTextSpanned() {
         if (TextUtils.isEmpty(mText)) return null;
         if (mTextSpanned == null) {
             mTextSpanned = Html.fromHtml(mText);
@@ -170,7 +170,7 @@ public class Entry implements Parcelable {
     }
 
     @Nullable
-    public synchronized Spanned getSourceSpanned() {
+    private synchronized Spanned getSourceSpanned() {
         if (TextUtils.isEmpty(mSource)) return null;
         if (mSourceSpanned == null) {
             mSourceSpanned = Html.fromHtml(mSource);
@@ -179,7 +179,7 @@ public class Entry implements Parcelable {
     }
 
     @Nullable
-    public synchronized Spanned getTitleSpanned() {
+    private synchronized Spanned getTitleSpanned() {
         if (TextUtils.isEmpty(mTitle)) return null;
         if (mTitleSpanned == null) {
             mTitleSpanned = Html.fromHtml(mTitle);
