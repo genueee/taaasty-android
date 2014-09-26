@@ -27,6 +27,8 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.EndlessFeedGridItemAdapter;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
+import ru.taaasty.model.Stats;
+import ru.taaasty.service.ApiApp;
 import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
@@ -56,6 +58,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private static final String ARG_FEED_TYPE = "feed_type";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
+    private static final String BUNDLE_KEY_FEED_STATS = "feed_stats";
 
     private static final int FEED_LIVE = 0;
     private static final int FEED_BEST = 1;
@@ -71,11 +74,16 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private StaggeredGridView mGridView;
 
     private ApiFeeds mApiFeedsService;
+    private ApiApp mApiStatsService;
     private FeedAdapter mAdapter;
 
     private View mHeaderView;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
+    private Subscription mStatsSubscription = SubscriptionHelper.empty();
+
+    private Stats mStats;
+
 
     public static GridFeedFragment createLiveFeedInstance() {
         GridFeedFragment fragment = new GridFeedFragment();
@@ -117,6 +125,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mApiFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiFeeds.class);
+        mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
         mFeedType = getArguments().getInt(ARG_FEED_TYPE);
     }
 
@@ -158,8 +167,10 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             ArrayList<Entry> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
             if (entries != null) {
                 mAdapter.setFeed(entries);
-                refreshFeedDescription();
             }
+
+            mStats = (Stats)savedInstanceState.getParcelable(BUNDLE_KEY_FEED_STATS);
+            refreshFeedDescription();
         }
 
         if (mAdapter.getFeed().isEmpty() && !mRefreshLayout.isRefreshing()) refreshData();
@@ -201,11 +212,16 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
+
+        if(mStats != null) {
+            outState.putParcelable(BUNDLE_KEY_FEED_STATS, mStats);
+        }
     }
 
     @Override
     public void onDestroyView() {
         mFeedSubscription.unsubscribe();
+        mStatsSubscription.unsubscribe();
         mAdapter.onDestroy();
         super.onDestroyView();
         mGridView = null;
@@ -255,6 +271,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     public void refreshData() {
         mFeedSubscription.unsubscribe();
+        mStatsSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
         mFeedSubscription = AndroidObservable.bindFragment(this, createObservabelFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -266,28 +283,29 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                     }
                 })
                 .subscribe(mFeedObserver);
+
+        mStatsSubscription = AndroidObservable.bindFragment( this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mStatsObserver);
     }
 
     private void setupFeedTitle() {
         TextView titleView = (TextView)mHeaderView.findViewById(R.id.title);
-        int title;
+        titleView.setText(getTitle());
+    }
+
+    private int getTitle() {
         switch (mFeedType) {
             case FEED_LIVE:
-                title = R.string.title_live_feed;
-                break;
+                return R.string.title_live_feed;
             case FEED_BEST:
-                title = R.string.title_best_feed;
-                break;
+                return R.string.title_best_feed;
             case FEED_NEWS:
-                title = R.string.title_news;
-                break;
+                return R.string.title_news;
             case FEED_ANONYMOUS:
-                title = R.string.title_anonymous_feed;
-                break;
+                return R.string.title_anonymous_feed;
             default:
                 throw new IllegalStateException();
         }
-        titleView.setText(title);
     }
 
     private void refreshFeedDescription() {
@@ -298,15 +316,29 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             return;
         }
 
-        List<Entry> feed = mAdapter.getFeed();
-        int records1h = UiUtils.getEntriesLastHour(feed);
-        String entries;
-        if (records1h >= 0) {
-            entries = getResources().getQuantityString(R.plurals.records_last_hour, records1h, records1h);
-        } else {
-            entries = getResources().getQuantityString(R.plurals.over_records_last_hour, feed.size(), feed.size());
-        }
+        int title = getTitle();
 
+        String entries = "";
+
+        switch(title)
+        {
+            case R.string.title_live_feed:
+                entries = getResources().getQuantityString(R.plurals.public_records_last_day, mStats.publicEntriesInDayCount, mStats.publicEntriesInDayCount);
+                break;
+            case R.string.title_best_feed:
+                entries = getResources().getQuantityString(R.plurals.best_records_last_day, mStats.bestEntriesInDayCount, mStats.bestEntriesInDayCount);
+                break;
+            case R.string.title_anonymous_feed:
+                entries = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mStats.anonymousEntriesInDayCount, mStats.anonymousEntriesInDayCount);
+                break;
+            default:
+                {
+                    // Новости
+                    int count = UiUtils.getEntriesLastDay(mAdapter.getFeed());
+                    entries = getResources().getQuantityString(R.plurals.news_last_day, count, count);
+                }
+                break;
+        }
         descView.setText(entries);
         descView.setVisibility(View.VISIBLE);
     }
@@ -315,7 +347,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
-            refreshFeedDescription();
         }
 
         @Override
@@ -328,6 +359,24 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
             if (mAdapter != null) mAdapter.setFeed(feed.entries);
+        }
+    };
+
+    private final Observer<Stats> mStatsObserver = new Observer<Stats>() {
+        @Override
+        public void onCompleted() {
+            refreshFeedDescription();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.e(TAG, "onError", e);
+            mListener.notifyError(getString(R.string.server_error), e);
+        }
+
+        @Override
+        public void onNext(Stats st) {
+            mStats = st;
         }
     };
 
@@ -364,6 +413,4 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         public void onFeedButtonClicked(Uri uri);
         public void onGridTopViewScroll(Fragment fragment, boolean firstChildVisible, int firstItemTop);
     }
-
-
 }

@@ -35,6 +35,34 @@
         <item quantity="other">больше %d записей за час</item>
     </plurals>
 
+    <plurals name="public_records_last_day">
+        <item quantity="one">%d публикация за сутки</item>
+        <item quantity="few">%d публикации за сутки</item>
+        <item quantity="many">%d публикаций за сутки</item>
+        <item quantity="other">%d публикаций за сутки</item>
+    </plurals>
+
+    <plurals name="best_records_last_day">
+        <item quantity="one">%d лучшая публикация за сутки</item>
+        <item quantity="few">%d лучших публикации за сутки</item>
+        <item quantity="many">%d лучших публикаций за сутки</item>
+        <item quantity="other">%d лучших публикаций за сутки</item>
+    </plurals>
+
+    <plurals name="anonymous_records_last_day">
+        <item quantity="one">%d анонимка за последние 24 часа</item>
+        <item quantity="few">%d анонимки за последние 24 часа</item>
+        <item quantity="many">%d анонимок за последние 24 часа</item>
+        <item quantity="other">%d анонимок за последние 24 часа</item>
+    </plurals>
+
+    <plurals name="news_last_day">
+        <item quantity="one">%d новость за день</item>
+        <item quantity="few">%d новости за день</item>
+        <item quantity="many">%d новостей за день</item>
+        <item quantity="other">%d новостей за день</item>
+    </plurals>
+
     <string name="crash_toast_text">Сбой. Сформирован и отправлен отчет.</string>
     <string name="user_avatar_content_description">Информация о пользователе</string>
     <string name="additional_menu">Дополнительное меню</string>
