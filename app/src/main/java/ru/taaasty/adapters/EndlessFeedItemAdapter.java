@@ -3,8 +3,6 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.util.Log;
 
-import com.commonsware.cwac.endless.EndlessAdapter;
-
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
@@ -31,7 +29,6 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
     public EndlessFeedItemAdapter(Context context, FeedItemAdapter.OnItemListener listener) {
         super(context, new FeedItemAdapter(context, listener), R.layout.endless_loading_indicator, false);
         mAdapter = (FeedItemAdapter)getWrappedAdapter();
-        setRunInBackground(false);
     }
 
     @Override
@@ -52,11 +49,6 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
             mAdapter.appendFeed(data.entries);
             onDataReady();
         }
-    }
-
-    @Override
-    protected void appendCachedData() {
-        throw new IllegalStateException();
     }
 
     public void setFeed(List<Entry> entries) {

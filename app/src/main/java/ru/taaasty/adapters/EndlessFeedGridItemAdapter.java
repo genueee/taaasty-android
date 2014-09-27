@@ -1,15 +1,13 @@
 package ru.taaasty.adapters;
 
-
 import android.content.Context;
 import android.util.Log;
-
-import com.commonsware.cwac.endless.EndlessAdapter;
+import android.view.View;
+import android.view.ViewGroup;
 
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import rx.Observable;
@@ -22,14 +20,15 @@ public abstract class EndlessFeedGridItemAdapter extends EndlessAdapter {
     private static final boolean DBG = BuildConfig.DEBUG;
 
     private final FeedGridItemAdapter mAdapter;
-
     private Subscription mFeedAppendSubscription = Subscriptions.empty();
 
     public EndlessFeedGridItemAdapter(Context context) {
-        super(context, new FeedGridItemAdapter(context), R.layout.endless_loading_indicator, false);
+        super(new FeedGridItemAdapter(context), false);
         mAdapter = (FeedGridItemAdapter)getWrappedAdapter();
-        setRunInBackground(false);
     }
+
+    public abstract void onLoadingStarted();
+    public abstract void onLoadingCompleted();
 
     @Override
     protected boolean cacheInBackground() throws Exception {
@@ -38,8 +37,14 @@ public abstract class EndlessFeedGridItemAdapter extends EndlessAdapter {
         if (cnt > 0) {
             mFeedAppendSubscription = createObservable(mAdapter.getItemId(cnt-1))
                     .subscribe(mFeedAppendObserver);
+            onLoadingStarted();
         }
         return true;
+    }
+
+    @Override
+    protected View getPendingView(ViewGroup parent, int position) {
+        return new View(parent.getContext());
     }
 
     public void appendCachedData(Feed data) {
@@ -49,11 +54,7 @@ public abstract class EndlessFeedGridItemAdapter extends EndlessAdapter {
             mAdapter.appendFeed(data.entries);
             onDataReady();
         }
-    }
-
-    @Override
-    protected void appendCachedData() {
-        throw new IllegalStateException();
+        onLoadingCompleted();
     }
 
     public void setFeed(List<Entry> entries) {

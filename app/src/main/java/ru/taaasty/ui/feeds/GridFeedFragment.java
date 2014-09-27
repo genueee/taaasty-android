@@ -78,6 +78,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private FeedAdapter mAdapter;
 
     private View mHeaderView;
+    private View mEndlessLoadingIndicatorView;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mStatsSubscription = SubscriptionHelper.empty();
@@ -154,11 +155,14 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mHeaderView = LayoutInflater.from(mGridView.getContext()).inflate(R.layout.header_title_subtitle, mGridView, false);
+        mEndlessLoadingIndicatorView = LayoutInflater.from(mGridView.getContext()).inflate(R.layout.endless_loading_indicator, mGridView, false);
+        mEndlessLoadingIndicatorView.setVisibility(View.INVISIBLE);
 
         setupFeedTitle();
 
         // mGridView.addParallaxedHeaderView(headerView);
         mGridView.addHeaderView(mHeaderView, null, false);
+        mGridView.addFooterView(mEndlessLoadingIndicatorView);
 
         mAdapter = new FeedAdapter(getActivity());
         mGridView.setAdapter(mAdapter);
@@ -384,6 +388,16 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         public FeedAdapter(Context context) {
             super(context);
+        }
+
+        @Override
+        public void onLoadingStarted() {
+            if (mEndlessLoadingIndicatorView != null) mEndlessLoadingIndicatorView.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        public void onLoadingCompleted() {
+            if (mEndlessLoadingIndicatorView != null) mEndlessLoadingIndicatorView.setVisibility(View.INVISIBLE);
         }
 
         @Override
