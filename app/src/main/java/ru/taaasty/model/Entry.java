@@ -92,12 +92,12 @@ public class Entry implements Parcelable {
         return mType;
     }
 
-    public boolean isVideo() {
+    public boolean isEmbedd() {
         return ENTRY_TYPE_VIDEO.equals(mType);
     }
 
     public boolean isYoutubeVideo() {
-        return isVideo() && "YouTube".equalsIgnoreCase(mIframely.meta.site);
+        return isEmbedd() && "YouTube".equalsIgnoreCase(mIframely.meta.site);
     }
 
     public boolean isQuote() {

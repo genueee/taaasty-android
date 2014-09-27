@@ -26,9 +26,6 @@
     <dimen name="feed_grid_item_padding_left">7dp</dimen>
     <dimen name="feed_grid_item_padding_right">7dp</dimen>
 
-    <dimen name="feed_grid_item_padding_top">4dp</dimen>
-    <dimen name="feed_grid_item_padding_bottom">4dp</dimen>
-
     <dimen name="post_item_padding_left">22dp</dimen>
     <dimen name="post_item_padding_right">22dp</dimen>
 

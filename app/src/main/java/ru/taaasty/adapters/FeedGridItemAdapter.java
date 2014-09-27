@@ -1,23 +1,12 @@
 package ru.taaasty.adapters;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.text.Html;
-import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.etsy.android.grid.StaggeredGridView;
-import com.squareup.picasso.Picasso;
-import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,17 +14,11 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.adapters.grid.EmbeddEntry;
+import ru.taaasty.adapters.grid.ImageEntryView;
+import ru.taaasty.adapters.grid.QuoteEntry;
+import ru.taaasty.adapters.grid.TextEntry;
 import ru.taaasty.model.Entry;
-import ru.taaasty.model.ImageInfo;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.iframely.Link;
-import ru.taaasty.ui.ImageLoadingGetter;
-import ru.taaasty.utils.FontManager;
-import ru.taaasty.utils.ImageSize;
-import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.TextViewImgLoader;
-import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.EllipsizingTextView;
 
 public class FeedGridItemAdapter extends BaseAdapter {
 
@@ -44,7 +27,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     private final List<Entry> mFeed;
     private final LayoutInflater mInfater;
-    private final Picasso mPicasso;
     private final Context mContext;
 
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -53,25 +35,16 @@ public class FeedGridItemAdapter extends BaseAdapter {
     private static final int FEED_STYLE_DARK = 0;
     private static final int FEED_STYLE_LIGHT = 1;
 
-    private TlogDesign mFeedDesign;
-
-    private final Resources mResources;
-    private final FontManager mFontManager;
-
-    private final int mGridItemPaddingTop;
-    private final int mGridItemPaddingBottom;
+    private static final int VIEW_TYPE_IMAGE = 0;
+    private static final int VIEW_TYPE_EMBEDD = 1;
+    private static final int VIEW_TYPE_QUOTE = 2;
+    private static final int VIEW_TYPE_OTHER = 3;
 
     public FeedGridItemAdapter(Context context) {
         super();
         mContext = context;
         mFeed = new ArrayList<Entry>();
         mInfater = LayoutInflater.from(context);
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
-        mFeedDesign = TlogDesign.DUMMY;
-        mResources = context.getResources();
-        mFontManager = FontManager.getInstance(context);
-        mGridItemPaddingTop = mResources.getDimensionPixelSize(R.dimen.feed_grid_item_padding_top);
-        mGridItemPaddingBottom = mResources.getDimensionPixelSize(R.dimen.feed_grid_item_padding_bottom);
     }
 
     public void setFeed(List<Entry> feed) {
@@ -81,11 +54,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
 
     public void appendFeed(List<Entry> feed) {
         mFeed.addAll(feed);
-        notifyDataSetChanged();
-    }
-
-    public void setFeedDesign(TlogDesign design) {
-        mFeedDesign = design;
         notifyDataSetChanged();
     }
 
@@ -113,159 +81,82 @@ public class FeedGridItemAdapter extends BaseAdapter {
         return true;
     }
 
-    private void applyFeedStyle(ViewHolder vh) {
-        int textColor = mFeedDesign.getFeedTextColor(mResources);
-        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getPostSerifTypeface() : mFontManager.getPostSansSerifTypeface();
+    @Override
+    public int getItemViewType(int position) {
+        Entry item = getItem(position);
+        if (item == null) return VIEW_TYPE_OTHER;
+        if (item.isImage()) {
+            return VIEW_TYPE_IMAGE;
+        } else if (item.isEmbedd()) {
+            return VIEW_TYPE_EMBEDD;
+        } else if (item.isQuote()) {
+            return VIEW_TYPE_QUOTE;
+        } else {
+            return VIEW_TYPE_OTHER;
+        }
+    }
 
-        vh.text.setTextColor(textColor);
-        vh.title.setTextColor(textColor);
+    @Override
+    public int getViewTypeCount() {
+        return VIEW_TYPE_OTHER + 1;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder vh;
         View res;
-
-        if (convertView == null) {
-            res = mInfater.inflate(R.layout.live_feed_item, parent, false);
-            vh = new ViewHolder(res);
-            vh.title.setMaxLines(MAX_LINES_TITLE);
-            vh.text.setMaxLines(MAX_LINES_TEXT);
-            res.setTag(R.id.feed_item_view_holder, vh);
-        } else {
-            res = convertView;
-            vh = (ViewHolder) res.getTag(R.id.feed_item_view_holder);
-        }
-        applyFeedStyle(vh);
         Entry item = mFeed.get(position);
-        int parentWidth = getImageViewWith(parent);
-        adjustMargins(vh, item);
-        setImage(vh, item, parentWidth);
-        setText(vh, item, parentWidth);
-
-        return res;
-    }
-
-    private void adjustMargins(ViewHolder vh, Entry item) {
-        if (item.hasNoAnyText()) {
-            vh.root.setPadding(vh.root.getPaddingLeft(), 0, vh.root.getPaddingRight(), 0);
+        if (item.isImage()) {
+            ImageEntryView holder;
+            if (convertView == null) {
+                res = mInfater.inflate(R.layout.grid_feed_item_image, parent, false);
+                holder = new ImageEntryView(mContext, res);
+                res.setTag(R.id.feed_item_view_holder, holder);
+            } else {
+                res = convertView;
+                holder = (ImageEntryView) res.getTag(R.id.feed_item_view_holder);
+            }
+            int parentWidth = getImageViewWith(parent);
+            holder.setupEntry(item, parentWidth);
+            return res;
+        } else if (item.isEmbedd()) {
+            EmbeddEntry holder;
+            if (convertView == null) {
+                res = mInfater.inflate(R.layout.grid_feed_item_image, parent, false);
+                holder = new EmbeddEntry(mContext, res);
+                res.setTag(R.id.feed_item_view_holder, holder);
+            } else {
+                res = convertView;
+                holder = (EmbeddEntry) res.getTag(R.id.feed_item_view_holder);
+            }
+            int parentWidth = getImageViewWith(parent);
+            holder.setupEntry(item, parentWidth);
+            return res;
+        } else if (item.isQuote()) {
+            QuoteEntry holder;
+            if (convertView == null) {
+                res = mInfater.inflate(R.layout.grid_feed_item_quote, parent, false);
+                holder = new QuoteEntry(res);
+                res.setTag(R.id.feed_item_view_holder, holder);
+            } else {
+                res = convertView;
+                holder = (QuoteEntry) res.getTag(R.id.feed_item_view_holder);
+            }
+            holder.setupEntry(item);
+            return res;
         } else {
-            // Для видео поста стараемся показывать хоть какую-нибудь картинку.
-            boolean hasImage = item.isVideo() || !item.getImages().isEmpty();
-            int paddingTop  = hasImage ? 0 : mGridItemPaddingTop;
-            vh.root.setPadding(vh.root.getPaddingLeft(), paddingTop,
-                    vh.root.getPaddingRight(), mGridItemPaddingBottom);
+            TextEntry holder;
+            if (convertView == null) {
+                res = mInfater.inflate(R.layout.grid_feed_item_text, parent, false);
+                holder = new TextEntry(mContext, res);
+                res.setTag(R.id.feed_item_view_holder, holder);
+            } else {
+                res = convertView;
+                holder = (TextEntry) res.getTag(R.id.feed_item_view_holder);
+            }
+            int parentWidth = getImageViewWith(parent);
+            holder.setupEntry(item, parentWidth);
+            return res;
         }
-    }
-
-    // TODO: практически точная копия из FeedItemAdapter. Избавиться от дублирования
-    private void setImage(ViewHolder vh, Entry item, int parentWidth) {
-        if (item.isVideo()) {
-            setVideoPostImage(vh, item, parentWidth);
-        } else {
-            setImagePostImage(vh, item, parentWidth);
-        }
-    }
-
-    private void setVideoPostImage(ViewHolder vh, Entry item, int parentWidth) {
-        ImageSize imgSize;
-        Link imageLink;
-        int imgViewHeight;
-
-        if (vh.embeddForegroundDrawable == null) {
-            vh.embeddForegroundDrawable = mResources.getDrawable(R.drawable.embedd_play_foreground);
-        }
-
-        if (parentWidth == 0) {
-            imageLink = item.getIframely().getImageLink();
-        } else {
-            imageLink = item.getIframely().getImageLink(parentWidth);
-        }
-        if (imageLink == null) {
-            vh.imageLayout.setVisibility(View.VISIBLE);
-            vh.imageLayout.setForeground(vh.embeddForegroundDrawable);
-            return;
-        }
-
-        imgSize = new ImageSize(imageLink.media.width, imageLink.media.height);
-        imgSize.shrinkToWidth(parentWidth);
-        imgSize.shrinkToMaxTextureSize();
-
-        if (imgSize.width < imageLink.media.width) {
-            // Изображение было уменьшено под размеры imageView
-            imgViewHeight = (int)Math.ceil(imgSize.height);
-        } else {
-            // Изображение должно быть увеличено под размеры ImageView
-            imgSize.stretchToWidth(parentWidth);
-            imgSize.cropToMaxTextureSize();
-            imgViewHeight = (int)Math.ceil(imgSize.height);
-        }
-
-        vh.image.setMinimumHeight(imgViewHeight);
-        vh.image.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
-        vh.imageLayout.setVisibility(View.VISIBLE);
-        vh.imageLayout.setForeground(vh.embeddForegroundDrawable);
-
-        if (vh.imagePlaceholderDrawable == null) {
-            vh.imagePlaceholderDrawable = new ColorDrawable(mResources.getColor(R.color.grid_item_image_loading_color));
-        }
-
-        vh.mImageUrl = imageLink.getHref();
-
-        mPicasso
-                .load(vh.mImageUrl)
-                .placeholder(vh.imagePlaceholderDrawable)
-                .error(R.drawable.image_load_error)
-                .into(vh.image);
-    }
-
-    private void setImagePostImage(ViewHolder vh, Entry item, int parentWidth) {
-        ImageSize imgSize;
-        int resizeToWidth = 0;
-        int imgViewHeight;
-
-        if (item.getImages().isEmpty()) {
-            vh.imageLayout.setVisibility(View.GONE);
-            return;
-        }
-
-        ImageInfo image = item.getImages().get(0);
-        // XXX: check for 0
-        imgSize = image.image.geometry.toImageSize();
-        imgSize.shrinkToWidth(parentWidth);
-        imgSize.shrinkToMaxTextureSize();
-
-        if (imgSize.width < image.image.geometry.width) {
-            // Изображение было уменьшено под размеры imageView
-            resizeToWidth = parentWidth;
-            imgViewHeight = (int)Math.ceil(imgSize.height);
-        } else {
-            // Изображение должно быть увеличено под размеры ImageView
-            imgSize.stretchToWidth(parentWidth);
-            imgSize.cropToMaxTextureSize();
-            imgViewHeight = (int)Math.ceil(imgSize.height);
-        }
-
-        vh.image.setMinimumHeight(imgViewHeight);
-        vh.image.setAdjustViewBounds(false); // Иначе мерцает
-        vh.imageLayout.setForeground(null);
-        vh.imageLayout.setVisibility(View.VISIBLE);
-
-        if (vh.imagePlaceholderDrawable == null) {
-            vh.imagePlaceholderDrawable = new ColorDrawable(mResources.getColor(R.color.grid_item_image_loading_color));
-        }
-
-        // XXX: У некоторых картинок может не быть image.image.path
-        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-        b.filter(ThumborUrlBuilder.quality(60));
-        if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
-        vh.mImageUrl = b.toUrl();
-
-        mPicasso
-                .load(vh.mImageUrl)
-                .placeholder(vh.imagePlaceholderDrawable)
-                .error(R.drawable.image_loading_drawable)
-                .into(vh.image);
     }
 
     private int getImageViewWith(View parent) {
@@ -274,86 +165,6 @@ public class FeedGridItemAdapter extends BaseAdapter {
             return sgv.getColumnWidth();
         } else {
             return parent.getWidth();
-        }
-    }
-
-    /**
-     * Текст для всех типов постов
-     * @param vh
-     * @param item
-     * @param parentWidth
-     */
-    private void setText(ViewHolder vh, Entry item, int parentWidth) {
-        if (item.isQuote()) {
-            // Цитата
-            Spanned text = UiUtils.formatQuoteText(item.getText());
-            Spanned source = UiUtils.formatQuoteSource(item.getSource());
-
-            vh.text.setVisibility(View.GONE);
-            if (text != null) {
-                vh.title.setMaxLines(MAX_LINES_TEXT);
-                vh.title.setText(text);
-                vh.title.setVisibility(View.VISIBLE);
-            } else {
-                vh.title.setVisibility(View.GONE);
-            }
-
-            if (source != null) {
-                vh.source.setText(source);
-                vh.source.setVisibility(View.VISIBLE);
-            } else {
-                vh.source.setVisibility(View.GONE);
-            }
-        } else {
-            // Все остальное
-            vh.source.setVisibility(View.GONE);
-            if (vh.imageGetter == null) vh.imageGetter = new ImageLoadingGetter(parentWidth, mContext);
-            if (item.hasTitle()) {
-                CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), vh.imageGetter, null));
-                vh.title.setMaxLines(MAX_LINES_TITLE);
-                vh.title.setText(Html.fromHtml(title.toString(), vh.imageGetter, null), TextView.BufferType.NORMAL);
-                TextViewImgLoader.bindAndLoadImages(vh.text);
-                vh.title.setVisibility(View.VISIBLE);
-            } else {
-                vh.title.setVisibility(View.GONE);
-            }
-            if (item.hasText()) {
-                CharSequence text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getText(), vh.imageGetter, null));
-                /*
-                SpannableStringBuilder tb = new SpannableStringBuilder(text);
-                for (int i=0; i<tb.length(); ++i) {
-                    if (tb.charAt(i) == '\n') tb.replace(i, i+1," ");
-                }
-                */
-                vh.text.setText(text, TextView.BufferType.NORMAL);
-                TextViewImgLoader.bindAndLoadImages(vh.text);
-                vh.text.setVisibility(View.VISIBLE);
-            } else {
-                vh.text.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    public class ViewHolder {
-        public final View root;
-        public final FrameLayout imageLayout;
-        public final ImageView image;
-        public Drawable imagePlaceholderDrawable;
-        public Drawable embeddForegroundDrawable;
-        public final EllipsizingTextView title;
-        public final EllipsizingTextView text;
-        public final TextView source;
-        private ImageLoadingGetter imageGetter;
-
-        private String mImageUrl = null;
-
-        public ViewHolder(View v) {
-            root = v;
-            imageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
-            image = (ImageView) imageLayout.findViewById(R.id.image);
-            title = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
-            text = (EllipsizingTextView) v.findViewById(R.id.feed_item_text);
-            source = (TextView) v.findViewById(R.id.source);
         }
     }
 }

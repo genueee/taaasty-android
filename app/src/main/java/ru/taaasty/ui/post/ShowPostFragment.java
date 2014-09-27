@@ -420,7 +420,7 @@ public class ShowPostFragment extends Fragment {
     private void setupPostImage() {
         if (mCurrentEntry.isYoutubeVideo()) {
             setupYoutubePostImage();
-        } else if (mCurrentEntry.isVideo()) {
+        } else if (mCurrentEntry.isEmbedd()) {
             setVideoPostImage();
         } else {
             setupImagePostImage();
@@ -677,7 +677,7 @@ public class ShowPostFragment extends Fragment {
             title = null;
             text = UiUtils.formatQuoteText(entry.getText());
             source = UiUtils.formatQuoteSource(entry.getSource());
-        } else if (entry.isImage() || entry.isVideo()) {
+        } else if (entry.isImage() || entry.isEmbedd()) {
             // У видео и текста титул - это подпись под записью, оформляем как обычный текст
             title = null;
             text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(entry.getTitle()));

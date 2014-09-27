@@ -6,23 +6,8 @@
     android:background="@android:color/white"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minWidth="42dp" >
-
-    <FrameLayout
-        android:id="@+id/image_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="invisible"
-        tools:visibility="visible">
-
-        <ImageView
-            android:id="@+id/image"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="false"
-            android:contentDescription="@string/feed_item_image_content_description"
-            android:cropToPadding="false" />
-    </FrameLayout>
+    android:gravity="center_vertical"
+    android:minHeight="48dp" >
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_title"
@@ -42,31 +27,7 @@
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ellipsize="end"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"
-        android:paddingTop="4dp"
-        android:paddingLeft="@dimen/feed_grid_item_padding_left"
-        android:paddingRight="@dimen/feed_grid_item_padding_right"
-        android:textSize="12sp"
-        android:textIsSelectable="false"
-        android:textAppearance="@style/TextAppearance.PostSans"
-        android:paddingBottom="4dp" />
-
-    <TextView
-        android:id="@+id/source"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="right"
-        android:paddingTop="4dp"
-        android:paddingBottom="4dp"
-        android:paddingLeft="@dimen/feed_grid_item_padding_left"
-        android:paddingRight="@dimen/feed_grid_item_padding_right"
-        android:textSize="12sp"
-        android:textAppearance="@style/TextAppearance.PostSans"
-        android:lines="1"
-        android:ellipsize="marquee"
-        tools:text="Хенрик фексеус. &quot;Искусство манипуляции&quot;" />
+        style="@style/GridFeedText" />
 
 </LinearLayout>

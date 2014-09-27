@@ -213,7 +213,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void adjustMargins(ViewHolder vh, Entry item) {
-        boolean hasImage = item.isVideo() || !item.getImages().isEmpty();
+        boolean hasImage = item.isEmbedd() || !item.getImages().isEmpty();
 
         // Отступ между картинкой и текстом. Добавляем под картинкой.
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) vh.imageLayout.getLayoutParams();
@@ -236,7 +236,7 @@ public class FeedItemAdapter extends BaseAdapter {
     }
 
     private void setImage(ViewHolder vh, Entry item, int parentWidth) {
-        if (item.isVideo()) {
+        if (item.isEmbedd()) {
             setVideoPostImage(vh, item, parentWidth);
         } else {
             setImagePostImage(vh, item, parentWidth);
