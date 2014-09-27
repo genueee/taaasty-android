@@ -2,33 +2,29 @@ package ru.taaasty.widgets;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Build;
 import android.text.Layout;
+import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  *
  */
 public class EllipsizingTextView extends TextView {
-    private static final String ELLIPSIS = "...";
+    private static final String ELLIPSIS = "\u2026";
 
-    public interface EllipsizeListener {
-        void ellipsizeStateChanged(boolean ellipsized);
-    }
-
-    private final List<EllipsizeListener> ellipsizeListeners = new ArrayList<EllipsizeListener>();
     private boolean isEllipsized;
     private boolean isStale;
     private boolean programmaticChange;
-    private String fullText;
+    private CharSequence fullText;
     private int maxLines = -1;
     private float lineSpacingMultiplier = 1.0f;
     private float lineAdditionalVerticalPadding = 0.0f;
+
+    private TextUtils.TruncateAt mEllipsize;
 
     public EllipsizingTextView(Context context) {
         super(context);
@@ -40,21 +36,6 @@ public class EllipsizingTextView extends TextView {
 
     public EllipsizingTextView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-    }
-
-    public void addEllipsizeListener(EllipsizeListener listener) {
-        if (listener == null) {
-            throw new NullPointerException();
-        }
-        ellipsizeListeners.add(listener);
-    }
-
-    public void removeEllipsizeListener(EllipsizeListener listener) {
-        ellipsizeListeners.remove(listener);
-    }
-
-    public boolean isEllipsized() {
-        return isEllipsized;
     }
 
     @Override
@@ -79,67 +60,76 @@ public class EllipsizingTextView extends TextView {
     protected void onTextChanged(CharSequence text, int start, int before, int after) {
         super.onTextChanged(text, start, before, after);
         if (!programmaticChange) {
-            fullText = text.toString();
+            fullText = text;
             isStale = true;
         }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        // XXX: пока не используем. Ломает картинки в тексте (тегами <img>)
-        super.onDraw(canvas);
-        /*
+        // На android L все работает
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            super.onDraw(canvas);
+            return;
+        }
+        if (mEllipsize != TextUtils.TruncateAt.END) {
+            super.onDraw(canvas);
+            return;
+        }
         if (isStale) {
             super.setEllipsize(null);
             resetText();
         }
         super.onDraw(canvas);
-        */
     }
 
     private void resetText() {
         int maxLines = getMaxLines();
-        String workingText = fullText;
-        boolean ellipsized = false;
+        SpannableStringBuilder result = new SpannableStringBuilder(fullText);
+
         if (maxLines != -1) {
-            Layout layout = createWorkingLayout(workingText);
+            Layout layout = createWorkingLayout(result);
             if (layout.getLineCount() > maxLines) {
-                workingText = fullText.substring(0, layout.getLineEnd(maxLines - 1)).trim();
-                while (createWorkingLayout(workingText + ELLIPSIS).getLineCount() > maxLines) {
-                    int lastSpace = workingText.lastIndexOf(' ');
+                SpannableStringBuilder ellipsizedText = new SpannableStringBuilder();
+                int end = layout.getLineEnd(maxLines - 1);
+                CharSequence workingText = result.subSequence(0, end); // XXX: trim
+                ellipsizedText.clear();
+                ellipsizedText.append(workingText);
+                ellipsizedText.append(ELLIPSIS);
+                while (createWorkingLayout(ellipsizedText).getLineCount() > maxLines) {
+                    int lastSpace = TextUtils.lastIndexOf(workingText, ' ');
                     if (lastSpace == -1) {
                         break;
                     }
-                    workingText = workingText.substring(0, lastSpace);
+                    end = lastSpace;
+                    workingText = result.subSequence(0, lastSpace);
+                    ellipsizedText.clear();
+                    ellipsizedText.append(workingText);
+                    ellipsizedText.append(ELLIPSIS);
                 }
-                workingText = workingText + ELLIPSIS;
-                ellipsized = true;
+                result.replace(end, result.length(), ELLIPSIS);
             }
         }
-        if (!workingText.equals(getText())) {
+        if (!result.equals(getText())) {
             programmaticChange = true;
             try {
-                setText(workingText);
+                setText(result, BufferType.NORMAL);
             } finally {
                 programmaticChange = false;
             }
         }
         isStale = false;
-        if (ellipsized != isEllipsized) {
-            isEllipsized = ellipsized;
-            for (EllipsizeListener listener : ellipsizeListeners) {
-                listener.ellipsizeStateChanged(ellipsized);
-            }
-        }
     }
 
-    private Layout createWorkingLayout(String workingText) {
+    private Layout createWorkingLayout(CharSequence workingText) {
         return new StaticLayout(workingText, getPaint(), getWidth() - getPaddingLeft() - getPaddingRight(),
                 Layout.Alignment.ALIGN_NORMAL, lineSpacingMultiplier, lineAdditionalVerticalPadding, false);
     }
 
     @Override
     public void setEllipsize(TextUtils.TruncateAt where) {
-        // Ellipsize settings are not respected
+        super.setEllipsize(where);
+        mEllipsize = where;
+        isStale = true;
     }
 }

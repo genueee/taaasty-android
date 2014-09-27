@@ -332,8 +332,16 @@
         <item name="fontPath">fonts/PTS55F_W.ttf</item>
     </style>
 
+    <style name="TextAppearance.PostSans.Bold" parent="android:TextAppearance">
+        <item name="fontPath">fonts/PTS75F_W.ttf</item>
+    </style>
+
     <style name="TextAppearance.PostSerif" parent="android:TextAppearance">
         <item name="fontPath">fonts/PTF55F_W.ttf</item>
+    </style>
+
+    <style name="TextAppearance.PostSerif.Bold" parent="android:TextAppearance">
+        <item name="fontPath">fonts/PTF75F_W.ttf</item>
     </style>
 
     <style name="FollowingFollowersIndicatorItem">

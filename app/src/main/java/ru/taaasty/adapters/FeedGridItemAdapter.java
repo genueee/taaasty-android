@@ -311,7 +311,7 @@ public class FeedGridItemAdapter extends BaseAdapter {
             if (item.hasTitle()) {
                 CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), vh.imageGetter, null));
                 vh.title.setMaxLines(MAX_LINES_TITLE);
-                vh.title.setText(Html.fromHtml(title.toString(), vh.imageGetter, null));
+                vh.title.setText(Html.fromHtml(title.toString(), vh.imageGetter, null), TextView.BufferType.NORMAL);
                 TextViewImgLoader.bindAndLoadImages(vh.text);
                 vh.title.setVisibility(View.VISIBLE);
             } else {
@@ -319,7 +319,13 @@ public class FeedGridItemAdapter extends BaseAdapter {
             }
             if (item.hasText()) {
                 CharSequence text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getText(), vh.imageGetter, null));
-                vh.text.setText(text);
+                /*
+                SpannableStringBuilder tb = new SpannableStringBuilder(text);
+                for (int i=0; i<tb.length(); ++i) {
+                    if (tb.charAt(i) == '\n') tb.replace(i, i+1," ");
+                }
+                */
+                vh.text.setText(text, TextView.BufferType.NORMAL);
                 TextViewImgLoader.bindAndLoadImages(vh.text);
                 vh.text.setVisibility(View.VISIBLE);
             } else {
