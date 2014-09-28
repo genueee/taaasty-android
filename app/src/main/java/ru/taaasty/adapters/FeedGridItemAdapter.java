@@ -14,10 +14,10 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.adapters.grid.EmbeddEntry;
-import ru.taaasty.adapters.grid.ImageEntryView;
-import ru.taaasty.adapters.grid.QuoteEntry;
-import ru.taaasty.adapters.grid.TextEntry;
+import ru.taaasty.adapters.grid.GridEmbeddEntry;
+import ru.taaasty.adapters.grid.GridImageEntry;
+import ru.taaasty.adapters.grid.GridQuoteEntry;
+import ru.taaasty.adapters.grid.GridTextEntry;
 import ru.taaasty.model.Entry;
 
 public class FeedGridItemAdapter extends BaseAdapter {
@@ -106,52 +106,52 @@ public class FeedGridItemAdapter extends BaseAdapter {
         View res;
         Entry item = mFeed.get(position);
         if (item.isImage()) {
-            ImageEntryView holder;
+            GridImageEntry holder;
             if (convertView == null) {
                 res = mInfater.inflate(R.layout.grid_feed_item_image, parent, false);
-                holder = new ImageEntryView(mContext, res);
+                holder = new GridImageEntry(mContext, res);
                 res.setTag(R.id.feed_item_view_holder, holder);
             } else {
                 res = convertView;
-                holder = (ImageEntryView) res.getTag(R.id.feed_item_view_holder);
+                holder = (GridImageEntry) res.getTag(R.id.feed_item_view_holder);
             }
             int parentWidth = getImageViewWith(parent);
             holder.setupEntry(item, parentWidth);
             return res;
         } else if (item.isEmbedd()) {
-            EmbeddEntry holder;
+            GridEmbeddEntry holder;
             if (convertView == null) {
                 res = mInfater.inflate(R.layout.grid_feed_item_image, parent, false);
-                holder = new EmbeddEntry(mContext, res);
+                holder = new GridEmbeddEntry(mContext, res);
                 res.setTag(R.id.feed_item_view_holder, holder);
             } else {
                 res = convertView;
-                holder = (EmbeddEntry) res.getTag(R.id.feed_item_view_holder);
+                holder = (GridEmbeddEntry) res.getTag(R.id.feed_item_view_holder);
             }
             int parentWidth = getImageViewWith(parent);
             holder.setupEntry(item, parentWidth);
             return res;
         } else if (item.isQuote()) {
-            QuoteEntry holder;
+            GridQuoteEntry holder;
             if (convertView == null) {
                 res = mInfater.inflate(R.layout.grid_feed_item_quote, parent, false);
-                holder = new QuoteEntry(res);
+                holder = new GridQuoteEntry(res);
                 res.setTag(R.id.feed_item_view_holder, holder);
             } else {
                 res = convertView;
-                holder = (QuoteEntry) res.getTag(R.id.feed_item_view_holder);
+                holder = (GridQuoteEntry) res.getTag(R.id.feed_item_view_holder);
             }
             holder.setupEntry(item);
             return res;
         } else {
-            TextEntry holder;
+            GridTextEntry holder;
             if (convertView == null) {
                 res = mInfater.inflate(R.layout.grid_feed_item_text, parent, false);
-                holder = new TextEntry(mContext, res);
+                holder = new GridTextEntry(mContext, res);
                 res.setTag(R.id.feed_item_view_holder, holder);
             } else {
                 res = convertView;
-                holder = (TextEntry) res.getTag(R.id.feed_item_view_holder);
+                holder = (GridTextEntry) res.getTag(R.id.feed_item_view_holder);
             }
             int parentWidth = getImageViewWith(parent);
             holder.setupEntry(item, parentWidth);

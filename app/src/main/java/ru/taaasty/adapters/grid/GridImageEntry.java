@@ -26,7 +26,7 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
 * Created by alexey on 28.09.14.
 */
-public class ImageEntryView {
+public class GridImageEntry {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
@@ -36,7 +36,7 @@ public class ImageEntryView {
     private final Picasso mPicasso;
     private ImageLoadingGetter mImageGetter;
 
-    public ImageEntryView(Context context, View v) {
+    public GridImageEntry(Context context, View v) {
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);

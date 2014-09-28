@@ -122,8 +122,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         super.onActivityCreated(savedInstanceState);
 
         mListView.addParallaxedHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener);
-        mAdapter.setShowUserAvatar(false);
+        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, false);
         mListView.setAdapter(mAdapter);
     }
 

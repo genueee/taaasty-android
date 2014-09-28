@@ -1,27 +1,27 @@
-package ru.taaasty.adapters.grid;
+package ru.taaasty.adapters.list;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.TlogDesign;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 
-/**
- * Created by alexey on 28.09.14.
- */
-public class TextEntry {
+public class ListTextEntry extends ListEntryBase {
     private final Context mContext;
     private final TextView mTitle;
     private final TextView mText;
 
     private ImageLoadingGetter mImageGetter;
 
-    public TextEntry(Context context, View v) {
+    public ListTextEntry(Context context, View v, boolean showUserAvatar) {
+        super(context, v, showUserAvatar);
         mContext = context;
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
@@ -29,10 +29,28 @@ public class TextEntry {
         mText.setMaxLines(10);
     }
 
-    public void setupEntry(Entry entry, int parentWidth) {
-        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(parentWidth, mContext);
+    @Override
+    public void setupEntry(Entry entry, TlogDesign design, int parentWidth) {
+        super.setupEntry(entry, design, parentWidth);
+        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(
+                (parentWidth == 0 ? 0 : parentWidth
+                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)
+                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
+                mContext);
         setupTitle(entry);
         setupText(entry);
+        applyFeedStyle(design);
+    }
+
+    @Override
+    public void applyFeedStyle(TlogDesign design) {
+        super.applyFeedStyle(design);
+        int textColor = design.getFeedTextColor(getResources());
+        Typeface tf = design.isFontTypefaceSerif() ? getFontManager().getPostSerifTypeface() : getFontManager().getPostSansSerifTypeface();
+        mText.setTextColor(textColor);
+        mText.setTypeface(tf);
+        mTitle.setTypeface(tf);
+        mTitle.setTextColor(textColor);
     }
 
     private void setupTitle(Entry entry) {

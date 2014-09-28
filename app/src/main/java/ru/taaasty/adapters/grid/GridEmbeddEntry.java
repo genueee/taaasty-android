@@ -25,18 +25,18 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
 * Created by alexey on 28.09.14.
 */
-public class EmbeddEntry {
-    public final FrameLayout mImageLayout;
-    public final ImageView mImageView;
-    public final Drawable mImagePlaceholderDrawable;
-    public final Drawable mEmbeddForegroundDrawable;
-    public final EllipsizingTextView mTitle;
+public class GridEmbeddEntry {
+    private final FrameLayout mImageLayout;
+    private final ImageView mImageView;
+    private final Drawable mImagePlaceholderDrawable;
+    private final Drawable mEmbeddForegroundDrawable;
+    private final EllipsizingTextView mTitle;
 
-    private Context mContext;
+    private final Context mContext;
     private final Picasso mPicasso;
     private ImageLoadingGetter mImageGetter;
 
-    public EmbeddEntry(Context context, View v) {
+    public GridEmbeddEntry(Context context, View v) {
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);

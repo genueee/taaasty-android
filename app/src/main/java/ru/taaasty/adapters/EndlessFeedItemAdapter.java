@@ -26,8 +26,8 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
 
     private Subscription mFeedAppendSubscription = SubscriptionHelper.empty();
 
-    public EndlessFeedItemAdapter(Context context, FeedItemAdapter.OnItemListener listener) {
-        super(context, new FeedItemAdapter(context, listener), R.layout.endless_loading_indicator, false);
+    public EndlessFeedItemAdapter(Context context, FeedItemAdapter.OnItemListener listener, boolean showUserAvatar) {
+        super(context, new FeedItemAdapter(context, listener, showUserAvatar), R.layout.endless_loading_indicator, false);
         mAdapter = (FeedItemAdapter)getWrappedAdapter();
     }
 
@@ -54,10 +54,6 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
     public void setFeed(List<Entry> entries) {
         mAdapter.setFeed(entries);
         restartAppending();
-    }
-
-    public void setShowUserAvatar(boolean show) {
-        mAdapter.setShowUserAvatar(show);
     }
 
     public void setFeedDesign(TlogDesign design) {

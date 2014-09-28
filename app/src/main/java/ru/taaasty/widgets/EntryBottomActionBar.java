@@ -36,7 +36,7 @@ public class EntryBottomActionBar {
     private TextView mUserInfo;
     private ImageView mMoreButton;
 
-    private boolean mHideUserInfo;
+    private final boolean mHideUserInfo;
     private OnEntryActionBarListener mListener;
     private Entry mOnItemListenerEntry;
     private FontManager mFontManager;
