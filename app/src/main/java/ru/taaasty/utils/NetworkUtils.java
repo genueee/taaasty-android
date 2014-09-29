@@ -13,7 +13,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.picasso.LruCache;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
@@ -35,6 +34,7 @@ import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.NativeLruCache;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.ResponseError;
 
@@ -54,7 +54,7 @@ public final class NetworkUtils {
 
     private OkClient mOkClient;
 
-    private LruCache mPicassoCache;
+    private com.squareup.picasso.Cache mPicassoCache;
 
     private Picasso mPicasso;
 
@@ -103,11 +103,12 @@ public final class NetworkUtils {
         ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         double memoryClass = am.getMemoryClass();
         int cacheSize = (int)(memoryClass * 1024.0 * 1024.0 * Constants.LRU_MEMORY_CACHE_PCT / 100.0);
-        mPicassoCache = new LruCache(cacheSize);
+        if (DBG) Log.v(TAG, "LRU memory cache size: " + cacheSize);
+        mPicassoCache = new NativeLruCache(cacheSize);
     }
 
     public void onTrimMemory() {
-        mPicassoCache.evictAll();
+        mPicassoCache.clear();
     }
 
     public Gson getGson() {
@@ -136,11 +137,20 @@ public final class NetworkUtils {
                         .downloader(new OkHttpDownloader(mOkHttpClient) {
                                         @Override
                                         protected HttpURLConnection openConnection(Uri uri) throws IOException {
-                                            if (DBG) Log.v(TAG, "Load uri: " + uri);
+                                            // if (DBG) Log.v(TAG, "Load uri: " + uri);
                                             return super.openConnection(uri);
                                         }
                                     }
                         )
+                        .listener(new Picasso.Listener() {
+                            @Override
+                            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+                                Log.i(TAG, "onImageLoadFailed() uri: " + uri, exception);
+                                if (exception instanceof  RuntimeException && (exception.getCause() instanceof OutOfMemoryError)) {
+                                    mPicassoCache.clear();
+                                }
+                            }
+                        })
                         .build();
             }
             return mPicasso;

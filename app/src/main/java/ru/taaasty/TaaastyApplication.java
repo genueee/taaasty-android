@@ -2,6 +2,7 @@ package ru.taaasty;
 
 import android.app.Application;
 import android.os.StrictMode;
+import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
@@ -45,12 +46,14 @@ public class TaaastyApplication extends Application {
     @Override
     public void onTrimMemory(int level) {
         super.onTrimMemory(level);
+        if (DBG) Log.v(TAG, "onTrimMemory() " + level);
         NetworkUtils.getInstance().onTrimMemory();
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
+        if (DBG) Log.v(TAG, "onLowMemory() ");
         NetworkUtils.getInstance().onTrimMemory();
     }
 
