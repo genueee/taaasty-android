@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.vk.sdk.VKUIHelper;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -28,6 +29,18 @@ public abstract class ActivityBase extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         VKUIHelper.onActivityResult(this, requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(this).reportActivityStop(this);
     }
 
     @Override

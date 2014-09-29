@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="TypographyDashes">
+
+    <integer name="ga_sessionTimeout">300</integer>
+    <bool name="ga_autoActivityTracking">true</bool>
+    <string name="ga_trackingId">UA-53712900-2</string>
+
+    <screenName name="ru.taaasty.ui.tabbar.LiveFeedActivity">
+        Прямой эфир, лучшее, анонимки, новости
+    </screenName>
+    <screenName name="ru.taaasty.ui.tabbar.SubscribtionsActivity">
+        Мои подписки
+    </screenName>
+    <screenName name="ru.taaasty.ui.tabbar.MyFeedActivity">
+        Мой дневник
+    </screenName>
+    <screenName name="ru.taaasty.ui.login.LoginActivity">
+        Вход
+    </screenName>
+    <screenName name="ru.taaasty.ui.AdditionalMenuActivity">
+        Дополнительное меню
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.ShowPostActivity">
+        Просмотр записи
+    </screenName>
+    <screenName name="ru.taaasty.ui.UserInfoActivity">
+        Профиль пользователя
+    </screenName>
+    <screenName name="ru.taaasty.ui.relationships.FollowingFollowersActivity">
+        Мои друзья, подписки, подписчики
+    </screenName>
+    <screenName name="ru.taaasty.ui.photo.ShowPhotoActivity">
+        Просмотр увеличенной фотки
+    </screenName>
+    <screenName name="ru.taaasty.ui.feeds.TlogActivity">
+        Дневник пользователя
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.CreatePostActivity">
+        Создание поста
+    </screenName>
+    <screenName name="com.vk.sdk.VKOpenAuthActivity">
+        Вход через вконтакте
+    </screenName>
+
+
+</resources>

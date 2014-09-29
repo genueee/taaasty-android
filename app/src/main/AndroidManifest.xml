@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <!-- To auto-complete the email text field in the login form with the author's emails -->
@@ -130,6 +131,13 @@
             android:name=".UploadService"
             android:exported="false" >
         </service>
+
+        <meta-data android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
+        <meta-data android:name="com.google.android.gms.analytics.globalConfigResource"
+         android:resource="@xml/global_tracker"/>;
+
     </application>
 
 </manifest>

@@ -3,6 +3,9 @@ package ru.taaasty;
 import android.app.Application;
 import android.os.StrictMode;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Tracker;
+
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -11,6 +14,8 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class TaaastyApplication extends Application {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TaaastyApplication";
+
+    private Tracker mAnalyticsTracker;
 
     @Override
     public void onCreate() {
@@ -34,6 +39,7 @@ public class TaaastyApplication extends Application {
         NetworkUtils.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit();
         VkontakteHelper.getInstance().onAppInit();
+        getTracker();
     }
 
     @Override
@@ -47,4 +53,13 @@ public class TaaastyApplication extends Application {
         super.onLowMemory();
         NetworkUtils.getInstance().onTrimMemory();
     }
+
+    public synchronized Tracker getTracker() {
+        if (mAnalyticsTracker == null) {
+            GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+            mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
+        }
+        return mAnalyticsTracker;
+    }
+
 }

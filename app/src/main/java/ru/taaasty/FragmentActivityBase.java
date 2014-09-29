@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
 import com.vk.sdk.VKUIHelper;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -40,5 +41,16 @@ public class FragmentActivityBase extends FragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         VKUIHelper.onDestroy(this);
+    }
+
+    protected void onStart() {
+        super.onStart();
+        GoogleAnalytics.getInstance(this).reportActivityStart(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        GoogleAnalytics.getInstance(this).reportActivityStop(this);
     }
 }
