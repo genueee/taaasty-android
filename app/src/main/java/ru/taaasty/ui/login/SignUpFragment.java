@@ -261,7 +261,16 @@ public class SignUpFragment extends Fragment {
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email_or_password), null);
+                            CharSequence error = null;
+                            if (e instanceof NetworkUtils.ResponseErrorException) {
+                                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
+                            } else if (e instanceof NetworkUtils.UnauthorizedException) {
+                                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+                            }
+                            if (TextUtils.isEmpty(error)) {
+                                error = getText(R.string.error_invalid_email_or_password);
+                            }
+                            if (mListener != null) mListener.notifyError(error, e);
                             mPasswordView.requestFocus();
                         }
 
@@ -276,16 +285,13 @@ public class SignUpFragment extends Fragment {
     }
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.length() > 3;
+        return email.length() >= 2;
     }
 
     private boolean isPasswordValid(String password) {
-        return password.length() > 3;
+        return password.length() >= 2;
     }
 
-    private boolean isSlugValid(String slug) {
-        return slug.length() >= 3;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
