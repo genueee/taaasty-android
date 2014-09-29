@@ -26,6 +26,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
     public static final String ARG_TITLE = "ru.taaasty.ui.photo.ShowPhotoActivity.title";
     public static final String ARG_AUTHOR = "ru.taaasty.ui.photo.ShowPhotoActivity.author";
+    public static final String ARG_PREVIEW_URL = "ru.taaasty.ui.photo.ShowPhotoActivity.ARG_PREVIEW_URL";
 
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
 
@@ -43,12 +44,13 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         ArrayList<String> images = getIntent().getStringArrayListExtra(ARG_IMAGE_URL_LIST);
         String title = getIntent().getStringExtra(ARG_TITLE);
         User author = getIntent().getParcelableExtra(ARG_AUTHOR);
+        String previewUrl = getIntent().getStringExtra(ARG_PREVIEW_URL);
 
         if (images == null) {
             throw new IllegalStateException("ARG_IMAGE_URL_LIST not defined");
         }
 
-        mAdapter = new PhotoAdapter(getFragmentManager(), images);
+        mAdapter = new PhotoAdapter(getFragmentManager(), images, previewUrl);
         ViewPager viewPager = (ViewPager) findViewById(R.id.PhotoViewPager);
         viewPager.setAdapter(mAdapter);
 
@@ -137,10 +139,12 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     public static class PhotoAdapter extends FragmentStatePagerAdapter {
 
         private final List<String> mImages;
+        private final String mPreview;
 
-        public PhotoAdapter(FragmentManager fm, List<String> images) {
+        public PhotoAdapter(FragmentManager fm, List<String> images, String preview) {
             super(fm);
             mImages = images;
+            mPreview = preview;
         }
 
         @Override
@@ -150,7 +154,11 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
         @Override
         public Fragment getItem(int position) {
-            return ShowPhotoFragment.newInstance(mImages.get(position));
+            if (position == 0) {
+                return ShowPhotoFragment.newInstance(mImages.get(position), mPreview);
+            } else {
+                return ShowPhotoFragment.newInstance(mImages.get(position), null);
+            }
         }
     }
 }

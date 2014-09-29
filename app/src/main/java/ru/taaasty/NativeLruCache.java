@@ -10,6 +10,9 @@ import com.squareup.picasso.Cache;
  */
 public class NativeLruCache implements Cache {
 
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "NativeLruCache";
+
     private final LruCache<String, Bitmap> mCache;
 
     public NativeLruCache(int cacheSize) {

@@ -151,7 +151,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
-    public void onShowImageClicked(User author, List<String> images, String title) {
+    public void onShowImageClicked(User author, List<String> images, String title, String previewUrl) {
         ArrayList<String> imagesList;
         Intent i = new Intent(this, ShowPhotoActivity.class);
 
@@ -163,6 +163,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         i.putStringArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
         i.putExtra(ShowPhotoActivity.ARG_TITLE, title);
         i.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
+        if (previewUrl != null) i.putExtra(ShowPhotoActivity.ARG_PREVIEW_URL, previewUrl);
+
         startActivity(i);
     }
 

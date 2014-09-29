@@ -598,7 +598,7 @@ public class ShowPostFragment extends Fragment {
             return;
         }
 
-        ImageInfo image = mCurrentEntry.getImages().get(0);
+        final ImageInfo image = mCurrentEntry.getImages().get(0);
         // XXX: check for 0
         int parentWidth = mListView.getMeasuredWidth();
         imgSize = image.image.geometry.toImageSize();
@@ -628,8 +628,10 @@ public class ShowPostFragment extends Fragment {
         b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
+        final String url = b.toUrl();
+
         NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(b.toUrl())
+                .load(url)
                 .placeholder(R.drawable.image_loading_drawable)
                 .error(R.drawable.image_load_error)
                 .into(imageView);
@@ -650,7 +652,7 @@ public class ShowPostFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mListener != null) mListener.onShowImageClicked(
-                        author, images, title);
+                        author, images, title, url);
             }
         });
     }
@@ -727,7 +729,7 @@ public class ShowPostFragment extends Fragment {
 
             @Override
             public void onImageClicked(TextView widget, String source) {
-                if (DBG) Log.v(TAG, "onImageClicked. widget: " + widget + " soruce: " + source);
+                if (DBG) Log.v(TAG, "onImageClicked. widget: " + widget + " source: " + source);
                 CharSequence seq = widget.getText();
                 if (seq instanceof  Spanned) {
                     Spanned spanned = (Spanned)seq;
@@ -746,7 +748,7 @@ public class ShowPostFragment extends Fragment {
                             title = "";
                             author = null;
                         }
-                        mListener.onShowImageClicked(author, sources, title);
+                        mListener.onShowImageClicked(author, sources, title, null);
                     }
                 }
             }
@@ -1283,7 +1285,7 @@ public class ShowPostFragment extends Fragment {
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onPostLoaded(Entry entry);
         public void onAvatarClicked(User user, TlogDesign design);
-        public void onShowImageClicked(User author, List<String> images, String title);
+        public void onShowImageClicked(User author, List<String> images, String title, String previewUrl);
 
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();

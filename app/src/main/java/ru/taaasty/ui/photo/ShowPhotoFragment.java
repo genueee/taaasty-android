@@ -16,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
 import ru.taaasty.R;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
@@ -28,16 +29,22 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  */
 public class ShowPhotoFragment extends Fragment {
     private static final String ARG_URL = "url";
+    private static final String ARG_PREVIEW_URL = "preview_bitmap";
 
     private String mUrl;
+    private String mPreviewBitmap;
+    private PhotoView mPhotoView;
 
     private PhotoViewAttacher mPhotoViewAttacher;
     private OnFragmentInteractionListener mListener;
 
-    public static ShowPhotoFragment newInstance(String url) {
+    private boolean mPreviewLoaded = false;
+
+    public static ShowPhotoFragment newInstance(String url, String preview) {
         ShowPhotoFragment fragment = new ShowPhotoFragment();
         Bundle args = new Bundle();
         args.putString(ARG_URL, url);
+        args.putString(ARG_PREVIEW_URL, preview);
         fragment.setArguments(args);
         return fragment;
     }
@@ -67,54 +74,101 @@ public class ShowPhotoFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mUrl = getArguments().getString(ARG_URL);
+            mPreviewBitmap = getArguments().getString(ARG_PREVIEW_URL);
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_show_photo_item, container, false);
+        View root =  inflater.inflate(R.layout.fragment_show_photo_item, container, false);
+        mPhotoView = (PhotoView)root.findViewById(R.id.picturePhotoView);
+        return root;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
-        picasso.load(mUrl).into(mPicassoTarget);
+
+        if (mPreviewBitmap != null) {
+            picasso.load(mPreviewBitmap)
+                   .into(mPicassoPreviewTarget);
+        }
+        picasso.load(mUrl).skipMemoryCache().into(mPicassoTarget);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mPhotoView = null;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mPreviewBitmap = null;
         if (mPhotoViewAttacher != null) {
             mPhotoViewAttacher.cleanup();
         }
     }
 
+    private void recreateProtoAttacher() {
+        if (mPhotoViewAttacher != null) {
+            mPhotoViewAttacher.cleanup();
+        }
+        mPhotoViewAttacher = new PhotoViewAttacher(mPhotoView);
+        mPhotoViewAttacher.setOnPhotoTapListener(mOnTapListener);
+    }
+
+    private final Target mPicassoPreviewTarget = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            if (mPhotoView == null) return;
+            mPhotoView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+            recreateProtoAttacher();
+            mPreviewLoaded = true;
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+    };
+
     private final Target mPicassoTarget = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            NetworkUtils.getInstance().getPicasso(getActivity()).cancelRequest(mPicassoPreviewTarget);
             View v = getView();
             if (v == null) return;
             v.findViewById(R.id.progressView).setVisibility(View.GONE);
-            PhotoView pv = (PhotoView) v.findViewById(R.id.picturePhotoView);
-            pv.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-            mPhotoViewAttacher = new PhotoViewAttacher(pv);
-            mPhotoViewAttacher.setOnPhotoTapListener(mOnTapListener);
+            if (mPhotoView == null) return;
+            int maxTextureSize = ImageUtils.getInstance().getMaxTextureSize();
+            if (bitmap.getHeight() >= maxTextureSize || bitmap.getWidth() > maxTextureSize) {
+                mPhotoView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            }
+            mPhotoView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+            recreateProtoAttacher();
             if (mListener != null) mListener.onBitmapLoaded();
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
+            NetworkUtils.getInstance().getPicasso(getActivity()).cancelRequest(mPicassoPreviewTarget);
             View v = getView();
             if (v == null) return;
             v.findViewById(R.id.progressView).setVisibility(View.GONE);
-            if (mListener != null) mListener.onLoadBitmapFailed();
+            if (mPreviewLoaded) {
+                if (mListener != null) mListener.onBitmapLoaded();
+            } else {
+                if (mListener != null) mListener.onLoadBitmapFailed();
+            }
         }
 
         @Override

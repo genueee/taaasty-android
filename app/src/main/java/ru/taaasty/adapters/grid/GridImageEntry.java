@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -81,7 +82,10 @@ public class GridImageEntry {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        mImageView.setMinimumHeight(imgViewHeight);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mImageView.getLayoutParams();
+        lp.height = imgViewHeight;
+        mImageView.setLayoutParams(lp);
+
         mImageLayout.setForeground(null);
         mImageLayout.setVisibility(View.VISIBLE);
 
