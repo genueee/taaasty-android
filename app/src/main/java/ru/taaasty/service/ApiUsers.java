@@ -10,7 +10,6 @@ import retrofit.http.Part;
 import retrofit.mime.TypedOutput;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.RecoveryPasswordResponse;
-import ru.taaasty.model.RegisterUserResponse;
 import ru.taaasty.model.Status;
 import ru.taaasty.model.Userpic;
 import rx.Observable;
@@ -32,9 +31,9 @@ public interface ApiUsers {
      */
     @FormUrlEncoded
     @POST("/users.json")
-    Observable<RegisterUserResponse> regiserUser(@Field("email") String email,
-                                                 @Field("password") String password,
-                                                 @Field("slug") String slug);
+    Observable<CurrentUser> registerUser(@Field("email") String email,
+                                         @Field("password") String password,
+                                         @Field("slug") String slug);
 
     /**
      * Забыл пароль. Просьба выслать на емайл

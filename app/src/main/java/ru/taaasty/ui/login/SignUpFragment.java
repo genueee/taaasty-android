@@ -29,7 +29,8 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.RegisterUserResponse;
+import ru.taaasty.UserManager;
+import ru.taaasty.model.CurrentUser;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
@@ -55,7 +56,7 @@ public class SignUpFragment extends Fragment {
     private View mProgressView;
     private View mSignUpButtonView;
 
-    private Observable<RegisterUserResponse> mAuthTask;
+    private Observable<CurrentUser> mAuthTask;
 
     public static SignUpFragment newInstance() {
         return new SignUpFragment();
@@ -239,7 +240,7 @@ public class SignUpFragment extends Fragment {
             // perform the author login attempt.
             showProgress(true);
             ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
-            mAuthTask = service.regiserUser(email, password, slug);
+            mAuthTask = service.registerUser(email, password, slug);
             AndroidObservable.bindFragment(this, mAuthTask);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
@@ -251,7 +252,7 @@ public class SignUpFragment extends Fragment {
                             showProgress(false);
                         }
                     })
-                    .subscribe(new Observer<RegisterUserResponse>() {
+                    .subscribe(new Observer<CurrentUser>() {
                         @Override
                         public void onCompleted() {
                             if (DBG) Log.v(TAG, "onCompleted()");
@@ -266,10 +267,9 @@ public class SignUpFragment extends Fragment {
                         }
 
                         @Override
-                        public void onNext(RegisterUserResponse currentUser) {
+                        public void onNext(CurrentUser currentUser) {
                             if (DBG) Log.e(TAG, "onNext " + currentUser.toString());
-                            // XXX
-                            // UserManager.getInstance().setCurrentUser(currentUser);
+                            UserManager.getInstance().setCurrentUser(currentUser);
                         }
                     });
         }
