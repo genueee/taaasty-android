@@ -30,7 +30,6 @@ import ru.taaasty.model.User;
 import ru.taaasty.ui.AdditionalMenuActivity;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.IRereshable;
-import ru.taaasty.ui.feeds.MyAdditionalFeedActivity;
 import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
@@ -301,9 +300,9 @@ public class MyFeedActivity extends ActivityBase implements
                 case SECTION_MY_TLOG:
                     return MyFeedFragment.newInstance();
                 case SECTION_FAVORITES:
-                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedActivity.FEED_TYPE_FAVORITES, position, getCount());
+                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedFragment.FEED_TYPE_FAVORITES, position, getCount());
                 case SECTION_HIDDEN:
-                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedActivity.FEED_TYPE_PRIVATE, position, getCount());
+                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedFragment.FEED_TYPE_PRIVATE, position, getCount());
                 default:
                     throw new IllegalArgumentException();
             }
