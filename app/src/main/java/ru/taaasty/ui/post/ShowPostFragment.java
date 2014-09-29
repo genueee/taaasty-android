@@ -511,7 +511,7 @@ public class ShowPostFragment extends Fragment {
         mWebview.setScrollContainer(false);
         final WebSettings wbs = mWebview.getSettings();
         wbs.setPluginState(WebSettings.PluginState.ON);
-        wbs.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.SINGLE_COLUMN);
+        wbs.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
         wbs.setSaveFormData(true);
         wbs.setDomStorageEnabled(true);
         wbs.setJavaScriptEnabled(true);
@@ -554,10 +554,10 @@ public class ShowPostFragment extends Fragment {
         int height = 0;
         if (width != 0) {
             if (link.media.aspect_ratio != 0) {
-                height = (int)(1.01f * Math.ceil((float)width / link.media.aspect_ratio));
+                height = (int)(1f * Math.ceil((float)width / link.media.aspect_ratio));
             } else if (link.media.width != 0 && link.media.height != 0) {
                 float aspectRatio = (float) link.media.width / link.media.height;
-                height = (int)(1.01f * Math.ceil((float)width / aspectRatio));
+                height = (int)(1f * Math.ceil((float)width / aspectRatio));
             }
         }
         if (height != 0) {

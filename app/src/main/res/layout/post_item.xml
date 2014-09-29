@@ -42,7 +42,6 @@
         style="@style/PostTitle"
         android:paddingLeft="@dimen/post_item_padding_left"
         android:paddingRight="@dimen/post_item_padding_right"
-        android:visibility="gone"
         tools:text="Ролики"
         tools:visibility="visible" />
 
