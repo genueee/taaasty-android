@@ -1,5 +1,6 @@
 package ru.taaasty.ui.post;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -66,6 +67,7 @@ public abstract class CommentDialogFragmentBase extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        @SuppressLint("InflateParams")
         View root = inflater.inflate(R.layout.fragment_comment_confirmation_dialog, null, false);
         mTitle = (TextView)root.findViewById(R.id.title);
         mButton = (TextView)root.findViewById(R.id.delete_comment_button);

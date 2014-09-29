@@ -42,6 +42,7 @@
         <ImageView
             android:src="@drawable/login_button_divider"
             android:scaleType="fitXY"
+            tools:ignore="ContentDescription"
             android:layout_width="wrap_content"
             android:layout_height="match_parent" />
 
@@ -60,6 +61,7 @@
 
         <ImageView
             android:src="@drawable/ic_sign_email"
+            tools:ignore="ContentDescription"
             android:layout_width="36dp"
             android:layout_height="wrap_content" />
 
@@ -87,6 +89,7 @@
             android:src="@drawable/login_button_divider_dark"
             android:layout_marginLeft="37dp"
             android:scaleType="fitXY"
+            tools:ignore="ContentDescription"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:visibility="invisible" />

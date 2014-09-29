@@ -27,11 +27,9 @@
 
     <string name="error_invalid_email">Логин слишком короткий</string>
     <string name="error_invalid_password">Пароль слишком короткий</string>
-    <string name="error_invalid_slug">Адрес слишком короткий</string>
     <string name="error_invalid_email_or_password">Неправильный логин или пароль</string>
     <string name="error_password_field_required">Пароль не указан</string>
     <string name="error_email_field_required">Логин не указан</string>
-    <string name="error_slug_field_required">Адрес не указан</string>
 
     <string name="error_vkontakte_failed">Ошибка вконтакте</string>
 </resources>

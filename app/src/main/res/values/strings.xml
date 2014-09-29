@@ -22,19 +22,6 @@
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
 
-    <plurals name="records_last_hour">
-        <item quantity="one">%d запись за час</item>
-        <item quantity="few">%d записи за час</item>
-        <item quantity="many">%d записей за час</item>
-        <item quantity="other">%d записей за час</item>
-    </plurals>
-    <plurals name="over_records_last_hour">
-        <item quantity="one">больше %d записи за час</item>
-        <item quantity="few">больше %d записей за час</item>
-        <item quantity="many">больше %d записей за час</item>
-        <item quantity="other">больше %d записей за час</item>
-    </plurals>
-
     <plurals name="public_records_last_day">
         <item quantity="one">%d публикация за сутки</item>
         <item quantity="few">%d публикации за сутки</item>
@@ -63,12 +50,9 @@
         <item quantity="other">%d новостей за день</item>
     </plurals>
 
-    <string name="crash_toast_text">Сбой. Сформирован и отправлен отчет.</string>
     <string name="user_avatar_content_description">Информация о пользователе</string>
     <string name="additional_menu">Дополнительное меню</string>
-    <string name="design_settings">Настройки дизайна</string>
     <string name="action_close_content_description">Закрыть</string>
-    <string name="profile">Профиль</string>
     <string name="friends">Друзья</string>
     <string name="settings">Настройки</string>
     <string name="title_hidden_entries">Скрытые записи</string>
@@ -84,7 +68,6 @@
     <string name="error_follow">Ошибка подписки</string>
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
-    <string name="error_create_post">Ошибка создания поста</string>
     <string name="error_youtube_init">Ошибка YouTube (%1$s)</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
@@ -166,7 +149,6 @@
         <item>Убрать</item>
     </array>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="delete_comment_button">Удалить комментарий</string>
     <string name="delete_comment_description">Вы действительно хотите удалить\u00A0комментарий?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
     <string name="comment_removed">Комментарий удален</string>
@@ -182,11 +164,15 @@
     <string name="your_friends">Друзья</string>
 
     <string name="no_subscribers">Нет подписчиков</string>
-    <string name="no_subscribtions">нет подписок</string>
     <string name="no_friends">Список пуст</string>
     <string name="logout">Выйти</string>
     <string name="clean_cache">Очистка кэша</string>
     <string name="sigin_up_using_vkontakte_title">Вход с помощью Вконтакте…</string>
     <string name="sign_up_success">Регистрация успешно завершена!</string>
+    <string name="action_back_content_description">назад</string>
+    <string name="action_make_photo_content_description">Выбрать фотографию</string>
+    <string name="action_reply_to_comment_content_description">Ответить на комментарий</string>
+    <string name="action_delete_comment_content_description">Удалить комментарий</string>
+    <string name="action_report_to_moderator_content_description">Пожаловаться на комментарий</string>
 
 </resources>

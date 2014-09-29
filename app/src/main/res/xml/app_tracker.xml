@@ -2,7 +2,7 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="TypographyDashes">
+    tools:ignore="TypographyDashes,UnusedResources">
 
     <integer name="ga_sessionTimeout">300</integer>
     <bool name="ga_autoActivityTracking">true</bool>

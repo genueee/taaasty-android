@@ -21,8 +21,6 @@
     <dimen name="feed_item_padding_top">4dp</dimen>
     <dimen name="feed_item_padding_bottom">4dp</dimen>
 
-    <dimen name="feed_item_padding_image_text">8dp</dimen>
-
     <dimen name="feed_grid_item_padding_left">7dp</dimen>
     <dimen name="feed_grid_item_padding_right">7dp</dimen>
 
@@ -42,8 +40,6 @@
     <dimen name="live_feed_pager_indicator_top">175dp</dimen>
     <dimen name="feed_header_height">235dp</dimen>
     <dimen name="login_btn_background_corner_radius">2dp</dimen>
-
-    <dimen name="post_no_title_padding">16dp</dimen>
 
     <dimen name="following_followers_indicator_stroke_radius">6dp</dimen>
     <dimen name="following_followers_padding_right">12dp</dimen>

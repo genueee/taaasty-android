@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -485,6 +486,7 @@ public class ShowPostFragment extends Fragment {
         }
     };
 
+    @SuppressLint("SetJavaScriptEnabled")
     private void setVideoPostImage() {
         FrameLayout contentLayout = (FrameLayout)mPostContentView.findViewById(R.id.dynamic_content_layout);
 

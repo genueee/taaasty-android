@@ -68,8 +68,8 @@ public class CommentsAdapter extends BaseAdapter {
         mComments = new ArrayList<>();
         mListener = listener;
         mTimeFormatInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault());
-        mDdMmFormatInstance = new SimpleDateFormat("dd MMM");
-        mMmYyFormatInstance = new SimpleDateFormat("LL/yyy");
+        mDdMmFormatInstance = new SimpleDateFormat("dd MMM", Locale.getDefault());
+        mMmYyFormatInstance = new SimpleDateFormat("LL/yyy", Locale.getDefault());
     }
 
     public void setComments(List<Comment> comments) {

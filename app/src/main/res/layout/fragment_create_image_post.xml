@@ -27,6 +27,7 @@
                     android:id="@+id/make_photo_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@string/action_make_photo_content_description"
                     android:layout_gravity="center"
                     android:src="@drawable/make_photo" />
             </FrameLayout>
@@ -36,6 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
+                android:contentDescription="@string/action_make_photo_content_description"
                 android:cropToPadding="false"
                 android:scaleType="fitCenter" />
 
