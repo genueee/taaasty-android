@@ -149,7 +149,16 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_vkontakte_failed), e);
+            CharSequence error = "";
+            if (e instanceof NetworkUtils.ResponseErrorException) {
+                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
+            } else if (e instanceof NetworkUtils.UnauthorizedException) {
+                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+            }
+            if (TextUtils.isEmpty(error)) {
+                error = getText(R.string.error_vkontakte_failed);
+            }
+            if (mListener != null) mListener.notifyError(error, e);
             getDialog().dismiss();
         }
 
