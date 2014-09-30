@@ -6,7 +6,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -86,14 +85,15 @@ public class GridEmbeddEntry {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mImageView.getLayoutParams();
-        lp.height = imgViewHeight;
-        mImageView.setLayoutParams(lp);
         mImageView.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
         mImageLayout.setVisibility(View.VISIBLE);
         mImageLayout.setForeground(mEmbeddForegroundDrawable);
 
         String url = imageLink.getHref();
+
+        mImagePlaceholderDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        mImageView.setImageDrawable(mImagePlaceholderDrawable);
+        mImageView.requestLayout();
 
         mPicasso
                 .load(url)

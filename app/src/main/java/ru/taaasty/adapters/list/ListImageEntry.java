@@ -2,9 +2,9 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,6 +30,7 @@ public class ListImageEntry extends ListEntryBase {
 
     private Context mContext;
     private final Picasso mPicasso;
+    private final Drawable mImageLoadingDrawable;
     private ImageLoadingGetter mImageGetter;
 
     public ListImageEntry(Context context, View v, boolean showAuthorAvatar) {
@@ -41,6 +42,7 @@ public class ListImageEntry extends ListEntryBase {
 
         mContext = context;
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
 
         mTitle.setMaxLines(10);
     }
@@ -87,10 +89,7 @@ public class ListImageEntry extends ListEntryBase {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        ViewGroup.LayoutParams lp = mImageView.getLayoutParams();
-        lp.height = imgViewHeight;
-        mImageView.setLayoutParams(lp);
-        mImageView.setAdjustViewBounds(false); // Иначе мерцает
+        mImageView.setAdjustViewBounds(true); // Иначе мерцает
         mImageLayout.setForeground(null);
         mImageLayout.setVisibility(View.VISIBLE);
 
@@ -99,13 +98,17 @@ public class ListImageEntry extends ListEntryBase {
         b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
+
+        mImageLoadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        mImageView.setImageDrawable(mImageLoadingDrawable);
+        mImageView.requestLayout();
+
         mPicasso
                 .load(b.toUrl())
-                .fit()
-                .centerInside()
-                .placeholder(R.drawable.image_loading_drawable)
+                .placeholder(mImageLoadingDrawable)
                 .error(R.drawable.image_load_error)
                 .into(mImageView);
+
     }
 
     private void setupTitle(Entry item, int parentWidth) {

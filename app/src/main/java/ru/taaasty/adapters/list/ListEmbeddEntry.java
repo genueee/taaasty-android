@@ -7,7 +7,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -71,10 +70,10 @@ public class ListEmbeddEntry extends ListEntryBase {
         mTitle.setTypeface(tf);
     }
 
-    private void setupImage(Entry item, int parentWidth) {
+    private void setupImage(Entry item, final int parentWidth) {
         ImageSize imgSize;
         Link imageLink;
-        int imgViewHeight;
+        final int imgViewHeight;
 
         if (parentWidth == 0) {
             imageLink = item.getIframely().getImageLink();
@@ -101,15 +100,15 @@ public class ListEmbeddEntry extends ListEntryBase {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        ViewGroup.LayoutParams lp = mImageView.getLayoutParams();
-        lp.height = imgViewHeight;
-        mImageView.setLayoutParams(lp);
         mImageView.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
         mImageLayout.setVisibility(View.VISIBLE);
         mImageLayout.setForeground(mEmbeddForegroundDrawable);
 
-        String url = imageLink.getHref();
+        final String url = imageLink.getHref();
 
+        mImagePlaceholderDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        mImageView.setImageDrawable(mImagePlaceholderDrawable);
+        mImageView.requestLayout();
         mPicasso
                 .load(url)
                 .placeholder(mImagePlaceholderDrawable)

@@ -11,6 +11,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
@@ -616,10 +617,6 @@ public class ShowPostFragment extends Fragment {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        ViewGroup.LayoutParams lp = imageView.getLayoutParams();
-        lp.height = imgViewHeight;
-        imageView.setLayoutParams(lp);
-        imageView.setAdjustViewBounds(true);
         imageView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
 
@@ -630,9 +627,13 @@ public class ShowPostFragment extends Fragment {
 
         final String url = b.toUrl();
 
+        Drawable loadingDrawable = getResources().getDrawable(R.drawable.image_loading_drawable);
+        loadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        imageView.setImageDrawable(loadingDrawable);
+
         NetworkUtils.getInstance().getPicasso(getActivity())
                 .load(url)
-                .placeholder(R.drawable.image_loading_drawable)
+                .placeholder(loadingDrawable)
                 .error(R.drawable.image_load_error)
                 .into(imageView);
 
