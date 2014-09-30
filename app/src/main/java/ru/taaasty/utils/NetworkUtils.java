@@ -278,6 +278,11 @@ public final class NetworkUtils {
             super(throwable);
             this.error = error;
         }
+
+        @Nullable
+        public String getUserError() {
+            return error == null ? null : error.error;
+        }
     }
 
     /**
@@ -290,6 +295,11 @@ public final class NetworkUtils {
         public ResponseErrorException(Throwable throwable, ResponseError error) {
             super(throwable);
             this.error = error;
+        }
+
+        @Nullable
+        public String getUserError() {
+            return error == null ? null : error.error;
         }
     }
 

@@ -231,4 +231,14 @@ public class TlogDesign implements Parcelable {
             return new TlogDesign[size];
         }
     };
+
+    public int getAuthorTextColor(Resources r) {
+        int color;
+        if (isLightTheme()) {
+            color = r.getColor(R.color.author_black_text);
+        } else {
+            color = r.getColor(R.color.author_white_text);
+        }
+        return color;
+    }
 }
