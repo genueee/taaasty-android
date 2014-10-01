@@ -50,16 +50,22 @@ import android.widget.Toast;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import junit.framework.Assert;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import de.greenrobot.event.EventBus;
+import pl.droidsonroids.gif.AnimationListener;
+import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -144,8 +150,13 @@ public class ShowPostFragment extends Fragment {
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
 
+    @Nullable
+    private OkHttpClient mOkHttpClient = null;
+
     private boolean mLoadComments;
     private int mTotalCommentsCount = -1;
+
+    private final Object mGifLoadingTag = this;
 
     /**
      * Use this factory method to create a new instance of
@@ -303,6 +314,23 @@ public class ShowPostFragment extends Fragment {
             mWebview = null;
         }
         mChromeClient = null;
+        if (mOkHttpClient != null) {
+            mOkHttpClient.cancel(mGifLoadingTag);
+            mOkHttpClient = null;
+        }
+
+        // Вроде так GifDrawable быстрее память отдает
+        View root = getView();
+        if (root != null) {
+            ImageView imageView = (ImageView) root.findViewById(R.id.image);
+            if (imageView != null) {
+                Drawable d = imageView.getDrawable();
+                if (d != null && d instanceof  GifDrawable) {
+                    imageView.setImageDrawable(null);
+                    ((GifDrawable)d).recycle();
+                }
+            }
+        }
     }
 
     @Override
@@ -631,11 +659,15 @@ public class ShowPostFragment extends Fragment {
         loadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
         imageView.setImageDrawable(loadingDrawable);
 
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(url)
-                .placeholder(loadingDrawable)
-                .error(R.drawable.image_load_error)
-                .into(imageView);
+        if (image.isAnimatedGif()) {
+            loadGif(url, imageView);
+        } else {
+            NetworkUtils.getInstance().getPicasso(getActivity())
+                    .load(url)
+                    .placeholder(loadingDrawable)
+                    .error(R.drawable.image_load_error)
+                    .into(imageView);
+        }
 
         final ArrayList<String> images = new ArrayList<>(mCurrentEntry.getImages().size());
         for (ImageInfo imageInfo: mCurrentEntry.getImages()) images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
@@ -656,6 +688,73 @@ public class ShowPostFragment extends Fragment {
                         author, images, title, url);
             }
         });
+    }
+
+    private void loadGif(String url, final ImageView imageView) {
+        if (mOkHttpClient != null) {
+            mOkHttpClient.cancel(mGifLoadingTag);
+        } else {
+            mOkHttpClient = NetworkUtils.getInstance().getOkHttpClient();
+        }
+
+        Request request = new Request.Builder()
+                .url(url)
+                .tag(mGifLoadingTag)
+                .build();
+
+        mOkHttpClient
+                .newCall(request)
+                .enqueue(new com.squareup.okhttp.Callback() {
+                    @Override
+                    public void onFailure(Request request, IOException e) {
+                        reportError(e);
+                    }
+
+                    @Override
+                    public void onResponse(Response response) throws IOException {
+                        try {
+                            if (!response.isSuccessful()) {
+                                throw new IOException("Unexpected code " + response);
+                            }
+                            final GifDrawable drawable = new GifDrawable(response.body().bytes());
+                            if (drawable.getLoopCount() != 0) initLoopForever(drawable);
+                            imageView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    imageView.setImageDrawable(drawable);
+                                }
+                            });
+                        } catch (Throwable e) {
+                            reportError(e);
+                        }
+                    }
+
+                    private void reportError(final Throwable exception) {
+                        imageView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                imageView.setImageResource(R.drawable.image_load_error);
+                                if (mListener != null)
+                                    mListener.notifyError(getString(R.string.error_loading_image), exception);
+                            }
+                        });
+                    }
+
+                    private void initLoopForever(final GifDrawable drawable) {
+                        drawable.addAnimationListener(new AnimationListener() {
+                            @Override
+                            public void onAnimationCompleted() {
+                                imageView.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        drawable.start();
+                                    }
+                                }, 3000);
+                            }
+                        });
+                    }
+                });
+
     }
 
     public static void setupPostText(Entry entry,

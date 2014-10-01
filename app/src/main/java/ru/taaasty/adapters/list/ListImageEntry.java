@@ -31,6 +31,7 @@ public class ListImageEntry extends ListEntryBase {
     private Context mContext;
     private final Picasso mPicasso;
     private final Drawable mImageLoadingDrawable;
+    private final Drawable mGifForegroundDrawable;
     private ImageLoadingGetter mImageGetter;
 
     public ListImageEntry(Context context, View v, boolean showAuthorAvatar) {
@@ -43,6 +44,7 @@ public class ListImageEntry extends ListEntryBase {
         mContext = context;
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
         mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
+        mGifForegroundDrawable = context.getResources().getDrawable(R.drawable.embedd_play_foreground);
 
         mTitle.setMaxLines(10);
     }
@@ -71,6 +73,7 @@ public class ListImageEntry extends ListEntryBase {
 
         if (item.getImages().isEmpty()) {
             mImageLayout.setVisibility(View.GONE);
+            mImageView.setImageDrawable(null);
             return;
         }
 
@@ -89,15 +92,18 @@ public class ListImageEntry extends ListEntryBase {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
-        mImageView.setAdjustViewBounds(true); // Иначе мерцает
-        mImageLayout.setForeground(null);
+        mImageView.setAdjustViewBounds(true);
+        if (image.isAnimatedGif()) {
+            mImageLayout.setForeground(mGifForegroundDrawable);
+        } else {
+            mImageLayout.setForeground(null);
+        }
         mImageLayout.setVisibility(View.VISIBLE);
 
         // XXX: У некоторых картинок может не быть image.image.path
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
         b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
-
 
         mImageLoadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);

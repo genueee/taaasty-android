@@ -118,7 +118,7 @@ dependencies {
     compile 'com.squareup:pollexor:2.0.2'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
     compile 'uk.co.chrisjenx:calligraphy:1.1.+'
-    compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.+'
+    compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.10+'
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.etsy.android.grid:library:1.0.5'

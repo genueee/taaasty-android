@@ -15,12 +15,21 @@ public class ImageInfo implements Parcelable {
 
     public Date createAt;
 
+    public static final String CONTENT_TYPE_GIF = "image/gif";
+
     String title;
 
     String source;
 
     public Image2 image = Image2.DUMMY;
 
+    public String contentType;
+
+    public int framesCount = 1;
+
+    public boolean isAnimatedGif() {
+        return  framesCount > 1 && (CONTENT_TYPE_GIF.equals(contentType));
+    }
 
     @Override
     public int describeContents() {
@@ -33,6 +42,8 @@ public class ImageInfo implements Parcelable {
         dest.writeLong(createAt != null ? createAt.getTime() : -1);
         dest.writeString(this.title);
         dest.writeString(this.source);
+        dest.writeString(this.contentType);
+        dest.writeInt(framesCount);
         dest.writeParcelable(this.image, flags);
     }
 
@@ -45,6 +56,8 @@ public class ImageInfo implements Parcelable {
         this.createAt = tmpCreateAt == -1 ? null : new Date(tmpCreateAt);
         this.title = in.readString();
         this.source = in.readString();
+        this.contentType = in.readString();
+        this.framesCount = in.readInt();
         this.image = in.readParcelable(Image2.class.getClassLoader());
     }
 

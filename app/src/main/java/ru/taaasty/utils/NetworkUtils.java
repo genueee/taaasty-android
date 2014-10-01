@@ -52,7 +52,7 @@ public final class NetworkUtils {
 
     private OkHttpClient mOkHttpClient;
 
-    private OkClient mOkClient;
+    private OkClient mRetrofitClient;
 
     private com.squareup.picasso.Cache mPicassoCache;
 
@@ -96,7 +96,7 @@ public final class NetworkUtils {
                 e.printStackTrace();
             }
         }
-        mOkClient = new OkClient(mOkHttpClient);
+        mRetrofitClient = new OkClient(mOkHttpClient);
     }
 
     private void initLruMemoryCache(Context context) {
@@ -123,9 +123,13 @@ public final class NetworkUtils {
                 .setConverter(mGsonConverter)
                 .setRequestInterceptor(mRequestInterceptor)
                 .setErrorHandler(mErrorHandler)
-                .setClient(mOkClient)
+                .setClient(mRetrofitClient)
         ;
         return b.build();
+    }
+
+    public OkHttpClient getOkHttpClient() {
+        return mOkHttpClient;
     }
 
     public Picasso getPicasso(Context context) {

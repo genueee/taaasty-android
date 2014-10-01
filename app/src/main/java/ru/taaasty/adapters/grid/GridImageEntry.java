@@ -31,6 +31,7 @@ public class GridImageEntry {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
+    private final Drawable mGifForegroundDrawable;
     private final EllipsizingTextView mTitle;
 
     private Context mContext;
@@ -46,6 +47,7 @@ public class GridImageEntry {
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
+        mGifForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
 
         mTitle.setMaxLines(10);
     }
@@ -86,7 +88,12 @@ public class GridImageEntry {
         lp.height = imgViewHeight;
         mImageView.setLayoutParams(lp);
 
-        mImageLayout.setForeground(null);
+
+        if (image.isAnimatedGif()) {
+            mImageLayout.setForeground(mGifForegroundDrawable);
+        } else {
+            mImageLayout.setForeground(null);
+        }
         mImageLayout.setVisibility(View.VISIBLE);
 
         // XXX: У некоторых картинок может не быть image.image.path
