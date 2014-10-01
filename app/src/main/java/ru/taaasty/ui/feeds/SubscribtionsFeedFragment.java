@@ -250,7 +250,9 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            throw new IllegalStateException();
+            Intent i = new Intent(SubscribtionsFeedFragment.this.getActivity(), TlogActivity.class);
+            i.putExtra(TlogActivity.ARG_USER_ID, entry.getAuthor().getId());
+            SubscribtionsFeedFragment.this.getActivity().startActivity(i);
         }
 
         @Override
