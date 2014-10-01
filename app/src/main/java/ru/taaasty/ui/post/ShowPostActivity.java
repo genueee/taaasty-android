@@ -246,11 +246,11 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             mAbIconLoader.loadIcon(userpic, username);
         }
         if (design != null && design.isDarkTheme()) {
-            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar)));
+            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
             ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
             title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else {
-            ab.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_light)));
         }
 
         ab.setTitle(title);

@@ -9,11 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -31,6 +31,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -159,6 +160,11 @@ public class ShowPostFragment extends Fragment {
     private final Object mGifLoadingTag = this;
 
     /**
+     * Отступ снизу, чтобы даже после убирания отступа сверху список оставался скроллируемым
+     */
+    private View mAlwaysScrollablePad;
+
+    /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
@@ -248,13 +254,21 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
         if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
+        mAlwaysScrollablePad = new FrameLayout(getActivity());
+        AbsListView.LayoutParams lp = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, 0);
+        mAlwaysScrollablePad.setLayoutParams(lp);
+
         mListView.addHeaderView(mPostContentView, null, false);
         mListView.addHeaderView(mCommentsLoadMoreContainer, null, false);
+        mListView.addFooterView(mAlwaysScrollablePad, null, false);
+
         mListView.setAdapter(mCommentsAdapter);
         mListView.setOnItemClickListener(mOnCommentClickedListener);
+        mListView.getViewTreeObserver().addOnGlobalLayoutListener(mTopMarginGlobalLayoutListener);
 
         if (savedInstanceState != null) {
             mCurrentEntry = savedInstanceState.getParcelable(KEY_CURRENT_ENTRY);
@@ -300,6 +314,7 @@ public class ShowPostFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mTopMarginGlobalLayoutListener);
         mPostSubscription.unsubscribe();
         mCommentsSubscription.unsubscribe();
         mTlogDesignSubscription.unsubscribe();
@@ -380,19 +395,45 @@ public class ShowPostFragment extends Fragment {
         }
     };
 
-    private void adjustPaddings() {
-        final TypedArray styledAttributes = getActivity().getTheme().obtainStyledAttributes(
-                new int[] { android.R.attr.actionBarSize });
-        int abSize = styledAttributes.getDimensionPixelSize(0, 0);
-        styledAttributes.recycle();
-        int paddingTop = willMyListScroll() ? 0 : abSize;
-        mListView.setPadding(mListView.getPaddingLeft(), paddingTop, mListView.getPaddingRight(), mListView.getPaddingBottom());
-    }
+    private final ViewTreeObserver.OnGlobalLayoutListener mTopMarginGlobalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+
+        private final Handler mHandler = new Handler();
+
+        @Override
+        public void onGlobalLayout() {
+            mHandler.removeCallbacks(mUpdatePaddingTopRunnable);
+            mHandler.postDelayed(mUpdatePaddingTopRunnable, 16);
+        }
+    };
+
+    private Runnable mUpdatePaddingTopRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (!willMyListScroll()) return;
+            if (!mListView.isEnabled()) return;
+            if (mLoadComments) return;
+            // Как только список начинает скроллится, убираем паддинг сверху и больше не трогаем
+            mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mTopMarginGlobalLayoutListener);
+            final int abSize = mListView.getPaddingTop();
+
+            mListView.setTranslationY(abSize);
+            mListView.setPadding(mListView.getPaddingLeft(), 0, mListView.getPaddingRight(), mListView.getPaddingBottom());
+            AbsListView.LayoutParams lp = (AbsListView.LayoutParams) mAlwaysScrollablePad.getLayoutParams();
+            lp.height = abSize;
+            mAlwaysScrollablePad.setLayoutParams(lp);
+
+            mListView
+                    .animate()
+                    .translationY(0)
+                    .setDuration(getResources().getInteger(R.integer.longAnimTime))
+                    .start();
+        }
+    };
 
     private boolean willMyListScroll() {
-        if (mListView.getChildCount() == 0) return false;
-        int pos = mListView.getLastVisiblePosition();
-        return mListView.getChildAt(pos).getBottom() > mListView.getHeight();
+        if (mListView.getChildCount() <= 0) return false;
+        int pos = mListView.getChildCount() - 1;
+        return mListView.getChildAt(pos).getBottom() > mListView.getBottom() - mListView.getPaddingBottom();
     }
 
     private void setupEntry() {
@@ -407,12 +448,6 @@ public class ShowPostFragment extends Fragment {
             mPostContentView.setVisibility(View.VISIBLE);
             setupPostImage();
             setupPostText();
-            mListView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adjustPaddings();
-                }
-            }, 64);
         }
         mListView.setOnScrollListener(mScrollListener);
     }
@@ -1094,21 +1129,21 @@ public class ShowPostFragment extends Fragment {
         public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
             final int lastItem = firstVisibleItem + visibleItemCount;
             int lastBottom = 0;
-            int listViewHeight = 0;
+            int viewBottom = 0;
 
             boolean atBottom = false;
 
             if (lastItem == totalItemCount) {
-                lastBottom = mListView.getChildAt(mListView.getChildCount() - 1).getBottom();
-                listViewHeight = mListView.getHeight();
-                if (DBG) Log.v(TAG, "child bottom: " + lastBottom + " view height: " + listViewHeight);
-                atBottom = lastBottom <= listViewHeight;
+                lastBottom = view.getChildAt(view.getChildCount() - 1).getBottom();
+                viewBottom = view.getBottom() - view.getPaddingBottom();
+                if (DBG) Log.v(TAG, "child bottom: " + lastBottom + " view bottom: " + viewBottom);
+                atBottom = lastBottom <= viewBottom;
             }
 
             if (atBottom) {
                 if (!mBottomReachedCalled) {
                     mBottomReachedCalled = true;
-                    if (mListener != null) mListener.onBottomReached(lastBottom, listViewHeight);
+                    if (mListener != null) mListener.onBottomReached(lastBottom, viewBottom);
                 }
             } else {
                 if (mBottomReachedCalled) {
@@ -1152,12 +1187,6 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onCompleted() {
             mLoadComments = false;
-            mListView.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    adjustPaddings();
-                }
-            }, 128);
             refreshCommentsStatus();
         }
 

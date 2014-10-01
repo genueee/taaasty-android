@@ -77,7 +77,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         mAbTitle = new SpannableString("");
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
 
-        mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar));
+        mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
         mAbBackgroundDrawable.setAlpha(0);
         mAbIconDrawable = new ColorDrawable(Color.TRANSPARENT);
 
