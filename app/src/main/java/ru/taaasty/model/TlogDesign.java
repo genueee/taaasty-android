@@ -231,4 +231,14 @@ public class TlogDesign implements Parcelable {
             return new TlogDesign[size];
         }
     };
+
+    public int getAuthorTextAppearance() {
+        int appearance;
+        if (isLightTheme()) {
+            appearance = R.style.TextAppearanceSlugInlineBlack;
+        } else {
+            appearance = R.style.TextAppearanceSlugInlineWhite;
+        }
+        return appearance;
+    }
 }

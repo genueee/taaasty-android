@@ -5,7 +5,6 @@ import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -197,17 +196,10 @@ public class CommentsAdapter extends BaseAdapter {
             vh.date.setVisibility(View.VISIBLE);
             vh.date.setMinWidth(0);
         }
-        applyFeedStyle(vh);
+
         setCommentText(vh, comment);
 
         return res;
-    }
-
-    private void applyFeedStyle(ViewHolder vh) {
-        int textColor = mFeedDesign.getFeedTextColor(mResources);
-        Typeface tf = mFeedDesign.isFontTypefaceSerif() ? mFontManager.getPostSerifTypeface() : mFontManager.getPostSansSerifTypeface();
-
-        vh.comment.setTextColor(textColor);
     }
 
     private void setupActionView(ViewHolder vh, Comment comment) {
@@ -225,7 +217,8 @@ public class CommentsAdapter extends BaseAdapter {
     private void setCommentText(ViewHolder vh, Comment item) {
         Context context = vh.comment.getContext();
         if (context == null) return;
-        TextAppearanceSpan tas = new TextAppearanceSpan(context, R.style.TextAppearanceSlugInlineBlack);
+
+        TextAppearanceSpan tas = new TextAppearanceSpan(context, mFeedDesign.getAuthorTextAppearance() );
 
         String slug = item.getAuthor().getSlug();
         SpannableStringBuilder ssb = new SpannableStringBuilder(slug);
@@ -233,6 +226,7 @@ public class CommentsAdapter extends BaseAdapter {
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
         vh.comment.setText(ssb);
+        vh.comment.setTextColor( mFeedDesign.getFeedTextColor(mResources) );
     }
 
     private void setDate(ViewHolder vh, Comment item) {
