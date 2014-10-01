@@ -232,13 +232,13 @@ public class TlogDesign implements Parcelable {
         }
     };
 
-    public int getAuthorTextColor(Resources r) {
-        int color;
+    public int getAuthorTextAppearance() {
+        int appearance;
         if (isLightTheme()) {
-            color = r.getColor(R.color.author_black_text);
+            appearance = R.style.TextAppearanceSlugInlineBlack;
         } else {
-            color = r.getColor(R.color.author_white_text);
+            appearance = R.style.TextAppearanceSlugInlineWhite;
         }
-        return color;
+        return appearance;
     }
 }

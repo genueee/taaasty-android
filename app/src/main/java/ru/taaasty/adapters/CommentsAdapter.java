@@ -8,7 +8,6 @@ import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -219,18 +218,15 @@ public class CommentsAdapter extends BaseAdapter {
         Context context = vh.comment.getContext();
         if (context == null) return;
 
-        TextAppearanceSpan tas = new TextAppearanceSpan(context, R.style.TextAppearanceSlugInlineBlack);
+        TextAppearanceSpan tas = new TextAppearanceSpan(context, mFeedDesign.getAuthorTextAppearance() );
 
         String slug = item.getAuthor().getSlug();
         SpannableStringBuilder ssb = new SpannableStringBuilder(slug);
-        int author_name_end = ssb.length();
-        ssb.setSpan(tas, 0, author_name_end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ssb.setSpan(new ForegroundColorSpan( mFeedDesign.getAuthorTextColor(mResources) ), 0, author_name_end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.setSpan(tas, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         ssb.append(' ');
-        int comment_start = ssb.length();
         ssb.append(item.getTextSpanned());
-        ssb.setSpan(new ForegroundColorSpan( mFeedDesign.getFeedTextColor(mResources) ), comment_start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         vh.comment.setText(ssb);
+        vh.comment.setTextColor( mFeedDesign.getFeedTextColor(mResources) );
     }
 
     private void setDate(ViewHolder vh, Comment item) {

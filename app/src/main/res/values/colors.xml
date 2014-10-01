@@ -21,8 +21,6 @@
     <color name="refresh_widget_color4">#ff909090</color>
     <color name="feed_white_text">@android:color/white</color>
     <color name="feed_black_text">@android:color/black</color>
-    <color name="author_white_text">@android:color/white</color>
-    <color name="author_black_text">@android:color/black</color>
     <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
