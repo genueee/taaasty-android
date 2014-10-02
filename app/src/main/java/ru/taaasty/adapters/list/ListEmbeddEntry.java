@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import ru.taaasty.R;
@@ -27,7 +28,7 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
  * Created by alexey on 28.09.14.
  */
-public class ListEmbeddEntry extends ListEntryBase {
+public class ListEmbeddEntry extends ListEntryBase implements Callback {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
@@ -113,7 +114,7 @@ public class ListEmbeddEntry extends ListEntryBase {
                 .load(url)
                 .placeholder(mImagePlaceholderDrawable)
                 .error(R.drawable.image_load_error)
-                .into(mImageView);
+                .into(mImageView, this);
     }
 
     private void setupTitle(Entry item, int parentWidth) {
@@ -133,5 +134,16 @@ public class ListEmbeddEntry extends ListEntryBase {
         mTitle.setText(Html.fromHtml(title.toString(), mImageGetter, null), TextView.BufferType.NORMAL);
         TextViewImgLoader.bindAndLoadImages(mTitle);
         mTitle.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onSuccess() {
+        mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    }
+
+    @Override
+    public void onError() {
+        // 9patch нормально скалится только при использовании FIT_XY
+        mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
     }
 }
