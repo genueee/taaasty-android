@@ -27,7 +27,7 @@ public abstract class EndlessFeedItemAdapter extends EndlessAdapter {
     private Subscription mFeedAppendSubscription = SubscriptionHelper.empty();
 
     public EndlessFeedItemAdapter(Context context, FeedItemAdapter.OnItemListener listener, boolean showUserAvatar) {
-        super(context, new FeedItemAdapter(context, listener, showUserAvatar), R.layout.endless_loading_indicator, false);
+        super(context, new FeedItemAdapter(context, listener, showUserAvatar, false), R.layout.endless_loading_indicator, false);
         mAdapter = (FeedItemAdapter)getWrappedAdapter();
     }
 

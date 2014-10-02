@@ -46,7 +46,10 @@ public class FeedItemAdapter extends BaseAdapter {
 
     private final Set<Long> mUpdateRatingEntrySet;
 
-    public FeedItemAdapter(Context context, OnItemListener listener, boolean showUserAvatar) {
+    private boolean mAuthorAvatarClick = false;
+
+
+    public FeedItemAdapter(Context context, OnItemListener listener, boolean showUserAvatar, boolean authorAvatarClick) {
         super();
         mFeed = new ArrayList<>();
         mContext = context;
@@ -55,6 +58,7 @@ public class FeedItemAdapter extends BaseAdapter {
         mUpdateRatingEntrySet = new HashSet<>();
         mListener = listener;
         mShowUserAvatar = showUserAvatar;
+        mAuthorAvatarClick = authorAvatarClick;
     }
 
     public void setFeed(List<Entry> feed) {
@@ -173,7 +177,8 @@ public class FeedItemAdapter extends BaseAdapter {
             }
             res.setTag(R.id.feed_item_view_holder, holder);
             res.setOnClickListener(mOnFeedItemClickListener);
-            holder.getAvatarAuthorView().setOnClickListener(mOnAuthorItemClickListener);
+            if(mAuthorAvatarClick)
+                holder.getAvatarAuthorView().setOnClickListener(mOnAuthorItemClickListener);
             holder.getEntryActionBar().setOnItemClickListener(mListener);
         } else {
             res = convertView;
@@ -182,7 +187,8 @@ public class FeedItemAdapter extends BaseAdapter {
         holder.setupEntry(item, mFeedDesign, parentWidth);
         holder.getEntryActionBar().setOnItemListenerEntry(item);
         res.setTag(R.id.feed_item_post, item);
-        holder.getAvatarAuthorView().setTag( R.id.feed_item_post, item);
+        if(mAuthorAvatarClick)
+            holder.getAvatarAuthorView().setTag( R.id.feed_item_post, item);
         return res;
     }
 

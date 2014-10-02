@@ -124,7 +124,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         super.onActivityCreated(savedInstanceState);
 
         mListView.addParallaxedHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, true);
+        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, true, true);
         mListView.setAdapter(mAdapter);
 
         if (savedInstanceState != null) {

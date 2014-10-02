@@ -147,7 +147,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         super.onActivityCreated(savedInstanceState);
 
         mListView.addParallaxedHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, false);
+        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, false, false);
         mListView.setAdapter(mAdapter);
 
         if (!mRefreshLayout.isRefreshing()) refreshData();
