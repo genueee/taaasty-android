@@ -482,16 +482,16 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.2040332"
-     inkscape:cx="639.97633"
-     inkscape:cy="735.53985"
+     inkscape:zoom="4.8161328"
+     inkscape:cx="340.21956"
+     inkscape:cy="393.32288"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="977"
+     inkscape:window-width="1680"
+     inkscape:window-height="999"
      inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:window-y="27"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3020">
@@ -1143,11 +1143,11 @@
        id="rect3939"
        width="223.74567"
        height="44.300468"
-       x="429.81494"
-       y="411.6713" />
+       x="438.12036"
+       y="380.11072" />
     <g
        id="ic_sign_vkontakte"
-       transform="matrix(0.5,0,0,0.5,462.93726,422.20834)"
+       transform="matrix(0.5,0,0,0.5,471.24268,390.64775)"
        style="fill:#ffffff">
       <defs
          id="defs3884">
@@ -1178,7 +1178,7 @@
     </g>
     <g
        id="ic_sign_email"
-       transform="matrix(0.39800995,0,0,-0.39800995,485.16371,445.02956)"
+       transform="matrix(0.39800995,0,0,-0.39800995,493.46913,413.46897)"
        style="fill:none;stroke:#565656;stroke-opacity:1">
       <g
          id="g14-797-1"
@@ -1245,13 +1245,13 @@
        style="fill:#000000;fill-rule:evenodd;stroke:#000000;stroke-width:2.31315064px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="0-2"
        width="341.87665"
-       height="316.5231"
-       x="375.22577"
-       y="464.65955"
+       height="148.75365"
+       x="383.53119"
+       y="433.09897"
        inkscape:label="" />
     <g
        id="ic_user_stub_dark_normal"
-       transform="matrix(0.625,0,0,-0.625,423.183,581.11607)"
+       transform="matrix(0.625,0,0,-0.625,431.48842,549.55548)"
        style="stroke:#808080;stroke-opacity:0.43921569">
       <path
          id="path26-3-2-5"
@@ -1261,7 +1261,7 @@
     </g>
     <g
        id="ic_user_stub_dark_pressed"
-       transform="matrix(0.625,0,0,-0.625,541.81687,590.42894)"
+       transform="matrix(0.625,0,0,-0.625,550.12229,558.86835)"
        style="stroke:#ffffff;stroke-opacity:1"
        inkscape:label="#ic_user_stub_dark_pressed">
       <g
@@ -1292,7 +1292,7 @@
     </g>
     <g
        id="ic_magick_wand_normal"
-       transform="matrix(0.625,0,0,-0.625,522.90521,450.04089)"
+       transform="matrix(0.625,0,0,-0.625,531.21063,418.4803)"
        style="stroke:#979da1;stroke-opacity:1">
       <g
          id="g14-79"
@@ -1322,7 +1322,7 @@
     </g>
     <g
        id="ic_magick_wand_pressed"
-       transform="matrix(0.625,0,0,-0.625,560.8721,451.20938)"
+       transform="matrix(0.625,0,0,-0.625,569.17752,419.64879)"
        style="stroke:#ffffff;stroke-opacity:1">
       <g
          id="g14-79-9"
@@ -2312,7 +2312,7 @@
     </g>
     <g
        id="ic_ab_subscribe_normal"
-       transform="translate(1.661084,2.9068968)">
+       transform="translate(9.9665028,-28.653695)">
       <line
          id="line4011"
          y2="442.32001"
@@ -2489,6 +2489,48 @@
          id="path3870-0"
          d="m 1272.4,318.7 c 0,0 5.6,-13 11.9,-13 6.3,0 11.3,7.1 11.3,7.1 l 7.6,-12.3 c 0.8,-1.2 2.1,-2 3.7,-2 1.6,0 3.1,0.9 3.8,2.2 l 9.7,17.9"
          stroke-miterlimit="10" />
+    </g>
+    <g
+       id="image_load_error"
+       transform="translate(-72.257144,-43.395814)">
+      <rect
+         rx="3.9641747"
+         ry="3.9641747"
+         y="649.26691"
+         x="333.16888"
+         height="56"
+         width="56"
+         id="rect4450"
+         style="opacity:0.98999999;fill:#d0d0d0;fill-opacity:0.37647059;fill-rule:nonzero;stroke:none" />
+      <g
+         style="stroke:#acacac;stroke-opacity:1"
+         id="ic_image_post_normal-7"
+         transform="matrix(0.66772653,0,0,0.66772653,-504.47181,475.68027)">
+        <circle
+           stroke-miterlimit="10"
+           cx="1296.4"
+           cy="301.89999"
+           r="30.200001"
+           id="circle3866-79"
+           d="m 1326.6,301.89999 c 0,16.679 -13.521,30.2 -30.2,30.2 -16.679,0 -30.2,-13.521 -30.2,-30.2 0,-16.679 13.521,-30.2 30.2,-30.2 16.679,0 30.2,13.521 30.2,30.2 z"
+           sodipodi:cx="1296.4"
+           sodipodi:cy="301.89999"
+           sodipodi:rx="30.200001"
+           sodipodi:ry="30.200001"
+           style="fill:none;stroke:#acacac;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
+        <path
+           stroke-miterlimit="10"
+           d="m 1288.2,285 c -3,0 -5.5,2.3 -6,5.3 -0.4,-0.2 -0.8,-0.3 -1.3,-0.3 -2,0 -3.6,1.7 -3.6,3.8 0,2.1 1.6,3.8 3.6,3.6 h 7.3 c 3.4,0.2 6.1,-2.6 6.1,-6.1 0,-3.5 -2.8,-6.3 -6.1,-6.3 z"
+           id="path3868-6"
+           inkscape:connector-curvature="0"
+           style="fill:none;stroke:#acacac;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
+        <path
+           stroke-miterlimit="10"
+           d="m 1272.4,318.7 c 0,0 5.6,-13 11.9,-13 6.3,0 11.3,7.1 11.3,7.1 l 7.6,-12.3 c 0.8,-1.2 2.1,-2 3.7,-2 1.6,0 3.1,0.9 3.8,2.2 l 9.7,17.9"
+           id="path3870-8"
+           inkscape:connector-curvature="0"
+           style="fill:none;stroke:#acacac;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:10;stroke-opacity:1" />
+      </g>
     </g>
   </g>
 </svg>

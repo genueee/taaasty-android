@@ -27,7 +27,7 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
 * Created by alexey on 28.09.14.
 */
-public class GridImageEntry {
+public class GridImageEntry implements com.squareup.picasso.Callback {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
@@ -105,7 +105,7 @@ public class GridImageEntry {
                 .load(b.toUrl())
                 .placeholder(mImagePlaceholderDrawable)
                 .error(R.drawable.image_loading_drawable)
-                .into(mImageView);
+                .into(mImageView, this);
     }
 
     private void setupTitle(Entry item, int parentWidth) {
@@ -120,5 +120,16 @@ public class GridImageEntry {
         mTitle.setText(Html.fromHtml(title.toString(), mImageGetter, null), TextView.BufferType.NORMAL);
         TextViewImgLoader.bindAndLoadImages(mTitle);
         mTitle.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onSuccess() {
+        mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+    }
+
+    @Override
+    public void onError() {
+        // 9patch нормально скалится только при использовании FIT_XY
+        mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
     }
 }

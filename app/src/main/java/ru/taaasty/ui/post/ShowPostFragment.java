@@ -54,6 +54,7 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
+import com.squareup.picasso.Callback;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import junit.framework.Assert;
@@ -697,11 +698,22 @@ public class ShowPostFragment extends Fragment {
         if (image.isAnimatedGif()) {
             loadGif(url, imageView);
         } else {
+            final ImageView finalImageView = imageView;
             NetworkUtils.getInstance().getPicasso(getActivity())
                     .load(url)
                     .placeholder(loadingDrawable)
                     .error(R.drawable.image_load_error)
-                    .into(imageView);
+                    .into(imageView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            finalImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        }
+
+                        @Override
+                        public void onError() {
+                            finalImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                        }
+                    });
         }
 
         final ArrayList<String> images = new ArrayList<>(mCurrentEntry.getImages().size());
