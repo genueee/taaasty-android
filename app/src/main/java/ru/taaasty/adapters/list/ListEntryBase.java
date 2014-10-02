@@ -71,4 +71,5 @@ public abstract class ListEntryBase {
         return mEntryActionBar;
     }
 
+    public ViewGroup getAvatarAuthorView() { return mAvatarAuthor; }
 }

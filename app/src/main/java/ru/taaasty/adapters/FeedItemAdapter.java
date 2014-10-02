@@ -173,6 +173,7 @@ public class FeedItemAdapter extends BaseAdapter {
             }
             res.setTag(R.id.feed_item_view_holder, holder);
             res.setOnClickListener(mOnFeedItemClickListener);
+            holder.getAvatarAuthorView().setOnClickListener(mOnAuthorItemClickListener);
             holder.getEntryActionBar().setOnItemClickListener(mListener);
         } else {
             res = convertView;
@@ -181,6 +182,7 @@ public class FeedItemAdapter extends BaseAdapter {
         holder.setupEntry(item, mFeedDesign, parentWidth);
         holder.getEntryActionBar().setOnItemListenerEntry(item);
         res.setTag(R.id.feed_item_post, item);
+        holder.getAvatarAuthorView().setTag( R.id.feed_item_post, item);
         return res;
     }
 
@@ -199,6 +201,14 @@ public class FeedItemAdapter extends BaseAdapter {
         public void onClick(View v) {
             Entry entry = (Entry)v.getTag(R.id.feed_item_post);
             if (mListener != null) mListener.onFeedItemClicked(v, entry.getId());
+        }
+    };
+
+    private final View.OnClickListener mOnAuthorItemClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Entry entry = (Entry)v.getTag(R.id.feed_item_post);
+            if (mListener != null) mListener.onPostUserInfoClicked(v, entry );
         }
     };
 
