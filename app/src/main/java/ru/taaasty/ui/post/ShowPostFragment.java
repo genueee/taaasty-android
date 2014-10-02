@@ -74,6 +74,7 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.ReportCommentSent;
+import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
@@ -363,6 +364,9 @@ public class ShowPostFragment extends Fragment {
 
     public void onEventMainThread(CommentRemoved event) {
         if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
+        mCurrentEntry.setCommentsCount( mCurrentEntry.getCommentsCount() - 1 );
+        mEntryBottomActionBar.setComments(mCurrentEntry);
+        EventBus.getDefault().post(new UserLikeOrCommentUpdate(mCurrentEntry));
     }
 
     public void onEventMainThread(ReportCommentSent event) {
@@ -1220,6 +1224,9 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onCompleted() {
             if (mReplyToCommentText != null) mReplyToCommentText.setText("");
+            mCurrentEntry.setCommentsCount(mCurrentEntry.getCommentsCount() + 1);
+            EventBus.getDefault().post(new UserLikeOrCommentUpdate(mCurrentEntry));
+            mEntryBottomActionBar.setComments(mCurrentEntry);
         }
 
         @Override
@@ -1280,6 +1287,7 @@ public class ShowPostFragment extends Fragment {
             mUpdateRating = false;
             mCurrentEntry = entry;
             setupEntry();
+            EventBus.getDefault().post(new UserLikeOrCommentUpdate(entry));
         }
 
         @Override

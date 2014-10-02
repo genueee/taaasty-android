@@ -20,11 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -91,6 +93,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -156,6 +159,12 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
@@ -193,6 +202,10 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         if (DBG) Log.v(TAG, "refreshData()");
         refreshUser();
         refreshFeed();
+    }
+
+    public void onEventMainThread(UserLikeOrCommentUpdate update) {
+        mAdapter.updateEntry(update.postEntry);
     }
 
     void setupFeedDesign() {

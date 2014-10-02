@@ -23,11 +23,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -121,6 +123,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             mPageIdx = args.getInt(BUNDLE_ARG_PAGE_IDX, 0);
             mPageCount = args.getInt(BUNDLE_ARG_PAGE_COUNT, 3);
         }
+
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -241,6 +245,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -463,6 +473,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             setupUser(currentUser);
         }
     };
+
+    public void onEventMainThread(UserLikeOrCommentUpdate update) {
+        mAdapter.updateEntry(update.postEntry);
+    }
 
     /**
      * This interface must be implemented by activities that contain this
