@@ -119,6 +119,7 @@
     <style name="LoginActivityTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:textColorHint">@color/text_color_semi_semi_transparent_white</item>
+        <item name="android:textCursorDrawable">@null</item>
     </style>
 
     <style name="AdditionMenuActivityTheme" parent="AppThemeDark">
@@ -132,8 +133,6 @@
     <style name="LoginButtonContainer">
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
-        <item name="android:layout_marginLeft">18dp</item>
-        <item name="android:layout_marginRight">18dp</item>
         <item name="android:layout_marginTop">5dp</item>
         <item name="android:layout_marginBottom">5dp</item>
         <item name="android:layout_width">match_parent</item>
