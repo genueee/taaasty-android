@@ -15,7 +15,7 @@
         android:overScrollHeader="@android:color/black"
         android:paddingTop="?android:actionBarSize"
         android:paddingBottom="80dp"
-        tools:listitem="@layout/feed_item" />
+        tools:listitem="@layout/post_item" />
 
     <LinearLayout
         android:id="@+id/reply_to_comment_container"

@@ -33,7 +33,7 @@
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"/>
 
             <EditText
                 android:id="@+id/password"
@@ -44,7 +44,7 @@
                 android:inputType="textPassword"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"/>
 
             <EditText
                 android:id="@+id/slug"
@@ -57,7 +57,7 @@
                 android:inputType="text"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:textColor="@android:color/white" />
+                android:textColor="@android:color/white"/>
 
             <FrameLayout
                 android:layout_width="match_parent"

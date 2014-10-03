@@ -118,6 +118,7 @@
 
     <style name="LoginActivityTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:textColorHint">@color/text_color_semi_semi_transparent_white</item>
     </style>
 
     <style name="AdditionMenuActivityTheme" parent="AppThemeDark">
