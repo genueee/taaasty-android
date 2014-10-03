@@ -100,6 +100,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             mCreatePostButton.setEnabled(false);
         }
         mViewPager.setCurrentItem(currentItem.ordinal(), false);
+        mCreatePostButtons.setActivated(currentItem.buttonViewId);
 
         EventBus.getDefault().register(this);
     }
