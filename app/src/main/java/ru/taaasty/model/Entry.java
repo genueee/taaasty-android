@@ -120,6 +120,8 @@ public class Entry implements Parcelable {
         return mCommentsCount;
     }
 
+    public void setCommentsCount( int commentsCount ) { mCommentsCount = commentsCount; }
+
     public Date getCreatedAt() {
         return mCreatedAt;
     }
