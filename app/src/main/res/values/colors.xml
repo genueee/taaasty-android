@@ -36,4 +36,7 @@
     <color name="no_frame_dialog_background">#d0000000</color>
     <color name="embedd_play_gray_background">#50000000</color>
 
+    <color name="photo_scroll_indicator">#b6ababab</color>
+    <color name="photo_scroll_indicator_slider">#62ffffff</color>
+
 </resources>

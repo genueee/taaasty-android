@@ -3,6 +3,7 @@ package ru.taaasty.ui.photo;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ActionbarUserIconLoader;
+import ru.taaasty.widgets.PhotoScrollPositionIndicator;
 
 public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
@@ -35,6 +37,8 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     private volatile boolean userForcedToChangeOverlayMode = false;
 
     private PhotoAdapter mAdapter;
+    private PhotoScrollPositionIndicator mIndicator;
+    private boolean mIndicatorVisible = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,8 +54,10 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
             throw new IllegalStateException("ARG_IMAGE_URL_LIST not defined");
         }
 
+        mIndicator = (PhotoScrollPositionIndicator)findViewById(R.id.photo_position_indicator);
         mAdapter = new PhotoAdapter(getFragmentManager(), images, previewUrl);
         ViewPager viewPager = (ViewPager) findViewById(R.id.PhotoViewPager);
+
         viewPager.setAdapter(mAdapter);
 
         if (getActionBar() != null) {
@@ -98,21 +104,36 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
      */
     public void toggleShowOrHideHideyBarMode() {
 
-        int newUiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        int newUiOptions;
+
+        if (Build.VERSION.SDK_INT >= 19) {
+            newUiOptions = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        } else {
+            newUiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        }
 
         if (!isNavigationHidden) {
-            if(Build.VERSION.SDK_INT >= 14) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                newUiOptions
+                        |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE;
+            } else {
                 newUiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
             }
             getActionBar().hide();
+            if (mIndicatorVisible) mIndicator.setVisibility(View.GONE);
             isNavigationHidden = true;
         } else {
-            if(Build.VERSION.SDK_INT >= 14) {
+            if (Build.VERSION.SDK_INT < 19) {
                 newUiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
             }
             getActionBar().show();
             isNavigationHidden = false;
             userForcedToChangeOverlayMode = false;
+            if (mIndicatorVisible) mIndicator.setVisibility(View.VISIBLE);
             runHideActionBarTimer();
         }
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
@@ -134,6 +155,22 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     public void onLoadBitmapFailed() {
         Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_SHORT).show();
         if (mAdapter != null && mAdapter.getCount() <= 1) finish();
+    }
+
+    @Override
+    public void onMatrixChanged(int photoViewWidth, RectF imageRect) {
+        if (photoViewWidth >= imageRect.width()) {
+            if (mIndicatorVisible) {
+                mIndicatorVisible = false;
+                mIndicator.setVisibility(View.GONE);
+            }
+        } else {
+            mIndicator.setScrollSizes(photoViewWidth, imageRect);
+            if (!mIndicatorVisible) {
+                mIndicatorVisible = true;
+                if (!isNavigationHidden) mIndicator.setVisibility(View.VISIBLE);
+            }
+        }
     }
 
     public static class PhotoAdapter extends FragmentStatePagerAdapter {

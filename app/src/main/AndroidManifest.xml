@@ -100,6 +100,7 @@
         </activity>
         <activity
             android:name=".ui.photo.ShowPhotoActivity"
+            android:screenOrientation="fullSensor"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:theme="@style/FullscreenTheme" >
         </activity>
