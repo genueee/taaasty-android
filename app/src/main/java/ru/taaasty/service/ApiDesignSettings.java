@@ -7,7 +7,6 @@ import retrofit.http.POST;
 import retrofit.http.PUT;
 import retrofit.http.Part;
 import retrofit.http.Path;
-import retrofit.mime.TypedFile;
 import retrofit.mime.TypedOutput;
 import ru.taaasty.model.TlogDesign;
 import rx.Observable;
@@ -17,13 +16,13 @@ import rx.Observable;
  */
 public interface ApiDesignSettings {
 
-    @GET("/design_settings/{slug}.json")
-    Observable<TlogDesign> getDesignSettings(@Path("slug") String slug);
+    @GET("/design_settings/{id_or_slug}.json")
+    Observable<TlogDesign> getDesignSettings(@Path("id_or_slug") String idOrSlug);
 
     // XXX
-    @PUT("/design_settings/{slug}.json")
-    Observable<Object> getDesignSettings(
-            @Path("slug") String slug,
+    @PUT("/design_settings/{id_or_slug}.json")
+    Observable<Object> putDesignSettings(
+            @Path("id_or_slug") String idOrSlug,
             @Field("feedColor") String feedColor,
             @Field("headerColor") String headerColor,
             @Field("fontType") String fontType,
@@ -31,18 +30,12 @@ public interface ApiDesignSettings {
             @Field("feedOpacity") float feedOpacity
             );
 
-    @Multipart
-    @POST("/design_settings/{slug}.json")
-    Observable<Object> postCover(
-            @Path("slug") String slug,
-            TypedFile photo);
-
     /**
      * Загрузка бэкграунда
      * @param file
      * @return
      */
     @Multipart
-    @POST("/design_settings/{slug}/cover.json")
-    TlogDesign uploadBackgroundSync(@Path("slug") String slug, @Part("file") TypedOutput file);
+    @POST("/design_settings/{id_or_slug}/cover.json")
+    TlogDesign uploadBackgroundSync(@Path("id_or_slug") String idOrSlug, @Part("file") TypedOutput file);
 }

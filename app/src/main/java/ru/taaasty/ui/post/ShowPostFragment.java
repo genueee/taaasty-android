@@ -918,10 +918,10 @@ public class ShowPostFragment extends Fragment {
                 .subscribe(mCurrentEntryObserver);
     }
 
-    private void loadDesign(String slug) {
+    private void loadDesign(long userId) {
         mTlogDesignSubscription.unsubscribe();
         Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
-                mTlogDesignService.getDesignSettings(slug));
+                mTlogDesignService.getDesignSettings(String.valueOf(userId)));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mTlogDesignObserver);
@@ -1190,7 +1190,7 @@ public class ShowPostFragment extends Fragment {
             loadComments();
             //
             if(entry.getAuthor() != User.DUMMY)
-                loadDesign(entry.getAuthor().getSlug());
+                loadDesign(entry.getAuthor().getId());
         }
     };
 
