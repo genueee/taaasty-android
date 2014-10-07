@@ -1,7 +1,6 @@
 package ru.taaasty.widgets;
 
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -29,7 +28,25 @@ public class ImageViewCompat extends ImageView {
         super(context, attrs, defStyle);
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private boolean mAdjustViewBounds = false;
+    private int mMaxWidth = Integer.MAX_VALUE;
+    private int mMaxHeight = Integer.MAX_VALUE;
+
+    public void setAdjustViewBounds(boolean adjustViewBounds) {
+        super.setAdjustViewBounds(adjustViewBounds);
+        mAdjustViewBounds = adjustViewBounds;
+    }
+
+    public void setMaxWidth(int maxWidth) {
+        super.setMaxWidth(maxWidth);
+        mMaxWidth = maxWidth;
+    }
+
+    public void setMaxHeight(int maxHeight) {
+        super.setMaxHeight(maxHeight);
+        mMaxHeight = maxHeight;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -62,7 +79,7 @@ public class ImageViewCompat extends ImageView {
 
             // We are supposed to adjust view bounds to match the aspect
             // ratio of our drawable. See if that is possible.
-            if (getAdjustViewBounds()) {
+            if (mAdjustViewBounds) {
                 resizeWidth = widthSpecMode != MeasureSpec.EXACTLY;
                 resizeHeight = heightSpecMode != MeasureSpec.EXACTLY;
 
@@ -85,10 +102,10 @@ public class ImageViewCompat extends ImageView {
             */
 
             // Get the max possible width given our constraints
-            widthSize = resolveAdjustedSize(w + pleft + pright, getMaxWidth(), widthMeasureSpec);
+            widthSize = resolveAdjustedSize(w + pleft + pright, mMaxWidth, widthMeasureSpec);
 
             // Get the max possible height given our constraints
-            heightSize = resolveAdjustedSize(h + ptop + pbottom, getMaxHeight(), heightMeasureSpec);
+            heightSize = resolveAdjustedSize(h + ptop + pbottom, mMaxHeight, heightMeasureSpec);
 
             if (desiredAspect != 0.0f) {
                 // See what our actual aspect ratio is
@@ -106,7 +123,7 @@ public class ImageViewCompat extends ImageView {
 
                         // Allow the width to outgrow its original estimate if height is fixed.
                         if (!resizeHeight) {
-                            widthSize = resolveAdjustedSize(newWidth, getMaxWidth(), widthMeasureSpec);
+                            widthSize = resolveAdjustedSize(newWidth, mMaxWidth, widthMeasureSpec);
                         }
 
                         if (newWidth <= widthSize) {
@@ -122,7 +139,7 @@ public class ImageViewCompat extends ImageView {
 
                         // Allow the height to outgrow its original estimate if width is fixed.
                         if (!resizeWidth) {
-                            heightSize = resolveAdjustedSize(newHeight, getMaxHeight(),
+                            heightSize = resolveAdjustedSize(newHeight, mMaxHeight,
                                     heightMeasureSpec);
                         }
 
