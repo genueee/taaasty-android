@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginTop="@dimen/activity_vertical_margin"
+    android:layout_marginBottom="@dimen/activity_vertical_margin"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    tools:context="ru.taaasty.ui.post.ErrorLoadingPostFragment">
+
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:scaleType="fitXY"
+        android:cropToPadding="true"
+        android:layout_gravity="center_horizontal"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/error_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minLines="3"
+        android:layout_marginTop="16dp"
+        tools:text="Извините, но доступ к данному тлогу и его записям ограничен его владельцем."
+        android:gravity="center_horizontal"
+         />
+
+</LinearLayout>

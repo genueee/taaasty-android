@@ -63,7 +63,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import de.greenrobot.event.EventBus;
 import pl.droidsonroids.gif.AnimationListener;
@@ -1179,10 +1178,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            // XXX
-            if (e instanceof NoSuchElementException) {
-            }
-            mListener.notifyError(getString(R.string.error_loading_user), e);
+            if (mListener != null) mListener.onPostLoadError(e);
         }
 
         @Override
@@ -1433,6 +1429,7 @@ public class ShowPostFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onPostLoaded(Entry entry);
+        public void onPostLoadError(Throwable e);
         public void onAvatarClicked(User user, TlogDesign design);
         public void onShowImageClicked(User author, List<String> images, String title, String previewUrl);
 

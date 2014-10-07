@@ -28,21 +28,18 @@
         <item quantity="many">%d публикаций за сутки</item>
         <item quantity="other">%d публикаций за сутки</item>
     </plurals>
-
     <plurals name="best_records_last_day">
         <item quantity="one">%d лучшая публикация за сутки</item>
         <item quantity="few">%d лучших публикации за сутки</item>
         <item quantity="many">%d лучших публикаций за сутки</item>
         <item quantity="other">%d лучших публикаций за сутки</item>
     </plurals>
-
     <plurals name="anonymous_records_last_day">
         <item quantity="one">%d анонимка за последние 24 часа</item>
         <item quantity="few">%d анонимки за последние 24 часа</item>
         <item quantity="many">%d анонимок за последние 24 часа</item>
         <item quantity="other">%d анонимок за последние 24 часа</item>
     </plurals>
-
     <plurals name="news_last_day">
         <item quantity="one">%d новость за день</item>
         <item quantity="few">%d новости за день</item>
@@ -69,6 +66,7 @@
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
     <string name="error_youtube_init">Ошибка YouTube (%1$s)</string>
+    <string name="error_tlog_access_denied">Извините, но\u00A0доступ к\u00A0данному тлогу и\u00A0его\u00A0записям ограничен его владельцем.</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>
@@ -152,17 +150,14 @@
     <string name="delete_comment_button">Удалить комментарий</string>
     <string name="delete_comment_description">Вы действительно хотите удалить\u00A0комментарий?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
     <string name="comment_removed">Комментарий удален</string>
-
     <string name="report_comment_button">Пожаловаться</string>
     <string name="report_comment_description">Вы действительно хотите пожаловаться на\u00A0комментарий?</string>
     <string name="comment_complaint_is_sent">Жалоба на комментарий отправлена</string>
     <string name="change_background">Сменить фон</string>
     <string name="error_loading_background">Ошибка загрузки фона</string>
-
     <string name="you_follow">Вы подписаны</string>
     <string name="your_followers">Ваши подписчики</string>
     <string name="your_friends">Друзья</string>
-
     <string name="no_subscribers">Нет подписчиков</string>
     <string name="no_friends">Список пуст</string>
     <string name="logout">Выйти</string>

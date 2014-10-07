@@ -38,6 +38,7 @@ import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends FragmentActivityBase implements ShowPostFragment.OnFragmentInteractionListener {
@@ -141,6 +142,28 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if( entry.getAuthor() != User.DUMMY )
                 setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getSlug(), entry.getAuthor().getDesign());
         }
+    }
+
+    @Override
+    public void onPostLoadError(Throwable e) {
+        String text = "";
+        Integer iconId = null;
+        // При ошибке загруи поста заменяем фрагмент на фрагмент с сообщением об ошибке
+        if (e instanceof NetworkUtils.ResponseErrorException && ((NetworkUtils.ResponseErrorException)e).error.responseCode == 403) {
+            text = getString(R.string.error_tlog_access_denied);
+            iconId = R.drawable.post_load_error;
+        } else {
+            if (e instanceof  NetworkUtils.ResponseErrorException) {
+                text = ((NetworkUtils.ResponseErrorException)e).error.error;
+            } else {
+                text = getString(R.string.error_post_comment);
+            }
+        }
+
+        ErrorLoadingPostFragment newFragment = ErrorLoadingPostFragment.newInstance(text, iconId);
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
+        ActionBar ab = getActionBar();
+        if (ab != null) ab.show();
     }
 
     @Override
