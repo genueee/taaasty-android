@@ -1,6 +1,7 @@
 package ru.taaasty.widgets;
 
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -9,12 +10,14 @@ import android.widget.ImageView;
 
 import ru.taaasty.BuildConfig;
 
+import static junit.framework.Assert.assertEquals;
+
 /**
  * ImageView, который позволяет расширять изображения при adjustViewBounds и на android 4.1
  */
 public class ImageViewCompat extends ImageView {
 
-    private static final boolean mComapct = BuildConfig.VERSION_CODE < Build.VERSION_CODES.JELLY_BEAN_MR1 && BuildConfig.VERSION_CODE > Build.VERSION_CODES.ICE_CREAM_SANDWICH;
+    private static final boolean mComapct = (Build.VERSION.SDK_INT  < Build.VERSION_CODES.JELLY_BEAN_MR1) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH);
 
     public ImageViewCompat(Context context) {
         super(context);
@@ -47,12 +50,25 @@ public class ImageViewCompat extends ImageView {
         mMaxHeight = maxHeight;
     }
 
+
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void assertParams() {
+        if (BuildConfig.DEBUG) {
+            assertEquals("maxWidth должен быть установлен в коде", mMaxWidth, getMaxWidth());
+            assertEquals("maxHeight должен быть установлен в коде", mMaxHeight, getMaxHeight());
+            assertEquals("adjustViewBounds должен быть установлен в коде", mAdjustViewBounds, getAdjustViewBounds());
+        }
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (mComapct) {
             return;
         }
+
+        if (Build.VERSION.SDK_INT > 16) assertParams();
 
         int w;
         int h;

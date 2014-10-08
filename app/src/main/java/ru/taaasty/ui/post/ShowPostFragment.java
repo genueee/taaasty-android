@@ -654,6 +654,7 @@ public class ShowPostFragment extends Fragment {
         if (imageView == null) {
             ViewStub vs = (ViewStub)contentLayout.findViewById(R.id.image_stub);
             imageView = (ImageView)vs.inflate();
+            imageView.setAdjustViewBounds(true);
         }
 
         ImageSize imgSize;
