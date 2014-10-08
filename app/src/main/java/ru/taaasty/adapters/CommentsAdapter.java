@@ -182,13 +182,15 @@ public class CommentsAdapter extends BaseAdapter {
             setupActionView(vh, comment);
             vh.actionView.setVisibility(View.VISIBLE);
             vh.avatar.setVisibility(View.GONE);
-            vh.date.setVisibility(View.INVISIBLE);
+            vh.date.setVisibility(View.GONE);
 
-            // При помощи date выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
+            // При помощи comment.maarginRight выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
             // Т.е. он должен быть такой же ширины, как и кнопки.
             // Если ширина кнопок ещё неизвестна, то надо, по идее, дождаться её определения
             if (vh.actionView.getWidth() != 0) {
-                vh.date.setMinWidth(vh.actionView.getWidth());
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+                lp.rightMargin = vh.actionView.getWidth();
+                vh.comment.setLayoutParams(lp);
             } else {
                 Log.e("CommentsAdapter", "actionView width is 0", new IllegalStateException());
             }
@@ -198,7 +200,10 @@ public class CommentsAdapter extends BaseAdapter {
             setDate(vh, comment);
             vh.avatar.setVisibility(View.VISIBLE);
             vh.date.setVisibility(View.VISIBLE);
-            vh.date.setMinWidth(0);
+
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+            lp.rightMargin = 0;
+            vh.comment.setLayoutParams(lp);
         }
 
         setCommentText(vh, comment);
@@ -291,8 +296,12 @@ public class CommentsAdapter extends BaseAdapter {
                 assert vh.actionView != null;
                 vh.avatarCommentRoot.setTranslationX(0);
                 vh.avatar.setVisibility(View.GONE);
-                vh.date.setVisibility(View.INVISIBLE);
-                vh.date.setMinWidth(vh.actionView.getWidth());
+                vh.date.setVisibility(View.GONE);
+
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+                lp.rightMargin = vh.actionView.getWidth();
+                vh.comment.setLayoutParams(lp);
+
                 vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
@@ -342,6 +351,10 @@ public class CommentsAdapter extends BaseAdapter {
                 vh.avatar.setVisibility(View.VISIBLE);
                 vh.date.setVisibility(View.VISIBLE);
                 vh.date.setMinWidth(0);
+
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+                lp.rightMargin = 0;
+                vh.comment.setLayoutParams(lp);
             }
 
             @Override
