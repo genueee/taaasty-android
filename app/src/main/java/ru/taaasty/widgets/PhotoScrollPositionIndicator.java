@@ -3,8 +3,8 @@ package ru.taaasty.widgets;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -15,11 +15,25 @@ import ru.taaasty.R;
  */
 public class PhotoScrollPositionIndicator extends View {
 
-    private final Paint mPaint;
+    private boolean mHidden = true;
+
+    private final int mAnimationDuration;
 
     private float mPhotoViewWidth = 1;
     private float mImageLeft = 0;
     private float mImageRight = 1;
+
+    private Path mTempPath = new Path();
+    private RectF mTempRectF = new RectF();
+
+    private Paint mBackgroundPaint;
+    private Paint mIndicatorPaint;
+
+    private int mIndicatorColor;
+    private int mBackgroundColor;
+
+    private int mWidth;
+    private int mHeight;
 
     public PhotoScrollPositionIndicator(Context context) {
         this(context, null);
@@ -32,11 +46,19 @@ public class PhotoScrollPositionIndicator extends View {
     public PhotoScrollPositionIndicator(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
-        mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        mPaint.setColor(context.getResources().getColor(R.color.photo_scroll_indicator_slider));
+        mAnimationDuration = getResources().getInteger(R.integer.shortAnimTime);
+        mBackgroundColor = getResources().getColor(R.color.photo_scroll_indicator_background);
+        mIndicatorColor = getResources().getColor(R.color.photo_scroll_indicator_slider);
 
-        Drawable background = context.getResources().getDrawable(R.drawable.photo_scroll_indicator_background);
-        setBackgroundDrawable(background);
+        mBackgroundPaint = new Paint();
+        mBackgroundPaint.setColor(mBackgroundColor);
+        mBackgroundPaint.setAntiAlias(true);
+
+        mIndicatorPaint = new Paint();
+        mIndicatorPaint.setColor(mIndicatorColor);
+        mIndicatorPaint.setAntiAlias(true);
+
+        setAlpha(0);
     }
 
     public void setScrollSizes(int photoViewWidth, RectF imageRect) {
@@ -47,24 +69,81 @@ public class PhotoScrollPositionIndicator extends View {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mHeight = h;
+        mWidth = w;
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        final int paddingLeft = getPaddingLeft();
+        mTempRectF.top = 0;
+        mTempRectF.bottom = mHeight;
+        mTempRectF.left = 0;
+        mTempRectF.right = mWidth;
 
-        float width = getWidth() - paddingLeft - getPaddingRight();
+        drawPill(canvas, mTempRectF, mBackgroundPaint);
+
         float imageWidth = mImageRight - mImageLeft;
         if (imageWidth <= 0) imageWidth = 1;
 
-        float scale = width / imageWidth;
+        float scale = mWidth / imageWidth;
         float left = (0f - mImageLeft) *  scale;
-        float length = width * mPhotoViewWidth / (mImageRight - mImageLeft);
+        float length = mWidth * mPhotoViewWidth / (mImageRight - mImageLeft);
         float right = left + length;
 
-        final float top = getPaddingTop();
-        final float bottom = getHeight() - getPaddingBottom();
+        mTempRectF.top = 0;
+        mTempRectF.bottom = mHeight;
+        mTempRectF.left = left;
+        mTempRectF.right = right;
 
-        canvas.drawRect(left, top, right, bottom, mPaint);
+        drawPill(canvas, mTempRectF, mIndicatorPaint);
+    }
+
+    private void drawPill(Canvas canvas, RectF rectF, Paint paint) {
+        float radius = rectF.height() / 2;
+        float temp;
+
+        mTempPath.reset();
+        mTempPath.moveTo(rectF.left + radius, rectF.top);
+        mTempPath.lineTo(rectF.right - radius, rectF.top);
+
+        temp = rectF.left;
+        rectF.left = rectF.right - 2 * radius;
+        mTempPath.arcTo(rectF, 270, 180);
+        rectF.left = temp;
+
+        mTempPath.lineTo(rectF.left + radius, rectF.bottom);
+
+        temp = rectF.right;
+        rectF.right = rectF.left + rectF.height();
+        mTempPath.arcTo(rectF, 90, 180);
+        rectF.right = temp;
+
+        mTempPath.close();
+        canvas.drawPath(mTempPath, paint);
+    }
+
+    public void show() {
+        if (!mHidden) {
+            return;
+        }
+
+        mHidden = false;
+        animate().cancel();
+        animate().alpha(1f).setDuration(mAnimationDuration);
+    }
+
+    public void hide() {
+        if (mHidden) {
+            return;
+        }
+
+        mHidden = true;
+        animate().cancel();
+        animate().alpha(0f).setDuration(mAnimationDuration);
     }
 
 

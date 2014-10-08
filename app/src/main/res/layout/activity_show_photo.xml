@@ -14,14 +14,12 @@
         android:layout_height="match_parent">
         <ru.taaasty.widgets.PhotoScrollPositionIndicator
             android:id="@+id/photo_position_indicator"
-            android:visibility="invisible"
-            tools:visibility="visible"
             android:layout_marginBottom="24dp"
             android:layout_marginLeft="64dp"
             android:layout_marginRight="64dp"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_width="200dp"
-            android:layout_height="6dp" />
+            android:layout_height="3dp" />
     </FrameLayout>
 
 

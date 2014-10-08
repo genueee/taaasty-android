@@ -124,7 +124,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
                 newUiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
             }
             getActionBar().hide();
-            if (mIndicatorVisible) mIndicator.setVisibility(View.GONE);
+            if (mIndicatorVisible) mIndicator.hide();
             isNavigationHidden = true;
         } else {
             if (Build.VERSION.SDK_INT < 19) {
@@ -133,7 +133,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
             getActionBar().show();
             isNavigationHidden = false;
             userForcedToChangeOverlayMode = false;
-            if (mIndicatorVisible) mIndicator.setVisibility(View.VISIBLE);
+            if (mIndicatorVisible) mIndicator.show();
             runHideActionBarTimer();
         }
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
@@ -162,13 +162,13 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         if (photoViewWidth >= imageRect.width()) {
             if (mIndicatorVisible) {
                 mIndicatorVisible = false;
-                mIndicator.setVisibility(View.GONE);
+                mIndicator.hide();
             }
         } else {
             mIndicator.setScrollSizes(photoViewWidth, imageRect);
             if (!mIndicatorVisible) {
                 mIndicatorVisible = true;
-                if (!isNavigationHidden) mIndicator.setVisibility(View.VISIBLE);
+                if (!isNavigationHidden) mIndicator.show();
             }
         }
     }
