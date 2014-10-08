@@ -12,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 
@@ -54,6 +53,8 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
     private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";
+
+    private static final String FRAGMENT_TAG_SHARE_ENTRY_DIALOG = "share_entry_dialog";
 
     private OnFragmentInteractionListener mListener;
 
@@ -283,9 +284,8 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onPostAdditionalMenuClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+            if (mListener != null) mListener.onSharePostMenuClicked(entry);
         }
     };
 
@@ -383,5 +383,6 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onSharePostMenuClicked(Entry entry);
     }
 }

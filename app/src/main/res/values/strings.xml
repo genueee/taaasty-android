@@ -169,5 +169,18 @@
     <string name="action_reply_to_comment_content_description">Ответить на комментарий</string>
     <string name="action_delete_comment_content_description">Удалить комментарий</string>
     <string name="action_report_to_moderator_content_description">Пожаловаться на комментарий</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_share_twitter">Twitter</string>
+    <string name="title_share_facebook">Facebook</string>
+    <string name="title_share_vkontakte">Вконтакте</string>
+    <string name="add_post_to_favorites">В избранное</string>
+    <string name="copy_link_to_clipboard">Ссылка</string>
+    <string name="report_post_to_moderator">Пожаловаться</string>
+    <string name="edit_post">Редактировать</string>
+    <string name="delete_post">Удалить</string>
+    <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
+    <string name="title_activity_share">ShareActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

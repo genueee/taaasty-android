@@ -1333,8 +1333,8 @@ public class ShowPostFragment extends Fragment {
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, long postId) {
-            // XXX
+        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+            if (mListener != null) mListener.onSharePostMenuClicked(entry);
         }
     };
 
@@ -1445,6 +1445,7 @@ public class ShowPostFragment extends Fragment {
         public void onPostLoaded(Entry entry);
         public void onPostLoadError(Throwable e);
         public void onAvatarClicked(User user, TlogDesign design);
+        public void onSharePostMenuClicked(Entry entry);
         public void onShowImageClicked(User author, List<String> images, String title, String previewUrl);
 
         public void onBottomReached(int listBottom, int listViewHeight);

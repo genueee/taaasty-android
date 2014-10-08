@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import ru.taaasty.UserManager;
 import ru.taaasty.model.iframely.IFramely;
 import ru.taaasty.utils.UiUtils;
 
@@ -215,6 +216,11 @@ public class Entry implements Parcelable {
 
     public void setRating(Rating rating) {
         mRating = rating;
+    }
+
+    public boolean isMyEntry() {
+        Long me = UserManager.getInstance().getCurrentUserId();
+        return me != null && (me == mAuthor.getId());
     }
 
     public Entry() {

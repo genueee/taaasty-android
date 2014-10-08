@@ -24,6 +24,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.AdditionalMenuActivity;
@@ -33,6 +34,7 @@ import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
+import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
@@ -215,6 +217,13 @@ public class MyFeedActivity extends ActivityBase implements
         i.putExtra(UserInfoActivity.ARG_USER, user);
         i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
         startActivity(i);
+    }
+
+    @Override
+    public void onSharePostMenuClicked(Entry entry) {
+        Intent intent = new Intent(this, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        startActivity(intent);
     }
 
     @Override

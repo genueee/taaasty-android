@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="ru.taaasty"
-    tools:ignore="UnusedAttribute"
-    xmlns:tools="http://schemas.android.com/tools">
+    tools:ignore="UnusedAttribute" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -14,19 +14,22 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <uses-feature android:name="android.hardware.screen.portrait" />
-    <uses-feature android:name="android.hardware.camera" android:required="false" />
-    <uses-feature android:name="android.hardware.camera.front" android:required="false" />
-
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.front"
+        android:required="false" />
 
     <application
-        android:name=".TaaastyApplication"
+        android:name="ru.taaasty.TaaastyApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".ui.tabbar.LiveFeedActivity"
+            android:name="ru.taaasty.ui.tabbar.LiveFeedActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
@@ -37,32 +40,34 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.tabbar.SubscribtionsActivity"
+            android:name="ru.taaasty.ui.tabbar.SubscribtionsActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.tabbar.MyFeedActivity"
+            android:name="ru.taaasty.ui.tabbar.MyFeedActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ui.login.LoginActivity"
+            android:name="ru.taaasty.ui.login.LoginActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:theme="@style/LoginActivityTheme"
             android:windowSoftInputMode="adjustResize" >
             <intent-filter>
                 <data android:scheme="vk3974615" />
+
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.AdditionalMenuActivity"
+            android:name="ru.taaasty.ui.AdditionalMenuActivity"
             android:label="@string/title_activity_additional_menu"
-            android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AdditionMenuActivityTheme" >
             <meta-data
@@ -70,28 +75,28 @@
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
-            android:name=".ui.post.ShowPostActivity"
-            android:label="@string/title_activity_show_post"
-            android:parentActivityName=".ui.tabbar.MyFeedActivity"
-            android:screenOrientation="portrait"
+            android:name="ru.taaasty.ui.post.ShowPostActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:label="@string/title_activity_show_post"
+            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/ShowPostTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
-            android:name=".ui.UserInfoActivity"
-            android:parentActivityName=".ui.post.ShowPostActivity"
+            android:name="ru.taaasty.ui.UserInfoActivity"
+            android:parentActivityName="ru.taaasty.ui.post.ShowPostActivity"
             android:theme="@style/AppThemeDark" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.ShowPostActivity" />
         </activity>
         <activity
-            android:name=".ui.relationships.FollowingFollowersActivity"
+            android:name="ru.taaasty.ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
-            android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppThemeGreenActionBar" >
             <meta-data
@@ -99,14 +104,14 @@
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
-            android:name=".ui.photo.ShowPhotoActivity"
-            android:screenOrientation="fullSensor"
+            android:name="ru.taaasty.ui.photo.ShowPhotoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
+            android:screenOrientation="fullSensor"
             android:theme="@style/FullscreenTheme" >
         </activity>
         <activity
-            android:name=".ui.feeds.TlogActivity"
-            android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:name="ru.taaasty.ui.feeds.TlogActivity"
+            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
             android:theme="@style/TlogActivity" >
             <meta-data
@@ -114,26 +119,31 @@
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
-            android:name=".ui.post.CreatePostActivity"
+            android:name="ru.taaasty.ui.post.CreatePostActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@style/CreatePostTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
-
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
 
+        <activity
+            android:name=".ui.post.SharePostActivity"
+            android:theme="@style/SharePostTheme">
+        </activity>
+
         <service
-            android:name=".UploadService"
+            android:name="ru.taaasty.UploadService"
             android:exported="false" >
         </service>
 
-        <meta-data android:name="com.google.android.gms.version"
+        <meta-data
+            android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
-        <meta-data android:name="com.google.android.gms.analytics.globalConfigResource"
-         android:resource="@xml/global_tracker"/>;
-
+        <meta-data
+            android:name="com.google.android.gms.analytics.globalConfigResource"
+            android:resource="@xml/global_tracker" />
+;
     </application>
 
 </manifest>

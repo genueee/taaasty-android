@@ -11,9 +11,11 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.model.Entry;
 import ru.taaasty.ui.feeds.SubscribtionsFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
+import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 import ru.taaasty.widgets.Tabbar;
 
@@ -21,7 +23,6 @@ import ru.taaasty.widgets.Tabbar;
  * Избранное и скрытые записи
  */
 public class SubscribtionsActivity extends ActivityBase implements SubscribtionsFeedFragment.OnFragmentInteractionListener {
-
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "SubscribtionsActivity";
 
@@ -142,4 +143,11 @@ public class SubscribtionsActivity extends ActivityBase implements Subscribtions
             }
         }
     };
+
+    @Override
+    public void onSharePostMenuClicked(Entry entry) {
+        Intent intent = new Intent(this, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        startActivity(intent);
+    }
 }

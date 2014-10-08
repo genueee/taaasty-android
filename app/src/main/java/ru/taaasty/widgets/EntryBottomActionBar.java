@@ -60,7 +60,7 @@ public class EntryBottomActionBar {
         public void onPostLikesClicked(View view, Entry entry);
         public void onPostCommentsClicked(View view, long postId);
         public void onPostUserInfoClicked(View view, Entry entry);
-        public void onPostAdditionalMenuClicked(View view, long postId);
+        public void onPostAdditionalMenuClicked(View view, Entry entry);
     }
 
     public void setRoot(View root) {
@@ -248,7 +248,7 @@ public class EntryBottomActionBar {
                     mListener.onPostCommentsClicked(v, mOnItemListenerEntry.getId());
                     break;
                 case R.id.more:
-                    mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry.getId());
+                    mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry);
                     break;
                 case R.id.user_info:
                     mListener.onPostUserInfoClicked(v, mOnItemListenerEntry);

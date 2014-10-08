@@ -21,12 +21,14 @@ import com.squareup.picasso.Picasso;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -154,6 +156,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         ImageUtils.getInstance().loadAvatar(this, author.getUserpic(), author.getSlug(),
                 mPicassoTarget, android.R.dimen.app_icon_size);
         refreshFollowUnfollowView();
+    }
+
+    @Override
+    public void onSharePostMenuClicked(Entry entry) {
+        Intent intent = new Intent(this, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        startActivity(intent);
     }
 
     @Override

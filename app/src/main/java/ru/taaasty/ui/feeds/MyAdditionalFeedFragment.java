@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 
@@ -425,9 +424,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onPostAdditionalMenuClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+            if (mListener != null) mListener.onSharePostMenuClicked(entry);
         }
     };
 
@@ -490,5 +488,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onAvatarClicked(User user, TlogDesign design);
+        public void onSharePostMenuClicked(Entry entry);
     }
 }

@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.nirhart.parallaxscroll.views.ParallaxListView;
 
@@ -311,9 +310,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onPostAdditionalMenuClicked postId: " + postId);
-            Toast.makeText(getActivity(), R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+            if (mListener != null) mListener.onSharePostMenuClicked(entry);
         }
     };
 
@@ -415,5 +413,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onAvatarClicked(User user, TlogDesign design);
         public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         public void onTlogInfoLoaded(TlogInfo info);
+        public void onSharePostMenuClicked(Entry entry);
     }
 }

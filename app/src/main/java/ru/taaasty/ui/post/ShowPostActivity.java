@@ -174,6 +174,13 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
+    public void onSharePostMenuClicked(Entry entry) {
+        Intent intent = new Intent(this, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        startActivity(intent);
+    }
+
+    @Override
     public void onShowImageClicked(User author, List<String> images, String title, String previewUrl) {
         ArrayList<String> imagesList;
         Intent i = new Intent(this, ShowPhotoActivity.class);
