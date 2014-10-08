@@ -5,6 +5,7 @@ import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -36,6 +37,7 @@ import ru.taaasty.R;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.ui.CustomTypefaceSpan;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 
@@ -47,6 +49,7 @@ public class CommentsAdapter extends BaseAdapter {
 
     private final ArrayList<Comment> mComments;
     private final OnCommentButtonClickListener mListener;
+    private final Typeface mSystemFontBold;
     private TlogDesign mFeedDesign;
 
     private DateFormat mTimeFormatInstance;
@@ -69,6 +72,7 @@ public class CommentsAdapter extends BaseAdapter {
         mTimeFormatInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault());
         mDdMmFormatInstance = new SimpleDateFormat("dd MMM", Locale.getDefault());
         mMmYyFormatInstance = new SimpleDateFormat("LL/yyy", Locale.getDefault());
+        mSystemFontBold = mFontManager.getFontSystemBold();
     }
 
     public void setComments(List<Comment> comments) {
@@ -218,11 +222,14 @@ public class CommentsAdapter extends BaseAdapter {
         Context context = vh.comment.getContext();
         if (context == null) return;
 
-        TextAppearanceSpan tas = new TextAppearanceSpan(context, mFeedDesign.getAuthorTextAppearance() );
+        TextAppearanceSpan tas = new TextAppearanceSpan(context, mFeedDesign.getAuthorTextAppearance());
+        // имя пользователя в комментах proxima bold, накладываем typeface вручную
+        CustomTypefaceSpan cts = new CustomTypefaceSpan("sans-serif", mSystemFontBold);
 
         String slug = item.getAuthor().getSlug();
         SpannableStringBuilder ssb = new SpannableStringBuilder(slug);
         ssb.setSpan(tas, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        ssb.setSpan(cts, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
         vh.comment.setText(ssb);

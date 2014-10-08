@@ -274,12 +274,11 @@
 
     <style name="TextAppearanceSlugInlineBlack">
         <item name="android:textColor">@android:color/black</item>
-        <item name="android:textStyle">bold</item>
+        <item name="fontPath">fonts/ProximaNova-Bold.otf</item>
     </style>
 
-    <style name="TextAppearanceSlugInlineWhite">
+    <style name="TextAppearanceSlugInlineWhite" parent="@style/TextAppearanceSlugInlineBlack">
         <item name="android:textColor">@android:color/white</item>
-        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="CreatePostScrollView">
