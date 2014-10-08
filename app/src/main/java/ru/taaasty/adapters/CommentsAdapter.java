@@ -65,7 +65,7 @@ public class CommentsAdapter extends BaseAdapter {
         mInfater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
         mResources = context.getResources();
-        mFontManager = FontManager.getInstance(context);
+        mFontManager = FontManager.getInstance();
         mImageUtils = ImageUtils.getInstance();
         mComments = new ArrayList<>();
         mListener = listener;

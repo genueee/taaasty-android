@@ -119,7 +119,7 @@ public class DefaultUserpicDrawable extends Drawable {
         mBackgroundPaint.setColor(Color.argb(mAlpha, Color.red(mBackgroundColor), Color.green(mBackgroundColor), Color.blue(mBackgroundColor)));
         mBackgroundPaint.setAntiAlias(true);
         mTextPaint.setColor(Color.argb(mAlpha, Color.red(mTextColor), Color.green(mTextColor), Color.blue(mTextColor)));
-        mTextPaint.setTypeface(FontManager.getInstance(null).getMainFont());
+        mTextPaint.setTypeface(FontManager.getInstance().getMainFont());
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
 

@@ -36,6 +36,7 @@ public class TaaastyApplication extends Application {
 
         CalligraphyConfig.initDefault(FontManager.FONT_SYSTEM_DEFAULT_PATH, R.attr.fontPath);
 
+        FontManager.onAppInit(this);
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit();

@@ -52,7 +52,7 @@ public class EntryBottomActionBar {
     public EntryBottomActionBar(View root, boolean hideUserInfo) {
         mHideUserInfo = hideUserInfo;
         mTlogDesign = TlogDesign.DUMMY;
-        mFontManager = FontManager.getInstance(root.getContext());
+        mFontManager = FontManager.getInstance();
         setRoot(root);
     }
 

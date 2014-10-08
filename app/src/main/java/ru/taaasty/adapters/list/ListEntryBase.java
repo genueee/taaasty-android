@@ -27,7 +27,7 @@ public abstract class ListEntryBase {
 
     public ListEntryBase(Context context, View v, boolean showUserAvatar) {
         mResources = context.getResources();
-        mFontManager = FontManager.getInstance(context);
+        mFontManager = FontManager.getInstance();
         mShowUserAvatar = showUserAvatar;
         mAvatarAuthor = (ViewGroup) v.findViewById(R.id.avatar_author);
         mAvatar = (ImageView) mAvatarAuthor.findViewById(R.id.avatar);

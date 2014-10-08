@@ -14,7 +14,7 @@ public class FontManager {
 
     public static final String FONT_SYSTEM_BOLD_PATH = "fonts/ProximaNova-Bold.otf";
 
-    private static FontManager mFontManager;
+    private static FontManager sFontManager;
     private final AssetManager mAssetsManager;
 
     private final Typeface mFontSystemDefault;
@@ -29,11 +29,12 @@ public class FontManager {
         mFontSerif = Typeface.createFromAsset(mAssetsManager, FONT_POST_SERIF_PATH);
     }
 
-    public static FontManager getInstance(Context context) {
-        if (mFontManager == null) {
-            mFontManager = new FontManager(context);
-        }
-        return mFontManager;
+    public static void onAppInit(Context appContext) {
+        sFontManager = new FontManager(appContext);
+    }
+
+    public static FontManager getInstance() {
+        return sFontManager;
     }
 
     /**

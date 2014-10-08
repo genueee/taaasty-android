@@ -467,7 +467,7 @@ public class ShowPostFragment extends Fragment {
         mCommentsAdapter.setFeedDesign(design);
 
         int foregroundColor = design.getTitleForegroundColor(getResources());
-        FontManager fm = FontManager.getInstance(getActivity());
+        FontManager fm = FontManager.getInstance();
 
         int textColor = design.getFeedTextColor(getResources());
         Typeface tf = design.isFontTypefaceSerif() ? fm.getPostSerifTypeface() : fm.getPostSansSerifTypeface();
