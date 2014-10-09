@@ -205,8 +205,9 @@ public class ShowPhotoFragment extends Fragment {
             mGestureDetector = new GestureDetector(imageView.getContext(), new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                    if (e1.getY() - e2.getY() < minDistance) return false;
-                    if (Math.abs(velocityY) < velYThreshold) return false;
+                    if (e1 == null || e2 == null) return false; // Какого-то хрена на android > 4 оно иногда срабатывает
+                    if (e1.getY() - e2.getY() < 0) return false;
+                    // if (Math.abs(velocityY) < velYThreshold) return false;
                     if (getDisplayRect().bottom > mPhotoView.getHeight()) {
                         // Низ изображения ниже нижней границы mPhotoView
                         return false;
@@ -215,6 +216,7 @@ public class ShowPhotoFragment extends Fragment {
                     return false;
                 }
             });
+            mGestureDetector.setIsLongpressEnabled(false);
         }
 
         @Override
