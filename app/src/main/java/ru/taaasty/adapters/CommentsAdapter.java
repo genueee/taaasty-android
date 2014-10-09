@@ -178,6 +178,8 @@ public class CommentsAdapter extends BaseAdapter {
 
         Comment comment = mComments.get(position);
 
+        vh.avatar.setTag(R.id.author, comment.getAuthor().getId());
+
         if (mSelectedCommentId != null && mSelectedCommentId == comment.getId()) {
             setupActionView(vh, comment);
             vh.actionView.setVisibility(View.VISIBLE);

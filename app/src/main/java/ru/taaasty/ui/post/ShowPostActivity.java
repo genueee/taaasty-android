@@ -278,4 +278,12 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
         ab.setTitle(title);
     }
+
+    public void onClickOpenTlog(View view) {
+        long id = (long)view.getTag(R.id.author);
+
+        Intent i = new Intent(this, TlogActivity.class);
+        i.putExtra(TlogActivity.ARG_USER_ID, id);
+        startActivity(i);
+    }
 }
