@@ -17,8 +17,6 @@ import static junit.framework.Assert.assertEquals;
  */
 public class ImageViewCompat extends ImageView {
 
-    private static final boolean mComapct = (Build.VERSION.SDK_INT  < Build.VERSION_CODES.JELLY_BEAN_MR1) && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH);
-
     public ImageViewCompat(Context context) {
         super(context);
     }
@@ -51,7 +49,6 @@ public class ImageViewCompat extends ImageView {
     }
 
 
-
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void assertParams() {
         if (BuildConfig.DEBUG) {
@@ -64,7 +61,7 @@ public class ImageViewCompat extends ImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if (mComapct) {
+        if (Build.VERSION.SDK_INT  > Build.VERSION_CODES.JELLY_BEAN_MR1) {
             return;
         }
 
