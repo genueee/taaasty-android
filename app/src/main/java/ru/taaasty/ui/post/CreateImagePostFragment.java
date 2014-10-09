@@ -10,7 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
@@ -53,6 +55,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mTitleView = (EditText)root.findViewById(R.id.title);
         mMakeImageButtonLayout = root.findViewById(R.id.make_photo_layout);
         mImageView = (ImageView)root.findViewById(R.id.image);
+        mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.GONE);
         mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(mOnChoosePhotoClickListener);
         mImageView.setOnClickListener(mOnChoosePhotoClickListener);
@@ -129,19 +132,37 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             mMakeImageButtonLayout.setVisibility(View.VISIBLE);
             mImageView.setVisibility(View.GONE);
         } else {
-            mMakeImageButtonLayout.setVisibility(View.INVISIBLE);
+            mMakeImageButtonLayout.setVisibility(View.GONE);
             mImageView.setVisibility(View.VISIBLE);
-            mImageView.setImageResource(R.drawable.image_loading_drawable);
 
             Picasso picasso = NetworkUtils.getInstance().getPicasso( getActivity() );
 
             picasso.load(mImageUri)
                     .placeholder(R.drawable.image_loading_drawable)
-                    .error(R.drawable.image_loading_drawable)
+                    .error(R.drawable.image_load_error)
+                    .skipMemoryCache()
                     .fit().centerInside()
-                    .into(mImageView);
+                    .into(mImageView, mPicassoCallback);
         }
     }
+
+    private Callback mPicassoCallback = new Callback() {
+        @Override
+        public void onSuccess() {
+        }
+
+        @Override
+        public void onError() {
+            if (getActivity() == null) return;
+            mImageUri = null;
+            validateFormIfVisible();
+            saveInputValues();
+            refreshImageView();
+            Toast.makeText(getActivity(), R.string.error_loading_image, Toast.LENGTH_LONG).show();
+            refreshImageView();
+
+        }
+    };
 
     private void saveInputValues() {
         if (mTitleView == null || getActivity() == null) return;

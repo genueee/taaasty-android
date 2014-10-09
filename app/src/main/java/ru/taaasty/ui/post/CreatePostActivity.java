@@ -55,6 +55,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (DBG) Log.v(TAG, "onCreate()");
         setContentView(R.layout.activity_create_post);
 
         Page currentItem = Page.TEXT_POST;
@@ -79,6 +80,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mViewPager.setOnPageChangeListener(mOnPageChangedListener);
         mViewPager.setPageTransformer(true, new FadePageTransformer());
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(3);
         mCreatePostButtons = (CreatePostButtons)findViewById(R.id.buttons);
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
         mCreatePostButtons.findViewById(R.id.private_post_indicator).setActivated(postPrivate);
@@ -107,6 +109,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (DBG) Log.v(TAG, "onActivityResult()");
         Uri imageUri = null;
 
         if (resultCode == RESULT_OK) {
@@ -123,10 +127,12 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                     mCurrentPhotoUri = null;
             }
         }
-        if (imageUri != null && mSectionsPagerAdapter != null) {
-            Fragment fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
-            if (fragment instanceof  CreateImagePostFragment) {
+        if (imageUri != null) {
+            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+            if (fragment instanceof CreateImagePostFragment) {
                 ((CreateImagePostFragment)fragment).onImageSelected(imageUri);
+            } else {
+                if (DBG) throw new IllegalStateException();
             }
         }
     }
@@ -152,6 +158,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (DBG) Log.v(TAG, "onDestroy()");
         saveState();
         EventBus.getDefault().unregister(this);
     }
@@ -160,7 +167,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         PostEntry post;
         CreatePostFragmentBase fragment;
 
-        fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
+        fragment = (CreatePostFragmentBase)mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
         if (!fragment.isFormValid()) {
             // XXX: предупреждать юзера?
             return;
@@ -283,9 +290,11 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     public void onDeletePhotoSelected(Fragment sourceFragment) {
         if (mSectionsPagerAdapter != null) {
-            Fragment fragment = mSectionsPagerAdapter.getCurrentPrimaryItem();
+            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
             if (fragment instanceof  CreateImagePostFragment) {
                 ((CreateImagePostFragment)fragment).onDeleteImageClicked();
+            } else {
+                if (DBG) throw new IllegalStateException();
             }
         }
     }
