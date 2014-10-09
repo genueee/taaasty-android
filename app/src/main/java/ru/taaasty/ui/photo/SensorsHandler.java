@@ -153,7 +153,7 @@ public abstract class SensorsHandler implements SensorEventListener {
         if (DBG) Log.v(TAG, "Scroll left");
         stopScroll();
         viewAttacher = getPhotoAttacher();
-        if (viewAttacher == null) return;
+        if (viewAttacher == null || viewAttacher.getImageView() == null || viewAttacher.getDisplayRect() == null) return;
         imageView = viewAttacher.getImageView();
         viewLeft = 0;
         imageLeft = (int)viewAttacher.getDisplayRect().left;
