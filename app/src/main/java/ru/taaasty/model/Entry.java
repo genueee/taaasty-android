@@ -217,60 +217,8 @@ public class Entry implements Parcelable {
         mRating = rating;
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.mId);
-        dest.writeString(this.mType);
-        dest.writeParcelable(this.mAuthor, 0);
-        dest.writeInt(this.mCommentsCount);
-        dest.writeLong(mCreatedAt != null ? mCreatedAt.getTime() : -1);
-        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
-        dest.writeString(this.mEntryUrl);
-        dest.writeParcelable(this.mRating, flags);
-        dest.writeString(this.mImageUrl);
-        dest.writeString(this.mTitle);
-        dest.writeString(this.mText);
-        dest.writeString(this.mSource);
-        dest.writeString(this.mVia);
-        dest.writeTypedList(mImages);
-    }
-
     public Entry() {
     }
-
-    private Entry(Parcel in) {
-        this.mId = in.readLong();
-        this.mType = in.readString();
-        this.mAuthor = in.readParcelable(User.class.getClassLoader());
-        this.mCommentsCount = in.readInt();
-        long tmpMCreatedAt = in.readLong();
-        this.mCreatedAt = tmpMCreatedAt == -1 ? null : new Date(tmpMCreatedAt);
-        long tmpMUpdatedAt = in.readLong();
-        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
-        this.mEntryUrl = in.readString();
-        this.mRating = in.readParcelable(Rating.class.getClassLoader());
-        this.mImageUrl = in.readString();
-        this.mTitle = in.readString();
-        this.mText = in.readString();
-        this.mSource = in.readString();
-        this.mVia = in.readString();
-        this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
-    }
-
-    public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {
-        public Entry createFromParcel(Parcel source) {
-            return new Entry(source);
-        }
-
-        public Entry[] newArray(int size) {
-            return new Entry[size];
-        }
-    };
 
     @Override
     public String toString() {
@@ -292,4 +240,61 @@ public class Entry implements Parcelable {
                 '}';
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.mId);
+        dest.writeString(this.mType);
+        dest.writeParcelable(this.mAuthor, flags);
+        dest.writeInt(this.mCommentsCount);
+        dest.writeLong(mCreatedAt != null ? mCreatedAt.getTime() : -1);
+        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
+        dest.writeString(this.mEntryUrl);
+        dest.writeParcelable(this.mRating, flags);
+        dest.writeString(this.mImageUrl);
+        dest.writeString(this.mTitle);
+        dest.writeString(this.mVideoUrl);
+        dest.writeString(this.mCoverUrl);
+        dest.writeParcelable(this.mIframely, flags);
+        dest.writeString(this.mText);
+        dest.writeString(this.mSource);
+        dest.writeString(this.mVia);
+        dest.writeTypedList(mImages);
+    }
+
+    private Entry(Parcel in) {
+        this.mId = in.readLong();
+        this.mType = in.readString();
+        this.mAuthor = in.readParcelable(User.class.getClassLoader());
+        this.mCommentsCount = in.readInt();
+        long tmpMCreatedAt = in.readLong();
+        this.mCreatedAt = tmpMCreatedAt == -1 ? null : new Date(tmpMCreatedAt);
+        long tmpMUpdatedAt = in.readLong();
+        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
+        this.mEntryUrl = in.readString();
+        this.mRating = in.readParcelable(Rating.class.getClassLoader());
+        this.mImageUrl = in.readString();
+        this.mTitle = in.readString();
+        this.mVideoUrl = in.readString();
+        this.mCoverUrl = in.readString();
+        this.mIframely = in.readParcelable(IFramely.class.getClassLoader());
+        this.mText = in.readString();
+        this.mSource = in.readString();
+        this.mVia = in.readString();
+        this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
+    }
+
+    public static final Creator<Entry> CREATOR = new Creator<Entry>() {
+        public Entry createFromParcel(Parcel source) {
+            return new Entry(source);
+        }
+
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
 }

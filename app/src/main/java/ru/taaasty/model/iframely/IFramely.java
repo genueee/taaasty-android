@@ -1,11 +1,13 @@
 package ru.taaasty.model.iframely;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
 /**
  * Created by alexey on 19.09.14.
  */
-public class IFramely {
+public class IFramely implements Parcelable {
 
     /**
      *  short ID of a link
@@ -74,4 +76,39 @@ public class IFramely {
                 ", html='" + html + '\'' +
                 '}';
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.id);
+        dest.writeString(this.url);
+        dest.writeParcelable(this.meta, flags);
+        dest.writeParcelable(this.links, flags);
+        dest.writeString(this.html);
+    }
+
+    public IFramely() {
+    }
+
+    private IFramely(Parcel in) {
+        this.id = in.readString();
+        this.url = in.readString();
+        this.meta = in.readParcelable(Meta.class.getClassLoader());
+        this.links = in.readParcelable(Links.class.getClassLoader());
+        this.html = in.readString();
+    }
+
+    public static final Parcelable.Creator<IFramely> CREATOR = new Parcelable.Creator<IFramely>() {
+        public IFramely createFromParcel(Parcel source) {
+            return new IFramely(source);
+        }
+
+        public IFramely[] newArray(int size) {
+            return new IFramely[size];
+        }
+    };
 }
