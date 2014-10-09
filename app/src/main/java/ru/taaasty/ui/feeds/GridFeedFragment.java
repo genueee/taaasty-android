@@ -85,7 +85,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     private Stats mStats;
 
-
     public static GridFeedFragment createLiveFeedInstance() {
         GridFeedFragment fragment = new GridFeedFragment();
         Bundle args = new Bundle(1);
@@ -159,6 +158,8 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mEndlessLoadingIndicatorView.setVisibility(View.INVISIBLE);
 
         setupFeedTitle();
+
+        if (DBG) Log.v(TAG, "onActivityCreated " + getString(getTitle()) + " savedInstanceState: " + (savedInstanceState == null ? " null " : " not null" ));
 
         // mGridView.addParallaxedHeaderView(headerView);
         mGridView.addHeaderView(mHeaderView, null, false);

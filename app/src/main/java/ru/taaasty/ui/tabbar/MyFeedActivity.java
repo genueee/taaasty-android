@@ -12,11 +12,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Toast;
 
 import java.util.Locale;
@@ -25,6 +23,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.AdditionalMenuActivity;
@@ -122,7 +121,7 @@ public class MyFeedActivity extends ActivityBase implements
                     @Override
                     public void run() {
                         if (mSectionsPagerAdapter == null) return;
-                        Fragment current = mSectionsPagerAdapter.getCurrentPrimaryItem();
+                        Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
                         if (current != null) ((IRereshable)current).refreshData();
                     }
                 }, 200);
@@ -286,9 +285,7 @@ public class MyFeedActivity extends ActivityBase implements
         }.execute();
     }
 
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
-
-        private Fragment mCurrentPrimaryItem;
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -311,19 +308,6 @@ public class MyFeedActivity extends ActivityBase implements
         @Override
         public int getCount() {
             return 3;
-        }
-
-        @Override
-        public void setPrimaryItem(ViewGroup container, int position, Object object) {
-            super.setPrimaryItem(container, position, object);
-            if (mCurrentPrimaryItem != object) {
-                mCurrentPrimaryItem = (Fragment) object;
-                // onPrimaryItemChanged(mCurrentPrimaryItem);
-            }
-        }
-
-        public Fragment getCurrentPrimaryItem() {
-            return mCurrentPrimaryItem;
         }
 
         @Override

@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
@@ -22,6 +21,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.ui.feeds.GridFeedFragment;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
@@ -53,6 +53,8 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
             return;
         }
 
+        if (DBG) Log.v(TAG, "onCreate savedInstanceState: " + savedInstanceState);
+
         setContentView(R.layout.activity_live_feed);
 
         mTabbar = (Tabbar) findViewById(R.id.tabbar);
@@ -64,7 +66,6 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
 
         mCircleIndicator = (CirclePageIndicator)findViewById(R.id.circle_page_indicator);
         mCircleIndicator.setViewPager(mViewPager);
@@ -93,13 +94,19 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (DBG) Log.v(TAG, "onNewIntent");
+    }
+
+    @Override
     public void onFeedButtonClicked(Uri uri) {
 
     }
 
     @Override
     public void onGridTopViewScroll(Fragment fragment, boolean firstItemVisible, int firstItemTop) {
-        if (mSectionsPagerAdapter.getCurrentPrimaryItem() != fragment) return;
+        if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
         updateCircleIndicatorPosition(firstItemVisible, firstItemTop);
     }
 
@@ -163,7 +170,7 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
         public void onTabbarButtonClicked(View v) {
             switch (v.getId()) {
                 case R.id.btn_tabbar_live:
-                    Fragment page = (Fragment)mSectionsPagerAdapter.getCurrentPrimaryItem();
+                    Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
                     if (page != null && page instanceof GridFeedFragment) {
                         GridFeedFragment gff = (GridFeedFragment) page;
                         gff.refreshData();
@@ -196,9 +203,9 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
         }
     }
 
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
 
-        private Fragment mCurrentPrimaryItem;
+        private Fragment mPrimaryItem;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -228,14 +235,10 @@ public class LiveFeedActivity extends ActivityBase implements GridFeedFragment.O
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
             super.setPrimaryItem(container, position, object);
-            if (mCurrentPrimaryItem != object) {
-                mCurrentPrimaryItem = (Fragment) object;
-                onPrimaryItemChanged(mCurrentPrimaryItem);
+            if (mPrimaryItem != object) {
+                mPrimaryItem = (Fragment)object;
+                onPrimaryItemChanged((Fragment)object);
             }
-        }
-
-        public Fragment getCurrentPrimaryItem() {
-            return mCurrentPrimaryItem;
         }
 
         @Override
