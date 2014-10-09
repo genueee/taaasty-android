@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.graphics.Rect;
 import android.os.Build;
 import android.view.View;
-import android.view.ViewGroup;
 
 import java.lang.ref.WeakReference;
 
@@ -42,15 +41,7 @@ public abstract class ParallaxedView {
         float visibleHeight = view.getBottom() - offset; // XXX: wrong
         if (visibleHeight < viewHeight) {
             float opacity = 0.3f + (visibleHeight / viewHeight) * 0.7f;
-            if (view instanceof ViewGroup && ((ViewGroup) view).getChildCount() > 0) {
-                ViewGroup vg = (ViewGroup) view;
-                int childCount = vg.getChildCount();
-                for (int i = 0; i < childCount; ++i) {
-                    vg.getChildAt(i).setAlpha(opacity);
-                }
-            } else {
-                view.setAlpha(opacity);
-            }
+            view.setAlpha(opacity);
         }
     }
 

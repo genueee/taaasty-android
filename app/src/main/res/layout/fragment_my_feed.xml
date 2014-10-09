@@ -17,6 +17,7 @@
             android:clipToPadding="false"
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
+            android:smoothScrollbar="false"
             android:paddingBottom="8dp"
             tools:listheader="@layout/header_user_feed"
             tools:listitem="@layout/feed_item" />
