@@ -2,11 +2,11 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="TypographyDashes,UnusedResourcesw">
+    tools:ignore="TypographyDashes,UnusedResources">
 
     <integer name="ga_dispatchPeriod">1000</integer>
-    <bool name="ga_dryRun">true</bool>
-    <string name="ga_logLevel">verbose</string>
+    <bool name="ga_dryRun">false</bool>
+    <string name="ga_logLevel">error</string>
 
 
 </resources>
