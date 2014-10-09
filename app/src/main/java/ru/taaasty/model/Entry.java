@@ -259,7 +259,7 @@ public class Entry implements Parcelable {
         this.mText = in.readString();
         this.mSource = in.readString();
         this.mVia = in.readString();
-        in.readTypedList(mImages, ImageInfo.CREATOR);
+        this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
     }
 
     public static final Parcelable.Creator<Entry> CREATOR = new Parcelable.Creator<Entry>() {

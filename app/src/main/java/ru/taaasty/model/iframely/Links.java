@@ -85,16 +85,16 @@ public class Links implements Parcelable, Iterable<Link> {
     }
 
     private Links(Parcel in) {
-        in.readTypedList(player, Link.CREATOR);
-        in.readTypedList(thumbnail, Link.CREATOR);
-        in.readTypedList(image, Link.CREATOR);
-        in.readTypedList(app, Link.CREATOR);
-        in.readTypedList(reader, Link.CREATOR);
-        in.readTypedList(survey, Link.CREATOR);
-        in.readTypedList(file, Link.CREATOR);
-        in.readTypedList(icon, Link.CREATOR);
-        in.readTypedList(logo, Link.CREATOR);
-        in.readTypedList(other, Link.CREATOR);
+        player = in.createTypedArrayList(Link.CREATOR);
+        thumbnail = in.createTypedArrayList(Link.CREATOR);
+        image = in.createTypedArrayList(Link.CREATOR);
+        app = in.createTypedArrayList(Link.CREATOR);
+        reader = in.createTypedArrayList( Link.CREATOR);
+        survey = in.createTypedArrayList(Link.CREATOR);
+        file = in.createTypedArrayList(Link.CREATOR);
+        icon = in.createTypedArrayList(Link.CREATOR);
+        logo = in.createTypedArrayList(Link.CREATOR);
+        other = in.createTypedArrayList(Link.CREATOR);
     }
 
     public List<Link> getMergedList() {
