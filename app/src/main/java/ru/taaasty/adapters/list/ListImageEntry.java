@@ -19,6 +19,7 @@ import ru.taaasty.model.ImageInfo;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
@@ -106,7 +107,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
-        mImageLoadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        ImageUtils.changeDrawableIntristicSize(mImageLoadingDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageView.requestLayout();
 

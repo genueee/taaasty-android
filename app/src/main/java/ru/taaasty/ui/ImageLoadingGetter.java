@@ -7,6 +7,7 @@ import android.util.Log;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.utils.ImageUtils;
 
 public class ImageLoadingGetter implements Html.ImageGetter {
 
@@ -31,10 +32,9 @@ public class ImageLoadingGetter implements Html.ImageGetter {
             mDstWidth = width;
         }
 
-        mPlaceholderDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
-
         int height = Math.round(mDstWidth / DEFAULT_ASPECT_RATIO);
-        mPlaceholderDrawable.setBounds(0, 0, mDstWidth, height);
+        Drawable drawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
+        mPlaceholderDrawable = ImageUtils.changeDrawableIntristicSize(drawable, mDstWidth, height);
     }
 
     public int getWidth() {

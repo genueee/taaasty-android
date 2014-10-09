@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.NinePatchDrawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -23,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
@@ -66,6 +70,25 @@ public class ImageUtils {
         }
 
         return inSampleSize;
+    }
+
+    public static Drawable changeDrawableIntristicSize(Drawable drawable, int width, int height) {
+        Drawable mutable = drawable.mutate();
+        if (drawable instanceof GradientDrawable) {
+            GradientDrawable gd = (GradientDrawable)mutable;
+            gd.setSize(width, height);
+        } else if (drawable instanceof ShapeDrawable) {
+            ShapeDrawable sh = (ShapeDrawable)mutable;
+            sh.setIntrinsicWidth(width);
+            sh.setIntrinsicHeight(height);
+        } else if (drawable instanceof NinePatchDrawable) {
+            drawable.setBounds(0, 0, width, height); // XXX: а оно точно работает?
+        } else {
+            drawable.setBounds(0, 0, width, height);
+            if (BuildConfig.DEBUG) Log.e("ImageUtils", "changeDrawableIntristicSize() of " + drawable.getClass().toString(),  new IllegalStateException("unsupported"));
+        }
+        return mutable;
+
     }
 
     /**

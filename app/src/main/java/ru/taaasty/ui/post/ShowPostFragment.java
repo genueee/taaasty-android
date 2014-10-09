@@ -89,6 +89,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TextViewImgLoader;
@@ -669,7 +670,7 @@ public class ShowPostFragment extends Fragment {
 
         final ImageInfo image = mCurrentEntry.getImages().get(0);
         // XXX: check for 0
-        int parentWidth = mListView.getMeasuredWidth();
+        int parentWidth = mListView.getWidth();
         imgSize = image.image.geometry.toImageSize();
         imgSize.shrinkToWidth(parentWidth);
         imgSize.shrinkToMaxTextureSize();
@@ -696,7 +697,7 @@ public class ShowPostFragment extends Fragment {
         final String url = b.toUrl();
 
         Drawable loadingDrawable = getResources().getDrawable(R.drawable.image_loading_drawable);
-        loadingDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        loadingDrawable = ImageUtils.changeDrawableIntristicSize(loadingDrawable, parentWidth, imgViewHeight);
         imageView.setImageDrawable(loadingDrawable);
 
         if (image.isAnimatedGif()) {
@@ -707,6 +708,8 @@ public class ShowPostFragment extends Fragment {
                     .load(url)
                     .placeholder(loadingDrawable)
                     .error(R.drawable.image_load_error)
+                    .fit()
+                    .centerInside()
                     .into(imageView, new Callback() {
                         @Override
                         public void onSuccess() {
