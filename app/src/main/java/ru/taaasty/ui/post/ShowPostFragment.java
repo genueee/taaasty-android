@@ -87,6 +87,7 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ImageLoadingGetter;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.ImageUtils;
@@ -257,7 +258,7 @@ public class ShowPostFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
+        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener, mOnCommentAuthorListener);
         if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
         mAlwaysScrollablePad = new FrameLayout(getActivity());
@@ -1115,6 +1116,15 @@ public class ShowPostFragment extends Fragment {
                 });
                 va.start();
             }
+        }
+    };
+
+    private final CommentsAdapter.OnCommentAuthorInfoClickListener mOnCommentAuthorListener = new CommentsAdapter.OnCommentAuthorInfoClickListener() {
+        @Override
+        public void click( long author_id ) {
+            Intent i = new Intent(getActivity(), TlogActivity.class);
+            i.putExtra(TlogActivity.ARG_USER_ID, author_id);
+            startActivity(i);
         }
     };
 
