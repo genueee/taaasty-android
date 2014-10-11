@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.drawable.ShapeDrawable;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -26,7 +25,6 @@ public class SwipeRefreshLayout extends android.support.v4.widget.SwipeRefreshLa
         mPreRefreshPaint = new Paint();
         mPreRefreshPaint.setStyle(Paint.Style.FILL);
         mPreRefreshPaint.setColor(Color.BLACK);
-        ShapeDrawable sh;
     }
 
     @Override
