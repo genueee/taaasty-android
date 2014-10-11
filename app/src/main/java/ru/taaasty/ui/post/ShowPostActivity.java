@@ -280,10 +280,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     public void onClickOpenTlog(View view) {
-        long id = (long)view.getTag(R.id.author);
-
         Intent i = new Intent(this, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, id);
+        i.putExtra(TlogActivity.ARG_USER_ID, (long)view.getTag(R.id.author));
         startActivity(i);
     }
 }

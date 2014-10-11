@@ -17,6 +17,7 @@
         android:layout_marginLeft="@dimen/post_item_comments_padding_left"
         android:layout_marginRight="@dimen/post_item_comments_padding_right"
         android:paddingTop="8dp"
+        android:descendantFocusability="blocksDescendants"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
         <ImageView
@@ -28,12 +29,13 @@
             android:onClick="onClickOpenTlog"
             android:src="@drawable/avatar_dummy" />
 
-        <TextView
+        <ru.taaasty.ui.LinkifiedTextView
             android:id="@+id/comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_weight="1"
+            android:linksClickable="true"
             android:gravity="center_vertical"
             android:minHeight="48dp"
             android:textIsSelectable="false"
@@ -63,6 +65,5 @@
         android:layout="@layout/include_comment_actions"
         android:visibility="gone"
         tools:visibility="visible"
-        />
-
+    />
 </FrameLayout>
