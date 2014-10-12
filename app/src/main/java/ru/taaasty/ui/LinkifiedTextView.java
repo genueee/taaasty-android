@@ -8,8 +8,11 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
+import ru.taaasty.BuildConfig;
 
 public class LinkifiedTextView extends TextView {
     public LinkifiedTextView(Context context, AttributeSet attrs) {
@@ -39,6 +42,16 @@ public class LinkifiedTextView extends TextView {
                 Layout layout = widget.getLayout();
                 int line = layout.getLineForVertical(y);
                 int off = layout.getOffsetForHorizontal(line, x);
+
+                if ((y > layout.getLineBottom(line))
+                        || (x > layout.getLineWidth(line))) {
+                    // Переходим по ссылкам только если юзер очень хорошо прицелился перед тыком.
+                    // Не переходим, если он ткнул где-нибудь далеко справа от текста
+                    if (BuildConfig.DEBUG) Log.v("LinkifiedTextView",
+                            "y: " + y + " line bottom:  " + layout.getLineBottom(line)
+                            + " x: " + x + " line end: " + layout.getLineWidth(line));
+                    return false;
+                }
 
                 ClickableSpan[] link = buffer.getSpans(off, off,
                         ClickableSpan.class);
