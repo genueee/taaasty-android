@@ -316,7 +316,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private void refreshFeedDescription() {
         TextView descView = (TextView)mHeaderView.findViewById(R.id.subtitle);
 
-        if (mAdapter == null) {
+        if (mAdapter == null || mStats == null) {
             descView.setVisibility(View.INVISIBLE);
             return;
         }
