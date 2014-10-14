@@ -15,6 +15,9 @@ public interface Constants {
     public static final String API_VERSION = "v1";
     public static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://taaasty\\.ru/assets/(.+)$");
     public static final String HEADER_X_USER_TOKEN = "X-User-Token";
+    public static final String HEADER_X_TASTY_CLIENT = "X-Tasty-Client";
+    public static final String HEADER_X_TASTY_CLIENT_VALUE = "android_offical";
+    public static final String HEADER_X_TASTY_CLIENT_VERSION = "X-Tasty-Client-Version";
 
     public static final int IMAGE_FADE_IN_DURATION = 300;
 

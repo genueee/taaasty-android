@@ -208,6 +208,8 @@ public final class NetworkUtils {
     private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {
         @Override
         public void intercept(RequestFacade request) {
+            request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
+            request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, BuildConfig.VERSION_NAME);
             String token = mUserManager.getCurrentUserToken();
             if (token != null) {
                 request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
