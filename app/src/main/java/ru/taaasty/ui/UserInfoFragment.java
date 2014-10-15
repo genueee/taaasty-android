@@ -15,9 +15,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import de.greenrobot.event.EventBus;
+import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;

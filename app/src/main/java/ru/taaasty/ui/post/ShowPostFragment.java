@@ -54,7 +54,6 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
-import com.squareup.picasso.Callback;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import junit.framework.Assert;
@@ -65,6 +64,7 @@ import java.util.Collections;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import it.sephiroth.android.library.picasso.Callback;
 import pl.droidsonroids.gif.AnimationListener;
 import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;

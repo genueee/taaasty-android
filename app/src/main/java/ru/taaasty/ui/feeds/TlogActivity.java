@@ -16,8 +16,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.squareup.picasso.Picasso;
-
+import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;

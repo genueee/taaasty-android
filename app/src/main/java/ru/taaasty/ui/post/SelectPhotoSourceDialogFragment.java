@@ -34,6 +34,7 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
         public void onPickPhotoSelected(Fragment fragment);
         public void onMakePhotoSelected(Fragment fragment);
         public void onDeletePhotoSelected(Fragment fragment);
+        public void onFeatherPhotoSelected(Fragment fragment);
     }
 
     SelectPhotoSourceDialogListener mListener;
@@ -67,24 +68,50 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder
-            .setItems(mHasPicture ? R.array.photo_sources_array_with_image : R.array.photo_sources_array, mOnClickListener);
+        if (mHasPicture) {
+            builder.setItems(R.array.photo_sources_array_with_image, mOnClickListenerArrayWithImage);
+        } else {
+            builder.setItems(R.array.photo_sources_array, mOnClickListener);
+        }
+
         return builder.create();
     }
+
+    private final DialogInterface.OnClickListener mOnClickListenerArrayWithImage = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            if (mListener == null) return;
+            /* Номера - порядковые в массиве photo_sources_array_with_image */
+            switch (which) {
+                case 0:
+                    mListener.onFeatherPhotoSelected(SelectPhotoSourceDialogFragment.this);
+                    break;
+                case 1:
+                    mListener.onPickPhotoSelected(SelectPhotoSourceDialogFragment.this);
+                    break;
+                case 2:
+                    mListener.onMakePhotoSelected(SelectPhotoSourceDialogFragment.this);
+                    break;
+                case 3:
+                    mListener.onDeletePhotoSelected(SelectPhotoSourceDialogFragment.this);
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    };
 
     private final DialogInterface.OnClickListener mOnClickListener = new DialogInterface.OnClickListener() {
         @Override
         public void onClick(DialogInterface dialog, int which) {
             if (mListener == null) return;
+            /* Номера - порядковые в массиве photo_sources_array */
             switch (which) {
                 case 0:
                     mListener.onPickPhotoSelected(SelectPhotoSourceDialogFragment.this);
                     break;
                 case 1:
                     mListener.onMakePhotoSelected(SelectPhotoSourceDialogFragment.this);
-                    break;
-                case 2:
-                    mListener.onDeletePhotoSelected(SelectPhotoSourceDialogFragment.this);
                     break;
                 default:
                     throw new IllegalStateException();

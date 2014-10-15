@@ -1,10 +1,15 @@
 package ru.taaasty.ui.post;
 
+import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,25 +17,43 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
+import com.aviary.android.feather.library.Constants;
+
+import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import de.greenrobot.event.EventBus;
+import it.sephiroth.android.library.picasso.Callback;
+import it.sephiroth.android.library.picasso.Picasso;
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.PostUploadStatus;
 import ru.taaasty.model.PostEntry;
 import ru.taaasty.model.PostImageEntry;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 
 public class CreateImagePostFragment extends CreatePostFragmentBase {
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "CreateImagePostFragment";
 
     private static final String SHARED_PREFS_NAME = "CreateImagePostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
     private static final String SHARED_PREFS_KEY_IMAGE_URI = "image_uri";
 
+    private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 100;
+    private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 101;
+    private static final int REQUEST_FEATHER_PHOTO = Activity.RESULT_FIRST_USER + 102;
+
+    private static final String KEY_MAKE_PHOTO_DST_URI = "ru.taaasty.ui.post.CreateImagePostFragment.KEY_MAKE_PHOTO_DST_URI";
+
     private EditText mTitleView;
     private View mMakeImageButtonLayout;
     private ImageView mImageView;
+
+    @Nullable
+    private Uri mMakePhotoDstUri;
 
     @Nullable
     private Uri mImageUri;
@@ -45,6 +68,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_MAKE_PHOTO_DST_URI);
         EventBus.getDefault().register(this);
     }
 
@@ -57,17 +81,29 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mImageView = (ImageView)root.findViewById(R.id.image);
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.GONE);
-        mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(mOnChoosePhotoClickListener);
-        mImageView.setOnClickListener(mOnChoosePhotoClickListener);
+        final OnChoosePhotoClickListener onChoosePhotoClickListener = new OnChoosePhotoClickListener();
+        mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(onChoosePhotoClickListener);
+        mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnLongClickListener(onChoosePhotoClickListener);
+        mImageView.setOnClickListener(onChoosePhotoClickListener);
+        mImageView.setOnLongClickListener(onChoosePhotoClickListener);
         return root;
     }
 
-    private final View.OnClickListener mOnChoosePhotoClickListener = new View.OnClickListener() {
+    private final class OnChoosePhotoClickListener implements View.OnClickListener, View.OnLongClickListener {
         @Override
         public void onClick(View v) {
             if (mListener != null) mListener.onChoosePhotoButtonClicked(mImageUri != null);
         }
-    };
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (mListener != null) {
+                mListener.onChoosePhotoButtonClicked(mImageUri != null);
+                return true;
+            }
+            return false;
+        }
+    }
 
     @Override
     public void onResume() {
@@ -88,6 +124,12 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         EventBus.getDefault().unregister(this);
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mMakePhotoDstUri != null) outState.putParcelable(KEY_MAKE_PHOTO_DST_URI, mMakePhotoDstUri);
+    }
+
     public void onEventMainThread(PostUploadStatus status) {
         if (!status.isFinished()) return;
         if (status.successfully && status.entry instanceof PostImageEntry) {
@@ -100,18 +142,31 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         }
     }
 
-    public void onImageSelected(Uri imageUri) {
-        mImageUri = imageUri;
-        validateFormIfVisible();
-        saveInputValues();
-        refreshImageView();
-    }
-
     public void onDeleteImageClicked() {
         mImageUri = null;
         validateFormIfVisible();
         saveInputValues();
         refreshImageView();
+    }
+
+    public void onPickPhotoSelected() {
+        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
+        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
+    }
+
+    public void onMakePhotoSelected() {
+        Intent takePictureIntent;
+        try {
+            takePictureIntent = ImageUtils.createMakePhotoIntent(getActivity(),false);
+            mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
+            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
+        } catch (ImageUtils.MakePhotoException e) {
+            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public void onFeatherPhotoClicked() {
+        startFeatherPhoto();
     }
 
     @Override
@@ -120,6 +175,57 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         form.title = mTitleView.getText().toString();
         form.imageUri = mImageUri;
         return form;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Uri mOriginalImageUri = mImageUri;
+        Uri imageUri = null;
+
+        if (resultCode == Activity.RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_PICK_PHOTO:
+                    mImageUri = data.getData();
+                    if (DBG) Log.v(TAG, "image uri: " + mImageUri);
+                    startFeatherPhoto();
+                    break;
+                case REQUEST_MAKE_PHOTO:
+                    if (DBG) Log.v(TAG, "image uri: " + mMakePhotoDstUri);
+                    ImageUtils.galleryAddPic(getActivity(), mMakePhotoDstUri);
+                    mImageUri = mMakePhotoDstUri;
+                    mMakePhotoDstUri = null;
+                    startFeatherPhoto();
+                    break;
+                case REQUEST_FEATHER_PHOTO:
+                    mImageUri = data.getData();
+                    if (mImageUri.toString().startsWith("/")) {
+                        mImageUri = Uri.fromFile(new File(mImageUri.toString())); // Мозгоблядство от aviary
+                    }
+                    boolean changed = false;
+                    Bundle extra = data.getExtras();
+                    if (null != extra) {
+                        // image has been changed by the user?
+                        changed = extra.getBoolean(Constants.EXTRA_OUT_BITMAP_CHANGED);
+                        /* Пока не удаляем файлы
+                        if (changed && !ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
+                            deleteFileNoThrow(mOriginalImageUri);
+                        }
+                        */
+                    }
+                    if (DBG) Log.v(TAG, "REQUEST_FEATHER_PHOTO. imageuri: " + mOriginalImageUri +
+                            " new image uri: " + mImageUri + " bitmap changed: " + changed);
+                    break;
+            }
+        }
+
+        if (!ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
+            if (mImageUri != null) ImageUtils.galleryAddPic(getActivity(), mImageUri);
+            getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0)
+                    .edit()
+                    .putString(SHARED_PREFS_KEY_IMAGE_URI, mImageUri == null ? "" : mImageUri.toString())
+                    .commit();
+        }
     }
 
     @Override
@@ -143,6 +249,25 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
                     .skipMemoryCache()
                     .fit().centerInside()
                     .into(mImageView, mPicassoCallback);
+        }
+    }
+
+    private void deleteFileNoThrow(Uri uri) {
+        if (DBG) Log.v(TAG, "delete file " + uri);
+        if (ImageUtils.isUriInPicturesDirectory(getActivity(), uri)) {
+            try {
+                new File(new URI(uri.toString())).delete();
+            } catch (URISyntaxException ignore) {
+            }
+        }
+    }
+
+    private void startFeatherPhoto() {
+        try {
+            Intent newIntent = ImageUtils.createFeatherPhotoIntent(getActivity(), mImageUri);
+            startActivityForResult( newIntent, REQUEST_FEATHER_PHOTO);
+        } catch (ImageUtils.MakePhotoException e) {
+            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
         }
     }
 

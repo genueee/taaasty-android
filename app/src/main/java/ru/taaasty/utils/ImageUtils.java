@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -16,16 +17,18 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
+import com.aviary.android.feather.headless.utils.MegaPixels;
+import com.aviary.android.feather.library.Constants;
+import com.aviary.android.feather.sdk.FeatherActivity;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import it.sephiroth.android.library.picasso.Picasso;
+import it.sephiroth.android.library.picasso.Target;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
@@ -110,14 +113,55 @@ public class ImageUtils {
         return mediaStorageDir;
     }
 
+    public static boolean isUriInPicturesDirectory(Context context, Uri uri) {
+        File picturesDir = getPicturesDirectory(context);
+        File uriPath;
+        if (uri == null) return false;
+        if (picturesDir == null) return false;
+
+        if (uri.toString().startsWith("/")) {
+            uriPath = new File(uri.toString());
+        } else {
+            if (!ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
+                return false;
+            }
+            uriPath = new File(uri.getPath());
+        }
+        return uriPath.getAbsolutePath().startsWith(picturesDir.getAbsolutePath());
+    }
+
     /**
      * Имя файла для фотографии из времени timestamp, без .jpg
      * @param timestamp
      * @return
      */
-    public static String getOutputMediaFileName(Date timestamp) {
+    public static String getOutputMediaFileName(Date timestamp, String prefix) {
         String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(timestamp);
-        return "IMG_" + ts;
+        return prefix + ts;
+    }
+
+    public static Uri createAviaryPictureOutputPath(Context context) throws MakePhotoException {
+        return createPictureOutputPath(context, true);
+    }
+
+    public static Uri createPictureOutputPath(Context context) throws MakePhotoException {
+        return createPictureOutputPath(context, false);
+    }
+
+    public static Uri createPictureOutputPath(Context context, boolean isAviary) throws MakePhotoException {
+        Date currentDate;
+        File storageDir;
+        File image;
+        String imageFileName;
+
+        storageDir = ImageUtils.getPicturesDirectory(context);
+        if (storageDir == null) {
+            throw new MakePhotoException(R.string.error_no_place_to_save);
+        }
+        currentDate = new Date();
+        imageFileName = ImageUtils.getOutputMediaFileName(currentDate, isAviary ? "aviary_" : "IMG_");
+        image = new File(storageDir, imageFileName + ".jpg");
+        return Uri.fromFile(image);
     }
 
     /**
@@ -139,39 +183,34 @@ public class ImageUtils {
         return photoPickerIntent;
     }
 
+
     public static Intent createMakePhotoIntent(Context context, boolean usefrontCamera) throws MakePhotoException {
-        File storageDir;
-        File image;
         Intent takePictureIntent;
-        Date currentDate;
-        String imageFileName;
         Uri currentPhotoUri;
 
         takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(context.getPackageManager()) == null) {
             throw new MakePhotoException(R.string.error_camera_not_available);
         }
-        storageDir = ImageUtils.getPicturesDirectory(context);
-        if (storageDir == null) {
-            throw new MakePhotoException(R.string.error_no_place_to_save);
-        }
-        currentDate = new Date();
-        imageFileName = ImageUtils.getOutputMediaFileName(currentDate);
-        try {
-            image = File.createTempFile(
-                    imageFileName,  /* prefix */
-                    ".jpg",         /* suffix */
-                    storageDir      /* directory */
-            );
 
-            currentPhotoUri = Uri.fromFile(image);
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri);
-            if (usefrontCamera) takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", 1);
-            return takePictureIntent;
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new MakePhotoException(R.string.error_can_not_create_file_for_photo, e);
-        }
+        currentPhotoUri = createPictureOutputPath(context);
+        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri);
+        if (usefrontCamera) takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", 1);
+        return takePictureIntent;
+    }
+
+    public static Intent createFeatherPhotoIntent(Context context, Uri originalPhotoUri) throws MakePhotoException {
+        Intent featherPhotoIntent;
+        Uri newPhotoUri;
+
+        newPhotoUri = createAviaryPictureOutputPath(context);
+        featherPhotoIntent = new Intent(context , FeatherActivity.class );
+        featherPhotoIntent.setData(originalPhotoUri);
+        featherPhotoIntent.putExtra( Constants.EXTRA_IN_API_KEY_SECRET, context.getString(R.string.aviary_secret) );
+        featherPhotoIntent.putExtra( Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, false );
+        featherPhotoIntent.putExtra( Constants.EXTRA_OUTPUT, newPhotoUri );
+        featherPhotoIntent.putExtra( Constants.EXTRA_IN_HIRES_MEGAPIXELS, MegaPixels.Mp3.ordinal());
+        return featherPhotoIntent;
     }
 
     public void loadAvatar(User a, ImageView dst, @DimenRes int diameterResource) {

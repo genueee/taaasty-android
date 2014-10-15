@@ -20,9 +20,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-
+import it.sephiroth.android.library.picasso.Picasso;
+import it.sephiroth.android.library.picasso.Target;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;

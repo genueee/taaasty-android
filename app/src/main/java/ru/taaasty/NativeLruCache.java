@@ -3,7 +3,7 @@ package ru.taaasty;
 import android.graphics.Bitmap;
 import android.util.LruCache;
 
-import com.squareup.picasso.Cache;
+import it.sephiroth.android.library.picasso.Cache;
 
 /**
  * Created by alexey on 29.09.14.

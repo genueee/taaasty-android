@@ -27,11 +27,8 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.widget.ImageView;
 
-import com.squareup.picasso.Picasso;
-
+import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.Constants;
-
-import static com.squareup.picasso.Picasso.LoadedFrom.MEMORY;
 
 public final class PicassoDrawable extends BitmapDrawable {
   // Only accessed from main thread.
@@ -86,7 +83,7 @@ public final class PicassoDrawable extends BitmapDrawable {
 
     this.loadedFrom = loadedFrom;
 
-    boolean fade = loadedFrom != MEMORY && !noFade;
+    boolean fade = loadedFrom != Picasso.LoadedFrom.MEMORY && !noFade;
     if (fade) {
       this.placeholder = placeholder;
       animating = true;

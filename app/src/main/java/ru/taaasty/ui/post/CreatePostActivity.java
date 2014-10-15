@@ -4,11 +4,8 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -24,7 +21,6 @@ import ru.taaasty.R;
 import ru.taaasty.UploadService;
 import ru.taaasty.events.PostUploadStatus;
 import ru.taaasty.model.PostEntry;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 
@@ -35,22 +31,14 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED = Activity.RESULT_FIRST_USER;
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
 
-    private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 2;
-    private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 3;
-
     private static final String SHARED_PREFS_NAME = "CreatePostActivity";
     private static final String SHARED_PREFS_KEY_PRIVATE_POST_STATUS = "provate_post_status";
     private static final String SHARED_PREFS_KEY_INITIAL_SECTION = "initial_section";
-
-
-    private static final String KEY_CURRENT_PHOTO_URI = "ru.taaasty.ui.post.KEY_CURRENT_PHOTO_URI";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
     private CreatePostButtons mCreatePostButtons;
     private ImageView mCreatePostButton;
-
-    private Uri mCurrentPhotoUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,9 +51,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(this, getFragmentManager());
 
-        if (savedInstanceState != null) {
-            mCurrentPhotoUri = savedInstanceState.getParcelable(KEY_CURRENT_PHOTO_URI);
-        } else {
+        if (savedInstanceState == null) {
             // Восстанавливаем значения последнего поста
             SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
             postPrivate = prefs.getBoolean(SHARED_PREFS_KEY_PRIVATE_POST_STATUS, false);
@@ -105,44 +91,6 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButtons.setActivated(currentItem.buttonViewId);
 
         EventBus.getDefault().register(this);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (DBG) Log.v(TAG, "onActivityResult()");
-        Uri imageUri = null;
-
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_PICK_PHOTO:
-                    Uri selectedImageUri = data.getData();
-                    if (DBG) Log.v(TAG,"image uri: " + selectedImageUri);
-                    imageUri = selectedImageUri;
-                    break;
-                case REQUEST_MAKE_PHOTO:
-                    if (DBG) Log.v(TAG,"image uri: " + mCurrentPhotoUri);
-                    ImageUtils.galleryAddPic(this, mCurrentPhotoUri);
-                    imageUri = mCurrentPhotoUri;
-                    mCurrentPhotoUri = null;
-            }
-        }
-        if (imageUri != null) {
-            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
-            if (fragment instanceof CreateImagePostFragment) {
-                ((CreateImagePostFragment)fragment).onImageSelected(imageUri);
-            } else {
-                if (DBG) throw new IllegalStateException();
-            }
-        }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mCurrentPhotoUri != null) {
-            outState.putParcelable(KEY_CURRENT_PHOTO_URI, mCurrentPhotoUri);
-        }
     }
 
     @Override
@@ -269,34 +217,39 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     public void onPickPhotoSelected(Fragment fragment) {
         if (DBG) Log.v(TAG, "onPickPhotoSelected");
-        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
-        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onPickPhotoSelected();
     }
 
     @Override
     public void onMakePhotoSelected(Fragment fragment) {
-        Intent takePictureIntent;
-
         if (DBG) Log.v(TAG, "onMakePhotoSelected");
-        try {
-            takePictureIntent = ImageUtils.createMakePhotoIntent(this,false);
-            mCurrentPhotoUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onMakePhotoSelected();
     }
 
     @Override
     public void onDeletePhotoSelected(Fragment sourceFragment) {
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onDeleteImageClicked();
+    }
+
+    @Override
+    public void onFeatherPhotoSelected(Fragment sourceFragment) {
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onFeatherPhotoClicked();
+    }
+
+    private CreateImagePostFragment getCurrentImagePostFragment() {
         if (mSectionsPagerAdapter != null) {
             Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
             if (fragment instanceof  CreateImagePostFragment) {
-                ((CreateImagePostFragment)fragment).onDeleteImageClicked();
+                return (CreateImagePostFragment)fragment;
             } else {
                 if (DBG) throw new IllegalStateException();
             }
         }
+        return null;
     }
 
     private void saveState() {

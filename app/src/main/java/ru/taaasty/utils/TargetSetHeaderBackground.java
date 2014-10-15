@@ -10,9 +10,8 @@ import android.graphics.drawable.TransitionDrawable;
 import android.util.Log;
 import android.view.View;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
-
+import it.sephiroth.android.library.picasso.Picasso;
+import it.sephiroth.android.library.picasso.Target;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.model.TlogDesign;
