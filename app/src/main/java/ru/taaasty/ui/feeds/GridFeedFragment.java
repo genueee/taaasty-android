@@ -134,7 +134,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mGridView = (StaggeredGridView) mRefreshLayout.getChildAt(0);
+        mGridView = (StaggeredGridView) mRefreshLayout.findViewById(R.id.live_feed_grid_view);
         mRefreshLayout.setOnRefreshListener(this);
         return v;
     }
@@ -278,6 +278,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mFeedSubscription.unsubscribe();
         mStatsSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
+        if (DBG) Log.v(TAG, "setRefreshing true");
         mFeedSubscription = AndroidObservable.bindFragment(this, createObservabelFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH))
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
@@ -285,6 +286,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                     public void call() {
                         if (DBG) Log.v(TAG, "finallyDo()");
                         mRefreshLayout.setRefreshing(false);
+                        if (DBG) Log.v(TAG, "setRefreshing false");
                     }
                 })
                 .subscribe(mFeedObserver);

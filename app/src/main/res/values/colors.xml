@@ -30,6 +30,7 @@
 
     <color name="semi_transparent_action_bar_dark">#b6000000</color>
     <color name="semi_transparent_action_bar_light">#b6ffffff</color>
+    <color name="view_pager_progress_indicator">#e0ffffff</color>
 
     <color name="grid_item_image_loading_color">#ffd5d5d5</color>
 

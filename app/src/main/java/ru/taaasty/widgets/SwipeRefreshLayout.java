@@ -1,54 +1,34 @@
 package ru.taaasty.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.view.View;
+import android.util.DisplayMetrics;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 
 /**
  * Created by alexey on 14.07.14.
  */
 public class SwipeRefreshLayout extends android.support.v4.widget.SwipeRefreshLayout {
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "SwipeRefreshLayout";
 
-    private final Paint mPreRefreshPaint;
+    // Default offset in dips from the top of the view to where the progress spinner should stop
+    private static final int DEFAULT_CIRCLE_TARGET = 215;
 
     public SwipeRefreshLayout(Context context) {
         this(context, null);
     }
 
+    @SuppressLint("ResourceAsColor")
     public SwipeRefreshLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mPreRefreshPaint = new Paint();
-        mPreRefreshPaint.setStyle(Paint.Style.FILL);
-        mPreRefreshPaint.setColor(Color.BLACK);
+        final DisplayMetrics metrics = getResources().getDisplayMetrics();
+        setProgressViewOffset(false, 0, (int)(DEFAULT_CIRCLE_TARGET * metrics.density));
+        setProgressBackgroundColor(R.color.view_pager_progress_indicator);
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        setColorSchemeResources(
-                R.color.refresh_widget_color1,
-                R.color.refresh_widget_color2,
-                R.color.refresh_widget_color3,
-                R.color.refresh_widget_color4
-        );
-    }
-
-    @Override
-    public void draw(Canvas canvas) {
-        View target = getChildAt(0);
-        if (target != null && target.getTop() > 0) {
-            canvas.drawRect(getPaddingLeft(),
-                    getPaddingTop(),
-                    getWidth() - getPaddingLeft() - getPaddingRight(),
-                    target.getTop(),
-                    mPreRefreshPaint);
-        }
-        super.draw(canvas);
-    }
 
 }

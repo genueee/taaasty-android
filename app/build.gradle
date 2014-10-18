@@ -32,13 +32,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 20
-    buildToolsVersion "20.0"
+    compileSdkVersion 21
+    buildToolsVersion "21.0.1"
 
     defaultConfig {
         applicationId "ru.taaasty"
         minSdkVersion 15
-        targetSdkVersion 20
+        targetSdkVersion 21
         versionCode 3
         versionName "1.0b3"
 
@@ -120,9 +120,9 @@ dependencies {
     compile project(':ViewPagerIndicator')
 
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:support-v4:20.0.0'
-    compile 'com.android.support:support-v13:20.0.0'
-    compile 'com.android.support:support-annotations:20.0.0'
+    compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:support-v13:21.0.0'
+    compile 'com.android.support:support-annotations:21.0.0'
     compile 'com.squareup.retrofit:retrofit:1.6.1'
     compile 'com.squareup:pollexor:2.0.2'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
@@ -140,11 +140,13 @@ dependencies {
         exclude(group: 'com.squareup.okhttp', module: 'okhttp-urlconnection')
         exclude(group: 'com.intellij', module: 'annotations')
         exclude(group: 'org.apache.commons', module: 'commons-lang3')
+        exclude(group: 'commons-io', module: 'commons-io')
     }
     compile(group: 'it.sephiroth.android.library.picasso', name: 'picasso', version: '2.3.4.3') {
         exclude(group: 'com.squareup.okhttp', module: 'okhttp')
         exclude(group: 'com.squareup.okhttp', module: 'okhttp-urlconnection')
         exclude(group: 'com.intellij', module: 'annotations')
+        exclude(group: 'commons-io', module: 'commons-io')
     }
 }
 
