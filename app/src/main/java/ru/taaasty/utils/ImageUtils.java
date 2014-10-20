@@ -1,9 +1,14 @@
 package ru.taaasty.utils;
 
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapRegionDecoder;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.NinePatchDrawable;
@@ -15,6 +20,7 @@ import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TimingLogger;
 import android.widget.ImageView;
 
 import com.aviary.android.feather.headless.utils.MegaPixels;
@@ -23,6 +29,8 @@ import com.aviary.android.feather.sdk.FeatherActivity;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -37,6 +45,9 @@ import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.PicassoDrawable;
 
 public class ImageUtils {
+
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "ImageUtils";
 
     private final CircleTransformation mCircleTransformation;
 
@@ -74,6 +85,72 @@ public class ImageUtils {
 
         return inSampleSize;
     }
+
+    /**
+     * Загрузка ресурса backgroundResId размером на весь экран, с crop'ом с сохранением пропорций и
+     * вычислением  inSampleSize под размеры текущего экрана
+     * @param backgroundResId ID ресурса
+     * @param dstSize Размеры, в которые будет вставляться изображение
+     * @param inSampleSizeAdd Степень двойки, прибавляется к inSampleSize.
+     * @return Bitmap
+     */
+    public static Bitmap decodeBackgroundBitmap(Activity activity, int backgroundResId,
+                                                Point dstSize,
+                                                int inSampleSizeAdd) {
+        float scale, scaleX, scaleY;
+        TimingLogger timings = null;
+
+        if (DBG) timings = new TimingLogger("Taaasty", "decodeBackgroundBitmap");
+
+        InputStream is = null;
+        try {
+            is = activity.getResources().openRawResource(backgroundResId);
+            BitmapRegionDecoder bre = BitmapRegionDecoder.newInstance(is, true);
+
+            Rect region = new Rect(0, 0, bre.getWidth(), bre.getHeight());
+
+            scaleY = dstSize.y / (float)bre.getHeight();
+            scaleX = dstSize.x / (float)bre.getWidth();
+            scale = Math.max(scaleX, scaleY);
+
+            float scaledDisplayWidth = dstSize.x / scale;
+            float scaledDisplayHeight = dstSize.y / scale;
+
+            int leftTop = (int)(region.centerX() - (scaledDisplayWidth / 2));
+            region.intersect(leftTop, 0, (int)Math.ceil(leftTop + scaledDisplayWidth), (int)Math.ceil(scaledDisplayHeight));
+            if (DBG) Log.v(TAG, "region: " + region);
+
+            final BitmapFactory.Options options;
+            options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = false;
+            options.inMutable = false;
+
+            int samplesize = ImageUtils.calculateInSampleSize(
+                    bre.getHeight(),
+                    bre.getWidth(),
+                    (int)(bre.getHeight() * scale),
+                    (int)(bre.getWidth() * scale));
+
+            if (inSampleSizeAdd == 0 ) {
+                options.inSampleSize = samplesize;
+            } else {
+                options.inSampleSize = 1 << (int)( inSampleSizeAdd + Math.log(samplesize) / Math.log(2));
+            }
+
+            return bre.decodeRegion(region, options);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) try {
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (DBG) timings.dumpToLog();
+        }
+        return null;
+    }
+
 
     public static Drawable changeDrawableIntristicSizeAndBounds(Drawable drawable, int width, int height) {
         Drawable mutable = drawable.mutate();

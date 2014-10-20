@@ -37,6 +37,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.NativeLruCache;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.ResponseError;
+import ru.taaasty.ui.login.LoginActivity;
 
 public final class NetworkUtils {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -163,6 +164,7 @@ public final class NetworkUtils {
 
     public void factoryReset(Context context) {
         mUserManager.logout();
+        LoginActivity.logout(context);
         try {
             mOkHttpClient.getCache().delete();
         } catch (Exception ignore) {}

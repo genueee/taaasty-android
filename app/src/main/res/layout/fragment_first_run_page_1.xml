@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#00000000"
+    android:gravity="center">
+    <net.leolink.android.simpleinfinitecarousel.MyLinearLayout
+        android:id="@+id/screenshot_page_root"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="@android:color/transparent"
+        >
+        <ImageView
+            android:id="@+id/screenshot"
+            android:padding="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            tools:src="@drawable/screenshot_1"
+            />
+    </net.leolink.android.simpleinfinitecarousel.MyLinearLayout>
+</LinearLayout>
