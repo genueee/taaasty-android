@@ -1,26 +1,33 @@
 package ru.taaasty.ui;
 
+import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.text.TextPaint;
-import android.text.style.TypefaceSpan;
+import android.text.style.TextAppearanceSpan;
 
-public class CustomTypefaceSpan extends TypefaceSpan {
-    private final Typeface newType;
+public class CustomTypefaceSpan extends TextAppearanceSpan {
+    private final Typeface mTypeface;
 
-    public CustomTypefaceSpan(String family, Typeface type) {
-        super(family);
-        newType = type;
+    public CustomTypefaceSpan(Context context, int appearance, Typeface type) {
+        this(context, appearance, -1, type);
+    }
+
+    public CustomTypefaceSpan(Context context, int appearance, int colorList, Typeface type) {
+        super(context, appearance, colorList);
+        mTypeface = type;
     }
 
     @Override
     public void updateDrawState(TextPaint ds) {
-        applyCustomTypeFace(ds, newType);
+        super.updateDrawState(ds);
+        applyCustomTypeFace(ds, mTypeface);
     }
 
     @Override
     public void updateMeasureState(TextPaint paint) {
-        applyCustomTypeFace(paint, newType);
+        super.updateMeasureState(paint);
+        applyCustomTypeFace(paint, mTypeface);
     }
 
     private static void applyCustomTypeFace(Paint paint, Typeface tf) {

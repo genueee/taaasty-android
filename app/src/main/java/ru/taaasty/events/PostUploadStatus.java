@@ -48,7 +48,7 @@ public class PostUploadStatus {
     @Override
     public String toString() {
         return "PostUploadStatus{" +
-                "status=" + status +
+                "newStatus=" + status +
                 ", successfully=" + successfully +
                 ", exception=" + exception +
                 ", entry=" + entry +

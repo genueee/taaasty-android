@@ -52,6 +52,12 @@
     <style name="ShowPostTheme" parent="AppThemeOverlayingActionBar">
     </style>
 
+    <style name="NotificationsActivityTheme" parent="AppTheme">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:colorBackground">@android:color/white</item>
+        <item name="android:colorBackgroundCacheHint">@android:color/white</item>
+    </style>
+
     <style name="TlogActivity" parent="FullscreenThemeBase">
         <item name="android:actionBarStyle">@style/ActionBar.Taaasty.Transparent</item>>
     </style>
@@ -288,6 +294,10 @@
 
     <style name="TextAppearanceSlugInlineWhite" parent="@style/TextAppearanceSlugInlineBlack">
         <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="TextAppearanceSlugInlineGreen" parent="@style/TextAppearanceSlugInlineBlack">
+        <item name="android:textColor">@color/text_color_green</item>
     </style>
 
     <style name="CreatePostScrollView">

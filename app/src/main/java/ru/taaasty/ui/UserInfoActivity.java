@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -49,16 +50,19 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     private static final int REQUEST_FEATHER_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 7;
 
     public static final String ARG_USER = "ru.taaasty.ui.UserInfoActivity.author";
+    public static final String ARG_USER_ID = "ru.taaasty.ui.UserInfoActivity.author_id";
     public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
+    public static final String FRAGMENT_TAG_USER_INFO_FRAGMENT = "UserInfoFragment";
 
-    private User mUser;
-    private TlogDesign mDesign;
+    private long mUserId;
+
     private Uri mMakePhotoDstUri;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        User user;
+
         setContentView(R.layout.activity_user_info);
         findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,15 +71,19 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             }
         });
 
-        mUser = getIntent().getParcelableExtra(ARG_USER);
-        if (mUser == null) throw new IllegalArgumentException("no User");
+        mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
+        user = getIntent().getParcelableExtra(ARG_USER);
+        if (getIntent().hasExtra(ARG_USER_ID)) {
+            mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
+        } else {
+            if (user == null) throw new IllegalArgumentException("no User ans user_id");
+            mUserId = user.getId();
+        }
 
         if (savedInstanceState == null) {
-            mDesign = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
-
-            Fragment userInfoFragment = UserInfoFragment.newInstance(mUser);
+            Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user);
             getFragmentManager().beginTransaction()
-                    .replace(R.id.container, userInfoFragment)
+                    .replace(R.id.container, userInfoFragment, FRAGMENT_TAG_USER_INFO_FRAGMENT)
                     .commit();
         } else {
             mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_CURRENT_PHOTO_URI);
@@ -83,7 +91,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mMakePhotoDstUri != null) {
             outState.putParcelable(KEY_CURRENT_PHOTO_URI, mMakePhotoDstUri);
@@ -92,7 +100,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Uri imageUri = null;
+        Uri imageUri;
         boolean imageUriIsBackground = false;
 
         if ((requestCode == REQUEST_PICK_BACKGROUND_PHOTO)
@@ -142,6 +150,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
                 case REQUEST_FEATHER_BACKGROUND_PHOTO:
                     // Редактирование отменено, удаляем файл, если фотографировали
                     if (mMakePhotoDstUri != null) {
+                        //noinspection ResultOfMethodCallIgnored
                         new File(mMakePhotoDstUri.getPath()).delete();
                         mMakePhotoDstUri = null;
                     }
@@ -153,7 +162,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     public void onEntriesCountClicked() {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
         Intent i = new Intent(this, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, mUser.getId());
+        i.putExtra(TlogActivity.ARG_USER_ID, mUserId);
         startActivity(i);
     }
 
@@ -234,14 +243,26 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         if (DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag())) {
             isBackground = true;
             // XXX: background может быть null
-            photoUri = Uri.parse(mDesign.getBackgroundUrl());
+            photoUri = Uri.parse(getDesign().getBackgroundUrl());
         } else {
             isBackground = false;
             // XXX: userpic может быть null
-            photoUri = Uri.parse(mUser.getUserpic().originalUrl);
+            photoUri = Uri.parse(getUser().getUserpic().originalUrl);
         }
 
         startFeatherPhoto(isBackground, photoUri);
+    }
+
+    private @Nullable TlogDesign getDesign() {
+        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        if (uf != null) return uf.getDesign();
+        return null;
+    }
+
+    private @Nullable User getUser() {
+        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        if (uf != null) return uf.getUser();
+        return null;
     }
 
     private void startFeatherPhoto(boolean isBackground, Uri photoUri) {
@@ -259,12 +280,12 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     void updateBackground(Uri imageUri) {
-        UploadService.startUploadBackground(this, mUser.getId(), imageUri);
-        EventBus.getDefault().post(TlogBackgroundUploadStatus.createUploadStarted(mUser.getId(), imageUri));
+        UploadService.startUploadBackground(this, mUserId, imageUri);
+        EventBus.getDefault().post(TlogBackgroundUploadStatus.createUploadStarted(mUserId, imageUri));
     }
 
     void updateAvatar(Uri imageUri) {
-        UploadService.startUploadUserpic(this, mUser.getId(), imageUri);
-        EventBus.getDefault().post(UserpicUploadStatus.createUploadStarted(mUser.getId(), imageUri));
+        UploadService.startUploadUserpic(this, mUserId, imageUri);
+        EventBus.getDefault().post(UserpicUploadStatus.createUploadStarted(mUserId, imageUri));
     }
 }

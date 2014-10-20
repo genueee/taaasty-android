@@ -30,7 +30,7 @@
             android:onClick="onClickOpenTlog"
             android:src="@drawable/avatar_dummy" />
 
-        <ru.taaasty.ui.LinkifiedTextView
+        <ru.taaasty.widgets.LinkifiedTextView
             android:id="@+id/comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

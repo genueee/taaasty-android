@@ -44,9 +44,6 @@ public class CurrentUser extends User {
     @SerializedName("available_notifications")
     boolean mAvailableNotifications;
 
-    @SerializedName("authentications")
-    List<Object> mAuthentifications;
-
     @SerializedName("api_key")
     ApiKey mApiKey = ApiKey.DUMMY;
 
@@ -115,10 +112,6 @@ public class CurrentUser extends User {
 
     public boolean areNotificationsAvailable() {
         return mAvailableNotifications;
-    }
-
-    public List<Object> getmAuthentifications() {
-        return mAuthentifications;
     }
 
     public Userpic getUserpic() {

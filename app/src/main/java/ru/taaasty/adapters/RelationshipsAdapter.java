@@ -94,6 +94,12 @@ public class RelationshipsAdapter extends BaseAdapter {
         return res;
     }
 
+    @Override
+    public boolean hasStableIds() {
+        return true;
+    }
+
+
     public class ViewHolder {
         public final ImageView avatar;
         public final TextView userName;

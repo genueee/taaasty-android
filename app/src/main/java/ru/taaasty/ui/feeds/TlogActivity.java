@@ -207,7 +207,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             return;
         }
 
-        boolean meSubscribed = TlogInfo.isMeSubscribed(mMyRelationship);
+        boolean meSubscribed = Relationship.isMeSubscribed(mMyRelationship);
         mSubscribeView.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
         mUnsubscribeView.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
         mFollowUnfollowProgressView.setVisibility(View.GONE);

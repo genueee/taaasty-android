@@ -33,6 +33,11 @@ public class Relationship implements Parcelable {
     public Relationship() {
     }
 
+    public static boolean isMeSubscribed(String myRelationship) {
+        return myRelationship != null && (RELATIONSHIP_FRIEND.equals(myRelationship)
+                || RELATIONSHIP_REQUESTED.equals(myRelationship));
+    }
+
     public long getId() {
         return mId;
     }
@@ -80,6 +85,7 @@ public class Relationship implements Parcelable {
         this.mReader = in.readParcelable(User.class.getClassLoader());
         this.mUser = in.readParcelable(User.class.getClassLoader());
     }
+
 
     public static final Parcelable.Creator<Relationship> CREATOR = new Parcelable.Creator<Relationship>() {
         public Relationship createFromParcel(Parcel source) {

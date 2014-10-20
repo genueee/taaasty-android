@@ -53,6 +53,8 @@ android {
                 project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
                 project.ext.private.getProperty("default.ThumborKey", "\"golobog\"")
+        buildConfigField "String", "PUSHER_KEY",
+                project.ext.private.getProperty("default.PusherKey", "\"40dbf1d864d4b366b5e6\"")
 
         resValue "string", "aviary_key", "fe37f3b5e87c67a2"
         resValue "string", "aviary_secret", "3ef989608e94cdc5"
@@ -123,11 +125,13 @@ dependencies {
     compile 'com.android.support:support-annotations:21.0.0'
     compile 'com.android.support:support-v13:21.0.0'
     compile 'com.android.support:support-v4:21.0.0'
+    compile 'com.android.support:recyclerview-v7:21.0.0'
     compile 'com.commonsware.cwac:adapter:1.0.+'
     compile 'com.etsy.android.grid:library:1.0.5'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.google.android.gms:play-services:5.0.89'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'
+    compile 'com.pusher:pusher-java-client:0.3.1'
     compile 'com.squareup.okhttp:okhttp:2.0.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.0.0'
     compile 'com.squareup:pollexor:2.0.2'
@@ -164,6 +168,8 @@ dependencies {
             project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
     bt.buildConfigField "String", "YOUTUBE_APP_ID",
             project.ext.private.getProperty("${typeName}.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
+    bt.buildConfigField "String", "PUSHER_KEY",
+            project.ext.private.getProperty("${typeName}.PusherKey", "\"40dbf1d864d4b366b5e6\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

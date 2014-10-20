@@ -107,7 +107,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
-        ImageUtils.changeDrawableIntristicSize(mImageLoadingDrawable, parentWidth, imgViewHeight);
+        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageView.requestLayout();
 

@@ -1,0 +1,43 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ru.taaasty.ui.NotificationsFragment">
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        tools:visibility="visible"
+        style="?android:progressBarStyleLarge" />
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:text="@string/no_notifications"
+        android:textColor="@color/text_color_feed_item_gray"
+        android:textSize="24sp"
+        android:visibility="invisible"
+        tools:visibility="visible"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:scrollbars="vertical"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingRight="4dp"
+        android:divider="@drawable/followings_list_divider"
+        android:scrollbarStyle="outsideOverlay"
+        android:smoothScrollbar="false"
+        android:clipToPadding="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:listitem="@layout/notifications_item"/>
+
+</FrameLayout>

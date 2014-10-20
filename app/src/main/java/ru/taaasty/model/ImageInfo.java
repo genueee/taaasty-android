@@ -2,6 +2,7 @@ package ru.taaasty.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import java.util.Date;
 
@@ -84,6 +85,10 @@ public class ImageInfo implements Parcelable {
 
         public ImageGeometry geometry = new ImageGeometry();
 
+        @Nullable
+        public String title;
+
+        public String source;
 
         @Override
         public int describeContents() {
@@ -94,6 +99,8 @@ public class ImageInfo implements Parcelable {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.url);
             dest.writeString(this.path);
+            dest.writeString(this.title);
+            dest.writeString(this.source);
             dest.writeParcelable(this.geometry, flags);
         }
 
@@ -103,6 +110,8 @@ public class ImageInfo implements Parcelable {
         private Image2(Parcel in) {
             this.url = in.readString();
             this.path = in.readString();
+            this.title = in.readString();
+            this.source = in.readString();
             this.geometry = in.readParcelable(ImageGeometry.class.getClassLoader());
         }
 

@@ -3,7 +3,6 @@ package ru.taaasty.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
@@ -178,18 +177,24 @@ public class TextViewImgLoader {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             // Масштабируем вручную, иначе какие-то проблемы с памятью в ImageView
-            // Берем размеры из drawable, так как размеры TextView тут могут быть еще неизвестны
-            Rect bounds = mImageSpan.getDrawable().getBounds();
+            // Размеры TextView тут могут быть еще неизвестны. Пытаемся угадать откуда-нибудь из drawable
+            int width;
+            if (mTextView.getWidth() != 0) {
+                width = mTextView.getWidth() - mTextView.getPaddingLeft() - mTextView.getPaddingRight();
+            } else {
+                width = mImageSpan.getDrawable().getIntrinsicWidth();
+                if (width == 0) width = mImageSpan.getDrawable().getBounds().width();
+            }
             int bitmapWidth = bitmap.getWidth();
-            if (bounds.width() != 0 && (bitmapWidth > bounds.width())) {
-                float scale = (float)bounds.width() / (float)bitmapWidth;
+            if (width != 0 && (bitmapWidth > width)) {
+                float scale = (float)width / (float)bitmapWidth;
                 Matrix m = new Matrix();
                 m.preScale(scale, scale);
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmap.getHeight(), m, false);
             }
 
             Drawable d = new BitmapDrawable(mTextView.getResources(), bitmap);
-            ImageSpan newSpan = new ResizeImageSpan(d, mImageSpan.getSource(), bounds.width());
+            ImageSpan newSpan = new ResizeImageSpan(d, mImageSpan.getSource(), width);
             replaceSpan(newSpan);
             removeTarget(this);
         }

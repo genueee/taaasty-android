@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_above="@+id/progress"
-        android:text="@string/sigin_up_using_vkontakte_title"
+        android:text="@string/sign_up_using_vkontakte_title"
         android:gravity="center"
         android:textSize="16sp"
         android:padding="16dp"

@@ -1,4 +1,4 @@
-package ru.taaasty.ui;
+package ru.taaasty.widgets;
 
 import android.content.Context;
 import android.text.Layout;
@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import ru.taaasty.BuildConfig;
 
-public class LinkifiedTextView extends TextView {
+public class LinkifiedTextView extends EllipsizingTextView {
     public LinkifiedTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }

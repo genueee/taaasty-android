@@ -1,0 +1,41 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    tools:ignore="MergeRootFrame">
+
+    <ru.taaasty.widgets.Tabbar
+        android:id="@+id/tabbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="?android:actionBarSize"
+        android:text="@string/notifications_title"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/black"
+        android:textColor="@android:color/white"
+        android:textSize="24sp"
+        android:gravity="center" />
+
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/title"
+        android:layout_above="@id/tabbar" />
+
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        style="@style/ErrorTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Мазафака какая-то с сайтом"
+        tools:visibility="visible" />
+
+</RelativeLayout>

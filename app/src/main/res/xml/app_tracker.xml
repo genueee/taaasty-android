@@ -11,7 +11,7 @@
     <screenName name="ru.taaasty.ui.tabbar.LiveFeedActivity">
         Прямой эфир, лучшее, анонимки, новости
     </screenName>
-    <screenName name="ru.taaasty.ui.tabbar.SubscribtionsActivity">
+    <screenName name="ru.taaasty.ui.tabbar.SubscriptionsActivity">
         Мои подписки
     </screenName>
     <screenName name="ru.taaasty.ui.tabbar.MyFeedActivity">

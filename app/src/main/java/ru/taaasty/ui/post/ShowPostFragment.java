@@ -87,7 +87,6 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ImageLoadingGetter;
-import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.ImageUtils;
@@ -258,7 +257,7 @@ public class ShowPostFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener, mOnCommentAuthorListener);
+        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
         if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
         mAlwaysScrollablePad = new FrameLayout(getActivity());
@@ -698,7 +697,7 @@ public class ShowPostFragment extends Fragment {
         final String url = b.toUrl();
 
         Drawable loadingDrawable = getResources().getDrawable(R.drawable.image_loading_drawable);
-        loadingDrawable = ImageUtils.changeDrawableIntristicSize(loadingDrawable, parentWidth, imgViewHeight);
+        loadingDrawable = ImageUtils.changeDrawableIntristicSizeAndBounds(loadingDrawable, parentWidth, imgViewHeight);
         imageView.setImageDrawable(loadingDrawable);
 
         if (image.isAnimatedGif()) {
@@ -810,15 +809,6 @@ public class ShowPostFragment extends Fragment {
                     }
                 });
 
-    }
-
-    public static void setupPostText(Entry entry,
-                                     TextView titleView,
-                                     TextView textView,
-                                     TextView sourceView,
-                                     @Nullable Html.ImageGetter imageGetter,
-                                     Resources resources) {
-        setupPostText(entry, titleView,textView, sourceView, imageGetter, null, resources);
     }
 
     public static void setupPostText(Entry entry,
@@ -1116,15 +1106,6 @@ public class ShowPostFragment extends Fragment {
                 });
                 va.start();
             }
-        }
-    };
-
-    private final CommentsAdapter.OnCommentAuthorInfoClickListener mOnCommentAuthorListener = new CommentsAdapter.OnCommentAuthorInfoClickListener() {
-        @Override
-        public void click( long author_id ) {
-            Intent i = new Intent(getActivity(), TlogActivity.class);
-            i.putExtra(TlogActivity.ARG_USER_ID, author_id);
-            startActivity(i);
         }
     };
 

@@ -84,7 +84,7 @@
         <item quantity="many">постов</item>
         <item quantity="other">постов</item>
     </plurals>
-    <plurals name="subscribtions_title">
+    <plurals name="subscriptions_title">
         <item quantity="one">подписка</item>
         <item quantity="few">подписки</item>
         <item quantity="many">подписок</item>
@@ -163,7 +163,7 @@
     <string name="no_friends">Список пуст</string>
     <string name="logout">Выйти</string>
     <string name="clean_cache">Очистка кэша</string>
-    <string name="sigin_up_using_vkontakte_title">Вход с помощью Вконтакте…</string>
+    <string name="sign_up_using_vkontakte_title">Вход с помощью Вконтакте…</string>
     <string name="sign_up_success">Регистрация успешно завершена!</string>
     <string name="action_back_content_description">назад</string>
     <string name="action_make_photo_content_description">Выбрать фотографию</string>
@@ -183,5 +183,8 @@
     <string name="title_activity_share">ShareActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="notifications_title">Уведомления</string>
+    <string name="error_loading_notifications">Ошибка получения списка подписок</string>
+    <string name="no_notifications">Уведомлений нет</string>
 
 </resources>

@@ -47,9 +47,9 @@ import rx.functions.Action0;
 /**
  * Мои подписки
  */
-public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "SubscribtionsFeedFragment";
+    private static final String TAG = "SubscriptionsFeedFragment";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
     private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";
@@ -82,11 +82,11 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static SubscribtionsFeedFragment newInstance() {
-        return new SubscribtionsFeedFragment();
+    public static SubscriptionsFeedFragment newInstance() {
+        return new SubscriptionsFeedFragment();
     }
 
-    public SubscribtionsFeedFragment() {
+    public SubscriptionsFeedFragment() {
         // Required empty public constructor
     }
 
@@ -227,7 +227,7 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
     public class LikesHelper extends ru.taaasty.utils.LikesHelper {
 
         public LikesHelper() {
-            super(SubscribtionsFeedFragment.this);
+            super(SubscriptionsFeedFragment.this);
         }
 
         @Override
@@ -264,9 +264,9 @@ public class SubscribtionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            Intent i = new Intent(SubscribtionsFeedFragment.this.getActivity(), TlogActivity.class);
+            Intent i = new Intent(SubscriptionsFeedFragment.this.getActivity(), TlogActivity.class);
             i.putExtra(TlogActivity.ARG_USER_ID, entry.getAuthor().getId());
-            SubscribtionsFeedFragment.this.getActivity().startActivity(i);
+            SubscriptionsFeedFragment.this.getActivity().startActivity(i);
         }
 
         @Override

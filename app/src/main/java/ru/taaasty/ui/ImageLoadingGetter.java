@@ -34,7 +34,7 @@ public class ImageLoadingGetter implements Html.ImageGetter {
 
         int height = Math.round(mDstWidth / DEFAULT_ASPECT_RATIO);
         Drawable drawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
-        mPlaceholderDrawable = ImageUtils.changeDrawableIntristicSize(drawable, mDstWidth, height);
+        mPlaceholderDrawable = ImageUtils.changeDrawableIntristicSizeAndBounds(drawable, mDstWidth, height);
     }
 
     public int getWidth() {

@@ -1,8 +1,11 @@
 package ru.taaasty.utils;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 
@@ -12,6 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taaasty.model.Entry;
+import ru.taaasty.ui.ClickableNicknameSpan;
+import ru.taaasty.ui.CustomTypefaceSpan;
 
 /**
  * Created by alexey on 13.08.14.
@@ -92,6 +97,26 @@ public class UiUtils {
     public static Spanned removeTrailingWhitespaces(@Nullable Spanned source) {
         // XXX
         return (Spanned)removeTrailingWhitespaces((CharSequence)source);
+    }
+
+
+    public static void setNicknameSpans(SpannableStringBuilder stringBuilder, int start, int end,
+                                        long userId,
+                                        Context context,
+                                        int textAppearance) {
+        setNicknameSpans(stringBuilder, start, end, userId, context, textAppearance, -1);
+    }
+
+    public static void setNicknameSpans(SpannableStringBuilder stringBuilder, int start, int end,
+                                           long userId,
+                                           Context context,
+                                           int textAppearance,
+                                           int colorList) {
+        CustomTypefaceSpan cts = new CustomTypefaceSpan(context, textAppearance, colorList,
+                FontManager.getInstance().getFontSystemBold());
+        ClickableNicknameSpan acs = new ClickableNicknameSpan(userId);
+        stringBuilder.setSpan(acs, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        stringBuilder.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     public static int getEntriesLastDay(List<Entry> entries) {

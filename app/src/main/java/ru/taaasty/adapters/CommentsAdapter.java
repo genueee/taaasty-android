@@ -7,9 +7,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.support.annotation.Nullable;
-import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,10 +35,9 @@ import ru.taaasty.R;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.ui.AuthorClickSpan;
-import ru.taaasty.ui.CustomTypefaceSpan;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.UiUtils;
 
 public class CommentsAdapter extends BaseAdapter {
     private final LayoutInflater mInfater;
@@ -50,7 +47,6 @@ public class CommentsAdapter extends BaseAdapter {
 
     private final ArrayList<Comment> mComments;
     private final OnCommentButtonClickListener mListener;
-    private final OnCommentAuthorInfoClickListener mAuthorListener;
     private final Typeface mSystemFontBold;
     private TlogDesign mFeedDesign;
 
@@ -63,8 +59,7 @@ public class CommentsAdapter extends BaseAdapter {
     private boolean mShowReportButton;
 
 
-    public CommentsAdapter(Context context, OnCommentButtonClickListener listener,
-                           OnCommentAuthorInfoClickListener authorListener) {
+    public CommentsAdapter(Context context, OnCommentButtonClickListener listener) {
         super();
         mInfater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
@@ -73,7 +68,6 @@ public class CommentsAdapter extends BaseAdapter {
         mImageUtils = ImageUtils.getInstance();
         mComments = new ArrayList<>();
         mListener = listener;
-        mAuthorListener = authorListener;
         mTimeFormatInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault());
         mDdMmFormatInstance = new SimpleDateFormat("dd MMM", Locale.getDefault());
         mMmYyFormatInstance = new SimpleDateFormat("LL/yyy", Locale.getDefault());
@@ -235,17 +229,8 @@ public class CommentsAdapter extends BaseAdapter {
         Context context = vh.comment.getContext();
         if (context == null) return;
 
-        TextAppearanceSpan tas = new TextAppearanceSpan(context, mFeedDesign.getAuthorTextAppearance());
-        // имя пользователя в комментах proxima bold, накладываем typeface вручную
-        CustomTypefaceSpan cts = new CustomTypefaceSpan("sans-serif", mSystemFontBold);
-        AuthorClickSpan acs = new AuthorClickSpan(mAuthorListener);
-
-        String slug = item.getAuthor().getSlug();
-        SpannableStringBuilder ssb = new SpannableStringBuilder(slug);
-
-        ssb.setSpan(acs, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ssb.setSpan(tas, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ssb.setSpan(cts, 0, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableStringBuilder ssb = new SpannableStringBuilder(item.getAuthor().getSlug());
+        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), item.getAuthor().getId(), context, mFeedDesign.getAuthorTextAppearance());
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
         vh.comment.setText(ssb);
@@ -392,10 +377,6 @@ public class CommentsAdapter extends BaseAdapter {
         public void onReplyToCommentClicked(View view, Comment comment);
         public void onDeleteCommentClicked(View view, Comment comment);
         public void onReportContentClicked(View view, Comment comment);
-    }
-
-    public interface OnCommentAuthorInfoClickListener {
-        public void click( long author_id );
     }
 
     private static class ActionViewClickListener implements View.OnClickListener {

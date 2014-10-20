@@ -75,8 +75,9 @@ public class ImageUtils {
         return inSampleSize;
     }
 
-    public static Drawable changeDrawableIntristicSize(Drawable drawable, int width, int height) {
+    public static Drawable changeDrawableIntristicSizeAndBounds(Drawable drawable, int width, int height) {
         Drawable mutable = drawable.mutate();
+        mutable.setBounds(0, 0, width, height);
         if (drawable instanceof GradientDrawable) {
             GradientDrawable gd = (GradientDrawable)mutable;
             gd.setSize(width, height);
@@ -88,7 +89,7 @@ public class ImageUtils {
             drawable.setBounds(0, 0, width, height); // XXX: а оно точно работает?
         } else {
             drawable.setBounds(0, 0, width, height);
-            if (BuildConfig.DEBUG) Log.e("ImageUtils", "changeDrawableIntristicSize() of " + drawable.getClass().toString(),  new IllegalStateException("unsupported"));
+            if (BuildConfig.DEBUG) Log.e("ImageUtils", "changeDrawableIntristicSizeAndBounds() of " + drawable.getClass().toString(),  new IllegalStateException("unsupported"));
         }
         return mutable;
 
@@ -213,7 +214,7 @@ public class ImageUtils {
         return featherPhotoIntent;
     }
 
-    public void loadAvatar(User a, ImageView dst, @DimenRes int diameterResource) {
+    public void loadAvatar(@Nullable User a, ImageView dst, @DimenRes int diameterResource) {
         loadAvatar(
                 a == null ? Userpic.DUMMY : a.getUserpic(),
                 a == null ? "" : a.getName(),

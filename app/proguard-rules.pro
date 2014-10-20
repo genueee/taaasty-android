@@ -19,6 +19,7 @@
 -optimizations !code/simplification/cast,!field/*,!class/merging/*,!code/allocation/variable
 -dontobfuscate
 
+-dontwarn org.slf4j.**
 
 -keep class ru.taaasty.model.** { *; }
 

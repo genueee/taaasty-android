@@ -42,9 +42,17 @@ import rx.android.schedulers.AndroidSchedulers;
 public class UserInfoFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "UserInfoFragment";
-    private static final String ARG_USER = "author";
+    private static final String ARG_USER_ID = "user_id";
+    private static final String ARG_USER = "user";
     private static final String ARG_DESIGN = "design";
 
+    private static final String BUNDLE_ARG_USER = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_USER";
+    private static final String BUNDLE_ARG_DESIGN = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_DESIGN";
+    private static final String BUNDLE_ARG_RELATIONSHIPS_SUMMARY = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_RELATIONSHIPS_SUMMARY";
+
+    private long mUserId;
+
+    @Nullable
     private User mUser;
 
     @Nullable
@@ -63,7 +71,6 @@ public class UserInfoFragment extends Fragment {
     private TextView mEntriesCount, mSubscriptionsCount, mSubscribersCount, mDaysCount;
     private TextView mEntriesCountTitle, mSubscriptionsCountTitle, mSubscribersCountTitle, mDaysCountTitle;
 
-
     private OnFragmentInteractionListener mListener;
 
     private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
@@ -75,13 +82,15 @@ public class UserInfoFragment extends Fragment {
     private boolean mRefreshingUserpic;
     private boolean mRefreshingBackground;
 
-    public static UserInfoFragment newInstance(User user) {
+    public static UserInfoFragment newInstance(long userId, @Nullable User user) {
         UserInfoFragment fragment = new UserInfoFragment();
         Bundle args = new Bundle();
+        args.putLong(ARG_USER_ID, userId);
         args.putParcelable(ARG_USER, user);
         fragment.setArguments(args);
         return fragment;
     }
+
     public UserInfoFragment() {
         // Required empty public constructor
     }
@@ -90,12 +99,23 @@ public class UserInfoFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mUser = getArguments().getParcelable(ARG_USER);
-            mDesign = getArguments().getParcelable(ARG_DESIGN);
-            if (mUser.getRelationshipsSummary() != null) mRelationshipsSummary = mUser.getRelationshipsSummary();
-            if (mDesign == null && mUser.getDesign() != null) mDesign = mUser.getDesign();
-            if (DBG) Log.v(TAG, "author: " + mUser + " design: " + mDesign);
+            mUserId = getArguments().getLong(ARG_USER_ID);
+            if (savedInstanceState == null) {
+                mUser = getArguments().getParcelable(ARG_USER);
+                mDesign = getArguments().getParcelable(ARG_DESIGN);
+                if (mUser != null && mUser.getRelationshipsSummary() != null)
+                    mRelationshipsSummary = mUser.getRelationshipsSummary();
+                if (mDesign == null && mUser != null && mUser.getDesign() != null)
+                    mDesign = mUser.getDesign();
+            }
         }
+        if (savedInstanceState != null) {
+            mUser = savedInstanceState.getParcelable(BUNDLE_ARG_USER);
+            mDesign = savedInstanceState.getParcelable(BUNDLE_ARG_DESIGN);
+            mRelationshipsSummary = savedInstanceState.getParcelable(BUNDLE_ARG_RELATIONSHIPS_SUMMARY);
+        }
+        if (DBG) Log.v(TAG, "userId" + mUserId + "user: " + mUser + " design: " + mDesign);
+
         EventBus.getDefault().register(this);
     }
 
@@ -144,7 +164,15 @@ public class UserInfoFragment extends Fragment {
         } else {
             mSelectBackgroundButtonView.setVisibility(View.GONE);
         }
-        setupUserInfo();
+        if (mUser != null) setupUserInfo();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mUser != null) outState.putParcelable(BUNDLE_ARG_USER, mUser);
+        if (mDesign != null) outState.putParcelable(BUNDLE_ARG_DESIGN, mDesign);
+        if (mRelationshipsSummary != null) outState.putParcelable(BUNDLE_ARG_RELATIONSHIPS_SUMMARY, mRelationshipsSummary);
     }
 
     @Override
@@ -203,9 +231,11 @@ public class UserInfoFragment extends Fragment {
                 if (mListener != null) mListener.notifyError(status.error, status.exception);
                 return;
             }
-            if (mUser.getId() == status.userId) {
-                mUser.setUserpic(status.newUserpic);
-                setupAvatar();
+            if (mUserId == status.userId) {
+                if (mUser != null) {
+                    mUser.setUserpic(status.newUserpic);
+                    setupAvatar();
+                }
             }
         }
     }
@@ -238,14 +268,23 @@ public class UserInfoFragment extends Fragment {
                 if (mListener != null) mListener.notifyError(status.error, status.exception);
                 return;
             }
-            if (mUser.getId() == status.userId) {
+            if (mUserId == status.userId) {
                 mDesign = status.design;
                 setupDesign();
             }
         }
     }
 
+    public TlogDesign getDesign() {
+        return mDesign;
+    }
+
+    public User getUser() {
+        return mUser;
+    }
+
     private void setupAvatar() {
+        assert mUser != null;
         if (DBG) Log.v(TAG, "load avatar: " + mUser.getUserpic());
 
         if (mRefreshingUserpic) {
@@ -285,6 +324,7 @@ public class UserInfoFragment extends Fragment {
     }
 
     private void setupUserInfo() {
+        assert mUser != null;
         setupDesign();
         setupAvatar();
         setupUserName();
@@ -294,16 +334,18 @@ public class UserInfoFragment extends Fragment {
     }
 
     private void setupUserName() {
+        assert mUser != null;
         mUserName.setText(mUser.getName());
     }
 
     private void setupUserTitle() {
+        assert mUser != null;
         mUserTitle.setText(mUser.getTitle() == null ? "" : Html.fromHtml(mUser.getTitle()));
     }
 
     boolean isMyProfile() {
         Long myUserId = UserManager.getInstance().getCurrentUserId();
-        return (myUserId != null) && (myUserId.equals(mUser.getId()));
+        return (myUserId != null) && (myUserId.equals(mUserId));
     }
 
     /**
@@ -317,7 +359,7 @@ public class UserInfoFragment extends Fragment {
         }
 
         mFollowUnfollowProgress.setVisibility(View.GONE);
-        if (TlogInfo.isMeSubscribed(mMyRelationship)) {
+        if (Relationship.isMeSubscribed(mMyRelationship)) {
             mSubscribeButton.setVisibility(View.INVISIBLE);
             mUnsubscribeButton.setVisibility(View.VISIBLE);
         } else {
@@ -335,6 +377,7 @@ public class UserInfoFragment extends Fragment {
     private void setupCounters() {
         long entries;
         long diffDays;
+        assert mUser != null;
         Resources res;
         RelationshipsSummary summary;
 
@@ -357,7 +400,7 @@ public class UserInfoFragment extends Fragment {
 
         if (summary != null) {
             mSubscriptionsCount.setText(String.valueOf(summary.followingsCount));
-            mSubscriptionsCountTitle.setText(res.getQuantityString(R.plurals.subscribtions_title, (int)(summary.followingsCount % 1000000l)));
+            mSubscriptionsCountTitle.setText(res.getQuantityString(R.plurals.subscriptions_title, (int)(summary.followingsCount % 1000000l)));
 
             mSubscribersCount.setText(String.valueOf(summary.followersCount));
             mSubscribersCountTitle.setText(res.getQuantityString(R.plurals.subscribers_title, (int)(summary.followersCount % 1000000l)));
@@ -398,7 +441,7 @@ public class UserInfoFragment extends Fragment {
         ApiTlog userService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
 
         Observable<TlogInfo> observableUser = AndroidObservable.bindFragment(this,
-                userService.getUserInfo(String.valueOf(mUser.getId())));
+                userService.getUserInfo(String.valueOf(mUserId)));
 
         mUserInfoSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -409,7 +452,7 @@ public class UserInfoFragment extends Fragment {
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,
-                relApi.follow(String.valueOf(mUser.getId())));
+                relApi.follow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
         mFollowSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -420,7 +463,7 @@ public class UserInfoFragment extends Fragment {
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,
-                relApi.unfollow(String.valueOf(mUser.getId())));
+                relApi.unfollow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
         mFollowSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())

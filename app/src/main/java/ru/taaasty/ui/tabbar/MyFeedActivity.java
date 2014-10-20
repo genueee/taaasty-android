@@ -11,18 +11,14 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import java.util.Locale;
 
-import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -32,23 +28,19 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
-import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.widgets.ErrorTextView;
-import ru.taaasty.widgets.Tabbar;
 
 
-public class MyFeedActivity extends ActivityBase implements
+public class MyFeedActivity extends TabbarActivityBase implements
         MyAdditionalFeedFragment.OnFragmentInteractionListener,
         MyFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedActivity";
 
     public static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
-    public static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
     public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.tabbar.MyAdditionalFeedFragment.KEY_SHOW_PAGE";
 
@@ -58,9 +50,6 @@ public class MyFeedActivity extends ActivityBase implements
 
     private static final String KEY_CURRENT_USER = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER";
     private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER_DESIGN";
-
-    private UserManager mUserManager = UserManager.getInstance();
-    private Tabbar mTabbar;
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
@@ -72,12 +61,6 @@ public class MyFeedActivity extends ActivityBase implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // XXX
-        if (mUserManager.getCurrentUserToken() == null) {
-            switchToLoginForm();
-            return;
-        }
-
         setContentView(R.layout.activity_my_feed);
 
         if (savedInstanceState != null) {
@@ -85,10 +68,6 @@ public class MyFeedActivity extends ActivityBase implements
             mCurrentUserDesign = savedInstanceState.getParcelable(KEY_CURRENT_USER_DESIGN);
         }
 
-        mTabbar = (Tabbar) findViewById(R.id.tabbar);
-        mTabbar.setOnTabbarButtonListener(mTabbarListener);
-
-        mTabbar.setActivated(R.id.btn_tabbar_my_feed);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
@@ -97,6 +76,16 @@ public class MyFeedActivity extends ActivityBase implements
 
         int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_MY_TLOG);
         mViewPager.setCurrentItem(initialSection, false);
+    }
+
+    @Override
+    int getCurrentTabId() {
+        return R.id.btn_tabbar_my_feed;
+    }
+
+    @Override
+    void onCurrentTabButtonClicked() {
+        refreshData();
     }
 
     @Override
@@ -109,25 +98,6 @@ public class MyFeedActivity extends ActivityBase implements
                     onAdditionMenuItemClicked(viewId);
                 }
                 break;
-            case CREATE_POST_ACTIVITY_REQUEST_CODE:
-                switch (resultCode) {
-                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
-                        if (mViewPager != null) mViewPager.setCurrentItem(SECTION_MY_TLOG, false);
-                        break;
-                    case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
-                        if (mViewPager != null) mViewPager.setCurrentItem(SECTION_HIDDEN, false);
-                        break;
-                }
-                // говно
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mSectionsPagerAdapter == null) return;
-                        Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
-                        if (current != null) ((IRereshable)current).refreshData();
-                    }
-                }, 200);
-                break;
         }
     }
 
@@ -138,71 +108,23 @@ public class MyFeedActivity extends ActivityBase implements
         if (mCurrentUserDesign != null) outState.putParcelable(KEY_CURRENT_USER_DESIGN, mCurrentUserDesign);
     }
 
-    private void switchToLoginForm() {
-        Intent i = new Intent(this, LoginActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
-                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
-        );
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
-
-    void switchToLiveFeed() {
-        Intent i = new Intent(this, LiveFeedActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
-
-    void switchToSubscribtions() {
-        Intent i = new Intent(this, SubscribtionsActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
-
-    void openCreatePost() {
-        Intent i = new Intent(this, CreatePostActivity.class);
-        startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
-    }
-
-    private Tabbar.onTabbarButtonListener mTabbarListener = new Tabbar.onTabbarButtonListener() {
-        @Override
-        public void onTabbarButtonClicked(View v) {
-            switch (v.getId()) {
-                case R.id.btn_tabbar_my_feed:
-                    // XXX
-                    break;
-                case R.id.btn_tabbar_live:
-                    switchToLiveFeed();
-                    break;
-                case R.id.btn_tabbar_subscribtions:
-                    switchToSubscribtions();
-                    break;
-                case R.id.btn_tabbar_post:
-                    openCreatePost();
-                    break;
-                default:
-                    if (DBG) Log.v(TAG, "onTabbarButtonListener " + v.getId());
-                    Toast.makeText(MyFeedActivity.this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));
-        } else {
-            ert.setError(error);
+    void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {
+        switch (resultCode) {
+            case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
+                if (mViewPager != null) mViewPager.setCurrentItem(SECTION_MY_TLOG, false);
+                break;
+            case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
+                if (mViewPager != null) mViewPager.setCurrentItem(SECTION_HIDDEN, false);
+                break;
         }
+        // говно
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                refreshData();
+            }
+        }, 200);
     }
 
     @Override
@@ -230,6 +152,12 @@ public class MyFeedActivity extends ActivityBase implements
     public void onCurrentUserLoaded(User user, TlogDesign design) {
         mCurrentUser = user;
         mCurrentUserDesign = design;
+    }
+
+    void refreshData() {
+        if (mSectionsPagerAdapter == null) return;
+        Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+        if (current != null) ((IRereshable)current).refreshData();
     }
 
     public void openUserFeed(User user, TlogDesign design) {

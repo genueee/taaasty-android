@@ -60,7 +60,7 @@ public class Rating implements Parcelable {
         return "Rating{" +
                 "votes=" + votes +
                 ", rating=" + rating +
-                ", entryId=" + entryId +
+                ", entityId=" + entryId +
                 ", isVoted=" + isVoted +
                 ", isVoteable=" + isVoteable +
                 '}';
