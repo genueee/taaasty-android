@@ -20,7 +20,9 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.R;
@@ -45,9 +47,12 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     private long mSwitcherLastPostId = -1;
     private Drawable mStubPlaceholder;
 
+    private Set<Long> mFollowProcess;
+
     public NotificationsAdapter(Context context, InteractionListener listener) {
         mContext = context;
         mNotifications = new ArrayList<>(10);
+        mFollowProcess = new HashSet<>(1);
         mListener = listener;
         mImageUtils = ImageUtils.getInstance();
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
@@ -115,26 +120,49 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 ) {
             mNotifications.add(0, notification);
             notifyItemInserted(0);
-            return;
-        }
-
-        int size = mNotifications.size();
-        for (int i=0; i<size; ++i) {
-            Notification old = mNotifications.get(i);
-            if (old.id == notification.id) {
-                mNotifications.set(i, notification);
-                if (old.createdAt.equals(notification.createdAt)) {
-                    notifyItemChanged(i);
-                } else {
-                    Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
-                    notifyDataSetChanged();
+        } else {
+            boolean itemReplaced = false;
+            int size = mNotifications.size();
+            for (int i=0; i<size; ++i) {
+                Notification old = mNotifications.get(i);
+                if (old.id == notification.id) {
+                    itemReplaced = true;
+                    mNotifications.set(i, notification);
+                    if (old.createdAt.equals(notification.createdAt)) {
+                        notifyItemChanged(i);
+                    } else {
+                        Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
+                        notifyDataSetChanged();
+                    }
+                    break;
                 }
-                return;
+            }
+            if (!itemReplaced) {
+                mNotifications.add(notification);
+                Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
+                notifyDataSetChanged();
             }
         }
-        mNotifications.add(notification);
-        Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
-        notifyDataSetChanged();
+
+        onNotificationFollowUnfollowStopped(notification.id);
+    }
+
+    public void onNotificationFollowUnfollowStarted(long notificationId) {
+        if (mFollowProcess.add(notificationId)) {
+            int size = mNotifications.size();
+            for (int i=0; i<size; ++i) {
+                if (notificationId == mNotifications.get(i).id) notifyItemChanged(i);
+            }
+        }
+    }
+
+    public void onNotificationFollowUnfollowStopped(long notificationId) {
+        if (mFollowProcess.remove(notificationId)) {
+            int size = mNotifications.size();
+            for (int i=0; i<size; ++i) {
+                if (notificationId == mNotifications.get(i).id) notifyItemChanged(i);
+            }
+        }
     }
 
     private void bindReadStatus(ViewHolder holder, Notification notification) {
@@ -189,7 +217,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         holder.addedButton.setVisibility(View.GONE);
 
         String url;
-        if (!TextUtils.isEmpty(notification.image.path)) {
+        // TODO: убрать startsWith, когда на сервере в path перестанут выдавать абсолютные ссылки на картинки
+        if (!TextUtils.isEmpty(notification.image.path)
+                && !notification.image.path.startsWith("http://")
+                && !notification.image.path.startsWith("https://")
+                ) {
             ThumborUrlBuilder tb = NetworkUtils.createThumborUrlFromPath(notification.image.path);
             if (holder.entryImage.getWidth() != 0) {
                 tb.resize(holder.entryImage.getWidth(), holder.entryImage.getHeight());
@@ -202,7 +234,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         mPicasso
                 .load(url)
                 .placeholder(mStubPlaceholder)
-                .error(R.drawable.image_loading_drawable)
+                .error(R.drawable.image_load_error)
                 .fit()
                 .centerCrop()
                 .into(holder.entryImage);
@@ -212,9 +244,15 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         boolean meSubscribed = notification.isMeSubscribed();
         holder.rightContainer.setVisibility(View.VISIBLE);
         holder.entryImage.setVisibility(View.GONE);
-        holder.progressButton.setVisibility(View.INVISIBLE);
-        holder.addButton.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
-        holder.addedButton.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
+        if (mFollowProcess.contains(notification.id)) {
+            holder.progressButton.setVisibility(View.VISIBLE);
+            holder.addButton.setVisibility(View.INVISIBLE);
+            holder.addedButton.setVisibility(View.INVISIBLE);
+        } else {
+            holder.progressButton.setVisibility(View.INVISIBLE);
+            holder.addButton.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
+            holder.addedButton.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
+        }
     }
 
     private Runnable mRefreshNotificationDateRunnable = new Runnable() {
@@ -275,18 +313,21 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
         @Override
         public void onClick(View v) {
+            Notification notification = mNotifications.get(getPosition());
             switch (v.getId()) {
                 case R.id.avatar:
-                    mListener.onAvatarClicked(v, mNotifications.get(getPosition()));
+                    mListener.onAvatarClicked(v, notification);
                     break;
                 case R.id.add_relationship:
-                    mListener.onAddButtonClicked(v, mNotifications.get(getPosition()));
+                    onNotificationFollowUnfollowStarted(notification.id);
+                    mListener.onAddButtonClicked(v, notification);
                     break;
                 case R.id.relationship_added:
-                    mListener.onAddedButtonClicked(v, mNotifications.get(getPosition()));
+                    onNotificationFollowUnfollowStarted(notification.id);
+                    mListener.onAddedButtonClicked(v, notification);
                     break;
                 default:
-                    mListener.onNotificationClicked(v, mNotifications.get(getPosition()));
+                    mListener.onNotificationClicked(v, notification);
                     break;
             }
         }

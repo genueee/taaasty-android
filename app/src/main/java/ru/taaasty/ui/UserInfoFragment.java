@@ -20,6 +20,7 @@ import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.model.Relationship;
@@ -485,6 +486,7 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onNext(Relationship relationship) {
             mMyRelationship = relationship.getState();
+            EventBus.getDefault().post(new RelationshipChanged(relationship));
         }
     };
 

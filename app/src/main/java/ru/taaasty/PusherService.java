@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.IntDef;
 import android.util.Log;
@@ -31,18 +32,22 @@ import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.NotificationsCountChanged;
+import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherReadyResponse;
+import ru.taaasty.model.Relationship;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class PusherService extends Service implements PrivateChannelEventListener {
     public static final boolean DBG = BuildConfig.DEBUG;
     public static final String TAG = "PusherService";
-    public static final String EVENT_PUSH_NOTIFICATION = "push_notification";
+    public static final int PUSHER_RECONNECT_TIMEOUT = 10000;
 
     @Retention(RetentionPolicy.CLASS)
     @IntDef({UPDATE_NOTIFICATIONS_STATUS_NONE, UPDATE_NOTIFICATIONS_STATUS_LOADING, UPDATE_NOTIFICATIONS_STATUS_READY, UPDATE_NOTIFICATIONS_STATUS_FAILURE})
@@ -69,16 +74,29 @@ public class PusherService extends Service implements PrivateChannelEventListene
     public static final int  UPDATE_NOTIFICATIONS_STATUS_FAILURE = 3;
 
 
+    public static final String EVENT_PUSH_NOTIFICATION = "push_notification";
+
     private static final String ACTION_START = "ru.taaasty.PusherService.action.START";
     private static final String ACTION_STOP = "ru.taaasty.PusherService.action.STOP";
+    private static final String ACTION_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_SET_STATUS_BAR_NOTIFICATIONS";
     private static final String ACTION_MARK_AS_READ = "ru.taaasty.PusherService.action.MARK_AS_READ";
+    private static final String ACTION_REFRESH_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_REFRESH_NOTIFICATIONS";
 
     private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.PusherService.action.EXTRA_NOTIFICATION_ID";
+
+    private static final String EXTRA_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.EXTRA_SET_STATUS_BAR_NOTIFICATIONS";
 
     private final IBinder mBinder = new LocalBinder();
 
     private ApiMessenger mApiMessenger;
+
     private Pusher mPusher;
+
+    private Handler mHandler;
+
+    private boolean mPusherMustBeActive = false;
+
+    private Subscription mSendAuthReadySubscrption = SubscriptionHelper.empty();
 
     @UpdateNotificationsStatus
     private volatile int mUpdateNotificationsStatus;
@@ -86,6 +104,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private volatile boolean mNotificationsListInitialized;
 
     private volatile LinkedList<Notification> mCurrentNotifications;
+
+    private StatusBarNotification mStatusBarNotification;
+
 
     /**
      * Сообщение об ошибки при {#mUpdateNotificationsStatus} = {#UPDATE_NOTIFICATIONS_STATUS_FAILURE}.
@@ -105,6 +126,10 @@ public class PusherService extends Service implements PrivateChannelEventListene
         }
     }
 
+    /**
+     * Проверяем, что pusher запущен. Пересоединяемся, если нет
+     * @param context
+     */
     public static void startPusher(Context context) {
         Intent intent = new Intent(context, PusherService.class);
         intent.setAction(ACTION_START);
@@ -124,6 +149,27 @@ public class PusherService extends Service implements PrivateChannelEventListene
         context.startService(intent);
     }
 
+    public static void refreshNotifications(Context context) {
+        Intent intent = new Intent(context, PusherService.class);
+        intent.setAction(ACTION_REFRESH_NOTIFICATIONS);
+        context.startService(intent);
+    }
+
+    public static void enableStatusBarNotifications(Context context) {
+        setStatusBarNotifications(context, true);
+    }
+
+    public static void disableStatusBarNotifications(Context context) {
+        setStatusBarNotifications(context, false);
+    }
+
+    private static void setStatusBarNotifications(Context context, boolean enable) {
+        Intent intent = new Intent(context, PusherService.class);
+        intent.setAction(ACTION_SET_STATUS_BAR_NOTIFICATIONS);
+        intent.putExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, enable);
+        context.startService(intent);
+    }
+
     public PusherService() {
     }
 
@@ -135,10 +181,13 @@ public class PusherService extends Service implements PrivateChannelEventListene
     @Override
     public void onCreate() {
         super.onCreate();
+        mHandler = new Handler();
         mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
         mUpdateNotificationsStatus = UPDATE_NOTIFICATIONS_STATUS_NONE;
         mCurrentNotifications = new LinkedList<>();
         mNotificationsListInitialized = false;
+        mStatusBarNotification = new StatusBarNotification(this);
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -148,21 +197,35 @@ public class PusherService extends Service implements PrivateChannelEventListene
             final String action = intent.getAction();
             if (ACTION_START.equals(action)) {
                 if (DBG) Log.v(TAG, "ACTION_START");
+                mPusherMustBeActive = true;
                 pusherConnect();
             } else if (ACTION_STOP.equals(action)) {
+                mPusherMustBeActive = false;
                 if (DBG) Log.v(TAG, "ACTION_STOP");
                 stopSelf();
             } else if (ACTION_MARK_AS_READ.equals(action)) {
                 handleMarkAsRead(intent.getLongExtra(EXTRA_NOTIFICATION_ID, -1));
+            } else if (ACTION_REFRESH_NOTIFICATIONS.equals(action)) {
+                if (mUpdateNotificationsStatus == UPDATE_NOTIFICATIONS_STATUS_READY) sentAuthReady();
+            } else if (ACTION_SET_STATUS_BAR_NOTIFICATIONS.equals(action)) {
+                mStatusBarNotification.addEnableDisableNotifications(intent.getBooleanExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, true));
             }
         }
-        return START_STICKY;
+
+        // Не восстанавливаемся после завершения не через ACTION_STOP
+        return START_NOT_STICKY;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         if (DBG) Log.v(TAG, "onDestroy()");
+        mHandler.removeCallbacks(mReconnectPusherRunnable);
+        mHandler = null;
+        EventBus.getDefault().unregister(this);
+        mStatusBarNotification.onDestroy();
+        mStatusBarNotification = null;
+        mSendAuthReadySubscrption.unsubscribe();
         destroyPusher();
         mApiMessenger = null;
     }
@@ -172,8 +235,33 @@ public class PusherService extends Service implements PrivateChannelEventListene
         if (getMessagingChannelName().equals(channelName) && EVENT_PUSH_NOTIFICATION.equals(eventName)) {
             Notification n = NetworkUtils.getInstance().getGson().fromJson(data, Notification.class);
             addNotification(n);
+            mStatusBarNotification.append(n);
         } else {
             if (DBG) Log.v(TAG, "onEvent() channel: " + channelName + " event: " + eventName + " data: " + data);
+        }
+    }
+
+    public void onEventMainThread(RelationshipChanged relationshipChanged) {
+        Relationship newRelationship = relationshipChanged.relationship;
+        long me = UserManager.getInstance().getCurrentUserId();
+        long him;
+
+        if (!newRelationship.isMyRelationToHim(me)) return; // Не интересно
+        him = newRelationship.getToId();
+        EventBus eventBus = EventBus.getDefault();
+
+        // Меняем relation
+        synchronized (this) {
+            ListIterator<Notification> l = mCurrentNotifications.listIterator();
+            while (l.hasNext()) {
+                Notification notification = l.next();
+                if (!notification.isTypeRelationship()) return;
+                if (notification.sender.getId() == him) {
+                    Notification newNotification = Notification.changeSenderRelation(notification, newRelationship);
+                    l.set(newNotification);
+                    eventBus.post(new NotificationReceived(newNotification));
+                }
+            }
         }
     }
 
@@ -186,18 +274,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
     @Override
     public synchronized void onSubscriptionSucceeded(String channelName) {
         if (DBG) Log.v(TAG, "onSubscriptionSucceeded() channel: " + channelName);
-        try {
-            PusherReadyResponse response = mApiMessenger.authReady(mPusher.getConnection().getSocketId());
-            mCurrentNotifications.clear();
-            mCurrentNotifications.addAll(response.notifications);
-            setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_READY);
-            broadcastNotificationsCountChanged();
-        } catch (Exception e) {
-            Log.e(TAG, "authReady failed", e);
-            //Попробуем подключиться как-нибудь в другой раз
-            destroyPusher();
-            setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_FAILURE, getString(R.string.error_loading_notifications), e);
-        }
+        sentAuthReady();
     }
 
     /**
@@ -265,6 +342,20 @@ public class PusherService extends Service implements PrivateChannelEventListene
         mPusher = null;
     }
 
+    private void reconnectPusherLater() {
+        if (mHandler == null) return;
+        mHandler.removeCallbacks(mReconnectPusherRunnable);
+        mHandler.postDelayed(mReconnectPusherRunnable, PUSHER_RECONNECT_TIMEOUT);
+    }
+
+    private final Runnable mReconnectPusherRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (DBG) Log.v(TAG, "reconnect pusher");
+            pusherConnect();
+        }
+    };
+
     private String getMessagingChannelName() {
         return "private-" + UserManager.getInstance().getCurrentUserId() + "-messaging";
     }
@@ -290,7 +381,11 @@ public class PusherService extends Service implements PrivateChannelEventListene
     }
 
     private synchronized void broadcastNotificationsCountChanged() {
-        EventBus.getDefault().post(new NotificationsCountChanged(mCurrentNotifications));
+        EventBus.getDefault().post(new NotificationsCountChanged(mCurrentNotifications, false));
+    }
+
+    private synchronized void broadcastNotificationListFullyRefreshed() {
+        EventBus.getDefault().post(new NotificationsCountChanged(mCurrentNotifications, true));
     }
 
     public class LocalBinder extends Binder {
@@ -324,6 +419,51 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mMarkAsReadObserver);
     }
+
+    private void sentAuthReady() {
+        if (mPusher == null || mPusher.getConnection().getState() != ConnectionState.CONNECTED) {
+            if (DBG) Log.v(TAG, "sentAuthReady pusher disconnected");
+            return;
+        }
+        setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_LOADING);
+        mSendAuthReadySubscrption.unsubscribe();
+
+        mSendAuthReadySubscrption = mApiMessenger.authReady(mPusher.getConnection().getSocketId())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mPusherReadyResponseObserver);
+
+    }
+
+    private final Observer<PusherReadyResponse> mPusherReadyResponseObserver = new Observer<PusherReadyResponse>() {
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Log.e(TAG, "authReady failed", e);
+            destroyPusher();
+            setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_FAILURE, getString(R.string.error_loading_notifications), new RuntimeException(e));
+            reconnectPusherLater();
+        }
+
+        @Override
+        public void onNext(PusherReadyResponse pusherReadyResponse) {
+            try {
+                synchronized (PusherService.this) {
+                    mCurrentNotifications.clear();
+                    mCurrentNotifications.addAll(pusherReadyResponse.notifications);
+                    broadcastNotificationListFullyRefreshed();
+                    setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_READY);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "authReady failed", e);
+                destroyPusher();
+                setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_FAILURE, getString(R.string.error_loading_notifications), e);
+                reconnectPusherLater();
+            }
+        }
+    };
 
     private final Observer<Notification> mMarkAsReadObserver = new Observer<Notification>() {
 
@@ -362,6 +502,12 @@ public class PusherService extends Service implements PrivateChannelEventListene
         @Override
         public void onConnectionStateChange(ConnectionStateChange change) {
             if (DBG) Log.v(TAG, "onConnectionStateChange() change: " + change.getPreviousState() + " -> " + change.getCurrentState());
+            if (mPusher == null) return;
+            if (mPusherMustBeActive && change.getCurrentState() == ConnectionState.DISCONNECTED) {
+                reconnectPusherLater();
+            } else if (change.getCurrentState() == ConnectionState.CONNECTED) {
+                mHandler.removeCallbacks(mReconnectPusherRunnable);
+            }
         }
 
         @Override

@@ -1,11 +1,17 @@
 package ru.taaasty.model;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
 import java.util.Comparator;
 import java.util.Date;
+
+import ru.taaasty.BuildConfig;
+import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.post.ShowPostActivity;
 
 /**
  * Created by alexey on 22.10.14.
@@ -94,12 +100,50 @@ public class Notification implements Parcelable {
     public Long parentId;
 
     @Nullable
-    public Long parentType;
+    public String parentType;
 
     /**
      * URL хуйни.
      */
     public String entityUrl;
+
+    public static Notification changeSenderRelation(Notification old, Relationship senderRelation) {
+        return new Notification(old.id, old.createdAt, old.userId, old.sender, senderRelation,
+                old.readAt, old.image, old.action, old.actionText, old.text, old.entityId,
+                old.entityType, old.parentId, old.parentType, old.entityUrl);
+    }
+
+    private Notification(long id,
+                         Date createdAt,
+                         long userId,
+                         User sender,
+                         Relationship senderRelation,
+                         Date readAt,
+                         ImageInfo.Image2 image,
+                         String action,
+                         String actionText,
+                         String text,
+                         long entityId,
+                         String entityType,
+                         Long parentId,
+                         String parentType,
+                         String entityUrl) {
+        this.id = id;
+        this.createdAt = createdAt;
+        this.userId = userId;
+        this.sender = sender;
+        this.senderRelation = senderRelation;
+        this.readAt = readAt;
+        this.image = image;
+        this.action = action;
+        this.actionText = actionText;
+        this.text = text;
+        this.entityId = entityId;
+        this.entityType = entityType;
+        this.parentId = parentId;
+        this.parentType = parentType;
+        this.entityUrl = entityUrl;
+    }
 
     @Override
     public int describeContents() {
@@ -111,7 +155,6 @@ public class Notification implements Parcelable {
     }
 
     public boolean isMeSubscribed() {
-        // XXX: здесь по апи возвращается какая-то хрень. Я не понимаю, как этим пользоваться
         if (senderRelation == null) return false;
         return Relationship.isMeSubscribed(senderRelation.getState());
     }
@@ -132,6 +175,28 @@ public class Notification implements Parcelable {
         return image != null && image != ImageInfo.Image2.DUMMY;
     }
 
+    @Nullable
+    public Intent createOpenPostIntent(Context context) {
+        Intent intent = null;
+        if (isTypeEntry()) {
+            // Пост
+            intent = new Intent(context, ShowPostActivity.class);
+            intent.putExtra(ShowPostActivity.ARG_POST_ID, entityId);
+        } else if (isTypeComment()) {
+            //Комментарий
+            intent = new Intent(context, ShowPostActivity.class);
+            intent.putExtra(ShowPostActivity.ARG_POST_ID, parentId);
+            // TODO comment id - entityId
+        } else if (isTypeRelationship()) {
+            //Инфа о юзере
+            intent = new Intent(context, UserInfoActivity.class);
+            intent.putExtra(UserInfoActivity.ARG_USER_ID, sender.getId());
+        } else {
+            if (BuildConfig.DEBUG) throw new IllegalStateException("Неожиданный тип уведомления");
+        }
+        return intent;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.id);
@@ -147,7 +212,7 @@ public class Notification implements Parcelable {
         dest.writeLong(this.entityId);
         dest.writeString(this.entityType);
         dest.writeValue(this.parentId);
-        dest.writeValue(this.parentType);
+        dest.writeString(this.parentType);
         dest.writeString(this.entityUrl);
     }
 
@@ -170,7 +235,7 @@ public class Notification implements Parcelable {
         this.entityId = in.readLong();
         this.entityType = in.readString();
         this.parentId = (Long) in.readValue(Long.class.getClassLoader());
-        this.parentType = (Long) in.readValue(Long.class.getClassLoader());
+        this.parentType = in.readString();
         this.entityUrl = in.readString();
     }
 

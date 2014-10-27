@@ -21,7 +21,7 @@ public interface ApiMessenger {
 
     @FormUrlEncoded
     @POST("/messenger/ready.json")
-    PusherReadyResponse authReady(@Field("socket_id") String socketId);
+    Observable<PusherReadyResponse> authReady(@Field("socket_id") String socketId);
 
     @FormUrlEncoded
     @PUT("/messenger/notifications/{id}/read.json")

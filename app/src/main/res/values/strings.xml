@@ -187,4 +187,11 @@
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_notifications">Уведомлений нет</string>
 
+    <plurals name="notifications_received_title">
+        <item quantity="one">Уведомление…</item>
+        <item quantity="few">Пришло %d уведомления…</item>
+        <item quantity="many">Пришло %d уведомлений…</item>
+        <item quantity="other">Пришло %d уведомлений…</item>
+    </plurals>
+
 </resources>

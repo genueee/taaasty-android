@@ -5,7 +5,7 @@ import java.util.Collection;
 import ru.taaasty.model.Notification;
 
 /**
- * Изменилось кол-во уведомлений, либо кол-во непрочитанных уведомлений
+ * Изменилось кол-во уведомлений, либо кол-во непрочитанных уведомлений, либо список уведомлений обновился полоностю
  */
 public class NotificationsCountChanged {
 
@@ -13,7 +13,9 @@ public class NotificationsCountChanged {
 
     public final int unreadCount;
 
-    public NotificationsCountChanged(Collection<Notification> notifications) {
+    public final boolean notificationListRefreshed;
+
+    public NotificationsCountChanged(Collection<Notification> notifications, boolean notificationListRefreshed) {
         int count = notifications.size();
         int unreadCount = 0;
 
@@ -22,11 +24,13 @@ public class NotificationsCountChanged {
         }
         this.count = notifications.size();
         this.unreadCount = unreadCount;
+        this.notificationListRefreshed = notificationListRefreshed;
     }
 
     public NotificationsCountChanged(int count, int unreadCount) {
         this.count = count;
         this.unreadCount = count;
+        this.notificationListRefreshed = false;
     }
 
 }

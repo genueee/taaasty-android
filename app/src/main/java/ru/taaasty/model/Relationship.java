@@ -62,6 +62,26 @@ public class Relationship implements Parcelable {
         return mUser;
     }
 
+    public long getFromId() {
+        return mReaderId;
+    }
+
+    public long getToId() {
+        return mUserId;
+    }
+
+    public boolean isMyRelation(long myUserId) {
+        return isMyRelationToHim(myUserId) || isHisRelationToMe(myUserId);
+    }
+
+    public boolean isMyRelationToHim(long myUserId) {
+        return (myUserId != -1) && (myUserId == getFromId());
+    }
+
+    public boolean isHisRelationToMe(long myUserId) {
+        return (myUserId != -1) && (myUserId == getToId());
+    }
+
     @Override
     public int describeContents() {
         return 0;

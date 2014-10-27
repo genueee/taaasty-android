@@ -3,10 +3,9 @@ package ru.taaasty.ui.tabbar;
 import android.os.Bundle;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.PusherService;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
 import ru.taaasty.ui.NotificationsFragment;
-import ru.taaasty.widgets.Tabbar;
 
 public class NotificationsActivity extends TabbarActivityBase implements NotificationsFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -24,6 +23,19 @@ public class NotificationsActivity extends TabbarActivityBase implements Notific
                     .add(R.id.container, fragment)
                     .commit();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        PusherService.disableStatusBarNotifications(this);
+        PusherService.refreshNotifications(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        PusherService.enableStatusBarNotifications(this);
     }
 
     @Override

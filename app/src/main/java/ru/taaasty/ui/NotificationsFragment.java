@@ -21,10 +21,19 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.adapters.NotificationsAdapter;
 import ru.taaasty.events.NotificationReceived;
+import ru.taaasty.events.NotificationsCountChanged;
+import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
-import ru.taaasty.model.User;
+import ru.taaasty.model.Relationship;
+import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class NotificationsFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -43,6 +52,10 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     boolean mBound = false;
 
     private NotificationsAdapter mAdapter;
+
+    private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
+
+    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
 
     public static NotificationsFragment newInstance() {
         return new NotificationsFragment();
@@ -119,6 +132,13 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mFollowSubscribtion.unsubscribe();
+        mUserInfoSubscription.unsubscribe();
+    }
+
+    @Override
     public void onServiceConnected(ComponentName name, IBinder service) {
         PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
         mPusherService = binder.getService();
@@ -143,6 +163,12 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         if (listAtTop) mListView.smoothScrollToPosition(0);
     }
 
+    public void onEventMainThread(NotificationsCountChanged event) {
+        if (event.notificationListRefreshed && mAdapter != null && mBound) {
+            mAdapter.setNotifications(mPusherService.getNotifications());
+        }
+    }
+
     private void setNewStatus(PusherService.NotificationsStatus status) {
         switch (status.code) {
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_LOADING:
@@ -158,28 +184,76 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     }
 
     private void setStatusLoading() {
-        mListView.setVisibility(View.INVISIBLE);
         mAdapterEmpty.setVisibility(View.INVISIBLE);
-        mProgressView.setVisibility(View.VISIBLE);
+        // Не играемся с видимостью ListView - раздражает. При обновлении и спиннер не показываем
+        if (mAdapter != null && !mAdapter.isEmpty()) {
+            mProgressView.setVisibility(View.INVISIBLE);
+        } else {
+            mProgressView.setVisibility(View.VISIBLE);
+        }
     }
 
     private void setStatusReady() {
         if (mAdapter == null || mAdapter.isEmpty()) {
             mAdapterEmpty.setVisibility(View.VISIBLE);
-            mListView.setVisibility(View.INVISIBLE);
         } else {
             mAdapterEmpty.setVisibility(View.INVISIBLE);
-            mListView.setVisibility(View.VISIBLE);
         }
 
         mProgressView.setVisibility(View.INVISIBLE);
     }
 
     private void setStatusFailure(String error) {
-        mListView.setVisibility(View.VISIBLE);
         mAdapterEmpty.setVisibility(View.INVISIBLE);
         mProgressView.setVisibility(View.INVISIBLE);
         if (mListener != null) mListener.notifyError(error, null);
+    }
+
+    void follow(Notification notification) {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+                relApi.follow(String.valueOf(notification.sender.getId())));
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new FollowerObserver(notification.id));
+    }
+
+    void unfollow(Notification notification) {
+        mFollowSubscribtion.unsubscribe();
+        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+                relApi.unfollow(String.valueOf(notification.sender.getId())));
+        mFollowSubscribtion = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new FollowerObserver(notification.id));
+    }
+
+    public class FollowerObserver implements Observer<Relationship> {
+
+        private long notificationId;
+
+        public FollowerObserver(long notificationId) {
+            this.notificationId = notificationId;
+        }
+
+        @Override
+        public void onCompleted() {
+            if (mAdapter != null) mAdapter.onNotificationFollowUnfollowStopped(notificationId);
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (mListener != null) mListener.notifyError(getString(R.string.error_follow), e);
+            if (mAdapter != null) mAdapter.onNotificationFollowUnfollowStopped(notificationId);
+        }
+
+        @Override
+        public void onNext(Relationship relationship) {
+            // Здесь сервис должен поймать это событие и сгенерить новое NotificationChanged,
+            // которое должен поймать этот объект и передать адаптеру
+            EventBus.getDefault().post(new RelationshipChanged(relationship));
+        }
     }
 
     private final RecyclerView.AdapterDataObserver mDataObserver = new RecyclerView.AdapterDataObserver() {
@@ -189,25 +263,6 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             if (mBound) setNewStatus(mPusherService.getNotificationsStatus());
         }
     };
-
-    private void openPost(long postId) {
-        Intent i = new Intent(getActivity(), ShowPostActivity.class);
-        i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-        startActivity(i);
-    }
-
-    private void openPostComment(long postId, long commentId) {
-        // XXX: комментарий
-        Intent i = new Intent(getActivity(), ShowPostActivity.class);
-        i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-        startActivity(i);
-    }
-
-    private void openUserInfo(User user) {
-        Intent i = new Intent(getActivity(), UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER_ID, user.getId());
-        startActivity(i);
-    }
 
     private void markNotificationRead(Notification notification) {
         if (notification.isMarkedAsRead()) return;
@@ -219,15 +274,8 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         @Override
         public void onNotificationClicked(View v, Notification notification) {
             markNotificationRead(notification);
-            if (notification.isTypeEntry()) {
-                openPost(notification.entityId);
-            } else if (notification.isTypeComment()) {
-                openPostComment(notification.entityId, notification.parentId);
-            } else if (notification.isTypeRelationship()) {
-                openUserInfo(notification.sender);
-            } else {
-                if (DBG) throw new IllegalStateException("Неожиданный тип уведомления");
-            }
+            Intent intent = notification.createOpenPostIntent(getActivity());
+            if (intent != null) startActivity(intent);
         }
 
         @Override
@@ -239,12 +287,12 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
         @Override
         public void onAddButtonClicked(View v, Notification notification) {
-
+            follow(notification);
         }
 
         @Override
         public void onAddedButtonClicked(View v, Notification notification) {
-
+            unfollow(notification);
         }
     };
 

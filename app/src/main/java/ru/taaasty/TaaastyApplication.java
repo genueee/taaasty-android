@@ -49,6 +49,10 @@ public class TaaastyApplication extends Application {
         super.onTrimMemory(level);
         if (DBG) Log.v(TAG, "onTrimMemory() " + level);
         NetworkUtils.getInstance().onTrimMemory();
+        if (level >=  TRIM_MEMORY_UI_HIDDEN) {
+            // Интерфейс свернут. Не держим сервис без необходимости
+            // PusherService.stopPusher(this);
+        }
     }
 
     @Override

@@ -27,8 +27,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
     UserManager mUserManager = UserManager.getInstance();
     Tabbar mTabbar;
 
-    private boolean mSwithcingTab;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,7 +65,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
     protected void onDestroy() {
         super.onDestroy();
         if (DBG) Log.v(TAG, "onDestroy");
-        if (!mSwithcingTab) PusherService.stopPusher(this);
     }
 
     @Override
@@ -132,7 +129,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
         Intent i = new Intent(this, LoginActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
-        mSwithcingTab = true;
         finish();
         overridePendingTransition(0, 0);
     }
@@ -141,7 +137,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
         Intent i = new Intent(this, SubscriptionsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
-        mSwithcingTab = true;
         finish();
         overridePendingTransition(0, 0);
     }
@@ -153,7 +148,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
         i.putExtra(MyFeedActivity.ARG_KEY_SHOW_SECTION, initialSection);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
-        mSwithcingTab = true;
         finish();
         overridePendingTransition(0, 0);
     }
@@ -162,7 +156,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
         Intent i = new Intent(this, NotificationsActivity.class);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
-        mSwithcingTab = true;
         finish();
         overridePendingTransition(0, 0);
     }
