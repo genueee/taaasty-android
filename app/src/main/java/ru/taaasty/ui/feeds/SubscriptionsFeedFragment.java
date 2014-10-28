@@ -255,10 +255,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
 
         @Override
-        public void onFeedItemClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+        public void onFeedItemClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
+            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
             startActivity(i);
         }
 
@@ -276,10 +275,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         }
 
         @Override
-        public void onPostCommentsClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+        public void onPostCommentsClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
             startActivity(i);
         }
 

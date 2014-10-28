@@ -184,8 +184,8 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long postId) {
                 if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-                Intent i = new Intent(getActivity(), ShowPostActivity.class);
-                i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+                Entry entry = (Entry)parent.getItemAtPosition(position);
+                Intent i = ShowPostActivity.createShowPostIntent(getActivity(), postId, entry, null);
                 startActivity(i);
             }
         });

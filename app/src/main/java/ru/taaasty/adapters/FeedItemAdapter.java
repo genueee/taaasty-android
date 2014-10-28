@@ -1,6 +1,7 @@
 package ru.taaasty.adapters;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -133,6 +134,12 @@ public class FeedItemAdapter extends BaseAdapter {
         return true;
     }
 
+    @Nullable
+    public Entry getItemById(long entryId) {
+        for (Entry entry: mFeed) if (entry.getId() == entryId) return entry;
+        return null;
+    }
+
     @Override
     public int getItemViewType(int position) {
         Entry item = getItem(position);
@@ -206,7 +213,7 @@ public class FeedItemAdapter extends BaseAdapter {
         @Override
         public void onClick(View v) {
             Entry entry = (Entry)v.getTag(R.id.feed_item_post);
-            if (mListener != null) mListener.onFeedItemClicked(v, entry.getId());
+            if (mListener != null) mListener.onFeedItemClicked(v, entry);
         }
     };
 
@@ -219,6 +226,6 @@ public class FeedItemAdapter extends BaseAdapter {
     };
 
     public interface OnItemListener extends EntryBottomActionBar.OnEntryActionBarListener {
-        public void onFeedItemClicked(View view, long postId);
+        public void onFeedItemClicked(View view, Entry entry);
     }
 }

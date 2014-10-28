@@ -282,11 +282,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
 
         @Override
-        public void onFeedItemClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-            if (mTlogInfo != null) i.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogInfo.design);
+        public void onFeedItemClicked(View view, Entry entry) {
+            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(),
+                    entry, mTlogInfo == null ? null : mTlogInfo.design);
             startActivity(i);
         }
 
@@ -302,10 +300,10 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         @Override
-        public void onPostCommentsClicked(View view, long postId) {
-            if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + postId);
-            Intent i = new Intent(getActivity(), ShowPostActivity.class);
-            i.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+        public void onPostCommentsClicked(View view, Entry entry) {
+            if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry,
+                    mTlogInfo == null ? null : mTlogInfo.design);
             startActivity(i);
         }
 

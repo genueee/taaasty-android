@@ -180,13 +180,10 @@ public class Notification implements Parcelable {
         Intent intent = null;
         if (isTypeEntry()) {
             // Пост
-            intent = new Intent(context, ShowPostActivity.class);
-            intent.putExtra(ShowPostActivity.ARG_POST_ID, entityId);
+            intent = ShowPostActivity.createShowPostIntent(context, entityId, null ,null);
         } else if (isTypeComment()) {
             //Комментарий
-            intent = new Intent(context, ShowPostActivity.class);
-            intent.putExtra(ShowPostActivity.ARG_POST_ID, parentId);
-            // TODO comment id - entityId
+            intent = ShowPostActivity.createShowPostIntent(context, parentId, entityId);
         } else if (isTypeRelationship()) {
             //Инфа о юзере
             intent = new Intent(context, UserInfoActivity.class);

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -111,6 +112,7 @@ public class ShowPostFragment extends Fragment {
     private static final String TAG = "ShowPostFragment";
     private static final String ARG_POST_ID = "post_id";
     private static final String ARG_TLOG_DESIGN = "tlog_design";
+    private static final String ARG_ENTRY = "entry";
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
     private static final String KEY_COMMENTS = "comments";
@@ -144,6 +146,7 @@ public class ShowPostFragment extends Fragment {
     private EditText mReplyToCommentText;
     private View mPostButon;
     private View mPostProgress;
+    private View mDynamicContentProgress;
 
     private WebView mWebview;
     private MyWebChromeClient mChromeClient;
@@ -172,10 +175,11 @@ public class ShowPostFragment extends Fragment {
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static ShowPostFragment newInstance(long postId, TlogDesign design) {
+    public static ShowPostFragment newInstance(long postId, @Nullable Entry entry, @Nullable TlogDesign design) {
         ShowPostFragment f = new  ShowPostFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
+        b.putParcelable(ARG_ENTRY, entry);
         b.putParcelable(ARG_TLOG_DESIGN, design);
         f.setArguments(b);
         return f;
@@ -195,6 +199,8 @@ public class ShowPostFragment extends Fragment {
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
         EventBus.getDefault().register(this);
+
+        mCurrentEntry = args.getParcelable(ARG_ENTRY);
     }
 
     @Override
@@ -212,9 +218,12 @@ public class ShowPostFragment extends Fragment {
         mEntryBottomActionBar.setOnItemClickListener(mEntryActionBarListener);
         mEntryBottomActionBar.setCommentsClickable(false);
 
+
         mTitleView = (TextView)mPostContentView.findViewById(R.id.title);
         mTextView = (TextView)mPostContentView.findViewById(R.id.text);
         mSourceView = (TextView)mPostContentView.findViewById(R.id.source);
+        // TODO: избавиться или 4 прогрессбаров на 1 странице
+        mDynamicContentProgress = mPostContentView.findViewById(R.id.dynamic_content_progress);
 
         mTitleView.setMovementMethod(LinkMovementMethod.getInstance());
         mTextView.setMovementMethod(LinkMovementMethod.getInstance());
@@ -258,7 +267,6 @@ public class ShowPostFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
-        if (mDesign != null && savedInstanceState == null) mCommentsAdapter.setFeedDesign(mDesign);
 
         mAlwaysScrollablePad = new FrameLayout(getActivity());
         AbsListView.LayoutParams lp = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, 0);
@@ -280,8 +288,8 @@ public class ShowPostFragment extends Fragment {
             if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             mTotalCommentsCount = savedInstanceState.getInt(KEY_TOTAL_COMMENTS_COUNT);
             mLoadComments = savedInstanceState.getBoolean(KEY_LOAD_COMMENTS);
-            setupEntry();
         }
+        if (mCurrentEntry != null) setupEntry();
         refreshEntry();
     }
 
@@ -605,7 +613,8 @@ public class ShowPostFragment extends Fragment {
                         Log.v(TAG, "ignore http-https redirect " + url);
                         return false;
                     }
-                } catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
                 try {
                     Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     startActivity(myIntent);
@@ -614,8 +623,17 @@ public class ShowPostFragment extends Fragment {
                     return false;
                 }
             }
-        });
 
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                mDynamicContentProgress.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                mDynamicContentProgress.setVisibility(View.GONE);
+            }
+        });
 
         // Пытаемся определить высоту
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mWebview.getLayoutParams();
@@ -704,6 +722,7 @@ public class ShowPostFragment extends Fragment {
             loadGif(url, imageView);
         } else {
             final ImageView finalImageView = imageView;
+            mDynamicContentProgress.setVisibility(View.VISIBLE);
             NetworkUtils.getInstance().getPicasso(getActivity())
                     .load(url)
                     .placeholder(loadingDrawable)
@@ -714,11 +733,13 @@ public class ShowPostFragment extends Fragment {
                         @Override
                         public void onSuccess() {
                             finalImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                            mDynamicContentProgress.setVisibility(View.GONE);
                         }
 
                         @Override
                         public void onError() {
                             finalImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                            mDynamicContentProgress.setVisibility(View.GONE);
                         }
                     });
         }
@@ -756,12 +777,14 @@ public class ShowPostFragment extends Fragment {
                 .tag(mGifLoadingTag)
                 .build();
 
+        mDynamicContentProgress.setVisibility(View.VISIBLE);
         mOkHttpClient
                 .newCall(request)
                 .enqueue(new com.squareup.okhttp.Callback() {
                     @Override
                     public void onFailure(Request request, IOException e) {
                         reportError(e);
+                        mDynamicContentProgress.setVisibility(View.GONE);
                     }
 
                     @Override
@@ -776,10 +799,12 @@ public class ShowPostFragment extends Fragment {
                                 @Override
                                 public void run() {
                                     imageView.setImageDrawable(drawable);
+                                    mDynamicContentProgress.setVisibility(View.GONE);
                                 }
                             });
                         } catch (Throwable e) {
                             reportError(e);
+                            mDynamicContentProgress.setVisibility(View.GONE);
                         }
                     }
 
@@ -1297,8 +1322,8 @@ public class ShowPostFragment extends Fragment {
         }
 
         @Override
-        public void onPostCommentsClicked(View view, long postId) {
-            // XXX
+        public void onPostCommentsClicked(View view, Entry entry) {
+            if (DBG) throw new IllegalStateException("Этот пункт не должен быть тыкабельным");
         }
 
         @Override

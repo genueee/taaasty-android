@@ -57,7 +57,7 @@ public class EntryBottomActionBar {
 
     public interface OnEntryActionBarListener {
         public void onPostLikesClicked(View view, Entry entry);
-        public void onPostCommentsClicked(View view, long postId);
+        public void onPostCommentsClicked(View view, Entry entry);
         public void onPostUserInfoClicked(View view, Entry entry);
         public void onPostAdditionalMenuClicked(View view, Entry entry);
     }
@@ -244,7 +244,7 @@ public class EntryBottomActionBar {
             }
             switch (v.getId()) {
                 case R.id.comments_count:
-                    mListener.onPostCommentsClicked(v, mOnItemListenerEntry.getId());
+                    mListener.onPostCommentsClicked(v, mOnItemListenerEntry);
                     break;
                 case R.id.more:
                     mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry);

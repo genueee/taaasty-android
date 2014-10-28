@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -45,8 +46,10 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
-    public static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
-    public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
+    private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
+    private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
+    private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
+    private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
     private static final String FRAGMENT_TAG_DELETE_REPORT_COMMENT = "FRAGMENT_TAG_DELETE_REPORT_COMMENT";
@@ -60,6 +63,21 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     private boolean mImeVisible;
 
     private boolean mYoutubeFullscreen = false;
+
+    public static Intent createShowPostIntent(Context context, long postId, @Nullable Entry entry, @Nullable TlogDesign design) {
+        Intent intent = new Intent(context, ShowPostActivity.class);
+        intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+        if (entry != null) intent.putExtra(ARG_ENTRY, entry);
+        if (design != null) intent.putExtra(ARG_TLOG_DESIGN, design);
+        return intent;
+    }
+
+    public static Intent createShowPostIntent(Context context, long postId, long commentId) {
+        Intent intent = new Intent(context, ShowPostActivity.class);
+        intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
+        intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, commentId);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,15 +94,17 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         mHideActionBarHandler = new Handler();
 
         if (savedInstanceState == null) {
+            // TODO: скролл к комментарию
             long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
             if (postId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
+            Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
             setupActionbar(null, null, design);
             getActionBar().hide();
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
-            Fragment postFragment = ShowPostFragment.newInstance(postId, design);
+            Fragment postFragment = ShowPostFragment.newInstance(postId, entry, design);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, postFragment)
                     .commit();
