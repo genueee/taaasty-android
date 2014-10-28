@@ -8,12 +8,10 @@ import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.BitmapRegionDecoder;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -30,8 +28,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Random;
 
 import ru.taaasty.ActivityBase;
@@ -66,16 +62,24 @@ public class LoginActivity extends ActivityBase implements
     public static final int SECONDARY_BACKGROUND_IN_SAMPLE_SIZE = 1;
     public static final int SECONDARY_BACKGROUND_BLUR_KERNEL = 24;
     private static final String DIALOG_LOGIN_VKONTAKTE = "dialog_login_vkontakte";
+    private static final String PREFS_KEY_FIRST_RUN = "firstrun";
 
     private final Background mBackground = new Background();
 
+    private static final String SHARED_PREFS_NAME = "LoginActivity";
+
     @DrawableRes
     private int mCurrentBackgroundId;
+
+    public static void logout(Context context) {
+        context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit().clear().commit();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
 
         if (savedInstanceState == null) {
             mCurrentBackgroundId = choseRandomBackground();
@@ -87,6 +91,15 @@ public class LoginActivity extends ActivityBase implements
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, SelectSignMethodFragment.newInstance())
+                    .commit();
+        }
+
+        SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
+        if (prefs.getBoolean(PREFS_KEY_FIRST_RUN, true)) {
+            prefs.edit().putBoolean(PREFS_KEY_FIRST_RUN, false).commit();
+            getFragmentManager().beginTransaction()
+                    .replace(R.id.container, FirstRunFragment.newInstance())
+                    .addToBackStack(FRAGMENT_BACK_STACK_TAG1)
                     .commit();
         }
 
@@ -314,53 +327,7 @@ public class LoginActivity extends ActivityBase implements
             Point displaySize = new Point();
             getWindowManager().getDefaultDisplay().getSize(displaySize);
 
-            InputStream is = null;
-            try {
-                is = getResources().openRawResource(backgroundResId);
-                BitmapRegionDecoder bre = BitmapRegionDecoder.newInstance(is, true);
-
-                Rect region = new Rect(0, 0, bre.getWidth(), bre.getHeight());
-
-                scaleY = displaySize.y / (float)bre.getHeight();
-                scaleX = displaySize.x / (float)bre.getWidth();
-                scale = Math.max(scaleX, scaleY);
-
-                float scaledDisplayWidth = displaySize.x / scale;
-                float scaledDisplayHeight = displaySize.y / scale;
-
-                int leftTop = (int)(region.centerX() - (scaledDisplayWidth / 2));
-                region.intersect(leftTop, 0, (int)Math.ceil(leftTop + scaledDisplayWidth), (int)Math.ceil(scaledDisplayHeight));
-                if (DBG) Log.v(TAG, "region: " + region);
-
-                final BitmapFactory.Options options;
-                options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = false;
-                options.inMutable = false;
-
-                int samplesize = ImageUtils.calculateInSampleSize(
-                        bre.getHeight(),
-                        bre.getWidth(),
-                        (int)(bre.getHeight() * scale),
-                        (int)(bre.getWidth() * scale));
-
-                if (inSampleSizeAdd == 0 ) {
-                    options.inSampleSize = samplesize;
-                } else {
-                    options.inSampleSize = 1 << (int)( inSampleSizeAdd + Math.log(samplesize) / Math.log(2));
-                }
-
-                return bre.decodeRegion(region, options);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (is != null) try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                if (DBG) timings.dumpToLog();
-            }
-            return null;
+            return ImageUtils.decodeBackgroundBitmap(LoginActivity.this, backgroundResId, displaySize, inSampleSizeAdd);
         }
 
         private void refreshPrimaryBackground() {
@@ -510,6 +477,13 @@ public class LoginActivity extends ActivityBase implements
                 return mDarkenLayer;
             }
         }
+    }
+
+    public void stopSlides(View view) {
+        closeAllFragments();
+        getFragmentManager().beginTransaction()
+                .replace(R.id.container, SelectSignMethodFragment.newInstance())
+                .commit();
     }
 }
 
