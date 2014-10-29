@@ -30,7 +30,7 @@
     </plurals>
     <plurals name="best_records_last_day">
         <item quantity="one">%d лучшая публикация за сутки</item>
-        <item quantity="few">%d лучших публикации за сутки</item>
+        <item quantity="few">%d лучшие публикации за сутки</item>
         <item quantity="many">%d лучших публикаций за сутки</item>
         <item quantity="other">%d лучших публикаций за сутки</item>
     </plurals>
