@@ -15,7 +15,6 @@
         android:minHeight="48dp"
         android:paddingBottom="16dp"
         android:layout_marginLeft="@dimen/post_item_comments_padding_left"
-        android:layout_marginRight="@dimen/post_item_comments_padding_right"
         android:paddingTop="8dp"
         android:descendantFocusability="blocksDescendants"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
@@ -47,7 +46,7 @@
             android:id="@+id/date_relative"
             android:layout_width="50dp"
             android:layout_height="wrap_content"
-            android:paddingLeft="8dp"
+            android:layout_marginLeft="32dp"
             android:layout_marginTop="3dp"
             android:gravity="fill_vertical"
             android:textColor="@color/text_color_feed_item_gray"
