@@ -6,11 +6,11 @@
     tools:context=".LiveFeedActivity"
     tools:ignore="MergeRootFrame">
 
-    <ru.taaasty.widgets.Tabbar
-        android:id="@+id/tabbar"
+    <fragment android:id="@+id/tabbar"
+        android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"/>
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"

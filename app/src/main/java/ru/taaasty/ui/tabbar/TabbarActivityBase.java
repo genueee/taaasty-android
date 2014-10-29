@@ -15,17 +15,16 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
-import ru.taaasty.widgets.Tabbar;
 
 
-public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.onTabbarButtonListener, CustomErrorView {
+public abstract class TabbarActivityBase extends ActivityBase implements TabbarFragment.onTabbarButtonListener, CustomErrorView {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TabbarActivityBase";
 
     static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
     UserManager mUserManager = UserManager.getInstance();
-    Tabbar mTabbar;
+    TabbarFragment mTabbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +36,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
         }
 
         PusherService.startPusher(this);
-
     }
 
     abstract int getCurrentTabId();
@@ -46,8 +44,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements Tabbar.
 
     protected void onPostCreate (Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mTabbar = (Tabbar) findViewById(R.id.tabbar);
-        mTabbar.setOnTabbarButtonListener(this);
+        mTabbar = (TabbarFragment) getFragmentManager().findFragmentById(R.id.tabbar);
         mTabbar.setActivated(getCurrentTabId());
     }
 

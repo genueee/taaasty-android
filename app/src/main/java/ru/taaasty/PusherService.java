@@ -31,7 +31,7 @@ import de.greenrobot.event.EventBus;
 import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.NotificationReceived;
-import ru.taaasty.events.NotificationsCountChanged;
+import ru.taaasty.events.NotificationsCountStatus;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherReadyResponse;
@@ -81,6 +81,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private static final String ACTION_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_SET_STATUS_BAR_NOTIFICATIONS";
     private static final String ACTION_MARK_AS_READ = "ru.taaasty.PusherService.action.MARK_AS_READ";
     private static final String ACTION_REFRESH_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_REFRESH_NOTIFICATIONS";
+    private static final String ACTION_REQUEST_COUNT_STATUS = "ru.taaasty.PusherService.action.ACTION_REQUEST_COUNT_STATUS";
 
     private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.PusherService.action.EXTRA_NOTIFICATION_ID";
 
@@ -149,6 +150,10 @@ public class PusherService extends Service implements PrivateChannelEventListene
         context.startService(intent);
     }
 
+    /**
+     * Обновление списка уведомлений с сервера
+     * @param context
+     */
     public static void refreshNotifications(Context context) {
         Intent intent = new Intent(context, PusherService.class);
         intent.setAction(ACTION_REFRESH_NOTIFICATIONS);
@@ -163,6 +168,21 @@ public class PusherService extends Service implements PrivateChannelEventListene
         setStatusBarNotifications(context, false);
     }
 
+    /**
+     * Запрос уведомления {@linkplain ru.taaasty.events.NotificationsCountStatus}
+     * @param context
+     */
+    public static void requestCountStatus(Context context) {
+        Intent intent = new Intent(context, PusherService.class);
+        intent.setAction(ACTION_REQUEST_COUNT_STATUS);
+        context.startService(intent);
+    }
+
+    /**
+     * Включение или выключение получения нотификаций в статусбаре
+     * @param context
+     * @param enable
+     */
     private static void setStatusBarNotifications(Context context, boolean enable) {
         Intent intent = new Intent(context, PusherService.class);
         intent.setAction(ACTION_SET_STATUS_BAR_NOTIFICATIONS);
@@ -209,6 +229,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 if (mUpdateNotificationsStatus == UPDATE_NOTIFICATIONS_STATUS_READY) sentAuthReady();
             } else if (ACTION_SET_STATUS_BAR_NOTIFICATIONS.equals(action)) {
                 mStatusBarNotification.addEnableDisableNotifications(intent.getBooleanExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, true));
+            } else if (ACTION_REQUEST_COUNT_STATUS.equals(action)) {
+                broadcastNotificationsCountStatus();
             }
         }
 
@@ -367,7 +389,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private synchronized void addNotification(Notification notification) {
         mCurrentNotifications.addFirst(notification);
         EventBus.getDefault().post(new NotificationReceived(notification));
-        broadcastNotificationsCountChanged();
+        broadcastNotificationsCountStatus();
     }
 
     private synchronized void setUpdateNotificationsStatus(@UpdateNotificationsStatus int status, String error, Exception e) {
@@ -380,12 +402,14 @@ public class PusherService extends Service implements PrivateChannelEventListene
         EventBus.getDefault().post(event);
     }
 
-    private synchronized void broadcastNotificationsCountChanged() {
-        EventBus.getDefault().post(new NotificationsCountChanged(mCurrentNotifications, false));
+    private synchronized void broadcastNotificationsCountStatus() {
+        NotificationsStatus status = new NotificationsStatus(mUpdateNotificationsStatus, mUpdateNotificationsError);
+        EventBus.getDefault().post(new NotificationsCountStatus(status, mCurrentNotifications, false));
     }
 
     private synchronized void broadcastNotificationListFullyRefreshed() {
-        EventBus.getDefault().post(new NotificationsCountChanged(mCurrentNotifications, true));
+        NotificationsStatus status = new NotificationsStatus(mUpdateNotificationsStatus, mUpdateNotificationsError);
+        EventBus.getDefault().post(new NotificationsCountStatus(status, mCurrentNotifications, true));
     }
 
     public class LocalBinder extends Binder {
@@ -492,7 +516,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 }
                 if (!found) mCurrentNotifications.addFirst(notification);
                 EventBus.getDefault().post(new NotificationReceived(notification));
-                broadcastNotificationsCountChanged();
+                broadcastNotificationsCountStatus();
             }
 
         }

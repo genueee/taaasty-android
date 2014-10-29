@@ -21,7 +21,7 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.adapters.NotificationsAdapter;
 import ru.taaasty.events.NotificationReceived;
-import ru.taaasty.events.NotificationsCountChanged;
+import ru.taaasty.events.NotificationsCountStatus;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.Relationship;
@@ -163,7 +163,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         if (listAtTop) mListView.smoothScrollToPosition(0);
     }
 
-    public void onEventMainThread(NotificationsCountChanged event) {
+    public void onEventMainThread(NotificationsCountStatus event) {
         if (event.notificationListRefreshed && mAdapter != null && mBound) {
             mAdapter.setNotifications(mPusherService.getNotifications());
         }

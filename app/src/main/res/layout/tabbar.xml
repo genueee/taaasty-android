@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -8,32 +8,51 @@
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_subscriptions"
-        android:src="@drawable/btn_tabbar_subscriptions"
+        style="@style/TabbarButton.First"
         android:contentDescription="@string/btn_tabbar_action_subscriptions"
-        style="@style/TabbarButton.First" />
+        android:src="@drawable/btn_tabbar_subscriptions" />
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_live"
-        android:src="@drawable/btn_tabbar_live"
+        style="@style/TabbarButton"
         android:contentDescription="@string/btn_tabbar_live_description"
-        style="@style/TabbarButton" />
+        android:src="@drawable/btn_tabbar_live" />
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_post"
-        android:src="@drawable/btn_tabbar_post"
-        android:contentDescription="@string/btn_tabbar_action_post"
-        style="@style/TabbarButton.Action" />
+        style="@style/TabbarButton.Action"
+        android:src="@drawable/btn_tabbar_post" />
 
-    <ru.taaasty.widgets.HintedImageView
-        android:id="@+id/btn_tabbar_notifications"
-        android:src="@drawable/btn_tabbar_notifications"
-        android:contentDescription="@string/btn_tabbar_action_notifications"
-        style="@style/TabbarButton" />
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/btn_tabbar_notifications"
+            style="@style/TabbarButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/btn_tabbar_action_notifications"
+            android:src="@drawable/btn_tabbar_notifications"
+            android:clickable="false" />
+
+        <ImageView
+            android:id="@+id/tabbar_notification_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="6dp"
+            android:clickable="false"
+            android:src="@drawable/tabbar_notification_indicator"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_my_feed"
-        android:src="@drawable/btn_tabbar_myfeed"
+        style="@style/TabbarButton.Last"
         android:contentDescription="@string/tabbar_my_feed_content_description"
-        style="@style/TabbarButton.Last" />
+        android:src="@drawable/btn_tabbar_myfeed" />
 
-</merge>
+</LinearLayout>
