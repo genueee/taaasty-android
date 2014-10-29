@@ -47,11 +47,9 @@ public class TargetSetHeaderBackground implements Target {
 
         background = new BackgroundBitmapDrawable(mTarget.getResources(), bitmap);
         background.setBlurRadius(mBlurRadius);
-        if (TlogDesign.COVER_ALIGN_CENTER.equals(mDesign.getCoverAlign())) {
-            background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_CENTER_CROP);
-        } else {
-            background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_STRETCH);
-        }
+        // Игнорируем настройки дизайна. Всегда ставим бэграундом COVER_ALIGN_CENTER_CROP,
+        // чтобы соотношение сторон изображения не изменялось.
+        background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_CENTER_CROP);
         if (DBG) Log.v(TAG, "setBackgroundDrawable design: " + mDesign +
                 " foregroundColor: 0x" + Integer.toHexString(mForegroundColor) + "blur radius: " + mBlurRadius);
 
