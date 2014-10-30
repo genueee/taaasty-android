@@ -329,6 +329,7 @@ public class ShowPostFragment extends Fragment {
         mCommentsSubscription.unsubscribe();
         mTlogDesignSubscription.unsubscribe();
         mPostCommentSubscription.unsubscribe();
+        mListView = null;
         mEntryBottomActionBar = null;
         mPostContentView = null;
         mSourceView = null;
@@ -422,6 +423,7 @@ public class ShowPostFragment extends Fragment {
     private Runnable mUpdatePaddingTopRunnable = new Runnable() {
         @Override
         public void run() {
+            if (isDetached()) return;
             if (!willMyListScroll()) return;
             if (!mListView.isEnabled()) return;
             if (mLoadComments) return;
