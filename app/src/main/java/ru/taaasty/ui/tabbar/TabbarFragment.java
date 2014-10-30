@@ -54,6 +54,7 @@ public class TabbarFragment extends Fragment {
             mActivatedElement = savedInstanceState.getInt(BUNDLE_ARG_ACIVATED_ELEMENT);
             mUnreadNotificationsCount = savedInstanceState.getInt(BUNDLE_ARG_NOTIFICATIONS_COUNT);
         }
+        PusherService.requestCountStatus(getActivity());
     }
 
     @Override

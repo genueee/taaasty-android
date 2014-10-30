@@ -477,8 +477,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 synchronized (PusherService.this) {
                     mCurrentNotifications.clear();
                     mCurrentNotifications.addAll(pusherReadyResponse.notifications);
-                    broadcastNotificationListFullyRefreshed();
                     setUpdateNotificationsStatus(UPDATE_NOTIFICATIONS_STATUS_READY);
+                    broadcastNotificationListFullyRefreshed();
                 }
             } catch (Exception e) {
                 Log.e(TAG, "authReady failed", e);
