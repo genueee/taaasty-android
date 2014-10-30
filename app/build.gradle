@@ -38,7 +38,7 @@ android {
     defaultConfig {
         applicationId "ru.taaasty"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 20
         versionCode 3
         versionName "1.0b3"
 
