@@ -427,6 +427,7 @@ public class ShowPostFragment extends Fragment {
             if (!willMyListScroll()) return;
             if (!mListView.isEnabled()) return;
             if (mLoadComments) return;
+            if (isSomethingLoading()) return;
             // Как только список начинает скроллится, убираем паддинг сверху и больше не трогаем
             mListView.getViewTreeObserver().removeGlobalOnLayoutListener(mTopMarginGlobalLayoutListener);
             final int abSize = mListView.getPaddingTop();
@@ -446,9 +447,15 @@ public class ShowPostFragment extends Fragment {
     };
 
     private boolean willMyListScroll() {
-        if (mListView.getChildCount() <= 0) return false;
-        int pos = mListView.getChildCount() - 1;
-        return mListView.getChildAt(pos).getBottom() > mListView.getBottom() - mListView.getPaddingBottom();
+        return mListView.canScrollVertically(-1) || mListView.canScrollVertically(1);
+    }
+
+    private boolean isSomethingLoading() {
+        // TODO: переделать всё нахрен
+        if (mCommentsLoadMoreProgress == null || mDynamicContentProgress == null) return false;
+        return mLoadComments
+                || (mCommentsLoadMoreProgress.getVisibility() == View.VISIBLE)
+                || (mDynamicContentProgress.getVisibility() == View.VISIBLE);
     }
 
     private void setupEntry() {
@@ -769,7 +776,10 @@ public class ShowPostFragment extends Fragment {
 
     private void loadGif(String url, final ImageView imageView) {
         if (mOkHttpClient != null) {
-            mOkHttpClient.cancel(mGifLoadingTag);
+                // Если здесь отменять запрос, то выбрасывается исключение SocketException
+                // с Socket closed, вызывается reportError и пользователю показыается бессмысленное сообщение.
+                // Поэтому запрос не отменяем и надеемся, что новое изображение загрузится быстрее старого.
+                // mOkHttpClient.cancel(mGifLoadingTag);
         } else {
             mOkHttpClient = NetworkUtils.getInstance().getOkHttpClient();
         }
@@ -786,7 +796,6 @@ public class ShowPostFragment extends Fragment {
                     @Override
                     public void onFailure(Request request, IOException e) {
                         reportError(e);
-                        mDynamicContentProgress.setVisibility(View.GONE);
                     }
 
                     @Override
@@ -806,7 +815,6 @@ public class ShowPostFragment extends Fragment {
                             });
                         } catch (Throwable e) {
                             reportError(e);
-                            mDynamicContentProgress.setVisibility(View.GONE);
                         }
                     }
 
@@ -814,6 +822,7 @@ public class ShowPostFragment extends Fragment {
                         imageView.post(new Runnable() {
                             @Override
                             public void run() {
+                                mDynamicContentProgress.setVisibility(View.GONE);
                                 imageView.setImageResource(R.drawable.image_load_error);
                                 if (mListener != null)
                                     mListener.notifyError(getString(R.string.error_loading_image), exception);
