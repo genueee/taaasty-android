@@ -14,8 +14,6 @@ import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nirhart.parallaxscroll.views.ParallaxListView;
-
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -36,6 +34,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.ListView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -51,7 +50,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ParallaxListView mListView;
+    private ListView mListView;
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
@@ -100,7 +99,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                              Bundle savedInstanceState) {
         final View v = inflater.inflate(R.layout.fragment_tlog, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ParallaxListView) v.findViewById(R.id.list_view);
+        mListView = (ListView) v.findViewById(R.id.list_view);
         mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_tlog, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
 

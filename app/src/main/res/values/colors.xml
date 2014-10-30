@@ -17,10 +17,6 @@
     <color name="text_color_semi_semi_transparent_white">#b2ffffff</color>
     <color name="login_activity_darken_layer">#50000000</color>
     <color name="additional_menu_background">#b0000000</color>
-    <color name="refresh_widget_color1">#ff000000</color>
-    <color name="refresh_widget_color2">#ff202020</color>
-    <color name="refresh_widget_color3">#ff606060</color>
-    <color name="refresh_widget_color4">#ff909090</color>
     <color name="feed_white_text">@android:color/white</color>
     <color name="feed_black_text">@android:color/black</color>
     <color name="semi_transparent_yellow_background">#e6f8c700</color>

@@ -122,7 +122,6 @@
     <string name="post_created">Пост добавлен</string>
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
-    <string name="error_can_not_create_file_for_photo">Не удалось создать файл для фотографии</string>
     <string name="subscribe_content_description">Подписаться</string>
     <string name="unsubscribe_content_description">Отписаться</string>
     <string name="load_all_comments">Загрузить все комментарии…</string>
@@ -170,7 +169,6 @@
     <string name="action_reply_to_comment_content_description">Ответить на комментарий</string>
     <string name="action_delete_comment_content_description">Удалить комментарий</string>
     <string name="action_report_to_moderator_content_description">Пожаловаться на комментарий</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_share_twitter">Twitter</string>
     <string name="title_share_facebook">Facebook</string>
     <string name="title_share_vkontakte">Вконтакте</string>
@@ -181,11 +179,10 @@
     <string name="delete_post">Удалить</string>
     <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
     <string name="title_activity_share">ShareActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
     <string name="notifications_title">Уведомления</string>
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_notifications">Уведомлений нет</string>
+    <string name="taaasty">Тейсти</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>

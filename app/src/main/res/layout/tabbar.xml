@@ -21,6 +21,7 @@
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/btn_tabbar_post"
         style="@style/TabbarButton.Action"
+        android:contentDescription="@string/btn_tabbar_action_post"
         android:src="@drawable/btn_tabbar_post" />
 
     <FrameLayout

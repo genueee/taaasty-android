@@ -43,6 +43,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.CirclePageStaticIndicator;
+import ru.taaasty.widgets.ListView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -73,7 +74,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ParallaxListView mListView;
+    private ListView mListView;
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
@@ -131,7 +132,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ParallaxListView) v.findViewById(R.id.list_view);
+        mListView = (ListView) v.findViewById(R.id.list_view);
         mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_user_feed, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
         mHeaderView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);

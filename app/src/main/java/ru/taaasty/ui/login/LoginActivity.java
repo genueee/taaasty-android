@@ -72,7 +72,7 @@ public class LoginActivity extends ActivityBase implements
     private int mCurrentBackgroundId;
 
     public static void logout(Context context) {
-        context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit().clear().commit();
+        context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit().clear().apply();
     }
 
     @Override
@@ -96,7 +96,7 @@ public class LoginActivity extends ActivityBase implements
 
         SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
         if (prefs.getBoolean(PREFS_KEY_FIRST_RUN, true)) {
-            prefs.edit().putBoolean(PREFS_KEY_FIRST_RUN, false).commit();
+            prefs.edit().putBoolean(PREFS_KEY_FIRST_RUN, false).apply();
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, FirstRunFragment.newInstance())
                     .addToBackStack(FRAGMENT_BACK_STACK_TAG1)

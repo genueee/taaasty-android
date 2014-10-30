@@ -36,6 +36,7 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.widgets.ListView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -59,7 +60,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ParallaxListView mListView;
+    private ListView mListView;
     private View mEmptyView;
     private ViewGroup mHeaderView;
 
@@ -102,7 +103,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ParallaxListView) v.findViewById(R.id.list_view);
+        mListView = (ListView) v.findViewById(R.id.list_view);
         mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_title_subtitle, mListView, false);
         ((TextView)mHeaderView.findViewById(R.id.title)).setText(R.string.my_subscriptions);
         mEmptyView = v.findViewById(R.id.empty_view);
