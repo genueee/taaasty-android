@@ -279,7 +279,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mStatsSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
         if (DBG) Log.v(TAG, "setRefreshing true");
-        mFeedSubscription = AndroidObservable.bindFragment(this, createObservabelFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH))
+        mFeedSubscription = AndroidObservable.bindFragment(this, createObservabelFeed(null, Constants.GRID_FEED_INITIAL_LENGTH))
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override
@@ -411,7 +411,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public Observable<Feed> createObservable(Long sinceEntryId) {
             return AndroidObservable.bindFragment(GridFeedFragment.this,
-                    createObservabelFeed(sinceEntryId, Constants.LIVE_FEED_INITIAL_LENGTH));
+                    createObservabelFeed(sinceEntryId, Constants.GRID_FEED_APPEND_LENGTH));
         }
     }
 

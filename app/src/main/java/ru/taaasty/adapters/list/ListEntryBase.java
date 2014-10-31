@@ -2,6 +2,7 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -15,7 +16,7 @@ import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
 
-public abstract class ListEntryBase {
+public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     private final Resources mResources;
     private final FontManager mFontManager;
@@ -25,7 +26,10 @@ public abstract class ListEntryBase {
     private final EntryBottomActionBar mEntryActionBar;
     private final boolean mShowUserAvatar;
 
+    protected int mParentWidth;
+
     public ListEntryBase(Context context, View v, boolean showUserAvatar) {
+        super(v);
         mResources = context.getResources();
         mFontManager = FontManager.getInstance();
         mShowUserAvatar = showUserAvatar;
@@ -38,7 +42,7 @@ public abstract class ListEntryBase {
         if (!showUserAvatar) mAvatarAuthor.setVisibility(View.GONE);
     }
 
-    public void setupEntry(Entry entry, TlogDesign design, int parentWidth) {
+    public void setupEntry(Entry entry, TlogDesign design) {
         mEntryActionBar.setupEntry(entry);
         setAuthor(entry);
     }
@@ -57,6 +61,10 @@ public abstract class ListEntryBase {
         User author = item.getAuthor();
         mAuthor.setText(author.getSlug());
         ImageUtils.getInstance().loadAvatar(author.getUserpic(), author.getName(), mAvatar, R.dimen.avatar_small_diameter);
+    }
+
+    public void setParentWidth(int width) {
+        mParentWidth = width;
     }
 
     protected Resources getResources() {

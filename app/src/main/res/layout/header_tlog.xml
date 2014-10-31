@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/header_user_feed_main"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/feed_header_height">
+    android:layout_height="@dimen/feed_header_height"
+    android:minHeight="@dimen/feed_header_height"
+    >
 
     <LinearLayout
         android:id="@+id/avatar_user_name"

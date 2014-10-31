@@ -424,6 +424,7 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void run() {
             if (isDetached()) return;
+            if (mListView == null) return;
             if (!willMyListScroll()) return;
             if (!mListView.isEnabled()) return;
             if (mLoadComments) return;
@@ -447,6 +448,7 @@ public class ShowPostFragment extends Fragment {
     };
 
     private boolean willMyListScroll() {
+        if (mListView == null) return false;
         return mListView.canScrollVertically(-1) || mListView.canScrollVertically(1);
     }
 

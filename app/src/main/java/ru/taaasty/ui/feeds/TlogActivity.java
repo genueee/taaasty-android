@@ -87,6 +87,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             ab.setBackgroundDrawable(mAbBackgroundDrawable);
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_tlog);
+            ab.setTitle(null);
             mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
             mSubscribeView.setOnClickListener(mOnSubscribtionClickListener);
 
@@ -169,7 +170,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         float abAlpha;
         int intAlpha;
 
-        if (totalCount == 0 || visibleCount == totalCount) {
+        // XXX: неверно работает, когда у юзера мало постов
+        if (totalCount == 0 || visibleCount >= totalCount) {
             abAlpha = 0;
         } else {
             if (totalCount > 5) totalCount = 5;

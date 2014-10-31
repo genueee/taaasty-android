@@ -14,7 +14,7 @@ public interface ApiMyFeeds {
      * @return
      */
     @GET("/my_feeds/tlog.json")
-    Observable<Feed> getMyFeed(@Query("since_entry_id") Integer sinceEntryId,
+    Observable<Feed> getMyFeed(@Query("since_entry_id") Long sinceEntryId,
                                  @Query("limit") Integer limit);
 
     /**
@@ -24,7 +24,7 @@ public interface ApiMyFeeds {
      * @return
      */
     @GET("/my_feeds/friends.json")
-    Observable<Feed> getMyFriendsFeed(@Query("since_entry_id") Integer sinceEntryId,
+    Observable<Feed> getMyFriendsFeed(@Query("since_entry_id") Long sinceEntryId,
                             @Query("limit") Integer limit);
 
     /**
@@ -34,7 +34,7 @@ public interface ApiMyFeeds {
      * @return
      */
     @GET("/my_feeds/favorites.json")
-    Observable<Feed> getMyFavoritesFeed(@Query("since_entry_id") Integer sinceEntryId,
+    Observable<Feed> getMyFavoritesFeed(@Query("since_entry_id") Long sinceEntryId,
                                       @Query("limit") Integer limit);
 
     /**
@@ -44,7 +44,7 @@ public interface ApiMyFeeds {
      * @return
      */
     @GET("/my_feeds/private.json")
-    Observable<Feed> getMyPrivateFeed(@Query("since_entry_id") Integer sinceEntryId,
+    Observable<Feed> getMyPrivateFeed(@Query("since_entry_id") Long sinceEntryId,
                                         @Query("limit") Integer limit);
 
 

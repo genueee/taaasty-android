@@ -9,15 +9,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ru.taaasty.widgets.ListView
-            android:id="@+id/list_view"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_list_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
+            android:scrollbars="vertical"
             android:smoothScrollbar="false"
+            android:scrollbarStyle="outsideOverlay"
             tools:listheader="@layout/header_tlog"
             tools:listitem="@layout/feed_item" />
 

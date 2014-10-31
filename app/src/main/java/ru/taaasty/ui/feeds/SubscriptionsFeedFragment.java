@@ -2,30 +2,30 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.nirhart.parallaxscroll.views.ParallaxListView;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.adapters.ParallaxedHeaderHolder;
+import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -35,8 +35,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
-import ru.taaasty.utils.TargetSetHeaderBackground;
-import ru.taaasty.widgets.ListView;
+import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -60,12 +59,11 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ListView mListView;
+    private RecyclerView mListView;
     private View mEmptyView;
-    private ViewGroup mHeaderView;
 
     private ApiMyFeeds mFeedsService;
-    private FeedItemAdapter mAdapter;
+    private Adapter mAdapter;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
@@ -73,9 +71,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     private int mRefreshCounter;
 
     private TlogDesign mTlogDesign;
-
-    // XXX: anti picasso weak ref
-    private TargetSetHeaderBackground mFeedDesignTarget;
 
     /**
      * Use this factory method to create a new instance of
@@ -95,7 +90,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -103,12 +97,17 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ListView) v.findViewById(R.id.list_view);
-        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_title_subtitle, mListView, false);
-        ((TextView)mHeaderView.findViewById(R.id.title)).setText(R.string.my_subscriptions);
         mEmptyView = v.findViewById(R.id.empty_view);
 
         mRefreshLayout.setOnRefreshListener(this);
+
+        mAdapter = new Adapter(getActivity(), true);
+        mAdapter.onCreate();
+        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+        mListView.setHasFixedSize(true);
+        mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mListView.setAdapter(mAdapter);
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
         return v;
     }
@@ -127,10 +126,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        mListView.addParallaxedHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, true, true);
-        mListView.setAdapter(mAdapter);
 
         if (savedInstanceState != null) {
             ArrayList<Entry> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
@@ -161,19 +156,15 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
         mCurrentUserSubscribtion.unsubscribe();
         mListView = null;
-        mAdapter = null;
-        mFeedDesignTarget = null;
+        if (mAdapter != null) {
+            mAdapter.onDestroy();
+            mAdapter = null;
+        }
     }
 
     @Override
@@ -206,23 +197,55 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         refreshFeed();
     }
 
-    public void onEventMainThread(UserLikeOrCommentUpdate update) {
-        mAdapter.updateEntry(update.postEntry);
-    }
-
     void setupFeedDesign() {
         if (DBG) Log.e(TAG, "Setup feed design " + mTlogDesign);
 
         if (mTlogDesign == null) return;
-
-        mAdapter.setFeedDesign(mTlogDesign);
         mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
-        String backgroudUrl = mTlogDesign.getBackgroundUrl();
-        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, mTlogDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(backgroudUrl)
-                .into(mFeedDesignTarget);
+        mAdapter.setFeedDesign(mTlogDesign);
+    }
 
+    class Adapter extends FeedItemAdapter {
+
+        public Adapter(Context context, boolean showUserAvatar) {
+            super(context, showUserAvatar);
+        }
+
+        @Override
+        protected void initClickListeners(final ListEntryBase holder) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    long postId = mListView.getChildItemId(v);
+                    onFeedItemClicked(mAdapter.getItemById(postId));
+
+                }
+            });
+            holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+        }
+
+        @Override
+        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, mListView, false);
+            ParallaxedHeaderHolder holder = new ParallaxedHeaderHolder(child);
+            ((TextView)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
+            return holder;
+        }
+
+        @Override
+        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+        }
+
+        @Override
+        protected Observable<Feed> createObservable(Long sinceEntryId) {
+            return AndroidObservable.bindFragment(SubscriptionsFeedFragment.this,
+                    mFeedsService.getMyFriendsFeed(sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH));
+        }
+
+        @Override
+        protected void onRemoteError(Throwable e) {
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+        }
     }
 
     public class LikesHelper extends ru.taaasty.utils.LikesHelper {
@@ -253,14 +276,13 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         }
     }
 
-    public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
+    public void onFeedItemClicked(Entry entry) {
+        if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
+        Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
+        startActivity(i);
+    }
 
-        @Override
-        public void onFeedItemClicked(View view, Entry entry) {
-            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
-            startActivity(i);
-        }
+    public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
@@ -313,7 +335,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         setRefreshing(true);
         Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFriendsFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH));
+                mFeedsService.getMyFriendsFeed(null, Constants.LIST_FEED_INITIAL_LENGTH));
         mFeedSubscription = observableFeed
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
@@ -344,7 +366,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.setFeed(feed.entries);
+            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
         }
     };
 

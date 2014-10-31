@@ -189,6 +189,7 @@
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_notifications">Уведомлений нет</string>
     <string name="taaasty">Тейсти</string>
+    <string name="error_append_feed">Ошибка подгрузки записей</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>

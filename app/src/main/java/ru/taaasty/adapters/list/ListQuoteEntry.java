@@ -23,8 +23,8 @@ public class ListQuoteEntry extends  ListEntryBase {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design, int parentWidth) {
-        super.setupEntry(entry, design, parentWidth);
+    public void setupEntry(Entry entry, TlogDesign design) {
+        super.setupEntry(entry, design);
         setupText(entry);
         setupSource(entry);
         applyFeedStyle(design);

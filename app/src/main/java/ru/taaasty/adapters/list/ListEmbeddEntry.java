@@ -54,10 +54,10 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design, int parentWidth) {
-        super.setupEntry(entry, design, parentWidth);
-        setupImage(entry, parentWidth);
-        setupTitle(entry, parentWidth);
+    public void setupEntry(Entry entry, TlogDesign design) {
+        super.setupEntry(entry, design);
+        setupImage(entry, mParentWidth);
+        setupTitle(entry, mParentWidth);
         applyFeedStyle(design);
     }
 

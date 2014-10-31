@@ -30,10 +30,10 @@ public class ListTextEntry extends ListEntryBase {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design, int parentWidth) {
-        super.setupEntry(entry, design, parentWidth);
+    public void setupEntry(Entry entry, TlogDesign design) {
+        super.setupEntry(entry, design);
         if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(
-                (parentWidth == 0 ? 0 : parentWidth
+                (mParentWidth == 0 ? 0 : mParentWidth
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
                 mContext);

@@ -2,11 +2,15 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,19 +18,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nirhart.parallaxscroll.views.ParallaxListView;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.events.PostRemoved;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.adapters.ParallaxedHeaderHolder;
+import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -39,7 +42,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
-import ru.taaasty.widgets.ListView;
+import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -52,23 +55,21 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
 
+    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.MyFeedFragment.feed_items";
+
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private ListView mListView;
+    private RecyclerView mListView;
     private View mEmptyView;
-    private ViewGroup mHeaderView;
 
     private ApiMyFeeds mFeedsService;
-    private FeedItemAdapter mAdapter;
+    private Adapter mAdapter;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
-    private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
+    private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
 
     private CurrentUser mCurrentUser;
-
-    // XXX: anti picasso weak ref
-    private TargetSetHeaderBackground mFeedDesignTarget;
 
     private int mRefreshCounter;
 
@@ -90,8 +91,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
-
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -99,14 +98,23 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mListView = (ListView) v.findViewById(R.id.list_view);
-        mHeaderView = (ViewGroup) inflater.inflate(R.layout.header_my_feed, mListView, false);
         mEmptyView = v.findViewById(R.id.empty_view);
 
-        mHeaderView.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
-        mHeaderView.findViewById(R.id.avatar).setOnClickListener(mOnClickListener);
-
         mRefreshLayout.setOnRefreshListener(this);
+
+        mAdapter = new Adapter(getActivity(), false);
+        mAdapter.onCreate();
+
+        if (savedInstanceState != null) {
+            List<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
+            if (feed != null && !feed.isEmpty()) mAdapter.setFeed(feed);
+        }
+
+        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+        mListView.setHasFixedSize(true);
+        mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mListView.setAdapter(mAdapter);
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
         return v;
     }
@@ -123,49 +131,31 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        mListView.addParallaxedHeaderView(mHeaderView);
-        mAdapter = new FeedItemAdapter(getActivity(), mOnFeedItemClickListener, false, false);
-        mListView.setAdapter(mAdapter);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         if (!mRefreshLayout.isRefreshing()) refreshData();
     }
 
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.additional_menu:
-                    onAdditionalMenuButtonClicked(v);
-                    break;
-                case R.id.avatar:
-                    onAvatarClicked(v);
-                    break;
-            }
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mAdapter != null) {
+            List<Entry> entries = mAdapter.getFeed();
+            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
+            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
-    };
-
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
-        mCurrentUserSubscribtion.unsubscribe();
+        mCurrentUserSubscription.unsubscribe();
         mListView = null;
-        mAdapter = null;
-        mFeedDesignTarget = null;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
+        if (mAdapter != null) {
+            mAdapter.onDestroy();
+            mAdapter = null;
+        }
     }
 
     @Override
@@ -214,32 +204,125 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             String name = user.getName();
             if (name == null) name = "";
             name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
-            ((TextView)mHeaderView.findViewById(R.id.user_name)).setText(name);
-
-            setupAvatar(user);
+            if (mAdapter != null) {
+                mAdapter.setTitleUser(name, user);
+            }
         }
     }
 
     void setupFeedDesign(TlogDesign design) {
         if (DBG) Log.e(TAG, "Setup feed design " + design);
-        mAdapter.setFeedDesign(design);
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
-        String backgroudUrl = design.getBackgroundUrl();
-        mFeedDesignTarget = new TargetSetHeaderBackground(mHeaderView, design, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(backgroudUrl)
-                .into(mFeedDesignTarget);
-
+        mAdapter.setFeedDesign(design);
     }
 
-    private void setupAvatar(CurrentUser user) {
-        ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                (ImageView)mHeaderView.findViewById(R.id.avatar),
-                R.dimen.avatar_normal_diameter
-                );
+    class Adapter extends FeedItemAdapter {
+        private String mTitle;
+        private User mUser = User.DUMMY;
+
+        public Adapter(Context context, boolean showUserAvatar) {
+            super(context, showUserAvatar);
+        }
+
+        @Override
+        protected void initClickListeners(final ListEntryBase holder) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    long postId = mListView.getChildItemId(v);
+                    onFeedItemClicked(mAdapter.getItemById(postId));
+
+                }
+            });
+            holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+        }
+
+        @Override
+        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_my_feed, mListView, false);
+            HeaderHolder holder = new HeaderHolder(child);
+            holder.avatarView.setOnClickListener(mOnClickListener);
+            child.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
+            return holder;
+        }
+
+        @Override
+        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+            HeaderHolder holder = (HeaderHolder)viewHolder;
+            holder.titleView.setText(mTitle);
+            bindDesign(holder);
+            bindUser(holder);
+        }
+
+        @Override
+        protected Observable<Feed> createObservable(Long sinceEntryId) {
+            return AndroidObservable.bindFragment(MyFeedFragment.this,
+                    mFeedsService.getMyFeed(sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH));
+        }
+
+        @Override
+        protected void onRemoteError(Throwable e) {
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+        }
+
+        public void setTitleUser(String title, User user) {
+            mTitle = title;
+            mUser = user;
+            notifyItemChanged(0);
+        }
+
+        private void bindDesign(HeaderHolder holder) {
+            if (mFeedDesign == null) return;
+            String backgroudUrl = mFeedDesign.getBackgroundUrl();
+            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
+            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
+                    mFeedDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+            holder.backgroundUrl = backgroudUrl;
+            NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
+                    .load(backgroudUrl)
+                    .centerCrop()
+                    .resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
+                    .into(holder.feedDesignTarget);
+        }
+
+        private void bindUser(HeaderHolder holder) {
+            ImageUtils.getInstance().loadAvatar(mUser.getUserpic(), mUser.getName(),
+                    holder.avatarView,
+                    R.dimen.avatar_normal_diameter
+            );
+        }
+
+        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()) {
+                    case R.id.additional_menu:
+                        onAdditionalMenuButtonClicked(v);
+                        break;
+                    case R.id.avatar:
+                        onAvatarClicked(v);
+                        break;
+                }
+            }
+        };
     }
 
-    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
+    static class HeaderHolder extends ParallaxedHeaderHolder {
+        TextView titleView;
+        ImageView avatarView;
+        public String backgroundUrl = null;
+
+        // XXX: anti picasso weak ref
+        private TargetSetHeaderBackground feedDesignTarget;
+
+        public HeaderHolder(View itemView) {
+            super(itemView);
+            avatarView = (ImageView)itemView.findViewById(R.id.avatar);
+            titleView = (TextView)itemView.findViewById(R.id.user_name);
+        }
+    }
+
+    class LikesHelper extends ru.taaasty.utils.LikesHelper {
 
         public LikesHelper() {
             super(MyFeedFragment.this);
@@ -267,15 +350,14 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
     }
 
-    public final FeedItemAdapter.OnItemListener mOnFeedItemClickListener = new FeedItemAdapter.OnItemListener() {
+    public void onFeedItemClicked(Entry entry) {
+        if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
+        Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry,
+                mCurrentUser == null ? null : mCurrentUser.getDesign());
+        startActivity(i);
+    }
 
-        @Override
-        public void onFeedItemClicked(View view, Entry entry) {
-            if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry,
-                    mCurrentUser == null ? null : mCurrentUser.getDesign());
-            startActivity(i);
-        }
+    final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
@@ -303,15 +385,15 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     };
 
     public void refreshUser() {
-        if (!mCurrentUserSubscribtion.isUnsubscribed()) {
-            mCurrentUserSubscribtion.unsubscribe();
+        if (!mCurrentUserSubscription.isUnsubscribed()) {
+            mCurrentUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
         setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
-        mCurrentUserSubscribtion = observableCurrentUser
+        mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
@@ -325,7 +407,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         setRefreshing(true);
         Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFeed(null, Constants.LIVE_FEED_INITIAL_LENGTH));
+                mFeedsService.getMyFeed(null, Constants.LIST_FEED_INITIAL_LENGTH));
         mFeedSubscription = observableFeed
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
@@ -356,7 +438,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.setFeed(feed.entries);
+            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
         }
     };
 
@@ -383,14 +465,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             if (mListener != null) mListener.onCurrentUserLoaded(currentUser, currentUser.getDesign());
         }
     };
-
-    public void onEventMainThread(PostRemoved event) {
-        mAdapter.deleteEntry(event.postId);
-    }
-
-    public void onEventMainThread(UserLikeOrCommentUpdate update) {
-        mAdapter.updateEntry(update.postEntry);
-    }
 
     /**
      * This interface must be implemented by activities that contain this

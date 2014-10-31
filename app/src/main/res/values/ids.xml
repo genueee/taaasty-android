@@ -6,4 +6,11 @@
     <item type="id" name="comment_view_holder" />
     <item type="id" name="relationships_view_holder" />
     <item type="id" name="tag_text_view_img_loader"/>
+    <item type="id" name="feed_view_type_header"/>
+    <item type="id" name="feed_view_type_image"/>
+    <item type="id" name="feed_view_type_embedd"/>
+    <item type="id" name="feed_view_type_quote"/>
+    <item type="id" name="feed_view_type_other"/>
+    <item type="id" name="feed_view_type_pending_indicator"/>
+
 </resources>

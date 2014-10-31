@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -26,6 +27,25 @@ public class Entry implements Parcelable {
     public static final String ENTRY_TYPE_VIDEO = "video";
 
     public static final String ENTRY_TYPE_QUOTE = "quote";
+
+    /**
+     * Сортировка по дате создания (более новые - в начале)
+     */
+    public static transient Comparator<Entry> ORDER_BY_CREATE_DATE_DESC_COMARATOR = new Comparator<Entry>() {
+        @Override
+        public int compare(Entry lhs, Entry rhs) {
+            if (lhs == null && rhs == null) {
+                return 0;
+            } else if (lhs == null) {
+                return -1;
+            } else if (rhs == null) {
+                return 1;
+            } else {
+                return rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
+            }
+        }
+    };
+
 
     @SerializedName("id")
     private long mId;
@@ -129,6 +149,10 @@ public class Entry implements Parcelable {
 
     public Date getUpdatedAt() {
         return mUpdatedAt;
+    }
+
+    public Date getCreateOrUpdatedAt() {
+        return mUpdatedAt != null ? mUpdatedAt : mCreatedAt;
     }
 
     public String getEntryUrl() {
