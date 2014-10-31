@@ -7,13 +7,15 @@ import android.view.View;
 
 import java.lang.ref.WeakReference;
 
-public abstract class ParallaxedView {
+public class ParallaxedView {
 	static public boolean isAPI11 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB;
 	protected WeakReference<View> view;
 	protected int lastOffset;
     private final Rect mVisibleHeight = new Rect();
 
-	abstract protected void translatePreICS(View view, float offset);
+	protected void translatePreICS(View view, float offset) {
+
+    }
 	
 	public ParallaxedView(View view) {
 		this.lastOffset = 0;
@@ -42,6 +44,8 @@ public abstract class ParallaxedView {
         if (visibleHeight < viewHeight) {
             float opacity = 0.3f + (visibleHeight / viewHeight) * 0.7f;
             view.setAlpha(opacity);
+        } else {
+            view.setAlpha(1);
         }
     }
 
