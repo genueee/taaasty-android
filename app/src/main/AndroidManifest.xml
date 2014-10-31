@@ -137,6 +137,10 @@
             android:name="ru.taaasty.ui.post.SharePostActivity"
             android:theme="@style/SharePostTheme" >
         </activity>
+        <activity
+            android:name="ru.taaasty.ui.post.PostActionActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+        </activity>
 
         <!--
         ======================================================================

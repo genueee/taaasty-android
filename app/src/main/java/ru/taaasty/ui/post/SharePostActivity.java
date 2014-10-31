@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
@@ -59,7 +60,7 @@ public class SharePostActivity extends Activity {
     }
 
     public void reportPost(View view) {
-        notReadyYet();
+        runPostActionActivity(PostActionActivity.ACTION_REPORT);
     }
 
     public void editPost(View view) {
@@ -67,7 +68,15 @@ public class SharePostActivity extends Activity {
     }
 
     public void deletePost(View view) {
-        notReadyYet();
+        runPostActionActivity(PostActionActivity.ACTION_DELETE);
+    }
+
+    public void runPostActionActivity( String action ) {
+        finish();
+        Intent i = new Intent(this, PostActionActivity.class);
+        i.setAction(action);
+        i.putExtra( PostActionActivity.ARG_ENTRY, mEntry);
+        startActivity(i);
     }
 
     public void linkToPost(View view) {

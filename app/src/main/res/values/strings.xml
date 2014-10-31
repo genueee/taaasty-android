@@ -147,6 +147,12 @@
         <item>Убрать</item>
     </array>
 
+    <string name="delete_post_button">Удалить пост</string>
+    <string name="delete_post_description">Вы действительно хотите удалить\u00A0пост?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
+    <string name="post_removed">Пост удален</string>
+    <string name="report_post_button">Пожаловаться</string>
+    <string name="report_post_description">Вы действительно хотите пожаловаться на\u00A0пост?</string>
+    <string name="post_complaint_is_sent">Жалоба на пост отправлена</string>
     <string name="delete_comment_button">Удалить комментарий</string>
     <string name="delete_comment_description">Вы действительно хотите удалить\u00A0комментарий?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
     <string name="comment_removed">Комментарий удален</string>

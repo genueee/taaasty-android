@@ -28,6 +28,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.events.PostRemoved;
 import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
@@ -473,6 +474,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     public void onEventMainThread(UserLikeOrCommentUpdate update) {
         mAdapter.updateEntry(update.postEntry);
+    }
+
+    public void onEventMainThread(PostRemoved event) {
+        mAdapter.deleteEntry(event.postId);
     }
 
     /**

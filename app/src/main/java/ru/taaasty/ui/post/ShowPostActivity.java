@@ -30,6 +30,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.FragmentActivityBase;
 import ru.taaasty.R;
+import ru.taaasty.events.PostRemoved;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
@@ -64,6 +65,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
     private boolean mYoutubeFullscreen = false;
 
+    private long mPostId;
+
     public static Intent createShowPostIntent(Context context, long postId, @Nullable Entry entry, @Nullable TlogDesign design) {
         Intent intent = new Intent(context, ShowPostActivity.class);
         intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
@@ -95,8 +98,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
-            long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
-            if (postId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
+            mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
+            if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
             Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
             setupActionbar(null, null, design);
@@ -104,7 +107,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
-            Fragment postFragment = ShowPostFragment.newInstance(postId, entry, design);
+            Fragment postFragment = ShowPostFragment.newInstance(mPostId, entry, design);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, postFragment)
                     .commit();
@@ -123,6 +126,14 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
                 // if (DBG) Log.v(TAG, "ime visible: " + mImeVisible);
             }
         });
+
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -310,5 +321,11 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         Intent i = new Intent(this, TlogActivity.class);
         i.putExtra(TlogActivity.ARG_USER_ID, (long)view.getTag(R.id.author));
         startActivity(i);
+    }
+
+    public void onEventMainThread(PostRemoved event) {
+        if( event.postId == mPostId) {
+            finish();
+        }
     }
 }

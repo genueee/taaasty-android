@@ -114,6 +114,17 @@ public class FeedItemAdapter extends BaseAdapter {
         }
     }
 
+    public void deleteEntry(long id) {
+        int size = mFeed.size();
+        for (int i=0; i < size; ++i) {
+            if (mFeed.get(i).getId() == id) {
+                mFeed.remove(i);
+                notifyDataSetChanged();
+                break;
+            }
+        }
+    }
+
     @Override
     public int getCount() {
         return mFeed.size();

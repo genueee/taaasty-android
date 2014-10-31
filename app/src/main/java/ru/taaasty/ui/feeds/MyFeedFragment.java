@@ -25,6 +25,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.events.PostRemoved;
 import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
@@ -382,6 +383,10 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             if (mListener != null) mListener.onCurrentUserLoaded(currentUser, currentUser.getDesign());
         }
     };
+
+    public void onEventMainThread(PostRemoved event) {
+        mAdapter.deleteEntry(event.postId);
+    }
 
     public void onEventMainThread(UserLikeOrCommentUpdate update) {
         mAdapter.updateEntry(update.postEntry);
