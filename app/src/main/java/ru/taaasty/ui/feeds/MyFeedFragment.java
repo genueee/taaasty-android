@@ -42,6 +42,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
@@ -70,6 +71,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
 
     private CurrentUser mCurrentUser;
+
+    private DateIndicatorWidget mDateIndicatorView;
 
     private int mRefreshCounter;
 
@@ -116,6 +119,17 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
+        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mDateIndicatorView.setVisibility(View.VISIBLE);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateDateIndicator(dy > 0);
+            }
+        });
+
+        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+
         return v;
     }
 
@@ -134,6 +148,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onResume() {
         super.onResume();
         if (!mRefreshLayout.isRefreshing()) refreshData();
+        updateDateIndicator(true);
     }
 
     @Override
@@ -152,7 +167,9 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mFeedSubscription.unsubscribe();
         mCurrentUserSubscription.unsubscribe();
         mListView = null;
+        mDateIndicatorView = null;
         if (mAdapter != null) {
+            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
             mAdapter = null;
         }
@@ -214,6 +231,10 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         mAdapter.setFeedDesign(design);
+    }
+
+    void updateDateIndicator(boolean animScrollUp) {
+        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
     class Adapter extends FeedItemAdapter {
@@ -357,6 +378,23 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         startActivity(i);
     }
 
+    final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
+        private Runnable mUpdateIndicatorRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateDateIndicator(true);
+            }
+        };
+
+        @Override
+        public void onChanged() {
+            if (mListView != null) {
+                mListView.removeCallbacks(mUpdateIndicatorRunnable);
+                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
+            }
+        }
+    };
+
     final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
@@ -427,6 +465,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
             mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
         }
 
         @Override

@@ -37,4 +37,7 @@
     <color name="photo_scroll_indicator_background">#b6ababab</color>
     <color name="photo_scroll_indicator_slider">#f0ffffff</color>
 
+    <color name="date_indicator_background">#b2000000</color>
+    <color name="date_indicator_color">#bbbbbbbb</color>
+
 </resources>

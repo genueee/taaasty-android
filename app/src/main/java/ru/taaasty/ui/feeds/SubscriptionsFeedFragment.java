@@ -35,6 +35,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
@@ -61,6 +62,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mListView;
     private View mEmptyView;
+    private DateIndicatorWidget mDateIndicatorView;
 
     private ApiMyFeeds mFeedsService;
     private Adapter mAdapter;
@@ -109,6 +111,16 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
+        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateDateIndicator(dy > 0);
+            }
+        });
+
+        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+
         return v;
     }
 
@@ -156,12 +168,20 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateDateIndicator(true);
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         mFeedSubscription.unsubscribe();
         mCurrentUserSubscribtion.unsubscribe();
         mListView = null;
+        mDateIndicatorView = null;
         if (mAdapter != null) {
+            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
             mAdapter = null;
         }
@@ -203,6 +223,10 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         if (mTlogDesign == null) return;
         mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
         mAdapter.setFeedDesign(mTlogDesign);
+    }
+
+    void updateDateIndicator(boolean animScrollUp) {
+        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
     class Adapter extends FeedItemAdapter {
@@ -247,6 +271,23 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
             if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
     }
+
+    final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
+        private Runnable mUpdateIndicatorRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateDateIndicator(true);
+            }
+        };
+
+        @Override
+        public void onChanged() {
+            if (mListView != null) {
+                mListView.removeCallbacks(mUpdateIndicatorRunnable);
+                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
+            }
+        }
+    };
 
     public class LikesHelper extends ru.taaasty.utils.LikesHelper {
 
@@ -355,6 +396,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
             mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
         }
 
         @Override

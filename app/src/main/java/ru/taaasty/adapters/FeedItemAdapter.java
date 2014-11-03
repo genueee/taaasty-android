@@ -261,6 +261,20 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         return mFeed.isEmpty();
     }
 
+    /**
+     * Entry по позиции. null, если в этой позиции не entry
+     * @param position
+     * @return Entry
+     */
+    @Nullable
+    public Entry getEntryAtPosition(int position) {
+        if (position > 0 && position <= mFeed.size()) {
+            return mFeed.get(position - 1);
+        } else {
+            return null;
+        }
+    }
+
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
         notifyItemRangeChanged(0, mFeed.size());
