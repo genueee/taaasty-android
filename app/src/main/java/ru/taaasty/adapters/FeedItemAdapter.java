@@ -131,10 +131,10 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        if (position == getHeaderPosition()) {
+        if (isHeaderPosition(position)) {
             onBindHeaderViewHolder(viewHolder);
             return;
-        } else if (position == getPendingIndicatorPosition()) {
+        } else if (isPendingIndicatorPosition(position)) {
             return;
         }
 
@@ -166,9 +166,9 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        if (position == getHeaderPosition()) {
+        if (isHeaderPosition(position)) {
             return VIEW_TYPE_HEADER;
-        } else if (position == getPendingIndicatorPosition()) {
+        } else if (isPendingIndicatorPosition(position)) {
             return VIEW_TYPE_PENDING;
         }
 
@@ -188,19 +188,18 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder instanceof ParallaxedHeaderHolder) {
-            holder.itemView.getViewTreeObserver().addOnScrollChangedListener((ParallaxedHeaderHolder)holder);
+        if (holder instanceof IParallaxedHeaderHolder) {
+            holder.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder)holder);
         }
     }
 
     @Override
     public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder instanceof ParallaxedHeaderHolder) {
-            holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((ParallaxedHeaderHolder) holder);
+        if (holder instanceof IParallaxedHeaderHolder) {
+            holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }
     }
-
 
     @Nullable
     public Entry getItemById(long entryId) {
@@ -354,12 +353,12 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private int getHeaderPosition() {
-        return 0;
+    private boolean isHeaderPosition(int position) {
+        return position == 0;
     }
 
-    private int getPendingIndicatorPosition() {
-        return mFeed.size() + 1;
+    private boolean isPendingIndicatorPosition(int position) {
+        return position == mFeed.size() + 1;
     }
 
     private void setKeepOnAppending(boolean newValue) {

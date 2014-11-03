@@ -46,5 +46,6 @@
     <dimen name="following_followers_list_padding_top">24dp</dimen>
 
     <dimen name="image_loading_placeholder_default_size">64dp</dimen>
+    <dimen name="grid_feed_item_margin">2.5dp</dimen>
 
 </resources>

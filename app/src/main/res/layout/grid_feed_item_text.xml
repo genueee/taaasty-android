@@ -6,6 +6,7 @@
     android:background="@android:color/white"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="@dimen/grid_feed_item_margin"
     android:gravity="center_vertical"
     android:minHeight="48dp" >
 

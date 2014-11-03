@@ -1,5 +1,6 @@
 package ru.taaasty.adapters.grid;
 
+import android.content.Context;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.TextView;
@@ -11,19 +12,27 @@ import ru.taaasty.utils.UiUtils;
 /**
 * Created by alexey on 28.09.14.
 */
-public class GridQuoteEntry {
+public class GridQuoteEntry extends GridEntryBase {
     private final TextView mText;
     private final TextView mSource;
 
-    public GridQuoteEntry(View v) {
+    public GridQuoteEntry(Context context, View v, int cardWidth) {
+        super(context, v, cardWidth);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
         mSource = (TextView) v.findViewById(R.id.source);
         mText.setMaxLines(10);
     }
 
-    public void setupEntry(Entry entry) {
+    @Override
+    public void bindEntry(Entry entry) {
         setupText(entry);
         setupSource(entry);
+    }
+
+    @Override
+    public void recycle() {
+        mText.setText(null);
+        mSource.setText(null);
     }
 
     private void setupText(Entry entry) {

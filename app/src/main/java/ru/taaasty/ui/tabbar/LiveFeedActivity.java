@@ -2,7 +2,6 @@ package ru.taaasty.ui.tabbar;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -64,14 +63,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     }
 
     @Override
-    public void onFeedButtonClicked(Uri uri) {
-
-    }
-
-    @Override
-    public void onGridTopViewScroll(Fragment fragment, boolean firstItemVisible, int firstItemTop) {
+    public void onGridTopViewScroll(GridFeedFragment fragment, boolean headerVisible, int viewTop) {
         if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
-        updateCircleIndicatorPosition(firstItemVisible, firstItemTop);
+        updateCircleIndicatorPosition(headerVisible, viewTop);
     }
 
     /**
@@ -81,7 +75,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     void onPrimaryItemChanged(Fragment newFragment) {
         if (DBG) Log.v(TAG, "onPrimaryItemChanged()" + newFragment);
         GridFeedFragment fragment = (GridFeedFragment)newFragment;
-        updateCircleIndicatorPosition(fragment.isFirstChildVisisble(), fragment.getFirstChildTop());
+        updateCircleIndicatorPosition(fragment.isHeaderVisisble(), fragment.getHeaderTop());
     }
 
     void updateCircleIndicatorPosition(boolean isFirstItemVisible, int firstItemTop) {

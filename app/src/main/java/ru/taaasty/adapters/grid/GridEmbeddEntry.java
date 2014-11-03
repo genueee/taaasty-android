@@ -24,23 +24,22 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
 * Created by alexey on 28.09.14.
 */
-public class GridEmbeddEntry {
+public class GridEmbeddEntry extends GridEntryBase {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
     private final Drawable mEmbeddForegroundDrawable;
     private final EllipsizingTextView mTitle;
 
-    private final Context mContext;
     private final Picasso mPicasso;
     private ImageLoadingGetter mImageGetter;
 
-    public GridEmbeddEntry(Context context, View v) {
+    public GridEmbeddEntry(Context context, View v, int cardWidth) {
+        super(context, v, cardWidth);
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
 
-        mContext = context;
         mPicasso = NetworkUtils.getInstance().getPicasso(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
@@ -49,20 +48,27 @@ public class GridEmbeddEntry {
         mTitle.setMaxLines(2);
     }
 
-    public void setupEntry(Entry entry, int parentWidth) {
-        setupImage(entry, parentWidth);
-        setupTitle(entry, parentWidth);
+    @Override
+    public void bindEntry(Entry entry) {
+        setupImage(entry);
+        setupTitle(entry);
     }
 
-    private void setupImage(Entry item, int parentWidth) {
+    @Override
+    public void recycle() {
+        mImageView.setImageDrawable(mImagePlaceholderDrawable);
+        mTitle.setText(null);
+    }
+
+    private void setupImage(Entry item) {
         ImageSize imgSize;
         Link imageLink;
         int imgViewHeight;
 
-        if (parentWidth == 0) {
+        if (mCardWidth == 0) {
             imageLink = item.getIframely().getImageLink();
         } else {
-            imageLink = item.getIframely().getImageLink(parentWidth);
+            imageLink = item.getIframely().getImageLink(mCardWidth);
         }
         if (imageLink == null) {
             mImageLayout.setVisibility(View.VISIBLE);
@@ -71,7 +77,7 @@ public class GridEmbeddEntry {
         }
 
         imgSize = new ImageSize(imageLink.media.width, imageLink.media.height);
-        imgSize.shrinkToWidth(parentWidth);
+        imgSize.shrinkToWidth(mCardWidth);
         imgSize.shrinkToMaxTextureSize();
 
         if (imgSize.width < imageLink.media.width) {
@@ -79,7 +85,7 @@ public class GridEmbeddEntry {
             imgViewHeight = (int)Math.ceil(imgSize.height);
         } else {
             // Изображение должно быть увеличено под размеры ImageView
-            imgSize.stretchToWidth(parentWidth);
+            imgSize.stretchToWidth(mCardWidth);
             imgSize.cropToMaxTextureSize();
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
@@ -90,7 +96,7 @@ public class GridEmbeddEntry {
 
         String url = imageLink.getHref();
 
-        mImagePlaceholderDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
+        mImagePlaceholderDrawable.setBounds(0, 0, mCardWidth, imgViewHeight);
         mImageView.setImageDrawable(mImagePlaceholderDrawable);
         mImageView.requestLayout();
 
@@ -101,13 +107,13 @@ public class GridEmbeddEntry {
                 .into(mImageView);
     }
 
-    private void setupTitle(Entry item, int parentWidth) {
+    private void setupTitle(Entry item) {
         if (!item.hasTitle()) {
             mTitle.setVisibility(View.GONE);
             return;
         }
 
-        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(parentWidth, mContext);
+        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(mCardWidth, mContext);
         CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), null, null));
 
         mTitle.setText(Html.fromHtml(title.toString(), mImageGetter, null), TextView.BufferType.NORMAL);

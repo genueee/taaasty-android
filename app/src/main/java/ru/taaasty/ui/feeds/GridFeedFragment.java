@@ -2,21 +2,16 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.TextView;
-
-import com.etsy.android.grid.StaggeredGridView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +19,8 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.adapters.EndlessFeedGridItemAdapter;
+import ru.taaasty.adapters.FeedGridItemAdapter;
+import ru.taaasty.adapters.grid.GridEntryBase;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.Stats;
@@ -71,14 +67,11 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
-    private StaggeredGridView mGridView;
+    private RecyclerView mGridView;
 
     private ApiFeeds mApiFeedsService;
     private ApiApp mApiStatsService;
-    private FeedAdapter mAdapter;
-
-    private View mHeaderView;
-    private View mEndlessLoadingIndicatorView;
+    private FeedGridItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mStatsSubscription = SubscriptionHelper.empty();
@@ -134,7 +127,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_grid_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-        mGridView = (StaggeredGridView) mRefreshLayout.findViewById(R.id.live_feed_grid_view);
+        mGridView = (RecyclerView) mRefreshLayout.findViewById(R.id.live_feed_grid_view);
         mRefreshLayout.setOnRefreshListener(this);
         return v;
     }
@@ -153,20 +146,10 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mHeaderView = LayoutInflater.from(mGridView.getContext()).inflate(R.layout.header_title_subtitle, mGridView, false);
-        mEndlessLoadingIndicatorView = LayoutInflater.from(mGridView.getContext()).inflate(R.layout.endless_loading_indicator, mGridView, false);
-        mEndlessLoadingIndicatorView.setVisibility(View.INVISIBLE);
 
-        setupFeedTitle();
-
+        initGridView();
+        mAdapter.onCreate();
         if (DBG) Log.v(TAG, "onActivityCreated " + getString(getTitle()) + " savedInstanceState: " + (savedInstanceState == null ? " null " : " not null" ));
-
-        // mGridView.addParallaxedHeaderView(headerView);
-        mGridView.addHeaderView(mHeaderView, null, false);
-        mGridView.addFooterView(mEndlessLoadingIndicatorView);
-
-        mAdapter = new FeedAdapter(getActivity());
-        mGridView.setAdapter(mAdapter);
 
         if (savedInstanceState != null) {
             ArrayList<Entry> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
@@ -175,38 +158,62 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             }
 
             mStats = (Stats)savedInstanceState.getParcelable(BUNDLE_KEY_FEED_STATS);
-            refreshFeedDescription();
         }
+        refreshFeedHeader();
 
         if (mAdapter.getFeed().isEmpty() && !mRefreshLayout.isRefreshing()) refreshData();
 
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long postId) {
-                if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-                Entry entry = (Entry)parent.getItemAtPosition(position);
-                Intent i = ShowPostActivity.createShowPostIntent(getActivity(), postId, entry, null);
-                startActivity(i);
-            }
-        });
+    }
 
-        mGridView.setOnScrollListener(new AbsListView.OnScrollListener() {
+    private void initGridView() {
+        final View.OnClickListener onItemClickListener = new View.OnClickListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            public void onClick(View v) {
+                if (mGridView != null) {
+                    long postId = mGridView.getChildItemId(v);
 
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                if (mListener != null) {
-                    View topView = view.getChildAt(0);
-                    if (topView != null) {
-                        int top = topView.getTop();
-                        mListener.onGridTopViewScroll(GridFeedFragment.this, firstVisibleItem == 0, top);
+                    if (postId != View.NO_ID) {
+                        if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
+                        Intent intent = ShowPostActivity.createShowPostIntent(getActivity(), postId,
+                                mAdapter.getItemById(postId), null);
+                        startActivity(intent);
                     }
                 }
             }
-        });
+        };
+
+        mAdapter = new FeedGridItemAdapter(getActivity()) {
+            @Override
+            protected Observable<Feed> createObservable(Long sinceEntryId) {
+                return AndroidObservable.bindFragment(GridFeedFragment.this, createObservabelFeed(sinceEntryId, Constants.GRID_FEED_APPEND_LENGTH));
+            }
+
+            @Override
+            protected void onRemoteError(Throwable e) {
+                if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+            }
+
+            @Override
+            public void onHeaderMoved(boolean isVisible, int viewTop) {
+                if (mListener != null) mListener.onGridTopViewScroll(GridFeedFragment.this, isVisible, viewTop);
+            }
+
+            @Override
+            public GridEntryBase onCreateViewHolder(ViewGroup parent, int viewType) {
+                GridEntryBase vh = super.onCreateViewHolder(parent, viewType);
+                vh.itemView.setOnClickListener(onItemClickListener);
+                return vh;
+            }
+        };
+
+        final int columnCount = getResources().getInteger(R.integer.live_feed_column_count);
+        StaggeredGridLayoutManager lm = new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
+
+        lm.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_MOVE_ITEMS_BETWEEN_SPANS);
+        // lm.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        mGridView.setHasFixedSize(true);
+        mGridView.setLayoutManager(lm);
+        mGridView.setAdapter(mAdapter);
     }
 
     @Override
@@ -227,10 +234,12 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onDestroyView() {
         mFeedSubscription.unsubscribe();
         mStatsSubscription.unsubscribe();
-        mAdapter.onDestroy();
         super.onDestroyView();
         mGridView = null;
-        mAdapter = null;
+        if (mAdapter != null) {
+            mAdapter.onDestroy();
+            mAdapter = null;
+        }
     }
 
     @Override
@@ -239,14 +248,14 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mListener = null;
     }
 
-    public boolean isFirstChildVisisble() {
+    public boolean isHeaderVisisble() {
         if (mGridView == null) return false;
         View v0 = mGridView.getChildAt(0);
         if (v0 == null) return false;
-        return mGridView.getFirstVisiblePosition() == 0;
+        return mGridView.getChildViewHolder(v0) instanceof FeedGridItemAdapter.GridEntryHeader2;
     }
 
-    public int getFirstChildTop() {
+    public int getHeaderTop() {
         if (mGridView == null) return 0;
         View v0 = mGridView.getChildAt(0);
         if (v0 == null) return 0;
@@ -295,11 +304,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 .subscribe(mStatsObserver);
     }
 
-    private void setupFeedTitle() {
-        TextView titleView = (TextView)mHeaderView.findViewById(R.id.title);
-        titleView.setText(getTitle());
-    }
-
     private int getTitle() {
         switch (mFeedType) {
             case FEED_LIVE:
@@ -315,39 +319,35 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     }
 
-    private void refreshFeedDescription() {
-        TextView descView = (TextView)mHeaderView.findViewById(R.id.subtitle);
+    private void refreshFeedHeader() {
+        String subtitle;
 
-        if (mAdapter == null || mStats == null) {
-            descView.setVisibility(View.INVISIBLE);
-            return;
-        }
+        if (mAdapter == null) return;
 
-        int title = getTitle();
-
-        String entries = "";
-
-        switch(title)
-        {
-            case R.string.title_live_feed:
-                entries = getResources().getQuantityString(R.plurals.public_records_last_day, mStats.publicEntriesInDayCount, mStats.publicEntriesInDayCount);
-                break;
-            case R.string.title_best_feed:
-                entries = getResources().getQuantityString(R.plurals.best_records_last_day, mStats.bestEntriesInDayCount, mStats.bestEntriesInDayCount);
-                break;
-            case R.string.title_anonymous_feed:
-                entries = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mStats.anonymousEntriesInDayCount, mStats.anonymousEntriesInDayCount);
-                break;
-            default:
+        if (mStats == null) {
+            subtitle = null;
+        } else {
+            switch(getTitle())
+            {
+                case R.string.title_live_feed:
+                    subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mStats.publicEntriesInDayCount, mStats.publicEntriesInDayCount);
+                    break;
+                case R.string.title_best_feed:
+                    subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mStats.bestEntriesInDayCount, mStats.bestEntriesInDayCount);
+                    break;
+                case R.string.title_anonymous_feed:
+                    subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mStats.anonymousEntriesInDayCount, mStats.anonymousEntriesInDayCount);
+                    break;
+                default:
                 {
                     // Новости
                     int count = UiUtils.getEntriesLastDay(mAdapter.getFeed());
-                    entries = getResources().getQuantityString(R.plurals.news_last_day, count, count);
+                    subtitle = getResources().getQuantityString(R.plurals.news_last_day, count, count);
                 }
                 break;
+            }
         }
-        descView.setText(entries);
-        descView.setVisibility(View.VISIBLE);
+        mAdapter.setHeader(getResources().getString(getTitle()), subtitle);
     }
 
     private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
@@ -365,14 +365,14 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.setFeed(feed.entries);
+            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
         }
     };
 
     private final Observer<Stats> mStatsObserver = new Observer<Stats>() {
         @Override
         public void onCompleted() {
-            refreshFeedDescription();
+            refreshFeedHeader();
         }
 
         @Override
@@ -387,34 +387,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     };
 
-    public class FeedAdapter extends EndlessFeedGridItemAdapter {
-
-        public FeedAdapter(Context context) {
-            super(context);
-        }
-
-        @Override
-        public void onLoadingStarted() {
-            if (mEndlessLoadingIndicatorView != null) mEndlessLoadingIndicatorView.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onLoadingCompleted() {
-            if (mEndlessLoadingIndicatorView != null) mEndlessLoadingIndicatorView.setVisibility(View.INVISIBLE);
-        }
-
-        @Override
-        public void onRemoteError(Throwable e) {
-            mListener.notifyError(getString(R.string.server_error), e);
-        }
-
-        @Override
-        public Observable<Feed> createObservable(Long sinceEntryId) {
-            return AndroidObservable.bindFragment(GridFeedFragment.this,
-                    createObservabelFeed(sinceEntryId, Constants.GRID_FEED_APPEND_LENGTH));
-        }
-    }
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -426,8 +398,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        // TODO: Update argument type and name
-        public void onFeedButtonClicked(Uri uri);
-        public void onGridTopViewScroll(Fragment fragment, boolean firstChildVisible, int firstItemTop);
+        public void onGridTopViewScroll(GridFeedFragment fragment, boolean headerVisible, int headerTop);
     }
 }

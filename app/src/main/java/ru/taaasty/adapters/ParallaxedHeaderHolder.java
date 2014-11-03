@@ -2,7 +2,6 @@ package ru.taaasty.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 
@@ -11,7 +10,7 @@ import ru.taaasty.Constants;
 /**
  * Created by alexey on 02.11.14.
  */
-public class ParallaxedHeaderHolder extends RecyclerView.ViewHolder implements ViewTreeObserver.OnScrollChangedListener {
+public class ParallaxedHeaderHolder extends RecyclerView.ViewHolder implements IParallaxedHeaderHolder {
 
     ParallaxedView parallaxedView;
 

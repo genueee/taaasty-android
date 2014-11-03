@@ -75,7 +75,7 @@ public class User implements Parcelable {
     }
 
     public String getSlug() {
-        return mSlug;
+        return mSlug != null ? mSlug : (mName != null ? mName : "");
     }
 
     public Userpic getUserpic() {

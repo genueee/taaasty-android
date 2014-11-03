@@ -14,25 +14,31 @@ import ru.taaasty.utils.UiUtils;
 /**
  * Created by alexey on 28.09.14.
  */
-public class GridTextEntry {
-    private final Context mContext;
+public class GridTextEntry extends GridEntryBase {
     private final TextView mTitle;
     private final TextView mText;
 
     private ImageLoadingGetter mImageGetter;
 
-    public GridTextEntry(Context context, View v) {
-        mContext = context;
+    public GridTextEntry(Context context, View v, int cardWidth) {
+        super(context, v, cardWidth);
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
         mTitle.setMaxLines(2);
         mText.setMaxLines(10);
     }
 
-    public void setupEntry(Entry entry, int parentWidth) {
-        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(parentWidth, mContext);
+    @Override
+    public void bindEntry(Entry entry) {
+        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(mCardWidth, mContext);
         setupTitle(entry);
         setupText(entry);
+    }
+
+    @Override
+    public void recycle() {
+        mTitle.setText(null);
+        mText.setText(null);
     }
 
     private void setupTitle(Entry entry) {

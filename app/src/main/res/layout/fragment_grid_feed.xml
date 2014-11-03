@@ -6,17 +6,19 @@
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
 
-    <com.etsy.android.grid.StaggeredGridView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/live_feed_grid_view"
+        android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingLeft="@dimen/grid_feed_item_margin"
+        android:paddingRight="@dimen/grid_feed_item_margin"
         android:clipToPadding="false"
         android:divider="@null"
         android:paddingBottom="8dp"
-        app:item_margin="5dp"
-        app:column_count="@integer/live_feed_column_count"
         android:overScrollHeader="@android:color/black"
         tools:listheader="@layout/header_live_feed"
-        tools:listitem="@layout/live_feed_item" />
+        tools:listitem="@layout/live_feed_item"
+        />
 
 </ru.taaasty.widgets.SwipeRefreshLayout>
