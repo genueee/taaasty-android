@@ -157,7 +157,7 @@ public class User implements Parcelable {
     public User() {
     }
 
-    private User(Parcel in) {
+    protected User(Parcel in) {
         this.mId = in.readLong();
         this.mName = in.readString();
         this.mSlug = in.readString();

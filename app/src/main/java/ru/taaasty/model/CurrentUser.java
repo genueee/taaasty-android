@@ -1,9 +1,10 @@
 package ru.taaasty.model;
 
+import android.os.Parcel;
+
 import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * {
@@ -36,7 +37,7 @@ import java.util.List;
  }
  }
  */
-public class CurrentUser extends User {
+public class CurrentUser extends User implements android.os.Parcelable {
 
     @SerializedName("is_confirmed")
     boolean mIsConfirmed;
@@ -51,7 +52,7 @@ public class CurrentUser extends User {
         return mApiKey;
     }
 
-    public static class ApiKey {
+    public static class ApiKey implements android.os.Parcelable {
 
         public static ApiKey DUMMY = new ApiKey();
 
@@ -60,6 +61,38 @@ public class CurrentUser extends User {
         public long userId;
 
         private Date expiredAt;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.accessToken);
+            dest.writeLong(this.userId);
+            dest.writeLong(expiredAt != null ? expiredAt.getTime() : -1);
+        }
+
+        public ApiKey() {
+        }
+
+        private ApiKey(Parcel in) {
+            this.accessToken = in.readString();
+            this.userId = in.readLong();
+            long tmpExpiredAt = in.readLong();
+            this.expiredAt = tmpExpiredAt == -1 ? null : new Date(tmpExpiredAt);
+        }
+
+        public static final Creator<ApiKey> CREATOR = new Creator<ApiKey>() {
+            public ApiKey createFromParcel(Parcel source) {
+                return new ApiKey(source);
+            }
+
+            public ApiKey[] newArray(int size) {
+                return new ApiKey[size];
+            }
+        };
     }
 
     public long getId() {
@@ -118,4 +151,37 @@ public class CurrentUser extends User {
         return mUserpic;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+
+        dest.writeByte(mIsConfirmed ? (byte) 1 : (byte) 0);
+        dest.writeByte(mAvailableNotifications ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.mApiKey, flags);
+    }
+
+    public CurrentUser() {
+    }
+
+    private CurrentUser(Parcel in) {
+        super(in);
+        this.mIsConfirmed = in.readByte() != 0;
+        this.mAvailableNotifications = in.readByte() != 0;
+        this.mApiKey = in.readParcelable(ApiKey.class.getClassLoader());
+    }
+
+    public static final Creator<CurrentUser> CREATOR = new Creator<CurrentUser>() {
+        public CurrentUser createFromParcel(Parcel source) {
+            return new CurrentUser(source);
+        }
+
+        public CurrentUser[] newArray(int size) {
+            return new CurrentUser[size];
+        }
+    };
 }

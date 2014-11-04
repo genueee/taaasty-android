@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
+import it.sephiroth.android.library.picasso.RequestCreator;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -328,11 +329,13 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
                     design, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
             holder.backgroundUrl = backgroudUrl;
-            NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
-                    .load(backgroudUrl)
-                    .centerCrop()
-                    .resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
-                    .into(holder.feedDesignTarget);
+            RequestCreator rq = NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
+                    .load(backgroudUrl);
+            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
+                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
+                        .centerCrop();
+            }
+            rq.into(holder.feedDesignTarget);
         }
 
         private void bindUser(HeaderHolder holder) {

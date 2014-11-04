@@ -48,6 +48,7 @@ public class Userpic implements Parcelable {
         }
 
         public int getTextColor() {
+            if (TextUtils.isEmpty(name)) return Color.WHITE; // Задолбало исключение в логах
             try {
                 return Color.parseColor(name);
             } catch (IllegalArgumentException | StringIndexOutOfBoundsException e) {
