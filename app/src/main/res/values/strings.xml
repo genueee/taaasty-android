@@ -136,6 +136,13 @@
         <item quantity="other">Загрузить ещё %d комментариев…</item>
     </plurals>
 
+    <plurals name="other_n_comments">
+        <item quantity="one">Ещё %d комментарий…</item>
+        <item quantity="few">Ещё %d комментария…</item>
+        <item quantity="many">Ещё %d комментариев…</item>
+        <item quantity="other">Ещё %d комментариев…</item>
+    </plurals>
+
     <array name="photo_sources_array">
         <item>Выбрать из галереи</item>
         <item>Сфотографировать</item>

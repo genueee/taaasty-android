@@ -6,6 +6,9 @@ import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -32,10 +35,20 @@ public class ListTextEntry extends ListEntryBase {
     @Override
     public void setupEntry(Entry entry, TlogDesign design) {
         super.setupEntry(entry, design);
+
+        if (BuildConfig.DEBUG) {
+            if (mText.getWidth() != 0) {
+                int textWidth = mText.getWidth() - mText.getPaddingLeft() - mText.getPaddingRight();
+                int textWidth2 = mParentWidth - mText.getPaddingLeft() - mText.getPaddingRight();
+                Assert.assertEquals("Ширина может определяться неверно. textWidth: " + textWidth + "parent width: " +textWidth2,
+                        textWidth, textWidth2);
+            }
+        }
+
         if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(
                 (mParentWidth == 0 ? 0 : mParentWidth
-                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)
-                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
+                        - mText.getPaddingLeft()
+                        - mText.getPaddingRight()),
                 mContext);
         setupTitle(entry);
         setupText(entry);

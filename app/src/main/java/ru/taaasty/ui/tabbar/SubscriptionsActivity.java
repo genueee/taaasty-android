@@ -6,6 +6,9 @@ import android.os.Bundle;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
+import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.SubscriptionsFeedFragment;
 import ru.taaasty.ui.post.SharePostActivity;
 
@@ -40,6 +43,14 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
     void onCurrentTabButtonClicked() {
         SubscriptionsFeedFragment fragment = (SubscriptionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
         fragment.refreshData();
+    }
+
+    @Override
+    public void onAvatarClicked(User user, TlogDesign design) {
+        Intent i = new Intent(this, UserInfoActivity.class);
+        i.putExtra(UserInfoActivity.ARG_USER, user);
+        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+        startActivity(i);
     }
 
     @Override

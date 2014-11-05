@@ -52,7 +52,6 @@ import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
-
 public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
@@ -65,10 +64,9 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     private RecyclerView mListView;
     private View mEmptyView;
 
-    private ApiMyFeeds mFeedsService;
     private Adapter mAdapter;
+    private MyFeedLoader mFeedLoader;
 
-    private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
 
     private CurrentUser mCurrentUser;
@@ -94,7 +92,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
     }
 
     @Override
@@ -110,8 +107,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mAdapter.onCreate();
 
         if (savedInstanceState != null) {
-            List<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (feed != null && !feed.isEmpty()) mAdapter.setFeed(feed);
+            List<FeedItemAdapter.EntryOrComment> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
+            if (feed != null && !feed.isEmpty()) mAdapter.setEntriesAndComments(feed);
         }
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
@@ -130,6 +127,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         });
 
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+        mFeedLoader = new MyFeedLoader(mAdapter);
 
         return v;
     }
@@ -156,8 +154,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<Entry> entries = mAdapter.getFeed();
-            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
+            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
+            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
     }
@@ -165,10 +163,13 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mFeedSubscription.unsubscribe();
         mCurrentUserSubscription.unsubscribe();
         mListView = null;
         mDateIndicatorView = null;
+        if (mFeedLoader != null) {
+            mFeedLoader.onDestroy();
+            mFeedLoader = null;
+        }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
@@ -247,12 +248,14 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
 
         @Override
-        protected void initClickListeners(final ListEntryBase holder) {
+        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (!(pHolder instanceof ListEntryBase)) return;
+            final ListEntryBase holder = (ListEntryBase)pHolder;
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(mAdapter.getItemById(postId));
+                    onFeedItemClicked(mAdapter.getItemById(postId).entry);
 
                 }
             });
@@ -274,17 +277,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             holder.titleView.setText(mTitle);
             bindDesign(holder);
             bindUser(holder);
-        }
-
-        @Override
-        protected Observable<Feed> createObservable(Long sinceEntryId) {
-            return AndroidObservable.bindFragment(MyFeedFragment.this,
-                    mFeedsService.getMyFeed(sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH));
-        }
-
-        @Override
-        protected void onRemoteError(Throwable e) {
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
 
         public void setTitleUser(String title, User user) {
@@ -441,18 +433,12 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     }
 
     private void refreshFeed() {
-        if (!mFeedSubscription.isUnsubscribed()) {
-            mFeedSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-
-        setRefreshing(true);
-        Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFeed(null, Constants.LIST_FEED_INITIAL_LENGTH));
-        mFeedSubscription = observableFeed
+        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+        Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
-                .subscribe(mFeedObserver);
+                .doOnTerminate(mStopRefreshingAction);
+        mFeedLoader.refreshFeed(observableFeed, requestEntries);
+        setRefreshing(true);
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
@@ -463,26 +449,44 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
     };
 
-    private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
+    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+
+        private final ApiMyFeeds mFeedsService;
+
+        public MyFeedLoader(FeedItemAdapter adapter) {
+            super(adapter);
+            mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+        }
+
         @Override
-        public void onCompleted() {
+        protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
+            return AndroidObservable.bindFragment(MyFeedFragment.this,
+                    mFeedsService.getMyFeed(sinceEntryId, limit));
+        }
+
+        @Override
+        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
-            mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            if (isRefresh) {
+                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            }
         }
 
         @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            // XXX
+        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+            super.onLoadError(isRefresh, entriesRequested, e);
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
 
-        @Override
-        public void onNext(Feed feed) {
-            if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
+        protected void onFeedIsUnsubscribed(boolean isRefresh) {
+            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
+            if (isRefresh) {
+                mStopRefreshingAction.call();
+            }
         }
-    };
+    }
+
 
     private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
 

@@ -16,6 +16,7 @@ import java.util.List;
 
 import ru.taaasty.UserManager;
 import ru.taaasty.model.iframely.IFramely;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
 
 public class Entry implements Parcelable {
@@ -29,9 +30,9 @@ public class Entry implements Parcelable {
     public static final String ENTRY_TYPE_QUOTE = "quote";
 
     /**
-     * Сортировка по дате создания (более новые - в начале)
+     * Сортировка по убыванию даты создания (более новые - в начале списка)
      */
-    public static transient Comparator<Entry> ORDER_BY_CREATE_DATE_DESC_COMARATOR = new Comparator<Entry>() {
+    public static transient Comparator<Entry> ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR = new Comparator<Entry>() {
         @Override
         public int compare(Entry lhs, Entry rhs) {
             if (lhs == null && rhs == null) {
@@ -41,7 +42,8 @@ public class Entry implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
-                return rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
+                int compareDates = rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
+                return compareDates != 0 ? compareDates : Objects.compare(rhs.getId(), lhs.getId());
             }
         }
     };

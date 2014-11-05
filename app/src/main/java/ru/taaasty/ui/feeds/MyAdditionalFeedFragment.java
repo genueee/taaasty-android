@@ -89,8 +89,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     private ApiMyFeeds mMyFeedsService;
     private Adapter mAdapter;
+    private MyFeedLoader mFeedLoader;
 
-    private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mUserSubscribtion = SubscriptionHelper.empty();
 
     private int mFeedType = FEED_TYPE_FAVORITES;
@@ -143,8 +143,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         mAdapter = new Adapter(getActivity(), showUserAvatar);
         mAdapter.onCreate();
         if (savedInstanceState != null) {
-            List<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (feed != null && !feed.isEmpty()) mAdapter.setFeed(feed);
+            List<FeedItemAdapter.EntryOrComment> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
+            if (feed != null && !feed.isEmpty()) mAdapter.setEntriesAndComments(feed);
         }
         if (mCurrentUser != null && mCurrentUser.getDesign() != null) mAdapter.setFeedDesign(mCurrentUser.getDesign());
 
@@ -166,7 +166,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         });
 
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-
+        mFeedLoader = new MyFeedLoader(mAdapter);
 
         return v;
     }
@@ -193,8 +193,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<Entry> entries = mAdapter.getFeed();
-            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
+            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
+            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
         outState.putParcelable(BUNDLE_KEY_CURRENT_USER, mCurrentUser);
@@ -227,10 +227,13 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mFeedSubscription.unsubscribe();
         mUserSubscribtion.unsubscribe();
         mListView = null;
         mDateIndicatorView = null;
+        if (mFeedLoader != null) {
+            mFeedLoader.onDestroy();
+            mFeedLoader = null;
+        }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
@@ -301,17 +304,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     private void refreshFeed() {
-        if (!mFeedSubscription.isUnsubscribed()) {
-            mFeedSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-
-        setRefreshing(true);
-        Observable<Feed> observableFeed = getFeedObservable(null, Constants.LIST_FEED_INITIAL_LENGTH);
-        mFeedSubscription = observableFeed
+        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+        Observable<Feed> observableFeed = getFeedObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
-                .subscribe(mFeedObserver);
+                .doOnTerminate(mStopRefreshingAction);
+        mFeedLoader.refreshFeed(observableFeed, requestEntries);
+        setRefreshing(true);
     }
 
     public Observable<Feed> getFeedObservable(@Nullable Long sinceEntryId, @Nullable Integer limit) {
@@ -396,12 +394,14 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         @Override
-        protected void initClickListeners(final ListEntryBase holder) {
+        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (!(pHolder instanceof ListEntryBase)) return;
+            final ListEntryBase holder = (ListEntryBase)pHolder;
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(mAdapter.getItemById(postId));
+                    onFeedItemClicked(mAdapter.getItemById(postId).entry);
 
                 }
             });
@@ -412,7 +412,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                     @Override
                     public void onClick(View v) {
                         long postId = mListView.getChildItemId(holder.itemView);
-                        Entry entry = mAdapter.getItemById(postId);
+                        Entry entry = mAdapter.getItemById(postId).entry;
                         if (mListener != null && entry != null) mListener.onAvatarClicked(entry.getAuthor(), entry.getAuthor().getDesign());
                     }
                 });
@@ -435,16 +435,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             holder.usernameView.setText(mTitle);
             bindDesign(holder);
             bindUser(holder);
-        }
-
-        @Override
-        protected Observable<Feed> createObservable(Long sinceEntryId) {
-            return MyAdditionalFeedFragment.this.getFeedObservable(sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH);
-        }
-
-        @Override
-        protected void onRemoteError(Throwable e) {
-            if (mListener != null) mListener.notifyError(getString(R.string.error_append_feed), e);
         }
 
         public void setTitleUser(String title, User user) {
@@ -604,25 +594,39 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
     };
 
-    private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
+    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+
+        public MyFeedLoader(FeedItemAdapter adapter) {
+            super(adapter);
+        }
+
         @Override
-        public void onCompleted() {
+        protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
+            return getFeedObservable(sinceEntryId, limit);
+        }
+
+        @Override
+        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
-            mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            if (isRefresh) {
+                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            }
         }
 
         @Override
-        public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.server_error), e);
+        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+            super.onLoadError(isRefresh, entriesRequested, e);
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
 
-        @Override
-        public void onNext(Feed feed) {
-            if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
+        protected void onFeedIsUnsubscribed(boolean isRefresh) {
+            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
+            if (isRefresh) {
+                mStopRefreshingAction.call();
+            }
         }
-    };
+    }
 
     private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
 

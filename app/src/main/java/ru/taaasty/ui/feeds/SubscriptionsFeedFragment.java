@@ -30,6 +30,7 @@ import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.post.ShowPostActivity;
@@ -66,8 +67,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
     private ApiMyFeeds mFeedsService;
     private Adapter mAdapter;
+    private FeedLoader mFeedLoader;
 
-    private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
 
     private int mRefreshCounter;
@@ -103,7 +104,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         mRefreshLayout.setOnRefreshListener(this);
 
-        mAdapter = new Adapter(getActivity(), true);
+        mAdapter = new Adapter(getActivity());
         mAdapter.onCreate();
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setHasFixedSize(true);
@@ -120,6 +121,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         });
 
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+        mFeedLoader = new FeedLoader(mAdapter);
 
         return v;
     }
@@ -140,9 +142,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         super.onActivityCreated(savedInstanceState);
 
         if (savedInstanceState != null) {
-            ArrayList<Entry> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
+            ArrayList<FeedItemAdapter.EntryOrComment> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
             if (entries != null) {
-                mAdapter.setFeed(entries);
+                mAdapter.setEntriesAndComments(entries);
             }
             TlogDesign design = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_DESIGN);
             if (design != null) {
@@ -158,8 +160,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<Entry> entries = mAdapter.getFeed();
-            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
+            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
+            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
         if (mTlogDesign != null) {
@@ -176,10 +178,13 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mFeedSubscription.unsubscribe();
         mCurrentUserSubscribtion.unsubscribe();
         mListView = null;
         mDateIndicatorView = null;
+        if (mFeedLoader != null) {
+            mFeedLoader.onDestroy();
+            mFeedLoader = null;
+        }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
@@ -231,21 +236,36 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
     class Adapter extends FeedItemAdapter {
 
-        public Adapter(Context context, boolean showUserAvatar) {
-            super(context, showUserAvatar);
+        public Adapter(Context context) {
+            super(context, true, true);
         }
 
         @Override
-        protected void initClickListeners(final ListEntryBase holder) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(mAdapter.getItemById(postId));
+        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (pHolder instanceof ListEntryBase || pViewType == FeedItemAdapter.VIEW_TYPE_COMMENT) {
+                pHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        long postId = mListView.getChildItemId(v);
+                        onFeedItemClicked(getItemById(postId).entry);
 
+                    }
+                });
+            }
+
+            if (pHolder instanceof ListEntryBase) {
+                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                if (mShowUserAvatar) {
+                    ((ListEntryBase)pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            long postId = mListView.getChildItemId(pHolder.itemView);
+                            Entry entry = mAdapter.getItemById(postId).entry;
+                            if (mListener != null && entry != null) mListener.onAvatarClicked(entry.getAuthor(), entry.getAuthor().getDesign());
+                        }
+                    });
                 }
-            });
-            holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+            }
         }
 
         @Override
@@ -259,16 +279,40 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
         }
+    }
 
-        @Override
-        protected Observable<Feed> createObservable(Long sinceEntryId) {
-            return AndroidObservable.bindFragment(SubscriptionsFeedFragment.this,
-                    mFeedsService.getMyFriendsFeed(sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH));
+    class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+
+        public FeedLoader(FeedItemAdapter adapter) {
+            super(adapter);
         }
 
         @Override
-        protected void onRemoteError(Throwable e) {
+        protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
+            return AndroidObservable.bindFragment(SubscriptionsFeedFragment.this,
+                    mFeedsService.getMyFriendsFeed(sinceEntryId, limit));
+        }
+
+        @Override
+        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
+            if (DBG) Log.v(TAG, "onCompleted()");
+            if (isRefresh) {
+                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            }
+        }
+
+        @Override
+        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+            super.onLoadError(isRefresh, entriesRequested, e);
             if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+        }
+
+        protected void onFeedIsUnsubscribed(boolean isRefresh) {
+            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
+            if (isRefresh) {
+                mStopRefreshingAction.call();
+            }
         }
     }
 
@@ -368,19 +412,12 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     }
 
     private void refreshFeed() {
-        if (!mFeedSubscription.isUnsubscribed()) {
-            if (DBG) Log.v(TAG, "feed subsription is not unsubscribed " + mFeedSubscription);
-            mFeedSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-
-        setRefreshing(true);
-        Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mFeedsService.getMyFriendsFeed(null, Constants.LIST_FEED_INITIAL_LENGTH));
-        mFeedSubscription = observableFeed
+        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+        Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
-                .subscribe(mFeedObserver);
+                .doOnTerminate(mStopRefreshingAction);
+        mFeedLoader.refreshFeed(observableFeed, requestEntries);
+        setRefreshing(true);
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
@@ -391,32 +428,10 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         }
     };
 
-    private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
-        @Override
-        public void onCompleted() {
-            if (DBG) Log.v(TAG, "onCompleted()");
-            mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            if (mListener != null) mListener.notifyError(getText(R.string.server_error), e);
-        }
-
-        @Override
-        public void onNext(Feed feed) {
-            if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
-        }
-    };
-
     private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
 
         @Override
         public void onCompleted() {
-
         }
 
         @Override
@@ -446,6 +461,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onAvatarClicked(User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }
 }

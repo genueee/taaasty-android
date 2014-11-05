@@ -2,10 +2,13 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import ru.taaasty.R;
@@ -25,6 +28,15 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     private final TextView mAuthor;
     private final EntryBottomActionBar mEntryActionBar;
     private final boolean mShowUserAvatar;
+
+    @Nullable
+    public View mCommentsProgressRoot;
+
+    @Nullable
+    public TextView mCommentLoadMore;
+
+    @Nullable
+    private ProgressBar mCommentLoadMoreProgress;
 
     protected int mParentWidth;
 
@@ -51,9 +63,36 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         int textColor = design.getFeedTextColor(mResources);
         if (mShowUserAvatar) mAuthor.setTextColor(textColor);
         mEntryActionBar.setTlogDesign(design);
+    }
 
-        // XXX: ставим только чтобы нормально перекрывать параллаксвый хидер
-        // vh.root.setBackgroundColor(mFeedDesign.getFeedBackgroundColor(mResources));
+    private void inflateCommentLoadMore() {
+        if (mCommentsProgressRoot == null) {
+            ViewStub rootStub = (ViewStub)itemView.findViewById(R.id.comments_progress_stub);
+            mCommentsProgressRoot = rootStub.inflate();
+            mCommentLoadMore = (TextView)mCommentsProgressRoot.findViewById(R.id.comments_load_more);
+            mCommentLoadMoreProgress = (ProgressBar)mCommentsProgressRoot.findViewById(R.id.comments_load_more_progress);
+        }
+    }
+
+    public void setupCommentStatus(boolean isLoading, int commentsTotal, int commentsShown) {
+        inflateCommentLoadMore();
+
+        if (isLoading) {
+            mCommentLoadMoreProgress.setVisibility(View.VISIBLE);
+            mCommentLoadMore.setVisibility(View.INVISIBLE);
+            mCommentsProgressRoot.setVisibility(View.VISIBLE);
+        } else {
+            int commentsToLoad = commentsTotal - commentsShown;
+
+            if (commentsToLoad == 0) {
+                mCommentsProgressRoot.setVisibility(View.GONE);
+            } else {
+                mCommentLoadMore.setText(getResources().getQuantityString(R.plurals.other_n_comments, commentsToLoad, commentsToLoad));
+                mCommentLoadMore.setVisibility(View.VISIBLE);
+                mCommentsProgressRoot.setVisibility(View.VISIBLE);
+            }
+            mCommentLoadMoreProgress.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void setAuthor(Entry item) {

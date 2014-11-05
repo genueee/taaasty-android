@@ -7,7 +7,6 @@ import android.view.View;
 import java.util.Date;
 
 import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.model.Entry;
 import ru.taaasty.widgets.DateIndicatorWidget;
 
 /**
@@ -20,10 +19,7 @@ public class FeedsHelper {
     }
 
     @Nullable
-    public static int getAdapterPositionAtWidgetHeight(RecyclerView listView,
-                                                 View widget,
-                                                 FeedItemAdapter adapter
-                                                 ) {
+    public static int getAdapterPositionAtWidgetHeight(RecyclerView listView, View widget) {
         // Здесь считаем, что top listview и top parent'а dateindicator находятся на одной высоте
         int triggerTop = widget.getTop() + widget.getHeight() / 2;
         // int triggerTop = mListView.getTop() + mListView.getHeight() / 2;
@@ -32,7 +28,7 @@ public class FeedsHelper {
         RecyclerView.LayoutManager lm = listView.getLayoutManager();
         final int count = lm.getChildCount();
         for (int i = count - 1; i >= 0; i--) {
-            final View checked = listView.getChildAt(i);
+            final View checked = lm.getChildAt(i);
             if (triggerTop >= checked.getTop()) {
                 child = checked;
                 break;
@@ -49,12 +45,11 @@ public class FeedsHelper {
         Date newDate = null;
         if (listView == null || dateIndicator == null) return;
 
-        int position = getAdapterPositionAtWidgetHeight(listView, dateIndicator, adapter);
+        int position = getAdapterPositionAtWidgetHeight(listView, dateIndicator);
         if (position != RecyclerView.NO_POSITION) {
-            Entry entry = adapter.getEntryAtPosition(position);
-            if (entry != null) newDate = entry.getCreatedAt();
+            FeedItemAdapter.EntryOrComment entry = adapter.getEntryAtPosition(position);
+            if (entry != null) newDate = entry.entry.getCreatedAt();
         }
         dateIndicator.setDate(newDate, animScrollUp);
     }
-
 }

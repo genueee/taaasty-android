@@ -10,6 +10,8 @@ import com.google.gson.annotations.SerializedName;
 import java.util.Comparator;
 import java.util.Date;
 
+import ru.taaasty.utils.Objects;
+
 /**
  * Created by alexey on 01.08.14.
  */
@@ -42,7 +44,10 @@ public class Comment implements Parcelable {
     @SerializedName("can_delete")
     boolean mCanDelete;
 
-    public static transient Comparator<Comment> SORT_BY_DATE_COMARATOR = new Comparator<Comment>() {
+    /**
+     * Сортировка по возрастанию даты создания (самые старые - в начало списка)
+     */
+    public static transient Comparator<Comment> ORDER_BY_DATE_ID_COMARATOR = new Comparator<Comment>() {
         @Override
         public int compare(Comment lhs, Comment rhs) {
             if (lhs == null && rhs == null) {
@@ -52,7 +57,8 @@ public class Comment implements Parcelable {
             } else if (rhs == null) {
                 return -1;
             } else {
-                return lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
+                int compareDates = lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
+                return compareDates != 0 ? compareDates : Objects.compare(lhs.getId(), rhs.getId());
             }
         }
     };

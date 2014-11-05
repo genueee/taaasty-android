@@ -110,7 +110,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageView.requestLayout();
-
         mPicasso
                 .load(b.toUrl())
                 .placeholder(mImageLoadingDrawable)

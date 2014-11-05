@@ -68,8 +68,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private ApiTlog mTlogService;
     private Adapter mAdapter;
+    private MyFeedLoader mFeedLoader;
 
-    private Subscription mFeedSubscription = SubscriptionHelper.empty();
     private Subscription mUserSubscribtion = SubscriptionHelper.empty();
 
     private long mUserId;
@@ -140,12 +140,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
         });
 
-        mAdapter = new Adapter(getActivity(), false);
+        mAdapter = new Adapter(getActivity());
         mAdapter.onCreate();
 
         if (savedInstanceState != null) {
-            List<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (feed != null && !feed.isEmpty()) mAdapter.setFeed(feed);
+            List<FeedItemAdapter.EntryOrComment> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
+            if (feed != null && !feed.isEmpty()) mAdapter.setEntriesAndComments(feed);
         }
         if (mTlogInfo != null && mTlogInfo.design != null) mAdapter.setFeedDesign(mTlogInfo.design);
 
@@ -157,6 +157,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+
+        mFeedLoader = new MyFeedLoader(mAdapter);
 
         return v;
     }
@@ -176,8 +178,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<Entry> entries = mAdapter.getFeed();
-            ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
+            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
+            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
         outState.putParcelable(BUNDLE_KEY_TLOG_INFO, mTlogInfo);
@@ -193,10 +195,13 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mFeedSubscription.unsubscribe();
         mUserSubscribtion.unsubscribe();
         mListView = null;
         mDateIndicatorView = null;
+        if (mFeedLoader != null) {
+            mFeedLoader.onDestroy();
+            mFeedLoader = null;
+        }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy();
@@ -271,21 +276,26 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         private String mTitle;
         private User mUser = User.DUMMY;
 
-        public Adapter(Context context, boolean showUserAvatar) {
-            super(context, showUserAvatar);
+        public Adapter(Context context) {
+            super(context, true, false);
         }
 
         @Override
-        protected void initClickListeners(ListEntryBase holder) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(mAdapter.getItemById(postId));
+        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (pHolder instanceof ListEntryBase || pViewType == FeedItemAdapter.VIEW_TYPE_COMMENT) {
+                pHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        long postId = mListView.getChildItemId(v);
+                        onFeedItemClicked(getItemById(postId).entry);
 
-                }
-            });
-            holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                    }
+                });
+            }
+
+            if (pHolder instanceof ListEntryBase) {
+                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+            }
         }
 
         @Override
@@ -302,17 +312,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             holder.titleView.setText(mTitle);
             bindDesign(holder);
             bindUser(holder);
-        }
-
-        @Override
-        protected Observable<Feed> createObservable(Long sinceEntryId) {
-            return AndroidObservable.bindFragment(TlogFragment.this,
-                    mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, Constants.LIST_FEED_APPEND_LENGTH));
-        }
-
-        @Override
-        protected void onRemoteError(Throwable e) {
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
 
         public void setTitleUser(String title, User user) {
@@ -467,18 +466,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     private void refreshFeed() {
-        if (!mFeedSubscription.isUnsubscribed()) {
-            mFeedSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-
-        setRefreshing(true);
-        Observable<Feed> observableFeed = AndroidObservable.bindFragment(this,
-                mTlogService.getEntries(String.valueOf(mUserId), null, Constants.LIST_FEED_INITIAL_LENGTH));
-        mFeedSubscription = observableFeed
+        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+        Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
-                .subscribe(mFeedObserver);
+                .doOnTerminate(mStopRefreshingAction);
+        mFeedLoader.refreshFeed(observableFeed, requestEntries);
+        setRefreshing(true);
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
@@ -489,26 +482,40 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     };
 
-    private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
+    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+
+        public MyFeedLoader(FeedItemAdapter adapter) {
+            super(adapter);
+        }
+
         @Override
-        public void onCompleted() {
+        protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
+            return AndroidObservable.bindFragment(TlogFragment.this,
+                    mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit));
+        }
+
+        @Override
+        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
-            mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-            mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            if (isRefresh) {
+                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+            }
         }
 
         @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            // XXX
+        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+            super.onLoadError(isRefresh, entriesRequested, e);
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
         }
 
-        @Override
-        public void onNext(Feed feed) {
-            if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
+        protected void onFeedIsUnsubscribed(boolean isRefresh) {
+            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
+            if (isRefresh) {
+                mStopRefreshingAction.call();
+            }
         }
-    };
+    }
 
     private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {
 

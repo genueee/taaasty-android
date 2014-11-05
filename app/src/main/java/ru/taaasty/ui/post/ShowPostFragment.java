@@ -1078,7 +1078,7 @@ public class ShowPostFragment extends Fragment {
         }
 
         if (currentView == null) {
-            mCommentsAdapter.setSelectedCommentId(null, false, false);
+            mCommentsAdapter.setSelectedCommentId(null);
         } else {
             ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(currentView);
             va.addListener(new Animator.AnimatorListener() {
@@ -1090,7 +1090,7 @@ public class ShowPostFragment extends Fragment {
                 @Override
                 public void onAnimationEnd(Animator animation) {
                     mListView.setEnabled(true);
-                    if (setNullAtAnd) mCommentsAdapter.setSelectedCommentId(null, false, false);
+                    if (setNullAtAnd) mCommentsAdapter.setSelectedCommentId(null);
                 }
 
                 @Override
@@ -1129,7 +1129,7 @@ public class ShowPostFragment extends Fragment {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         mListView.setEnabled(true);
-                        mCommentsAdapter.setSelectedCommentId(id, comment.canDelete(), comment.canReport());
+                        mCommentsAdapter.setSelectedCommentId(id);
                     }
 
                     @Override

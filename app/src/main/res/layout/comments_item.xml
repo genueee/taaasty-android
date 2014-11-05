@@ -49,9 +49,9 @@
             android:layout_marginLeft="32dp"
             android:layout_marginTop="3dp"
             android:gravity="fill_vertical"
+            android:singleLine="true"
             android:textColor="@color/text_color_feed_item_gray"
             android:textSize="10sp"
-            android:singleLine="true"
             tools:ignore="RtlSymmetry,SmallSp"
             tools:text="28 мрт" />
     </LinearLayout>

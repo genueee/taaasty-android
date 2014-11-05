@@ -371,7 +371,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         for (Entry c: mFeed) map.put(c.getId(), c);
         mFeed.clear();
         mFeed.addAll(map.values());
-        Collections.sort(mFeed, Entry.ORDER_BY_CREATE_DATE_DESC_COMARATOR);
+        Collections.sort(mFeed, Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR);
     }
 
     private final Observer<Feed> mFeedAppendObserver = new Observer<Feed>() {
