@@ -28,15 +28,12 @@ public class DateIndicatorWidget extends ViewSwitcher {
     private SimpleDateFormat mDayFormat;
     private SimpleDateFormat mDatetimeFormat;
 
-    private DateBackgroundDrawable mBackgroundDrawable;
-
     private Date mDate;
 
     private View mRootView0;
     private TextView mDayView0;
     private TextView mDatetimeView0;
 
-    private View mRootView1;
     private TextView mDayView1;
     private TextView mDatetimeView1;
 
@@ -60,14 +57,13 @@ public class DateIndicatorWidget extends ViewSwitcher {
         else mInflated = true;
 
         mRootView0 = LayoutInflater.from(context).inflate(R.layout.date_indicator, this, false);
-        mRootView1 = LayoutInflater.from(context).inflate(R.layout.date_indicator, this, false);
+        View rootView1 = LayoutInflater.from(context).inflate(R.layout.date_indicator, this, false);
 
-        mBackgroundDrawable = new DateBackgroundDrawable(context.getResources());
-        setBackgroundDrawable(mBackgroundDrawable);
+        setBackgroundDrawable(new DateBackgroundDrawable(context.getResources()));
         mDayView0 = (TextView) mRootView0.findViewById(R.id.date_indicator_day);
         mDatetimeView0 = (TextView) mRootView0.findViewById(R.id.date_indicator_datetime);
-        mDayView1 = (TextView) mRootView1.findViewById(R.id.date_indicator_day);
-        mDatetimeView1 = (TextView) mRootView1.findViewById(R.id.date_indicator_datetime);
+        mDayView1 = (TextView) rootView1.findViewById(R.id.date_indicator_day);
+        mDatetimeView1 = (TextView) rootView1.findViewById(R.id.date_indicator_datetime);
 
         mDayView0.setTypeface(Typeface.MONOSPACE);
         mDatetimeView0.setTypeface(Typeface.MONOSPACE);
@@ -75,7 +71,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
         mDatetimeView1.setTypeface(Typeface.MONOSPACE);
 
         addView(mRootView0);
-        addView(mRootView1);
+        addView(rootView1);
 
         if (isInEditMode()) {
             mDayFormat = new SimpleDateFormat("dd", Locale.US);
@@ -104,7 +100,6 @@ public class DateIndicatorWidget extends ViewSwitcher {
     public void setDate(@Nullable Date date, boolean animScrollUp) {
         CharSequence newDay;
         CharSequence newDatetime;
-        boolean scrollUp;
 
         if (date != null && date.equals(mDate)) return;
 
@@ -143,13 +138,4 @@ public class DateIndicatorWidget extends ViewSwitcher {
         if (changed)
             Log.v("DateIndicatorWidget", "onLayout() " + left + " " + top + " " + right + " " + bottom + " ");
     }
-
-
-    private Runnable mUpdateBackgroundRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setBackground(mBackgroundDrawable);
-        }
-    };
-
 }
