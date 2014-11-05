@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.animation.Animation;
@@ -130,12 +129,5 @@ public class DateIndicatorWidget extends ViewSwitcher {
         showNext();
 
         mDate = date;
-    }
-
-    @Override
-    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        if (changed)
-            Log.v("DateIndicatorWidget", "onLayout() " + left + " " + top + " " + right + " " + bottom + " ");
     }
 }
