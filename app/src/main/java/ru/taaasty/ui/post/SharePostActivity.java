@@ -48,7 +48,7 @@ public class SharePostActivity extends Activity {
     }
 
     public void shareFacebook(View view) {
-        notReadyYet();
+        runPostActionActivity(PostActionActivity.ACTION_SHARE_FACEBOOK);
     }
 
     public void shareTwitter(View view) {

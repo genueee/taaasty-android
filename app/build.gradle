@@ -32,7 +32,7 @@ repositories {
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1"
+    buildToolsVersion "21.1.1"
 
     defaultConfig {
         applicationId "ru.taaasty"
@@ -57,6 +57,7 @@ android {
 
         resValue "string", "aviary_key", "fe37f3b5e87c67a2"
         resValue "string", "aviary_secret", "3ef989608e94cdc5"
+        resValue "string", "facebook_app_id", "\"731919696901929\""
 
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -125,6 +126,7 @@ dependencies {
     compile 'com.android.support:support-v13:21.0.0'
     compile 'com.android.support:support-v4:21.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.0'
+    compile 'com.facebook.android:facebook-android-sdk:3.20.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.google.android.gms:play-services:5.0.89'
     compile 'com.netflix.rxjava:rxjava-android:0.19.6'

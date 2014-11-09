@@ -68,3 +68,7 @@
 -keep public class com.google.android.gms.analytics.** {
     public *;
 }
+
+#Facebook
+-keepattributes Signature
+-keep class com.facebook.** { *; }
