@@ -36,6 +36,7 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -240,9 +241,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     void onAvatarClicked(View v) {
-        if (mListener != null) mListener.onAvatarClicked(
-                mTlogInfo == null ? null : mTlogInfo.author,
-                mTlogInfo == null ? null : mTlogInfo.design);
+        if (mTlogInfo == null || mTlogInfo.author == null) return;
+        new UserInfoActivity.Builder(getActivity())
+                .set(mTlogInfo.author, v, mTlogInfo.design)
+                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .startActivity();
     }
 
     void setupUser(User user) {
@@ -333,6 +336,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
                 rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
                         .centerCrop();
+                // добавляем ещё одну версию в кэш для UserInfoActivity
+                NetworkUtils.getInstance().getPicasso(holder.itemView.getContext()).load(backgroudUrl).fetch();
             }
             rq.into(holder.feedDesignTarget);
         }
@@ -554,7 +559,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void setFeedBackgroundColor(int color);
-        public void onAvatarClicked(User user, TlogDesign design);
         public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         public void onTlogInfoLoaded(TlogInfo info);
         public void onSharePostMenuClicked(Entry entry);

@@ -43,7 +43,6 @@ import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.post.ShowPostActivity;
-import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -78,8 +77,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.feed_items";
     private static final String BUNDLE_KEY_CURRENT_USER = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.curremt_user";
-
-    private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
     private OnFragmentInteractionListener mListener;
 
@@ -272,7 +269,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     void onAvatarClicked(View v) {
         if (mCurrentUser == null) return;
-        if (mListener != null) mListener.onAvatarClicked(mCurrentUser, mCurrentUser.getDesign());
+        if (mListener != null) mListener.onAvatarClicked(v, mCurrentUser, mCurrentUser.getDesign());
     }
 
     void setupUser(CurrentUser user) {
@@ -413,7 +410,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                     public void onClick(View v) {
                         long postId = mListView.getChildItemId(holder.itemView);
                         Entry entry = mAdapter.getItemById(postId).entry;
-                        if (mListener != null && entry != null) mListener.onAvatarClicked(entry.getAuthor(), entry.getAuthor().getDesign());
+                        if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                     }
                 });
             }
@@ -664,7 +661,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onAvatarClicked(User user, TlogDesign design);
+        public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }
 }

@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -49,19 +51,105 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     private static final int REQUEST_MAKE_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 6;
     private static final int REQUEST_FEATHER_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 7;
 
-    public static final String ARG_USER = "ru.taaasty.ui.UserInfoActivity.author";
-    public static final String ARG_USER_ID = "ru.taaasty.ui.UserInfoActivity.author_id";
-    public static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
-    public static final String FRAGMENT_TAG_USER_INFO_FRAGMENT = "UserInfoFragment";
+    private static final String ARG_USER = "ru.taaasty.ui.UserInfoActivity.author";
+    private static final String ARG_USER_ID = "ru.taaasty.ui.UserInfoActivity.author_id";
+    private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
+    private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.UserInfoActivity.avatar_thumbnail_res";
+    private static final String FRAGMENT_TAG_USER_INFO_FRAGMENT = "UserInfoFragment";
 
     private long mUserId;
 
     private Uri mMakePhotoDstUri;
 
+    public static class Builder {
+        private final Activity mActivity;
+
+        private View mSrcView;
+
+        private Long mUserId;
+
+        private User mUser;
+
+        private TlogDesign mTlogDesign;
+
+        private Integer mAvatarThumbnailSizeRes;
+
+        public Builder(Activity activity) {
+            mActivity = activity;
+        }
+
+        public Builder setUserId(long userId) {
+            mUserId = userId;
+            return this;
+        }
+
+        public Builder setUser(@Nullable User user) {
+            mUser = user;
+            return this;
+        }
+
+        public Builder setDesign(@Nullable TlogDesign design) {
+            mTlogDesign = design;
+            return this;
+        }
+
+        public Builder setSrcView(View view) {
+            mSrcView = view;
+            return this;
+        }
+
+        public Builder set(User user, @Nullable View srcView, @Nullable TlogDesign design) {
+            setSrcView(srcView);
+            setUser(user);
+            setDesign(design);
+            return this;
+        }
+
+        /**
+         * Загружать и показывать миниатюру во время загрузки основной аватарки
+         * @param sizeRes ID ресурса размера аватарки. Ставить значение аватарки, которая есть
+         *                где-нибудь на экране и вероятнее всего будет в кэше памяти
+         * @return
+         */
+        public Builder setPreloadAvatarThumbnail(int sizeRes) {
+            mAvatarThumbnailSizeRes = sizeRes;
+            return this;
+        }
+
+        public Intent buildIntent() {
+            if (mUserId == null && mUser == null) {
+                throw new IllegalStateException("user not defined");
+            }
+
+            Intent intent = new Intent(mActivity, UserInfoActivity.class);
+            if (mUserId != null && mUser == null) {
+                intent.putExtra(UserInfoActivity.ARG_USER_ID, (long)mUserId);
+            }
+            if (mUser != null) intent.putExtra(UserInfoActivity.ARG_USER, mUser);
+            if (mTlogDesign != null) intent.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, mTlogDesign);
+            if (mAvatarThumbnailSizeRes != null) intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, (int)mAvatarThumbnailSizeRes);
+
+            return intent;
+        }
+
+        public void startActivity() {
+            Intent intent = buildIntent();
+            if (mSrcView != null) {
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                        mSrcView, 0, 0, mSrcView.getWidth(), mSrcView.getHeight());
+                ActivityCompat.startActivity(mActivity, intent, options.toBundle());
+            } else {
+                mActivity.startActivity(intent);
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         User user;
+        TlogDesign design;
+        int avatarThumbnailRes;
 
         setContentView(R.layout.activity_user_info);
         findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
@@ -73,6 +161,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
         user = getIntent().getParcelableExtra(ARG_USER);
+        design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+        avatarThumbnailRes = getIntent().getIntExtra(ARG_AVATAR_THUMBNAIL_RES, -1);
         if (getIntent().hasExtra(ARG_USER_ID)) {
             mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
         } else {
@@ -81,7 +171,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
 
         if (savedInstanceState == null) {
-            Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user);
+            Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user, design, avatarThumbnailRes);
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment, FRAGMENT_TAG_USER_INFO_FRAGMENT)
                     .commit();

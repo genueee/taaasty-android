@@ -198,7 +198,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
-    public void onAvatarClicked(User user, TlogDesign design) {
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
         Intent i = new Intent(this, TlogActivity.class);
         i.putExtra(TlogActivity.ARG_USER_ID, user.getId());
         startActivity(i);

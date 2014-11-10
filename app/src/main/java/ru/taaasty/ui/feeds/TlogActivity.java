@@ -22,7 +22,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Relationship;
-import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
@@ -139,15 +138,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void onAvatarClicked(User user, TlogDesign design) {
-        if (user == null) return;
-        Intent i = new Intent(this, UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER, user);
-        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
-        startActivity(i);
-    }
-
-    @Override
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
         mMyRelationship = tlogInfo.getMyRelationship();
         User author = tlogInfo.author;
@@ -192,6 +182,18 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 getActionBar().setTitle(mAbTitle);
             }
         }
+    }
+
+    /**
+     * Тык с комментария
+     * @param view
+     */
+    public void onClickOpenTlog(View view) {
+        new UserInfoActivity.Builder(this)
+                .setUserId((long) view.getTag(R.id.author))
+                .setSrcView(view)
+                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                .startActivity();
     }
 
     void refreshFollowUnfollowView() {

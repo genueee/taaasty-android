@@ -2,6 +2,7 @@ package ru.taaasty.ui.tabbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -46,11 +47,11 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
     }
 
     @Override
-    public void onAvatarClicked(User user, TlogDesign design) {
-        Intent i = new Intent(this, UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER, user);
-        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
-        startActivity(i);
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
+        new UserInfoActivity.Builder(this)
+                .set(user, view, design)
+                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                .startActivity();
     }
 
     @Override
@@ -59,4 +60,12 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
         intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
         startActivity(intent);
     }
+
+    public void onClickOpenTlog(View view) {
+        new UserInfoActivity.Builder(this)
+                .setUserId((long)view.getTag(R.id.author))
+                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                .startActivity();
+    }
+
 }

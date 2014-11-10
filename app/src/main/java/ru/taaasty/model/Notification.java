@@ -1,6 +1,6 @@
 package ru.taaasty.model;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.Date;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.R;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 
@@ -176,22 +177,25 @@ public class Notification implements Parcelable {
     }
 
     @Nullable
-    public Intent createOpenPostIntent(Context context) {
+    public void startOpenPostActivity(Activity source) {
         Intent intent = null;
         if (isTypeEntry()) {
             // Пост
-            intent = ShowPostActivity.createShowPostIntent(context, entityId, null ,null);
+            intent = ShowPostActivity.createShowPostIntent(source, entityId, null ,null);
+            source.startActivity(intent);
         } else if (isTypeComment()) {
             //Комментарий
-            intent = ShowPostActivity.createShowPostIntent(context, parentId, entityId);
+            intent = ShowPostActivity.createShowPostIntent(source, parentId, entityId);
+            source.startActivity(intent);
         } else if (isTypeRelationship()) {
             //Инфа о юзере
-            intent = new Intent(context, UserInfoActivity.class);
-            intent.putExtra(UserInfoActivity.ARG_USER_ID, sender.getId());
+            new UserInfoActivity.Builder(source)
+                    .setUserId(sender.getId())
+                    .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                    .startActivity();
         } else {
             if (BuildConfig.DEBUG) throw new IllegalStateException("Неожиданный тип уведомления");
         }
-        return intent;
     }
 
     @Override

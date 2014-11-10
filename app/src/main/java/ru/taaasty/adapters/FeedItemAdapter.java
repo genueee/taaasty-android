@@ -471,6 +471,9 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     }
 
     private void bindComment(CommentsAdapter.ViewHolder holder, Comment comment) {
+        // TODO: избавиться
+        holder.avatar.setTag(R.id.author, comment.getAuthor().getId());
+        holder.comment.setTag(R.id.author, comment.getAuthor().getId());
         mCommentViewBinder.bindNotSelectedComment(holder, comment, mFeedDesign);
     }
 

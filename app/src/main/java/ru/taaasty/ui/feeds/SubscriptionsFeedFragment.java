@@ -261,7 +261,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                         public void onClick(View v) {
                             long postId = mListView.getChildItemId(pHolder.itemView);
                             Entry entry = mAdapter.getItemById(postId).entry;
-                            if (mListener != null && entry != null) mListener.onAvatarClicked(entry.getAuthor(), entry.getAuthor().getDesign());
+                            if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                         }
                     });
                 }
@@ -461,7 +461,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onAvatarClicked(User user, TlogDesign design);
+        public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }
 }

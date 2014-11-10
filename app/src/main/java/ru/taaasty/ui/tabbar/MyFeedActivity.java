@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import java.util.Locale;
@@ -134,11 +135,11 @@ public class MyFeedActivity extends TabbarActivityBase implements
     }
 
     @Override
-    public void onAvatarClicked(User user, TlogDesign design) {
-        Intent i = new Intent(this, UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER, user);
-        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
-        startActivity(i);
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
+        new UserInfoActivity.Builder(this)
+                .set(user, view, design)
+                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .startActivity();
     }
 
     @Override
@@ -158,13 +159,6 @@ public class MyFeedActivity extends TabbarActivityBase implements
         if (mSectionsPagerAdapter == null) return;
         Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
         if (current != null) ((IRereshable)current).refreshData();
-    }
-
-    public void openUserFeed(User user, TlogDesign design) {
-        Intent i = new Intent(this, UserInfoActivity.class);
-        i.putExtra(UserInfoActivity.ARG_USER, user);
-        i.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
-        startActivity(i);
     }
 
     public void onAdditionMenuItemClicked(int viewId) {

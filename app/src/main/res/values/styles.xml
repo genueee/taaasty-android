@@ -58,10 +58,15 @@
         <item name="android:colorBackgroundCacheHint">@android:color/white</item>
     </style>
 
-    <style name="TlogActivity" parent="FullscreenThemeBase">
+    <style name="TlogActivityBase" parent="FullscreenThemeBase">
         <item name="android:actionBarStyle">@style/ActionBar.Taaasty.Transparent</item>>
     </style>
 
+    <style name="TlogActivity" parent="TlogActivityBase">
+    </style>
+
+    <style name="UserInfoActivity" parent="AppThemeDark">
+    </style>
 
     <style name="ActionBar.Taaasty" parent="android:Widget.Holo.Light.ActionBar">
         <item name="android:background">@android:color/white</item>

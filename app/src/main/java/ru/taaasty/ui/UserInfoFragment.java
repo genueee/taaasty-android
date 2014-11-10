@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,12 +47,15 @@ public class UserInfoFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_USER = "user";
     private static final String ARG_DESIGN = "design";
+    private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
 
     private static final String BUNDLE_ARG_USER = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_USER";
     private static final String BUNDLE_ARG_DESIGN = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_DESIGN";
     private static final String BUNDLE_ARG_RELATIONSHIPS_SUMMARY = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_RELATIONSHIPS_SUMMARY";
 
     private long mUserId;
+
+    private int mAvatarThumbnailRes;
 
     @Nullable
     private User mUser;
@@ -80,14 +84,20 @@ public class UserInfoFragment extends Fragment {
     // Antoid picasso weak ref
     private TargetSetHeaderBackground mTargetSetHeaderBackground;
 
+    private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
+    private ImageUtils.DrawableTarget mAvatarLoadTarget;
+
     private boolean mRefreshingUserpic;
     private boolean mRefreshingBackground;
 
-    public static UserInfoFragment newInstance(long userId, @Nullable User user) {
+    public static UserInfoFragment newInstance(long userId, @Nullable User user,
+                                               @Nullable TlogDesign design, int avatarThumbnailRes) {
         UserInfoFragment fragment = new UserInfoFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_USER_ID, userId);
-        args.putParcelable(ARG_USER, user);
+        if (user != null) args.putParcelable(ARG_USER, user);
+        if (design != null) args.putParcelable(ARG_DESIGN, design);
+        if (avatarThumbnailRes > 0) args.putInt(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailRes);
         fragment.setArguments(args);
         return fragment;
     }
@@ -99,18 +109,16 @@ public class UserInfoFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mUserId = getArguments().getLong(ARG_USER_ID);
-            if (savedInstanceState == null) {
-                mUser = getArguments().getParcelable(ARG_USER);
-                mDesign = getArguments().getParcelable(ARG_DESIGN);
-                if (mUser != null && mUser.getRelationshipsSummary() != null)
-                    mRelationshipsSummary = mUser.getRelationshipsSummary();
-                if (mDesign == null && mUser != null && mUser.getDesign() != null)
-                    mDesign = mUser.getDesign();
-            }
-        }
-        if (savedInstanceState != null) {
+        mUserId = getArguments().getLong(ARG_USER_ID);
+        mAvatarThumbnailRes = getArguments().getInt(ARG_AVATAR_THUMBNAIL_RES, -1);
+        if (savedInstanceState == null) {
+            mUser = getArguments().getParcelable(ARG_USER);
+            mDesign = getArguments().getParcelable(ARG_DESIGN);
+            if (mUser != null && mUser.getRelationshipsSummary() != null)
+                mRelationshipsSummary = mUser.getRelationshipsSummary();
+            if (mDesign == null && mUser != null && mUser.getDesign() != null)
+                mDesign = mUser.getDesign();
+        } else {
             mUser = savedInstanceState.getParcelable(BUNDLE_ARG_USER);
             mDesign = savedInstanceState.getParcelable(BUNDLE_ARG_DESIGN);
             mRelationshipsSummary = savedInstanceState.getParcelable(BUNDLE_ARG_RELATIONSHIPS_SUMMARY);
@@ -152,12 +160,6 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
         mSelectBackgroundButtonView.setOnClickListener(mOnClickListener);
 
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
         mSelectBackgroundButtonView.setVisibility(isMyProfile() ? View.VISIBLE : View.GONE);
         if (isMyProfile()) {
             mSelectBackgroundButtonView.setVisibility(View.VISIBLE);
@@ -166,6 +168,8 @@ public class UserInfoFragment extends Fragment {
             mSelectBackgroundButtonView.setVisibility(View.GONE);
         }
         if (mUser != null) setupUserInfo();
+
+        return view;
     }
 
     @Override
@@ -184,7 +188,19 @@ public class UserInfoFragment extends Fragment {
         mUserTitle = null;
         mSubscribeButton = null;
         mUnsubscribeButton = null;
-        mTargetSetHeaderBackground = null;
+        Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
+        if (mTargetSetHeaderBackground != null) {
+            picasso.cancelRequest(mTargetSetHeaderBackground);
+            mTargetSetHeaderBackground = null;
+        }
+        if (mAvatarLoadTarget != null) {
+            picasso.cancelRequest(mAvatarLoadTarget);
+            mAvatarLoadTarget = null;
+        }
+        if (mAvatarThumbnailLoadTarget != null) {
+            picasso.cancelRequest(mAvatarThumbnailLoadTarget);
+            mAvatarThumbnailLoadTarget = null;
+        }
     }
 
     @Override
@@ -294,34 +310,51 @@ public class UserInfoFragment extends Fragment {
             return;
         }
 
-        ImageUtils.ImageViewTarget target = new ImageUtils.ImageViewTarget(mAvatarView) {
+        mAvatarLoadTarget = new ImageUtils.ImageViewTarget(mAvatarView, false) {
+
+            final Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
 
             @Override
             public void onDrawableReady(Drawable drawable) {
                 super.onDrawableReady(drawable);
+                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
                 refreshProgressVisibility();
             }
 
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                 super.onBitmapLoaded(bitmap, from);
+                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
                 refreshProgressVisibility();
             }
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
                 super.onBitmapFailed(errorDrawable);
+                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
                 refreshProgressVisibility();
             }
         };
 
+        if (mAvatarThumbnailRes > 0) {
+            ImageUtils.getInstance().loadAvatar(
+                    getActivity(),
+                    mUser.getUserpic(),
+                    mUser.getName(),
+                    mAvatarLoadTarget,
+                    mAvatarThumbnailRes
+            );
+        }
+
+        mAvatarThumbnailLoadTarget = new ImageUtils.ImageViewTarget(mAvatarView, false);
         ImageUtils.getInstance().loadAvatar(
                 getActivity(),
                 mUser.getUserpic(),
                 mUser.getName(),
-                target,
-                R.dimen.avatar_large_diameter
+                mAvatarThumbnailLoadTarget,
+                R.dimen.avatar_normal_diameter
         );
+
     }
 
     private void setupUserInfo() {
@@ -411,29 +444,32 @@ public class UserInfoFragment extends Fragment {
     private void setupDesign() {
         TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
 
-        // getView().setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+        final Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
         String backgroudUrl = design.getBackgroundUrl();
-        mTargetSetHeaderBackground = new TargetSetHeaderBackground(
-                getActivity().getWindow().getDecorView(),
-                design, getResources().getColor(R.color.additional_menu_background)) {
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                super.onBitmapLoaded(bitmap, from);
-                refreshProgressVisibility();
-            }
+        if (!TextUtils.isEmpty(backgroudUrl)) {
+            mTargetSetHeaderBackground = new TargetSetHeaderBackground(
+                    getActivity().getWindow().getDecorView(),
+                    design, getResources().getColor(R.color.additional_menu_background)) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    refreshProgressVisibility();
+                }
 
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                super.onBitmapFailed(errorDrawable);
-                if (DBG) Log.v(TAG, "onBitmapFailed");
-                if (mListener != null) mListener.notifyError(getString(R.string.error_loading_background), null);
-                refreshProgressVisibility();
-            }
-        };
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                    super.onBitmapFailed(errorDrawable);
+                    if (DBG) Log.v(TAG, "onBitmapFailed");
+                    if (mListener != null)
+                        mListener.notifyError(getString(R.string.error_loading_background), null);
+                    refreshProgressVisibility();
+                }
+            };
 
-        NetworkUtils.getInstance().getPicasso(getActivity())
-                .load(backgroudUrl)
-                .into(mTargetSetHeaderBackground);
+            picasso
+                    .load(backgroudUrl)
+                    .into(mTargetSetHeaderBackground);
+        }
     }
 
     public void refreshUser() {

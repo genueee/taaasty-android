@@ -22,6 +22,7 @@
 
         <ru.taaasty.widgets.HintedImageView
             android:id="@+id/avatar"
+            android:background="@drawable/list_selector_holo_light"
             android:layout_width="@dimen/avatar_normal_diameter"
             android:layout_height="@dimen/avatar_normal_diameter"
             android:clickable="true"

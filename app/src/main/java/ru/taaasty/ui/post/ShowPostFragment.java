@@ -397,7 +397,7 @@ public class ShowPostFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.avatar:
-                    if (mListener != null) mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+                    if (mListener != null) mListener.onAvatarClicked(v, mCurrentEntry.getAuthor(), mDesign);
                     break;
                 case R.id.comments_load_more:
                     onCommentsLoadMoreButtonClicked();
@@ -1347,7 +1347,7 @@ public class ShowPostFragment extends Fragment {
             if (mListener.isImeVisible()) {
                 appendUserSlugToReplyComment(entry.getAuthor().getSlug());
             } else {
-                mListener.onAvatarClicked(mCurrentEntry.getAuthor(), mDesign);
+                mListener.onAvatarClicked(view, mCurrentEntry.getAuthor(), mDesign);
             }
         }
 
@@ -1463,7 +1463,7 @@ public class ShowPostFragment extends Fragment {
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onPostLoaded(Entry entry);
         public void onPostLoadError(Throwable e);
-        public void onAvatarClicked(User user, TlogDesign design);
+        public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
         public void onShowImageClicked(User author, List<String> images, String title, String previewUrl);
 

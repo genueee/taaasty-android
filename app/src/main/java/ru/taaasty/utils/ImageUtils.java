@@ -373,11 +373,17 @@ public class ImageUtils {
 
     public static class ImageViewTarget implements DrawableTarget {
 
+        private final boolean mAttachTag;
         private final ImageView mView;
 
         public ImageViewTarget(ImageView view) {
+            this(view, true);
+        }
+
+        public ImageViewTarget(ImageView view, boolean attachTag) {
             mView = view;
-            mView.setTag(R.id.picasso_target, this); // anti-picasso weak ref
+            mAttachTag = attachTag;
+            if (attachTag) mView.setTag(R.id.picasso_target, this); // anti-picasso weak ref
         }
 
         @Override
@@ -405,7 +411,7 @@ public class ImageUtils {
         }
 
         private void removeTag() {
-            if (mView.getTag(R.id.picasso_target) == this) mView.setTag(R.id.picasso_target, null);
+            if (mAttachTag && mView.getTag(R.id.picasso_target) == this) mView.setTag(R.id.picasso_target, null);
         }
     }
 

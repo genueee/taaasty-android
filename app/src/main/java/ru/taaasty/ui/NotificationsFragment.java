@@ -274,8 +274,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         @Override
         public void onNotificationClicked(View v, Notification notification) {
             markNotificationRead(notification);
-            Intent intent = notification.createOpenPostIntent(getActivity());
-            if (intent != null) startActivity(intent);
+            notification.startOpenPostActivity(getActivity());
         }
 
         @Override
