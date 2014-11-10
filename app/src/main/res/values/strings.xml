@@ -197,6 +197,9 @@
     <string name="no_notifications">Уведомлений нет</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
+    <string name="facebook_sharing_description">Интересное на тейсти</string>
+    <string name="facebook_sharing_ok">Ссылка размещена на вашей страничке в facebook</string>
+    <string name="facebook_sharing_fail">Упс, что то не получилось…</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>
