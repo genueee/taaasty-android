@@ -133,7 +133,7 @@ public class FollowingsFragment extends ListFragment {
         if (DBG) Log.v(TAG, " onListItemClick: " + id);
 
         if (null != mListener) {
-            mListener.onRelationshipClicked((Relationship)l.getItemAtPosition(position));
+            mListener.onRelationshipClicked(v, (Relationship)l.getItemAtPosition(position));
         }
     }
 
@@ -183,7 +183,7 @@ public class FollowingsFragment extends ListFragment {
     };
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onRelationshipClicked(Relationship relationship);
+        public void onRelationshipClicked(View view, Relationship relationship);
     }
 
 }

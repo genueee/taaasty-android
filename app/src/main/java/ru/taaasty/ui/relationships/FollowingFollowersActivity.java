@@ -2,7 +2,6 @@ package ru.taaasty.ui.relationships;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -93,9 +92,8 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
     }
 
     @Override
-    public void onRelationshipClicked(Relationship relationship) {
+    public void onRelationshipClicked(View view, Relationship relationship) {
         long userId;
-        Intent intent = new Intent(this, TlogActivity.class);
         switch (mViewPager.getCurrentItem()) {
             case SECTION_FOLLOWERS:
                 userId = relationship.getReaderId();
@@ -107,8 +105,7 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
             default:
                 throw new IllegalStateException();
         }
-        intent.putExtra(TlogActivity.ARG_USER_ID, userId);
-        startActivity(intent);
+        TlogActivity.startTlogActivity(this, userId, view);
     }
 
     /**

@@ -371,9 +371,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            Intent i = new Intent(SubscriptionsFeedFragment.this.getActivity(), TlogActivity.class);
-            i.putExtra(TlogActivity.ARG_USER_ID, entry.getAuthor().getId());
-            SubscriptionsFeedFragment.this.getActivity().startActivity(i);
+            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view);
         }
 
         @Override
@@ -461,6 +459,12 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        /**
+         * Юзер ткнул на аватарку в заголовке записи списка
+         * @param view
+         * @param user
+         * @param design
+         */
         public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }

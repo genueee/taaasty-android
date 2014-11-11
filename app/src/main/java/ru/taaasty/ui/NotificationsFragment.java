@@ -279,9 +279,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
         @Override
         public void onAvatarClicked(View v, Notification notification) {
-            Intent i = new Intent(getActivity(), TlogActivity.class);
-            i.putExtra(TlogActivity.ARG_USER_ID, notification.sender.getId());
-            startActivity(i);
+            TlogActivity.startTlogActivity(getActivity(), notification.sender.getId(), v);
         }
 
         @Override

@@ -267,11 +267,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         refreshFeed();
     }
 
-    void onAvatarClicked(View v) {
-        if (mCurrentUser == null) return;
-        if (mListener != null) mListener.onAvatarClicked(v, mCurrentUser, mCurrentUser.getDesign());
-    }
-
     void setupUser(CurrentUser user) {
         if (user == null) {
             // XXX
@@ -487,7 +482,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.avatar:
-                        onAvatarClicked(v);
+                        if (mCurrentUser == null) return;
+                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mCurrentUser, mCurrentUser.getDesign());
                         break;
                 }
             }
@@ -661,7 +657,22 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        /**
+         * Юзер ткнул на аватарку в списке
+         * @param view
+         * @param user
+         * @param design
+         */
         public void onAvatarClicked(View view, User user, TlogDesign design);
+
+        /**
+         * Юзер ткнут на свою аватарку в заголовке списка
+         * @param view
+         * @param user
+         * @param design
+         */
+        public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
+
         public void onSharePostMenuClicked(Entry entry);
     }
 }

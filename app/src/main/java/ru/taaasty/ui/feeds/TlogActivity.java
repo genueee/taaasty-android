@@ -1,7 +1,9 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -10,6 +12,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.util.Log;
@@ -25,7 +29,6 @@ import ru.taaasty.model.Relationship;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
-import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -65,6 +68,18 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Nullable
     private String mMyRelationship;
+
+    public static void startTlogActivity(Context source, long userId, View animateFrom) {
+        Intent intent = new Intent(source, TlogActivity.class);
+        intent.putExtra(ARG_USER_ID, userId);
+        if (animateFrom != null && source instanceof Activity) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            ActivityCompat.startActivity((Activity)source, intent, options.toBundle());
+        } else {
+            source.startActivity(intent);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -189,11 +204,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
      * @param view
      */
     public void onClickOpenTlog(View view) {
-        new UserInfoActivity.Builder(this)
-                .setUserId((long) view.getTag(R.id.author))
-                .setSrcView(view)
-                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                .startActivity();
+        TlogActivity.startTlogActivity(this, (long) view.getTag(R.id.author), view);
     }
 
     void refreshFollowUnfollowView() {

@@ -9,8 +9,8 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.SubscriptionsFeedFragment;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 
 /**
@@ -48,10 +48,7 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
 
     @Override
     public void onAvatarClicked(View view, User user, TlogDesign design) {
-        new UserInfoActivity.Builder(this)
-                .set(user, view, design)
-                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                .startActivity();
+        TlogActivity.startTlogActivity(this, user.getId(), view);
     }
 
     @Override
@@ -61,11 +58,12 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
         startActivity(intent);
     }
 
+    /**
+     * Юзер ткнул по аватарке в комментарии
+     * @param view
+     */
     public void onClickOpenTlog(View view) {
-        new UserInfoActivity.Builder(this)
-                .setUserId((long)view.getTag(R.id.author))
-                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                .startActivity();
+        TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
     }
 
 }

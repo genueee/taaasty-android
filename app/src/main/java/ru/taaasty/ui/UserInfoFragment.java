@@ -552,7 +552,7 @@ public class UserInfoFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.entries_count:
-                    if (mListener != null) mListener.onEntriesCountClicked();
+                    if (mListener != null) mListener.onEntriesCountClicked(v);
                     break;
                 case R.id.subscribe:
                     follow();
@@ -564,7 +564,7 @@ public class UserInfoFragment extends Fragment {
                     if (mListener != null) mListener.onSelectBackgroundClicked();
                     break;
                 case R.id.avatar:
-                    if (mListener != null) mListener.onUserAvatarClicked();
+                    if (mListener != null) mListener.onUserAvatarClicked(v);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -583,9 +583,9 @@ public class UserInfoFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onEntriesCountClicked();
+        public void onEntriesCountClicked(View view);
         public void onSelectBackgroundClicked();
-        public void onUserAvatarClicked();
+        public void onUserAvatarClicked(View view);
     }
 
 }

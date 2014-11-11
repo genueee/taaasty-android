@@ -29,6 +29,7 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
@@ -135,11 +136,16 @@ public class MyFeedActivity extends TabbarActivityBase implements
     }
 
     @Override
-    public void onAvatarClicked(View view, User user, TlogDesign design) {
+    public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design) {
         new UserInfoActivity.Builder(this)
                 .set(user, view, design)
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
                 .startActivity();
+    }
+
+    @Override
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
+        TlogActivity.startTlogActivity(this, user.getId(), view);
     }
 
     @Override

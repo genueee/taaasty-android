@@ -211,11 +211,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         if (mListener != null) mListener.onShowAdditionalMenuClicked();
     }
 
-    void onAvatarClicked(View v) {
-        if (mListener != null) mListener.onAvatarClicked(v, mCurrentUser,
-                mCurrentUser == null ? null : mCurrentUser.getDesign());
-    }
-
     void setupUser(CurrentUser user) {
         if (user == null) {
             // XXX
@@ -316,7 +311,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                         onAdditionalMenuButtonClicked(v);
                         break;
                     case R.id.avatar:
-                        onAvatarClicked(v);
+                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mCurrentUser,
+                                mCurrentUser == null ? null : mCurrentUser.getDesign());
                         break;
                 }
             }
@@ -524,7 +520,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onShowAdditionalMenuClicked();
-        public void onAvatarClicked(View view, User user, TlogDesign design);
+        public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
         public void onCurrentUserLoaded(User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }

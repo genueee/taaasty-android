@@ -249,11 +249,9 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    public void onEntriesCountClicked() {
+    public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
-        Intent i = new Intent(this, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, mUserId);
-        startActivity(i);
+        TlogActivity.startTlogActivity(this, mUserId, view);
     }
 
     @Override
@@ -268,7 +266,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    public void onUserAvatarClicked() {
+    public void onUserAvatarClicked(View view) {
         FragmentManager fm = getFragmentManager();
         if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
                 | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {

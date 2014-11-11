@@ -199,9 +199,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
     @Override
     public void onAvatarClicked(View view, User user, TlogDesign design) {
-        Intent i = new Intent(this, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, user.getId());
-        startActivity(i);
+        TlogActivity.startTlogActivity(this, user.getId(), view);
     }
 
     @Override
@@ -318,9 +316,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     public void onClickOpenTlog(View view) {
-        Intent i = new Intent(this, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, (long)view.getTag(R.id.author));
-        startActivity(i);
+        TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
     }
 
     public void onEventMainThread(PostRemoved event) {

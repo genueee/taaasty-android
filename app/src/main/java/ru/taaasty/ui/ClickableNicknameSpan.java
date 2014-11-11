@@ -1,7 +1,6 @@
 package ru.taaasty.ui;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;
@@ -19,9 +18,7 @@ public class ClickableNicknameSpan extends ClickableSpan {
 
     public void onClick(View widget) {
         Context context = widget.getContext();
-        Intent i = new Intent(context, TlogActivity.class);
-        i.putExtra(TlogActivity.ARG_USER_ID, mUserId);
-        context.startActivity(i);
+        TlogActivity.startTlogActivity(context, mUserId, widget);
     }
 
     @Override
