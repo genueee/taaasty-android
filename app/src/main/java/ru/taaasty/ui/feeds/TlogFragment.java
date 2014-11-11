@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -290,7 +289,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                     @Override
                     public void onClick(View v) {
                         long postId = mListView.getChildItemId(v);
-                        onFeedItemClicked(getItemById(postId).entry);
+                        onFeedItemClicked(v, getItemById(postId).entry);
 
                     }
                 });
@@ -422,10 +421,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     }
 
-    public void onFeedItemClicked(Entry entry) {
-        Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(),
-                entry, mTlogInfo == null ? null : mTlogInfo.design);
-        startActivity(i);
+    public void onFeedItemClicked(View view, Entry entry) {
+        ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(),
+                entry, mTlogInfo == null ? null : mTlogInfo.design, view);
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
@@ -444,9 +442,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry,
-                    mTlogInfo == null ? null : mTlogInfo.design);
-            startActivity(i);
+            ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry,
+                    mTlogInfo == null ? null : mTlogInfo.design, view);
         }
 
         @Override

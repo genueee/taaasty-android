@@ -47,7 +47,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogActivity";
 
-    public static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
+    private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
 
     private long mUserId;
 

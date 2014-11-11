@@ -11,6 +11,8 @@ import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -80,6 +82,17 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
         intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, commentId);
         return intent;
+    }
+
+    public static void startShowPostActivity(Context context, long postId, @Nullable Entry entry, @Nullable TlogDesign design, @Nullable View animateFrom) {
+        Intent intent = createShowPostIntent(context, postId, entry, design);
+        if (animateFrom != null && context instanceof Activity) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            ActivityCompat.startActivity((Activity) context, intent, options.toBundle());
+        } else {
+            context.startActivity(intent);
+        }
     }
 
     @Override

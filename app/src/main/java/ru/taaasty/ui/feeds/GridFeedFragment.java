@@ -2,7 +2,6 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -174,9 +173,8 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
                     if (postId != View.NO_ID) {
                         if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
-                        Intent intent = ShowPostActivity.createShowPostIntent(getActivity(), postId,
-                                mAdapter.getItemById(postId), null);
-                        startActivity(intent);
+                        ShowPostActivity.startShowPostActivity(getActivity(), postId,
+                                mAdapter.getItemById(postId), null, v);
                     }
                 }
             }

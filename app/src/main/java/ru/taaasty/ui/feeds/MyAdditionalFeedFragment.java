@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -393,7 +392,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 @Override
                 public void onClick(View v) {
                     long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(mAdapter.getItemById(postId).entry);
+                    onFeedItemClicked(v, mAdapter.getItemById(postId).entry);
 
                 }
             });
@@ -554,10 +553,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
     }
 
-    public void onFeedItemClicked(Entry entry) {
+    public void onFeedItemClicked(View view, Entry entry) {
         if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry);
-        Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
-        startActivity(i);
+        ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry, null, view);
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
@@ -577,8 +575,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            Intent i = ShowPostActivity.createShowPostIntent(getActivity(), entry.getId(), entry, null);
-            startActivity(i);
+            ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry, null, view);
         }
 
         @Override
