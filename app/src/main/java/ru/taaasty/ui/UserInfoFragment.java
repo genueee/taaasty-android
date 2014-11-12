@@ -66,7 +66,8 @@ public class UserInfoFragment extends Fragment {
     @Nullable
     private RelationshipsSummary mRelationshipsSummary;
 
-    private String mMyRelationship = Relationship.RELATIONSHIP_NONE;
+    @Nullable
+    private String mMyRelationship = null;
 
     private ImageView mAvatarView;
     private View mAvatarRefreshProgressView;
@@ -300,6 +301,11 @@ public class UserInfoFragment extends Fragment {
         return mUser;
     }
 
+    @Nullable
+    public String getMyRelationship() {
+        return mMyRelationship;
+    }
+
     private void setupAvatar() {
         assert mUser != null;
         if (DBG) Log.v(TAG, "load avatar: " + mUser.getUserpic());
@@ -378,15 +384,14 @@ public class UserInfoFragment extends Fragment {
     }
 
     boolean isMyProfile() {
-        Long myUserId = UserManager.getInstance().getCurrentUserId();
-        return (myUserId != null) && (myUserId.equals(mUserId));
+        return UserManager.getInstance().isMe(mUserId);
     }
 
     /**
      * Кнопки "подписаться / отписаться"
      */
     private void setupSubscribeButton() {
-        if (isMyProfile() || mRelationshipsSummary == null) {
+        if (isMyProfile() || mMyRelationship == null) {
             mSubscribeButton.setVisibility(View.INVISIBLE);
             mUnsubscribeButton.setVisibility(View.INVISIBLE);
             return;
@@ -485,7 +490,10 @@ public class UserInfoFragment extends Fragment {
                 .subscribe(mTlogInfoObserver);
     }
 
-    void follow() {
+    public void follow() {
+        if (mMyRelationship == null) return;
+        if (Relationship.isMeSubscribed(mMyRelationship)) return;
+
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,
@@ -496,7 +504,10 @@ public class UserInfoFragment extends Fragment {
                 .subscribe(mFollowObserver);
     }
 
-    void unfollow() {
+    public void unfollow() {
+        if (mMyRelationship == null) return;
+        if (!Relationship.isMeSubscribed(mMyRelationship)) return;
+
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,

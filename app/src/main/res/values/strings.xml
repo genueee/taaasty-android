@@ -200,6 +200,14 @@
     <string name="facebook_sharing_description">Интересное на тейсти</string>
     <string name="facebook_sharing_ok">Ссылка размещена на вашей страничке в facebook</string>
     <string name="facebook_sharing_fail">Упс, что то не получилось…</string>
+    <string name="menu_follow">Подписаться</string>
+    <string name="menu_unfollow">Отписаться</string>
+    <string name="menu_change_avatar">Сменить аватар</string>
+    <string name="menu_change_background">Сменить фон</string>
+    <string name="menu_refresh">Обновить</string>
+    <string name="menu_settings">Настройки</string>
+    <string name="menu_friends">Друзья</string>
+    <string name="menu_quit">Выйти</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>

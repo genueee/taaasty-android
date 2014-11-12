@@ -13,7 +13,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import java.util.Locale;
@@ -81,6 +85,19 @@ public class MyFeedActivity extends TabbarActivityBase implements
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
+
+        if (!hasMenu) {
+            return super.onCreateOptionsMenu(menu);
+        }
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_my_feed, menu);
+        return true;
+    }
+
+    @Override
     int getCurrentTabId() {
         return R.id.btn_tabbar_my_feed;
     }
@@ -101,6 +118,27 @@ public class MyFeedActivity extends TabbarActivityBase implements
                 }
                 break;
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                refreshData();
+                break;
+            case R.id.menu_settings:
+                openSettings();
+                break;
+            case R.id.menu_friends:
+                openFriends();
+                break;
+            case R.id.menu_quit:
+                logout();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     @Override
@@ -176,7 +214,7 @@ public class MyFeedActivity extends TabbarActivityBase implements
                 break;
             case R.id.settings:
                 if (DBG) Log.v(TAG, "onAdditionMenuItemClicked settings");
-                Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+                openSettings();
                 break;
             case R.id.logout:
                 logout();
@@ -184,6 +222,10 @@ public class MyFeedActivity extends TabbarActivityBase implements
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    void openSettings() {
+        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
     }
 
     void openFriends() {
@@ -199,6 +241,7 @@ public class MyFeedActivity extends TabbarActivityBase implements
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getText(R.string.clean_cache));
         progressDialog.setIndeterminate(true);
+        progressDialog.setCancelable(false);
         progressDialog.show();
 
         new AsyncTask<Void, Void, Void>(){

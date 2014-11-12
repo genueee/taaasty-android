@@ -377,7 +377,8 @@
         <item name="android:textColor">@drawable/green_background_text_color</item>
         <item name="android:clickable">true</item>
         <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:padding">10dp</item>
+        <item name="android:padding">6dp</item>
+        <item name="android:textScaleX">0.95</item>
     </style>
 
     <style name="GridFeedText">

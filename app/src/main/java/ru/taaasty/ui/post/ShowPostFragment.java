@@ -951,6 +951,10 @@ public class ShowPostFragment extends Fragment {
                 .subscribe(mCurrentEntryObserver);
     }
 
+    public Entry getCurrentEntry() {
+        return mCurrentEntry;
+    }
+
     private void loadDesign(long userId) {
         mTlogDesignSubscription.unsubscribe();
         Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,

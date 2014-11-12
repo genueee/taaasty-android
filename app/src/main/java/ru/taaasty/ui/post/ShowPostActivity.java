@@ -20,6 +20,7 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -168,6 +169,17 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
+    public boolean onKeyDown(int keycode, KeyEvent e) {
+        switch(keycode) {
+            case KeyEvent.KEYCODE_MENU:
+                showShareMenu();
+                return true;
+        }
+
+        return super.onKeyDown(keycode, e);
+    }
+
+    @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
         ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
@@ -217,9 +229,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        Intent intent = new Intent(this, SharePostActivity.class);
-        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        startActivity(intent);
+        showShareMenu();
     }
 
     @Override
@@ -306,6 +316,21 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (ab != null) ab.hide();
         }
     };
+
+    private Entry getCurrentEntry() {
+        ShowPostFragment fragment = (ShowPostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+        if (fragment == null) return null;
+        return fragment.getCurrentEntry();
+    }
+
+    void showShareMenu() {
+        Entry entry = getCurrentEntry();
+        if (entry != null) {
+            Intent intent = new Intent(this, SharePostActivity.class);
+            intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+            startActivity(intent);
+        }
+    }
 
     void setupActionbar(Userpic userpic, String username, TlogDesign design) {
         ActionBar ab = getActionBar();

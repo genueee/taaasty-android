@@ -2,7 +2,11 @@ package ru.taaasty.ui.tabbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -36,14 +40,39 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
+
+        if (!hasMenu) {
+            return super.onCreateOptionsMenu(menu);
+        }
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.refresh, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                refreshData();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+
+    @Override
     int getCurrentTabId() {
         return R.id.btn_tabbar_subscriptions;
     }
 
     @Override
     void onCurrentTabButtonClicked() {
-        SubscriptionsFeedFragment fragment = (SubscriptionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
-        fragment.refreshData();
+        refreshData();
     }
 
     @Override
@@ -56,6 +85,11 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
         Intent intent = new Intent(this, SharePostActivity.class);
         intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
         startActivity(intent);
+    }
+
+    void refreshData() {
+        SubscriptionsFeedFragment fragment = (SubscriptionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.refreshData();
     }
 
     /**

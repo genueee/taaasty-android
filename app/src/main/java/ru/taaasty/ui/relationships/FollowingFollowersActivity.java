@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -66,7 +65,7 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         mViewPager.setOffscreenPageLimit(2);
 
         int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_FOLLOWINGS);
-        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager, mUser);
+        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager);
         indicator.setSection(initialSection);
 
         ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
@@ -153,51 +152,15 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
     }
 
     /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView;
-            rootView = inflater.inflate(R.layout.fragment_following_followers, container, false);
-            return rootView;
-        }
-    }
-
-    /**
      * Индикатор сверху: "Подписки - подписчики - друзья"
      */
     private static class PagerIndicator implements ViewPager.OnPageChangeListener, View.OnClickListener {
         private final ViewGroup mRoot;
         private final ViewPager mPager;
-        private final User mUser;
 
-        public PagerIndicator(ViewGroup root, ViewPager pager, User user) {
+        public PagerIndicator(ViewGroup root, ViewPager pager) {
             mRoot = root;
             mPager = pager;
-            mUser = user;
             mPager.setOnPageChangeListener(this);
             int count = mRoot.getChildCount();
             for (int i = 0; i < count; ++i) mRoot.getChildAt(i).setOnClickListener(this);

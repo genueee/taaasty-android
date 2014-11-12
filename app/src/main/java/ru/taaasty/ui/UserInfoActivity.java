@@ -13,7 +13,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import com.aviary.android.feather.library.Constants;
@@ -25,8 +29,10 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UploadService;
+import ru.taaasty.UserManager;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
+import ru.taaasty.model.Relationship;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
@@ -181,11 +187,31 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mMakePhotoDstUri != null) {
-            outState.putParcelable(KEY_CURRENT_PHOTO_URI, mMakePhotoDstUri);
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
+
+        if (!hasMenu) {
+            return super.onCreateOptionsMenu(menu);
         }
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_user_info, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        boolean isMyProfile = UserManager.getInstance().isMe(mUserId);
+        menu.findItem(R.id.menu_change_avatar).setVisible(isMyProfile);
+        menu.findItem(R.id.menu_change_background).setVisible(isMyProfile);
+
+        String myRelationship = getMyRelationship();
+        boolean meSubscribed = myRelationship != null && Relationship.isMeSubscribed(myRelationship);
+        menu.findItem(R.id.menu_follow).setVisible(myRelationship != null && !meSubscribed && !isMyProfile);
+        menu.findItem(R.id.menu_unfollow).setVisible(myRelationship != null && meSubscribed && !isMyProfile);
+
+        return true;
     }
 
     @Override
@@ -249,6 +275,39 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        UserInfoFragment fragment;
+        switch (item.getItemId()) {
+            case R.id.menu_change_avatar:
+                showChangeAvatarDialog();
+                break;
+            case R.id.menu_change_background:
+                showChangeBackgroundDialog();
+                break;
+            case R.id.menu_follow:
+                fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+                if (fragment != null) fragment.follow();
+                break;
+            case R.id.menu_unfollow:
+                fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+                if (fragment != null) fragment.unfollow();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mMakePhotoDstUri != null) {
+            outState.putParcelable(KEY_CURRENT_PHOTO_URI, mMakePhotoDstUri);
+        }
+    }
+
+
+    @Override
     public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
         TlogActivity.startTlogActivity(this, mUserId, view);
@@ -256,24 +315,12 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public void onSelectBackgroundClicked() {
-        FragmentManager fm = getFragmentManager();
-        if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
-                | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
-            return;
-        }
-        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
-        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_BACKGROUND);
+        showChangeBackgroundDialog();
     }
 
     @Override
     public void onUserAvatarClicked(View view) {
-        FragmentManager fm = getFragmentManager();
-        if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
-                | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
-            return;
-        }
-        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
-        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
+        showChangeAvatarDialog();
     }
 
     @Override
@@ -351,6 +398,32 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
         if (uf != null) return uf.getUser();
         return null;
+    }
+
+    private @Nullable String getMyRelationship() {
+        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        if (uf != null) return uf.getMyRelationship();
+        return null;
+    }
+
+    private void showChangeBackgroundDialog() {
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
+                | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
+            return;
+        }
+        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
+        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_BACKGROUND);
+    }
+
+    private void showChangeAvatarDialog() {
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
+                | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
+            return;
+        }
+        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
+        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
     }
 
     private void startFeatherPhoto(boolean isBackground, Uri photoUri) {

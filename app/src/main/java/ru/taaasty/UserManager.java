@@ -65,6 +65,10 @@ public class UserManager {
         return mCurrentUser == null ? null : mCurrentUser.getId();
     }
 
+    public boolean isMe(long id) {
+        return mCurrentUser != null && mCurrentUser.getId() == id;
+    }
+
     public Observable<CurrentUser> getCurrentUser() {
         return NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class).getMyInfo();
         // return Observable.from(mCurrentUser);

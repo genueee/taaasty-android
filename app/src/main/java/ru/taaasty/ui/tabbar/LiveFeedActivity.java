@@ -5,7 +5,11 @@ import android.app.FragmentManager;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;
@@ -48,18 +52,39 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
+
+        if (!hasMenu) {
+            return super.onCreateOptionsMenu(menu);
+        }
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.refresh, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_refresh:
+                refreshData();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
+    }
+
+    @Override
     int getCurrentTabId() {
         return R.id.btn_tabbar_live;
     }
 
 
+    @Override
     void onCurrentTabButtonClicked() {
-        if (mSectionsPagerAdapter == null || mViewPager == null) return;
-        Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
-        if (page != null && page instanceof GridFeedFragment) {
-            GridFeedFragment gff = (GridFeedFragment) page;
-            gff.refreshData();
-        }
+        refreshData();
     }
 
     @Override
@@ -76,6 +101,15 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
         if (DBG) Log.v(TAG, "onPrimaryItemChanged()" + newFragment);
         GridFeedFragment fragment = (GridFeedFragment)newFragment;
         updateCircleIndicatorPosition(fragment.isHeaderVisisble(), fragment.getHeaderTop());
+    }
+
+    void refreshData() {
+        if (mSectionsPagerAdapter == null || mViewPager == null) return;
+        Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+        if (page != null && page instanceof GridFeedFragment) {
+            GridFeedFragment gff = (GridFeedFragment) page;
+            gff.refreshData();
+        }
     }
 
     void updateCircleIndicatorPosition(boolean isFirstItemVisible, int firstItemTop) {

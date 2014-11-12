@@ -17,8 +17,11 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.ActivityBase;
@@ -120,14 +123,32 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
+
+        if (!hasMenu) {
+            return super.onCreateOptionsMenu(menu);
+        }
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.refresh, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                return true;
+                break;
+            case R.id.menu_refresh:
+                refreshData();
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override
@@ -205,6 +226,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
      */
     public void onClickOpenTlog(View view) {
         TlogActivity.startTlogActivity(this, (long) view.getTag(R.id.author), view);
+    }
+
+    private void refreshData() {
+        TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.refreshData();
     }
 
     void refreshFollowUnfollowView() {
