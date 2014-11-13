@@ -13,9 +13,7 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -35,7 +33,6 @@ import ru.taaasty.FragmentActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.events.PostRemoved;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
-import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
@@ -281,22 +278,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         trasition = new TransitionDrawable(new Drawable[]{from, to});
         getWindow().setBackgroundDrawable(trasition);
         trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
-    }
-
-    @Override
-    public void onDeleteCommentClicked(Comment comment) {
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
-        DialogFragment f = DeleteCommentFragment.newInstance(comment.getId());
-        f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
-    }
-
-    @Override
-    public void onReportCommentClicked(Comment comment) {
-        FragmentManager fm = getSupportFragmentManager();
-        if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_COMMENT) != null) return;
-        DialogFragment f = ReportCommentFragment.newInstance(comment.getId());
-        f.show(fm, FRAGMENT_TAG_DELETE_REPORT_COMMENT);
     }
 
     @Override

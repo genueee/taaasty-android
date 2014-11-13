@@ -1120,7 +1120,6 @@ public class ShowPostFragment extends Fragment {
                 unselectCurrentComment();
             } else {
                 if (mCommentsAdapter.isEmpty()) return;
-                final Comment comment = (Comment)parent.getItemAtPosition(position);
                 unselectCurrentComment(false);
 
                 ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
@@ -1160,12 +1159,12 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onDeleteCommentClicked(View view, Comment comment) {
-            if (mListener != null) mListener.onDeleteCommentClicked(comment);
+            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), comment.getId());
         }
 
         @Override
         public void onReportContentClicked(View view, Comment comment) {
-            if (mListener != null) mListener.onReportCommentClicked(comment);
+            DeleteOrReportDialogActivity.startReportComment(getActivity(), comment.getId());
         }
     };
 
@@ -1474,9 +1473,6 @@ public class ShowPostFragment extends Fragment {
         public void onBottomReached(int listBottom, int listViewHeight);
         public void onBottomUnreached();
         public void setPostBackgroundColor(int color);
-
-        public void onDeleteCommentClicked(Comment comment);
-        public void onReportCommentClicked(Comment comment);
 
         public void onYoutubeFullscreen(boolean isFullscreen);
 

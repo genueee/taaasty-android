@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.FeedListItem;
 import ru.taaasty.model.Feed;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
@@ -59,7 +60,7 @@ public abstract class FeedLoader {
         mFeedRefreshSubscription = SubscriptionHelper.empty();
         mAdapter.setInteractionListener(new FeedItemAdapter.InteractionListener() {
             @Override
-            public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedItemAdapter.EntryOrComment entry) {
+            public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedListItem entry) {
                 FeedLoader.this.onBindViewHolder(viewHolder, position, feedSize, entry);
             }
         });
@@ -98,7 +99,7 @@ public abstract class FeedLoader {
 
     private void activateCacheInBackground() {
         if (DBG) Log.v(TAG, "activateCacheInBackground()");
-        final Long lastEntryId = mAdapter.getLastEntryId();
+        final Long lastEntryId = mAdapter.getFeed().getLastEntryId();
         if (lastEntryId == null) return;
         mHandler.post(new Runnable() {
             @Override
@@ -134,9 +135,9 @@ public abstract class FeedLoader {
             if (isRefresh) {
                 // XXX: мы здесь не удаляем записи. Т.е.если по каким-то причинам фид станет короче,
                 // у нас останутся старые записи
-                mAdapter.refreshItems(feed.entries);
+                mAdapter.getFeed().addEntries(feed.entries);
             } else {
-                if (!mAdapter.appendFeed(feed.entries)) keepOnAppending = false;
+                if (!mAdapter.getFeed().appendEntries(feed.entries)) keepOnAppending = false;
             }
         }
 
@@ -148,7 +149,7 @@ public abstract class FeedLoader {
         if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
     }
 
-    private void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedItemAdapter.EntryOrComment entry) {
+    private void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedListItem entry) {
         if (!mKeepOnAppending.get() || feedSize == 0 || mAdapter.getIsLoading()) return;
         if (position >= feedSize - ENTRIES_TO_TRIGGER_APPEND) activateCacheInBackground();
     }

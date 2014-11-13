@@ -1,7 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/root"
+    tools:context="ru.taaasty.ui.post.DeleteOrReportDialogActivity">
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/delete_comment_container"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.5"
+        android:padding="16dp"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        tools:text="@string/delete_comment_description" />
+
+    <FrameLayout
+        android:id="@id/delete_comment_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="24dp">
+
+        <TextView
+            android:id="@+id/delete_comment_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_green_background"
+            android:gravity="center"
+            android:minHeight="50dp"
+            android:padding="16dp"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            tools:text="@string/delete_comment_button" />
+
+        <ProgressBar
+            android:id="@+id/delete_comment_progress"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            tools:visibility="visible" />
+
+    </FrameLayout>
+
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        style="@style/ErrorTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Мазафака какая-то с сайтом"
+        tools:visibility="visible" />
+
+
+</RelativeLayout>

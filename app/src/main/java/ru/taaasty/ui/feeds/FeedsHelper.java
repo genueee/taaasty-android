@@ -7,6 +7,7 @@ import android.view.View;
 import java.util.Date;
 
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.model.Entry;
 import ru.taaasty.widgets.DateIndicatorWidget;
 
 /**
@@ -47,8 +48,8 @@ public class FeedsHelper {
 
         int position = getAdapterPositionAtWidgetHeight(listView, dateIndicator);
         if (position != RecyclerView.NO_POSITION) {
-            FeedItemAdapter.EntryOrComment entry = adapter.getEntryAtPosition(position);
-            if (entry != null) newDate = entry.entry.getCreatedAt();
+            Entry entry = adapter.getAnyEntryAtPosition(position);
+            if (entry != null) newDate = entry.getCreatedAt();
         }
         dateIndicator.setDate(newDate, animScrollUp);
     }

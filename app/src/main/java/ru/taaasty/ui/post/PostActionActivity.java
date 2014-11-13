@@ -4,8 +4,6 @@ package ru.taaasty.ui.post;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,20 +19,16 @@ import com.facebook.widget.WebDialog;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.taaasty.FragmentActivityBase;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.ui.CustomErrorView;
 
-public class PostActionActivity extends FragmentActivityBase implements CustomErrorView {
+public class PostActionActivity extends ActivityBase implements CustomErrorView {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.PostActionActivity.entry";
 
-    public static final String ACTION_DELETE = "ru.taaasty.ui.post.PostActionActivity.delete";
-    public static final String ACTION_REPORT = "ru.taaasty.ui.post.PostActionActivity.report";
     public static final String ACTION_SHARE_FACEBOOK = "ru.taaasty.ui.post.PostActionActivity.share_in_facebook";
-
-    private static final String FRAGMENT_TAG_DELETE_REPORT_POST = "FRAGMENT_TAG_DELETE_REPORT_POST";
 
     private Entry mEntry;
     private String mAction;
@@ -46,7 +40,6 @@ public class PostActionActivity extends FragmentActivityBase implements CustomEr
     private Session.StatusCallback mSessionStatusCallback;
     private Session mCurrentSession = null;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,21 +50,7 @@ public class PostActionActivity extends FragmentActivityBase implements CustomEr
         mUiHelper = new UiLifecycleHelper(this, null);
         mUiHelper.onCreate(savedInstanceState);
 
-        if( ACTION_DELETE.equals(mAction) ) {
-            // show delete post dialog
-            FragmentManager fm = getSupportFragmentManager();
-            if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_POST) != null) return;
-            DialogFragment f = DeletePostFragment.newInstance(mEntry.getId());
-            f.show(fm, FRAGMENT_TAG_DELETE_REPORT_POST);
-        }
-        else if( ACTION_REPORT.equals(mAction) ) {
-            // show report post dialog
-            FragmentManager fm = getSupportFragmentManager();
-            if (fm.findFragmentByTag(FRAGMENT_TAG_DELETE_REPORT_POST) != null) return;
-            DialogFragment f = ReportPostFragment.newInstance(mEntry.getId());
-            f.show(fm, FRAGMENT_TAG_DELETE_REPORT_POST);
-        }
-        else if(ACTION_SHARE_FACEBOOK.equals(mAction)) {
+        if(ACTION_SHARE_FACEBOOK.equals(mAction)) {
             if (FacebookDialog.canPresentShareDialog(getApplicationContext(),
                     FacebookDialog.ShareDialogFeature.SHARE_DIALOG)) {
                 // Publish the post using the Share Dialog (есть Facebook клиент)

@@ -11,6 +11,7 @@
     <item type="id" name="feed_view_type_embedd"/>
     <item type="id" name="feed_view_type_quote"/>
     <item type="id" name="feed_view_type_comment"/>
+    <item type="id" name="feed_view_type_reply_form"/>
     <item type="id" name="feed_view_type_other"/>
     <item type="id" name="feed_view_type_pending_indicator"/>
 

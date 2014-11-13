@@ -16,8 +16,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -26,6 +24,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.model.Entry;
@@ -140,25 +139,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
         });
 
-        mAdapter = new Adapter(getActivity());
-        mAdapter.onCreate();
-
-        if (savedInstanceState != null) {
-            List<FeedItemAdapter.EntryOrComment> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (feed != null && !feed.isEmpty()) mAdapter.setEntriesAndComments(feed);
-        }
-        if (mTlogInfo != null && mTlogInfo.design != null) mAdapter.setFeedDesign(mTlogInfo.design);
-
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
-        mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-
-        mFeedLoader = new MyFeedLoader(mAdapter);
 
         return v;
     }
@@ -175,12 +161,26 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        FeedList feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        mAdapter = new Adapter(getActivity(), feed);
+        mAdapter.onCreate();
+        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+        if (mTlogInfo != null && mTlogInfo.design != null) mAdapter.setFeedDesign(mTlogInfo.design);
+
+        mListView.setAdapter(mAdapter);
+        mFeedLoader = new MyFeedLoader(mAdapter);
+    }
+
+    @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
-            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
+            FeedList feed = mAdapter.getFeed();
+            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
         }
         outState.putParcelable(BUNDLE_KEY_TLOG_INFO, mTlogInfo);
     }
@@ -278,27 +278,29 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         private String mTitle;
         private User mUser = User.DUMMY;
 
-        public Adapter(Context context) {
-            super(context, true, false);
+        public Adapter(Context context, FeedList feed) {
+            super(context, feed, true, false);
         }
 
         @Override
         protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
             if (pHolder instanceof ListEntryBase || pViewType == FeedItemAdapter.VIEW_TYPE_COMMENT) {
-                pHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        long postId = mListView.getChildItemId(v);
-                        onFeedItemClicked(v, getItemById(postId).entry);
-
-                    }
-                });
+                pHolder.itemView.setOnClickListener(mOnItemClickListener);
             }
 
             if (pHolder instanceof ListEntryBase) {
                 ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
             }
         }
+
+        private View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
+                Entry entry = getAnyEntryAtHolderPosition(vh);
+                if (entry != null) onFeedItemClicked(v, entry);
+            }
+        };
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
@@ -500,8 +502,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
             }
         }
 

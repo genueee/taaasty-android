@@ -1,5 +1,7 @@
 package ru.taaasty.ui.feeds;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -14,17 +16,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
+import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.model.Comment;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -32,6 +35,8 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
+import ru.taaasty.ui.post.FastReplyDialogActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -54,8 +59,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
     private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";
-
-    private static final String FRAGMENT_TAG_SHARE_ENTRY_DIALOG = "share_entry_dialog";
 
     private OnFragmentInteractionListener mListener;
 
@@ -103,12 +106,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         mRefreshLayout.setOnRefreshListener(this);
 
-        mAdapter = new Adapter(getActivity());
-        mAdapter.onCreate();
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
@@ -118,9 +118,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                 updateDateIndicator(dy > 0);
             }
         });
-
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-        mFeedLoader = new FeedLoader(mAdapter);
 
         return v;
     }
@@ -140,11 +137,15 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        FeedList feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        mAdapter = new Adapter(getActivity(), feed);
+        mAdapter.onCreate();
+        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+        mListView.setAdapter(mAdapter);
+        mFeedLoader = new FeedLoader(mAdapter);
+
         if (savedInstanceState != null) {
-            ArrayList<FeedItemAdapter.EntryOrComment> entries = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (entries != null) {
-                mAdapter.setEntriesAndComments(entries);
-            }
             TlogDesign design = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_DESIGN);
             if (design != null) {
                 mTlogDesign = design;
@@ -159,9 +160,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
-            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
+            FeedList feed = mAdapter.getFeed();
+            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
         }
         if (mTlogDesign != null) {
             outState.putParcelable(BUNDLE_KEY_FEED_DESIGN, mTlogDesign);
@@ -233,43 +233,33 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
-    class Adapter extends FeedItemAdapter {
+    class Adapter extends FeedItemAdapter implements CommentsAdapter.OnCommentButtonClickListener {
 
-        public Adapter(Context context) {
-            super(context, true, true);
+        public Adapter(Context context, FeedList feed) {
+            super(context, feed, true, true);
+            setOnCommentButtonClickListener(this);
         }
 
         @Override
         protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            if (pHolder instanceof ListEntryBase || pViewType == FeedItemAdapter.VIEW_TYPE_COMMENT) {
-                pHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        long postId = mListView.getChildItemId(v);
-                        onFeedItemClicked(v, getItemById(postId).entry);
 
-                    }
-                });
-            }
-
-            if (pHolder instanceof ListEntryBase) {
-                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-                if (mShowUserAvatar) {
-                    ((ListEntryBase)pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            long postId = mListView.getChildItemId(pHolder.itemView);
-                            Entry entry = mAdapter.getItemById(postId).entry;
-                            if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                        }
-                    });
-                }
+            switch (pViewType) {
+                case FeedItemAdapter.VIEW_TYPE_COMMENT:
+                    pHolder.itemView.setOnClickListener(mOnCommentClickListener);
+                    break;
+                case VIEW_TYPE_REPLY_FORM:
+                    setOnCommentFormClickListener((ReplyCommentFormViewHolder)pHolder);
+                    break;
+                default:
+                    // Все посты
+                    if (pHolder instanceof ListEntryBase) setPostClickListener((ListEntryBase)pHolder);
+                    break;
             }
         }
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, mListView, false);
+            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
             ParallaxedHeaderHolder holder = new ParallaxedHeaderHolder(child);
             ((TextView)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
             return holder;
@@ -278,6 +268,108 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
         }
+
+        private void setOnCommentFormClickListener(final ReplyCommentFormViewHolder holder) {
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Entry entry = getAnyEntryAtHolderPosition(holder);
+                    if (entry == null) return;
+                    FastReplyDialogActivity.startReplyToPost(getActivity(), entry);
+                }
+            });
+        }
+
+        private void setPostClickListener(final ListEntryBase pHolder) {
+            // Клик на записи
+            pHolder.itemView.setOnClickListener(mOnItemClickListener);
+            // Клики по элементам панельки снизу
+            pHolder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+
+            // Клик по аватарке в заголовке
+            if (mShowUserAvatar) {
+                pHolder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Entry entry = getAnyEntryAtHolderPosition(pHolder);
+                        if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                    }
+                });
+            }
+        }
+
+        void onCommentClicked(CommentsAdapter.ViewHolder holder) {
+            // TODO: делать анимации при смене статуса коммментария в другом месте
+            final Comment comment = getCommentAtHolderPosition(holder);
+            if (comment == null) return;
+            FeedList feed = getFeed();
+            if (feed.getSelectedCommentId() != null
+                    && feed.getSelectedCommentId() == comment.getId()) {
+                feed.setSelectedCommentId(null);
+            } else {
+                if (feed.isEmpty()) return;
+                feed.setSelectedCommentId(null);
+
+                ValueAnimator va = createShowCommentButtonsAnimator(holder);
+                va.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+                        mListView.setEnabled(false);
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mListView.setEnabled(true);
+                        getFeed().setSelectedCommentId(comment.getId());
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
+                va.start();
+            }
+        }
+
+        @Override
+        public void onReplyToCommentClicked(View view, Comment comment) {
+            Integer location = getFeed().findCommentLocation(comment.getId());
+            if (location == null) return;
+            FastReplyDialogActivity.startReplyToComment(getActivity(), getFeed().getAnyEntry(location), comment);
+        }
+
+        @Override
+        public void onDeleteCommentClicked(View view, Comment comment) {
+            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), comment.getId());
+        }
+
+        @Override
+        public void onReportContentClicked(View view, Comment comment) {
+            DeleteOrReportDialogActivity.startReportComment(getActivity(), comment.getId());
+        }
+
+        final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
+                Entry entry = getAnyEntryAtHolderPosition(vh);
+                if (entry != null) onFeedItemClicked(v, entry);
+            }
+        };
+
+        final View.OnClickListener mOnCommentClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
+                onCommentClicked((CommentsAdapter.ViewHolder)vh);
+            }
+        };
     }
 
     class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
@@ -296,8 +388,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
             }
         }
 
@@ -464,5 +556,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
          */
         public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
+
     }
 }

@@ -1,7 +1,7 @@
 package ru.taaasty.events;
 
 /**
- * тправлна жалоба на комментарий
+ * Отправлена жалоба на комментарий
  */
 public class ReportCommentSent {
 

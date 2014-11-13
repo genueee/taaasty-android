@@ -21,8 +21,6 @@ import android.widget.TextView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -32,6 +30,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.model.CurrentUser;
@@ -136,12 +135,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         boolean showUserAvatar = (mFeedType == FEED_TYPE_FRIENDS) || (mFeedType == FEED_TYPE_FAVORITES);
 
-        mAdapter = new Adapter(getActivity(), showUserAvatar);
+        FeedList feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        mAdapter = new Adapter(getActivity(), feed, showUserAvatar);
         mAdapter.onCreate();
-        if (savedInstanceState != null) {
-            List<FeedItemAdapter.EntryOrComment> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-            if (feed != null && !feed.isEmpty()) mAdapter.setEntriesAndComments(feed);
-        }
+
         if (mCurrentUser != null && mCurrentUser.getDesign() != null) mAdapter.setFeedDesign(mCurrentUser.getDesign());
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
@@ -189,13 +187,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            List<FeedItemAdapter.EntryOrComment> entries = mAdapter.getFeed();
-            ArrayList<FeedItemAdapter.EntryOrComment> entriesArrayList = new ArrayList<>(entries);
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
+            FeedList feed = mAdapter.getFeed();
+            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
         }
         outState.putParcelable(BUNDLE_KEY_CURRENT_USER, mCurrentUser);
     }
-
 
     void setupEmptyView(View root) {
         int textNoRecords;
@@ -350,8 +346,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         private User mUser = User.DUMMY;
 
-        public Adapter(Context context, boolean showUserAvatar) {
-            super(context, showUserAvatar);
+        public Adapter(Context context, FeedList feed, boolean showUserAvatar) {
+            super(context, feed, showUserAvatar);
 
             Bundle args = getArguments();
             //noinspection ResourceType
@@ -387,28 +383,30 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
             if (!(pHolder instanceof ListEntryBase)) return;
-            final ListEntryBase holder = (ListEntryBase)pHolder;
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    long postId = mListView.getChildItemId(v);
-                    onFeedItemClicked(v, mAdapter.getItemById(postId).entry);
+            pHolder.itemView.setOnClickListener(mOnItemClickListener);
 
-                }
-            });
-
+            ListEntryBase holder = (ListEntryBase)pHolder;
             holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
             if (mShowUserAvatar) {
                 holder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        long postId = mListView.getChildItemId(holder.itemView);
-                        Entry entry = mAdapter.getItemById(postId).entry;
+                        Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
                         if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                     }
                 });
             }
         }
+
+
+        final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
+                Entry entry = getAnyEntryAtHolderPosition(vh);
+                if (entry != null) onFeedItemClicked(v, entry);
+            }
+        };
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
@@ -599,8 +597,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
+                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
             }
         }
 

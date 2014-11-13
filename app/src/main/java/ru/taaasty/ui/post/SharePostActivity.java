@@ -60,7 +60,7 @@ public class SharePostActivity extends Activity {
     }
 
     public void reportPost(View view) {
-        runPostActionActivity(PostActionActivity.ACTION_REPORT);
+        DeleteOrReportDialogActivity.startReportPost(this, mEntry.getId());
     }
 
     public void editPost(View view) {
@@ -68,7 +68,7 @@ public class SharePostActivity extends Activity {
     }
 
     public void deletePost(View view) {
-        runPostActionActivity(PostActionActivity.ACTION_DELETE);
+        DeleteOrReportDialogActivity.startDeletePost(this, mEntry.getId());
     }
 
     public void runPostActionActivity( String action ) {

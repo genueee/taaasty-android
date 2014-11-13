@@ -1,55 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <!-- comments_item с конскими отступами слева и справа и пока без кнопок -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/avatar_comment_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@drawable/list_selector_holo_light"
-    android:baselineAligned="true"
-    android:clickable="false"
-    android:descendantFocusability="blocksDescendants"
-    android:minHeight="48dp"
-    android:paddingBottom="16dp"
-    android:paddingLeft="38dp"
-    android:paddingTop="8dp"
-    tools:ignore="RtlSymmetry,UseCompoundDrawables">
+    android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/avatar"
-        android:layout_width="@dimen/avatar_small_diameter"
-        android:layout_height="@dimen/avatar_small_diameter"
-        android:layout_marginRight="10dp"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/avatar_comment_root"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@drawable/list_selector_holo_light"
-        android:onClick="onClickOpenTlog"
-        android:src="@drawable/avatar_dummy"
-        tools:ignore="ContentDescription" />
-
-    <ru.taaasty.widgets.LinkifiedTextView
-        android:id="@+id/comment"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:linksClickable="true"
+        android:baselineAligned="true"
+        android:clickable="false"
+        android:descendantFocusability="blocksDescendants"
         android:minHeight="48dp"
-        android:textIsSelectable="false"
-        android:textSize="14sp"
-        tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+        android:paddingBottom="16dp"
+        android:paddingLeft="38dp"
+        android:paddingTop="8dp"
+        tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
-    <TextView
-        android:id="@+id/date_relative"
-        android:layout_width="50dp"
+        <ImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_small_diameter"
+            android:layout_height="@dimen/avatar_small_diameter"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/list_selector_holo_light"
+            android:onClick="onClickOpenTlog"
+            android:src="@drawable/avatar_dummy"
+            tools:ignore="ContentDescription" />
+
+        <ru.taaasty.widgets.LinkifiedTextView
+            android:id="@+id/comment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:linksClickable="true"
+            android:minHeight="48dp"
+            android:textIsSelectable="false"
+            android:textSize="14sp"
+            tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
+
+        <TextView
+            android:id="@+id/date_relative"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="28dp"
+            android:layout_marginTop="3dp"
+            android:gravity="fill_vertical"
+            android:singleLine="true"
+            android:textColor="@color/text_color_feed_item_gray"
+            android:textSize="10sp"
+            tools:ignore="RtlSymmetry,SmallSp"
+            tools:text="28 мрт" />
+    </LinearLayout>
+
+    <ViewStub
+        android:id="@+id/stub"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="28dp"
-        android:layout_marginTop="3dp"
-        android:gravity="fill_vertical"
-        android:singleLine="true"
-        android:textColor="@color/text_color_feed_item_gray"
-        android:textSize="10sp"
-        tools:ignore="RtlSymmetry,SmallSp"
-        tools:text="28 мрт" />
-</LinearLayout>
+        android:layout_gravity="right|top"
+        android:inflatedId="@+id/subTree"
+        android:layout="@layout/include_comment_actions"
+        android:visibility="gone"
+        tools:visibility="visible" />
+</FrameLayout>

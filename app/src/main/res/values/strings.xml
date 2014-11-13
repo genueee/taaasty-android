@@ -135,7 +135,6 @@
         <item quantity="many">Загрузить ещё %d комментариев…</item>
         <item quantity="other">Загрузить ещё %d комментариев…</item>
     </plurals>
-
     <plurals name="other_n_comments">
         <item quantity="one">Ещё %d комментарий…</item>
         <item quantity="few">Ещё %d комментария…</item>
@@ -208,6 +207,7 @@
     <string name="menu_settings">Настройки</string>
     <string name="menu_friends">Друзья</string>
     <string name="menu_quit">Выйти</string>
+    <string name="reply_to_post">Ответить…</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>
@@ -215,5 +215,9 @@
         <item quantity="many">Пришло %d уведомлений…</item>
         <item quantity="other">Пришло %d уведомлений…</item>
     </plurals>
+
+    <string name="title_activity_fast_reply_dialog">Быстрый ответ</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>
