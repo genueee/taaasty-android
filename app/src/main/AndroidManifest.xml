@@ -95,6 +95,7 @@
         <activity
             android:name="ru.taaasty.ui.UserInfoActivity"
             android:parentActivityName="ru.taaasty.ui.post.ShowPostActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/UserInfoActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

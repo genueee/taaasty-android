@@ -27,6 +27,7 @@ public class TargetSetHeaderBackground implements Target {
     private final TlogDesign mDesign;
     private final int mForegroundColor;
     private final int mBlurRadius;
+    private boolean mForceDisableAnimation;
 
     public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColor) {
         this(target, design, foregroundColor, 0);
@@ -42,6 +43,25 @@ public class TargetSetHeaderBackground implements Target {
 
     @Override
     public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+        setBackground(bitmap, !mForceDisableAnimation && (from == Picasso.LoadedFrom.NETWORK));
+    }
+
+    @Override
+    public void onBitmapFailed(Drawable errorDrawable) {
+        if (DBG) Log.v(TAG, "onBitmapFailed");
+        // XXX
+    }
+
+    @Override
+    public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+    }
+
+    public void setForceDisableAnimate(boolean disable) {
+        mForceDisableAnimation = disable;
+    }
+
+    public void setBackground(Bitmap bitmap, boolean animate) {
         BackgroundBitmapDrawable background;
         Drawable backgroundDrawable;
 
@@ -60,7 +80,7 @@ public class TargetSetHeaderBackground implements Target {
             backgroundDrawable = background;
         }
 
-        if (Picasso.LoadedFrom.MEMORY.equals(from)) {
+        if (!animate) {
             mTarget.setBackgroundDrawable(backgroundDrawable);
         } else {
             Drawable oldBackground = mTarget.getBackground();
@@ -75,16 +95,5 @@ public class TargetSetHeaderBackground implements Target {
                 td.startTransition(Constants.IMAGE_FADE_IN_DURATION);
             }
         }
-    }
-
-    @Override
-    public void onBitmapFailed(Drawable errorDrawable) {
-        if (DBG) Log.v(TAG, "onBitmapFailed");
-        // XXX
-    }
-
-    @Override
-    public void onPrepareLoad(Drawable placeHolderDrawable) {
-
     }
 }

@@ -63,6 +63,8 @@ public class MyFeedActivity extends TabbarActivityBase implements
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
 
+    private String mBackgroundBitmapKey;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

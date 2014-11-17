@@ -61,6 +61,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     private static final String ARG_USER_ID = "ru.taaasty.ui.UserInfoActivity.author_id";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.UserInfoActivity.tlog_design";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.UserInfoActivity.avatar_thumbnail_res";
+    private static final String ARG_BACKGROUND_THUMBNAIL_KEY = "ru.taaasty.ui.UserInfoActivity.background_thumbnail_key";
     private static final String FRAGMENT_TAG_USER_INFO_FRAGMENT = "UserInfoFragment";
 
     private long mUserId;
@@ -79,6 +80,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         private TlogDesign mTlogDesign;
 
         private Integer mAvatarThumbnailSizeRes;
+
+        private String mThumbnailBitmapCacheKey;
 
         public Builder(Activity activity) {
             mActivity = activity;
@@ -122,6 +125,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             return this;
         }
 
+        public Builder setBackgroundThumbnailKey(@Nullable String cacheKey) {
+            mThumbnailBitmapCacheKey = cacheKey;
+            return this;
+        }
+
         public Intent buildIntent() {
             if (mUserId == null && mUser == null) {
                 throw new IllegalStateException("user not defined");
@@ -134,6 +142,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             if (mUser != null) intent.putExtra(UserInfoActivity.ARG_USER, mUser);
             if (mTlogDesign != null) intent.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mAvatarThumbnailSizeRes != null) intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, (int)mAvatarThumbnailSizeRes);
+
+            if (mThumbnailBitmapCacheKey != null) intent.putExtra(ARG_BACKGROUND_THUMBNAIL_KEY, mThumbnailBitmapCacheKey);
 
             return intent;
         }
@@ -156,6 +166,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         User user;
         TlogDesign design;
         int avatarThumbnailRes;
+        String backgroundThumbnailKey;
 
         setContentView(R.layout.activity_user_info);
         findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
@@ -169,6 +180,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         user = getIntent().getParcelableExtra(ARG_USER);
         design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
         avatarThumbnailRes = getIntent().getIntExtra(ARG_AVATAR_THUMBNAIL_RES, -1);
+        backgroundThumbnailKey = getIntent().getStringExtra(ARG_BACKGROUND_THUMBNAIL_KEY);
         if (getIntent().hasExtra(ARG_USER_ID)) {
             mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
         } else {
@@ -177,7 +189,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
 
         if (savedInstanceState == null) {
-            Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user, design, avatarThumbnailRes);
+            Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user, design, avatarThumbnailRes, backgroundThumbnailKey);
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment, FRAGMENT_TAG_USER_INFO_FRAGMENT)
                     .commit();

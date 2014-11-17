@@ -48,6 +48,7 @@ public class UserInfoFragment extends Fragment {
     private static final String ARG_USER = "user";
     private static final String ARG_DESIGN = "design";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
+    private static final String ARG_BACKGROUND_THUMBNAIL_KEY = "background_thumbnail_key";
 
     private static final String BUNDLE_ARG_USER = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_USER";
     private static final String BUNDLE_ARG_DESIGN = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_DESIGN";
@@ -92,13 +93,17 @@ public class UserInfoFragment extends Fragment {
     private boolean mRefreshingBackground;
 
     public static UserInfoFragment newInstance(long userId, @Nullable User user,
-                                               @Nullable TlogDesign design, int avatarThumbnailRes) {
+                                               @Nullable TlogDesign design,
+                                               int avatarThumbnailRes,
+                                               String backgroundThumbnailKey
+                                               ) {
         UserInfoFragment fragment = new UserInfoFragment();
         Bundle args = new Bundle();
         args.putLong(ARG_USER_ID, userId);
         if (user != null) args.putParcelable(ARG_USER, user);
         if (design != null) args.putParcelable(ARG_DESIGN, design);
         if (avatarThumbnailRes > 0) args.putInt(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailRes);
+        if (backgroundThumbnailKey != null) args.putString(ARG_BACKGROUND_THUMBNAIL_KEY, backgroundThumbnailKey);
         fragment.setArguments(args);
         return fragment;
     }
@@ -470,6 +475,16 @@ public class UserInfoFragment extends Fragment {
                     refreshProgressVisibility();
                 }
             };
+
+
+            String thumbnailKey = getArguments().getString(ARG_BACKGROUND_THUMBNAIL_KEY);
+            if (!TextUtils.isEmpty(thumbnailKey)) {
+                Bitmap thumbnail = ImageUtils.getInstance().removeBitmapFromCache(thumbnailKey);
+                if (thumbnail != null) {
+                    mTargetSetHeaderBackground.setBackground(thumbnail, false);
+                    mTargetSetHeaderBackground.setForceDisableAnimate(true);
+                }
+            }
 
             picasso
                     .load(backgroudUrl)

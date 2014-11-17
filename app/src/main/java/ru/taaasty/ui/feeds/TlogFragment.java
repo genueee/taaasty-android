@@ -20,6 +20,7 @@ import android.widget.TextView;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
+import it.sephiroth.android.library.picasso.Picasso;
 import it.sephiroth.android.library.picasso.RequestCreator;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -77,6 +78,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private TlogInfo mTlogInfo;
 
     private int mRefreshCounter;
+
+    private String mBackgroundBitmapKey;
 
     /**
      * Use this factory method to create a new instance of
@@ -246,6 +249,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         new UserInfoActivity.Builder(getActivity())
                 .set(mTlogInfo.author, v, mTlogInfo.design)
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setBackgroundThumbnailKey(mBackgroundBitmapKey)
                 .startActivity();
     }
 
@@ -342,15 +346,20 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             String backgroudUrl = design.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    design, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+                    design, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    mBackgroundBitmapKey = "TlogFragment-header";
+                    ImageUtils.getInstance().putBitmapToCache(mBackgroundBitmapKey, bitmap);
+                }
+            };
             holder.backgroundUrl = backgroudUrl;
             RequestCreator rq = NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
                     .load(backgroudUrl);
             if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
                 rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
                         .centerCrop();
-                // добавляем ещё одну версию в кэш для UserInfoActivity
-                NetworkUtils.getInstance().getPicasso(holder.itemView.getContext()).load(backgroudUrl).fetch();
             }
             rq.into(holder.feedDesignTarget);
         }
