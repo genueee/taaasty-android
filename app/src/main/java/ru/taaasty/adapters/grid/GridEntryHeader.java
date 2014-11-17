@@ -18,6 +18,7 @@ public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderH
 
     private final TextView mTitleView;
     private final TextView mSubtitleView;
+    final View titleSubtitleContainer;
     private final ParallaxedView mParallaxedView;
 
     private CharSequence mTitle;
@@ -27,7 +28,20 @@ public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderH
         super(context, v, 0);
         mTitleView = (TextView)v.findViewById(R.id.title);
         mSubtitleView = (TextView)v.findViewById(R.id.subtitle);
-        mParallaxedView = new ParallaxedView(itemView);
+        titleSubtitleContainer = v.findViewById(R.id.title_subtitle_container);
+        mParallaxedView = new ParallaxedView(titleSubtitleContainer) {
+            // Ставим для titleSubtitleContainer прозрачность в зависимости от видимой части всего заголовка
+            protected void setOpacity(View view, float offset) {
+                float viewHeight = itemView.getHeight();
+                float visibleHeight = itemView.getBottom() - offset; // XXX: wrong
+                if (visibleHeight < viewHeight) {
+                    float opacity = getParallaxOpacity(visibleHeight / viewHeight);
+                    titleSubtitleContainer.setAlpha(opacity);
+                } else {
+                    titleSubtitleContainer.setAlpha(1);
+                }
+            }
+        };
     }
 
     @Override

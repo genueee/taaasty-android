@@ -38,15 +38,19 @@ public class ParallaxedView {
             }
     }
 
-    private void setOpacity(View view, float offset) {
+    protected void setOpacity(View view, float offset) {
         float viewHeight = view.getHeight();
         float visibleHeight = view.getBottom() - offset; // XXX: wrong
         if (visibleHeight < viewHeight) {
-            float opacity = 0.3f + (visibleHeight / viewHeight) * 0.7f;
+            float opacity = getParallaxOpacity(visibleHeight / viewHeight);
             view.setAlpha(opacity);
         } else {
             view.setAlpha(1);
         }
+    }
+
+    protected float getParallaxOpacity(float visiblePart) {
+        return 0.3f + visiblePart * 0.7f;
     }
 
 	public void setView(View view) {

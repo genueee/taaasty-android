@@ -23,6 +23,7 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
+import ru.taaasty.adapters.ParallaxedHeaderHolderTitleSubtitle;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
@@ -246,7 +247,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
             View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
-            ParallaxedHeaderHolder holder = new ParallaxedHeaderHolder(child);
+            ParallaxedHeaderHolder holder = new ParallaxedHeaderHolderTitleSubtitle(child);
             ((TextView)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
             return holder;
         }
