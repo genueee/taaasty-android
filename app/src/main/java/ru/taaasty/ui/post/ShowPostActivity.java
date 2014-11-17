@@ -67,29 +67,83 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
     private long mPostId;
 
-    public static Intent createShowPostIntent(Context context, long postId, @Nullable Entry entry, @Nullable TlogDesign design) {
-        Intent intent = new Intent(context, ShowPostActivity.class);
-        intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-        if (entry != null) intent.putExtra(ARG_ENTRY, entry);
-        if (design != null) intent.putExtra(ARG_TLOG_DESIGN, design);
-        return intent;
-    }
+    public static class Builder {
 
-    public static Intent createShowPostIntent(Context context, long postId, long commentId) {
-        Intent intent = new Intent(context, ShowPostActivity.class);
-        intent.putExtra(ShowPostActivity.ARG_POST_ID, postId);
-        intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, commentId);
-        return intent;
-    }
+        private final Context mContext;
 
-    public static void startShowPostActivity(Context context, long postId, @Nullable Entry entry, @Nullable TlogDesign design, @Nullable View animateFrom) {
-        Intent intent = createShowPostIntent(context, postId, entry, design);
-        if (animateFrom != null && context instanceof Activity) {
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
-                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
-            ActivityCompat.startActivity((Activity) context, intent, options.toBundle());
-        } else {
-            context.startActivity(intent);
+        private View mSrcView;
+
+        private Long mPostId;
+
+        private Entry mEntry;
+
+        private TlogDesign mTlogDesign;
+
+        private Long mCommentId;
+
+        public Builder(Context context) {
+            mContext = context;
+        }
+
+        public Builder setEntryId(long entryId) {
+            mPostId = entryId;
+            return this;
+        }
+
+        public Builder setCommentId(Long commentId) {
+            mCommentId = commentId;
+            return this;
+        }
+
+        public Builder setEntry(@Nullable Entry entry) {
+            mEntry = entry;
+            return this;
+        }
+
+        public Builder setDesign(@Nullable TlogDesign design) {
+            mTlogDesign = design;
+            return this;
+        }
+
+        public Builder setSrcView(View view) {
+            mSrcView = view;
+            return this;
+        }
+
+        public Builder set(Entry entry, @Nullable View srcView, @Nullable TlogDesign design) {
+            setSrcView(srcView);
+            setEntry(entry);
+            setDesign(design);
+            return this;
+        }
+
+        public Intent buildIntent() {
+            if (mPostId == null && mEntry == null) {
+                throw new IllegalStateException("post not defined");
+            }
+
+            Intent intent = new Intent(mContext, ShowPostActivity.class);
+            intent.putExtra(ShowPostActivity.ARG_POST_ID, mEntry == null ? (long)mPostId : mEntry.getId());
+            if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
+            if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
+            if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
+
+            return intent;
+        }
+
+        public void startActivity() {
+            Intent intent = buildIntent();
+            if (mSrcView != null) {
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                        mSrcView, 0, 0, mSrcView.getWidth(), mSrcView.getHeight());
+                if (mContext instanceof  Activity) {
+                    ActivityCompat.startActivity((Activity)mContext, intent, options.toBundle());
+                } else {
+                    mContext.startActivity(intent);
+                }
+            } else {
+                mContext.startActivity(intent);
+            }
         }
     }
 

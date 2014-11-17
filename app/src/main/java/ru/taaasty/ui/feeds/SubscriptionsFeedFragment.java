@@ -366,7 +366,10 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
     public void onFeedItemClicked(View view, Entry entry) {
         if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-        ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry, null, view);
+        new ShowPostActivity.Builder(getActivity())
+                .setEntry(entry)
+                .setSrcView(view)
+                .startActivity();
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
@@ -385,7 +388,10 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry, null, view);
+            new ShowPostActivity.Builder(getActivity())
+                    .setEntry(entry)
+                    .setSrcView(view)
+                    .startActivity();
         }
 
         @Override

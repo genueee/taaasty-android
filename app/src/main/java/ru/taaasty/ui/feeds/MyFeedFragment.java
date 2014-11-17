@@ -366,8 +366,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
     public void onFeedItemClicked(View view, Entry entry) {
         if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-        ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry,
-                mCurrentUser == null ? null : mCurrentUser.getDesign(), view);
+        new ShowPostActivity.Builder(getActivity())
+                .setEntry(entry)
+                .setSrcView(view)
+                .setDesign(mCurrentUser == null ? null : mCurrentUser.getDesign())
+                .startActivity();
     }
 
     final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
@@ -403,8 +406,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry,
-                    mCurrentUser == null ? null : mCurrentUser.getDesign(), view);
+            new ShowPostActivity.Builder(getActivity())
+                    .setEntry(entry)
+                    .setSrcView(view)
+                    .setDesign(mCurrentUser == null ? null : mCurrentUser.getDesign())
+                    .startActivity();
         }
 
         @Override

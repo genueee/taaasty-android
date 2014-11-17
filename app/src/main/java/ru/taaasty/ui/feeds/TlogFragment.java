@@ -425,8 +425,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     public void onFeedItemClicked(View view, Entry entry) {
-        ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(),
-                entry, mTlogInfo == null ? null : mTlogInfo.design, view);
+        new ShowPostActivity.Builder(getActivity())
+                .setEntry(entry)
+                .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
+                .setSrcView(view)
+                .startActivity();
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
@@ -445,8 +448,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            ShowPostActivity.startShowPostActivity(getActivity(), entry.getId(), entry,
-                    mTlogInfo == null ? null : mTlogInfo.design, view);
+            new ShowPostActivity.Builder(getActivity())
+                    .setEntry(entry)
+                    .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
+                    .setSrcView(view)
+                    .startActivity();
         }
 
         @Override

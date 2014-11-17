@@ -181,12 +181,13 @@ public class Notification implements Parcelable {
         Intent intent = null;
         if (isTypeEntry()) {
             // Пост
-            intent = ShowPostActivity.createShowPostIntent(source, entityId, null ,null);
-            source.startActivity(intent);
+            new ShowPostActivity.Builder(source).setEntryId(entityId).startActivity();
         } else if (isTypeComment()) {
             //Комментарий
-            intent = ShowPostActivity.createShowPostIntent(source, parentId, entityId);
-            source.startActivity(intent);
+            new ShowPostActivity.Builder(source)
+                    .setEntryId(parentId)
+                    .setCommentId(entityId)
+                    .startActivity();
         } else if (isTypeRelationship()) {
             //Инфа о юзере
             new UserInfoActivity.Builder(source)
