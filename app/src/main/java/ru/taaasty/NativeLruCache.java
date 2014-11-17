@@ -45,4 +45,8 @@ public class NativeLruCache implements Cache {
     public void clear() {
         mCache.evictAll();
     }
+
+    public Bitmap remove(String key) {
+        return mCache.remove(key);
+    }
 }

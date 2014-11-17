@@ -55,7 +55,7 @@ public final class NetworkUtils {
 
     private OkClient mRetrofitClient;
 
-    private it.sephiroth.android.library.picasso.Cache mPicassoCache;
+    private NativeLruCache mPicassoCache;
 
     private Picasso mPicasso;
 
@@ -79,6 +79,10 @@ public final class NetworkUtils {
     public void onAppInit(Context context) {
         initOkHttpClient(context);
         initLruMemoryCache(context);
+    }
+
+    public NativeLruCache getImageCache() {
+        return mPicassoCache;
     }
 
     private void initOkHttpClient(Context context) {

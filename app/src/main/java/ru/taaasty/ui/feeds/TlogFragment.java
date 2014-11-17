@@ -3,6 +3,7 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -27,6 +28,7 @@ import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
@@ -299,7 +301,16 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             public void onClick(View v) {
                 RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
                 Entry entry = getAnyEntryAtHolderPosition(vh);
-                if (entry != null) onFeedItemClicked(v, entry);
+                Bitmap thumbnail = null;
+                if (vh instanceof ListImageEntry) thumbnail = ((ListImageEntry) vh).getCachedImage();
+                if (entry != null) {
+                    new ShowPostActivity.Builder(getActivity())
+                            .setEntry(entry)
+                            .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
+                            .setThumbnailBitmap(thumbnail, "TlogFragment-" + entry.getId() + "-")
+                            .setSrcView(v)
+                            .startActivity();
+                }
             }
         };
 
@@ -422,14 +433,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mAdapter.onUpdateRatingEnd(entry.getId());
             if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
         }
-    }
-
-    public void onFeedItemClicked(View view, Entry entry) {
-        new ShowPostActivity.Builder(getActivity())
-                .setEntry(entry)
-                .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
-                .setSrcView(view)
-                .startActivity();
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {

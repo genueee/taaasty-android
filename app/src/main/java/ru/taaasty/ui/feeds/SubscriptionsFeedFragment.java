@@ -3,6 +3,7 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,6 +26,7 @@ import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.ParallaxedHeaderHolderTitleSubtitle;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -279,7 +281,16 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
             public void onClick(View v) {
                 RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
                 Entry entry = getAnyEntryAtHolderPosition(vh);
-                if (entry != null) onFeedItemClicked(v, entry);
+                Bitmap thumbnail = null;
+                if (vh instanceof ListImageEntry) thumbnail = ((ListImageEntry) vh).getCachedImage();
+                if (entry != null) {
+                    if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
+                    new ShowPostActivity.Builder(getActivity())
+                            .setEntry(entry)
+                            .setThumbnailBitmap(thumbnail, "SubscriptionsFeedFragment-" + entry.getId() + "-")
+                            .setSrcView(v)
+                            .startActivity();
+                }
             }
         };
     }
@@ -362,14 +373,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
             mAdapter.onUpdateRatingEnd(entry.getId());
             if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
         }
-    }
-
-    public void onFeedItemClicked(View view, Entry entry) {
-        if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-        new ShowPostActivity.Builder(getActivity())
-                .setEntry(entry)
-                .setSrcView(view)
-                .startActivity();
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {

@@ -2,8 +2,11 @@ package ru.taaasty.adapters.grid;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.text.Html;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,6 +116,15 @@ public class GridImageEntry extends GridEntryBase implements Callback  {
                 .placeholder(mImagePlaceholderDrawable)
                 .error(R.drawable.image_loading_drawable)
                 .into(mImageView, this);
+    }
+
+    @Nullable
+    public Bitmap getCachedImage() {
+        Drawable drawable = mImageView.getDrawable();
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        }
+        return null;
     }
 
     private void setupTitle(Entry item) {

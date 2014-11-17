@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -40,6 +41,7 @@ import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
@@ -51,6 +53,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
     private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
+    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
     private static final String FRAGMENT_TAG_DELETE_REPORT_COMMENT = "FRAGMENT_TAG_DELETE_REPORT_COMMENT";
@@ -81,6 +84,10 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
         private Long mCommentId;
 
+        private Bitmap mThumbnailBitmap;
+
+        private String mThumbnailBitmapCacheKey;
+
         public Builder(Context context) {
             mContext = context;
         }
@@ -110,10 +117,9 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             return this;
         }
 
-        public Builder set(Entry entry, @Nullable View srcView, @Nullable TlogDesign design) {
-            setSrcView(srcView);
-            setEntry(entry);
-            setDesign(design);
+        public Builder setThumbnailBitmap(Bitmap bitmap, @Nullable String cacheKey) {
+            mThumbnailBitmap = bitmap;
+            mThumbnailBitmapCacheKey = cacheKey;
             return this;
         }
 
@@ -127,6 +133,12 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
             if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
+
+            if (mThumbnailBitmap != null) {
+                String key = mThumbnailBitmapCacheKey != null ? mThumbnailBitmapCacheKey : "thumbnail";
+                ImageUtils.getInstance().putBitmapToCache(key, mThumbnailBitmap);
+                intent.putExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY, key);
+            }
 
             return intent;
         }
@@ -167,12 +179,13 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
             Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+            String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
             getActionBar().hide();
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
-            Fragment postFragment = ShowPostFragment.newInstance(mPostId, entry, design);
+            Fragment postFragment = ShowPostFragment.newInstance(mPostId, entry, design, thumbnailKey);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, postFragment)
                     .commit();

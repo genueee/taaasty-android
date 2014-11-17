@@ -11,6 +11,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -66,6 +67,7 @@ import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import it.sephiroth.android.library.picasso.Callback;
+import it.sephiroth.android.library.picasso.RequestCreator;
 import pl.droidsonroids.gif.AnimationListener;
 import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
@@ -113,6 +115,8 @@ public class ShowPostFragment extends Fragment {
     private static final String ARG_POST_ID = "post_id";
     private static final String ARG_TLOG_DESIGN = "tlog_design";
     private static final String ARG_ENTRY = "entry";
+    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "thumbnail_bitmap_cache_key";
+
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
     private static final String KEY_COMMENTS = "comments";
@@ -156,11 +160,15 @@ public class ShowPostFragment extends Fragment {
     private Entry mCurrentEntry;
     private TlogDesign mDesign;
 
+    private String mThumbnailBitmapKey;
+
     @Nullable
     private OkHttpClient mOkHttpClient = null;
 
     private boolean mLoadComments;
     private int mTotalCommentsCount = -1;
+
+    private String mImageViewCurrentUrl;
 
     private final Object mGifLoadingTag = this;
 
@@ -175,12 +183,15 @@ public class ShowPostFragment extends Fragment {
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static ShowPostFragment newInstance(long postId, @Nullable Entry entry, @Nullable TlogDesign design) {
+    public static ShowPostFragment newInstance(long postId, @Nullable Entry entry,
+                                               @Nullable TlogDesign design,
+                                               @Nullable String thumbnailBitmapCacheKey) {
         ShowPostFragment f = new  ShowPostFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
-        b.putParcelable(ARG_ENTRY, entry);
-        b.putParcelable(ARG_TLOG_DESIGN, design);
+        if (entry != null) b.putParcelable(ARG_ENTRY, entry);
+        if (design != null) b.putParcelable(ARG_TLOG_DESIGN, design);
+        if (thumbnailBitmapCacheKey != null) b.putString(ARG_THUMBNAIL_BITMAP_CACHE_KEY, thumbnailBitmapCacheKey);
         f.setArguments(b);
         return f;
     }
@@ -195,6 +206,7 @@ public class ShowPostFragment extends Fragment {
         Bundle args = getArguments();
         mPostId = args.getLong(ARG_POST_ID);
         mDesign = args.getParcelable(ARG_TLOG_DESIGN);
+        mThumbnailBitmapKey = args.getString(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
         mCommentsService = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
         mEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mTlogDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
@@ -478,8 +490,7 @@ public class ShowPostFragment extends Fragment {
     }
 
     void setupFeedDesign() {
-        if (mDesign == null || mDesign == TlogDesign.DUMMY) return;
-        TlogDesign design = mDesign;
+        TlogDesign design = mDesign != null ? mDesign : TlogDesign.DUMMY;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
         if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()));
@@ -719,41 +730,77 @@ public class ShowPostFragment extends Fragment {
         imageView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
 
-        // XXX: У некоторых картинок может не быть image.image.path
-        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-        b.filter(ThumborUrlBuilder.quality(60));
-        if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
-        final String url = b.toUrl();
+        final String url;
+        if (!TextUtils.isEmpty(image.image.path)) {
+            if (TextUtils.equals(mImageViewCurrentUrl, image.image.path)) {
+                // Уже загружаем или показываем это изображение, не трогаем.
+                return;
+            }
+            mImageViewCurrentUrl = image.image.path;
 
-        Drawable loadingDrawable = getResources().getDrawable(R.drawable.image_loading_drawable);
-        loadingDrawable = ImageUtils.changeDrawableIntristicSizeAndBounds(loadingDrawable, parentWidth, imgViewHeight);
+            ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
+            if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
+            // Здесь в зависимости от resizeToWidth могут получиться разные url, поэтому сравнение mImageViewCurrentUrl - раньше.
+            url = b.toUrl();
+        } else {
+            url = image.image.url;
+            if (TextUtils.equals(mImageViewCurrentUrl, url)) {
+                // Уже загружаем или показываем это изображение, не трогаем.
+                return;
+            }
+            mImageViewCurrentUrl = url;
+        }
+
+        boolean hasThumbnail = false;
+        Drawable loadingDrawable = null;
+        if (mThumbnailBitmapKey != null) {
+            Bitmap thumbnail = ImageUtils.getInstance().removeBitmapFromCache(mThumbnailBitmapKey);
+            if (thumbnail != null) {
+                loadingDrawable = new BitmapDrawable(getResources(), thumbnail);
+                hasThumbnail = true;
+            }
+        }
+        if (loadingDrawable == null) {
+            loadingDrawable = getResources().getDrawable(R.drawable.image_loading_drawable);
+            loadingDrawable = ImageUtils.changeDrawableIntristicSizeAndBounds(loadingDrawable, parentWidth, imgViewHeight);
+        }
+
         imageView.setImageDrawable(loadingDrawable);
 
         if (image.isAnimatedGif()) {
             loadGif(url, imageView);
         } else {
             final ImageView finalImageView = imageView;
-            mDynamicContentProgress.setVisibility(View.VISIBLE);
-            NetworkUtils.getInstance().getPicasso(getActivity())
+            // Если у нас есть миниаютра, то нет смысла пугать юезра прогрессбарами
+            mDynamicContentProgress.setVisibility(hasThumbnail ? View.GONE : View.VISIBLE);
+            RequestCreator request = NetworkUtils.getInstance().getPicasso(getActivity())
                     .load(url)
                     .placeholder(loadingDrawable)
-                    .error(R.drawable.image_load_error)
                     .fit()
-                    .centerInside()
-                    .into(imageView, new Callback() {
-                        @Override
-                        public void onSuccess() {
-                            finalImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                            mDynamicContentProgress.setVisibility(View.GONE);
-                        }
+                    .centerInside();
 
-                        @Override
-                        public void onError() {
-                            finalImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                            mDynamicContentProgress.setVisibility(View.GONE);
-                        }
-                    });
+            if (hasThumbnail) {
+                request.noFade();
+            } else {
+                request.error(R.drawable.image_load_error);
+            }
+
+            final boolean finalHasThumbnail = hasThumbnail;
+            request.into(imageView, new Callback() {
+                @Override
+                public void onSuccess() {
+                    finalImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    mDynamicContentProgress.setVisibility(View.GONE);
+                    mThumbnailBitmapKey = url;
+                }
+
+                @Override
+                public void onError() {
+                    if (!finalHasThumbnail) finalImageView.setScaleType(ImageView.ScaleType.FIT_XY);
+                    mDynamicContentProgress.setVisibility(View.GONE);
+                }
+            });
         }
 
         final ArrayList<String> images = new ArrayList<>(mCurrentEntry.getImages().size());
@@ -995,7 +1042,8 @@ public class ShowPostFragment extends Fragment {
         }
 
         // Загружем комментарии
-        if (mLoadComments) {
+        // Если всего комментариев 0 - нет смысла показывать прогрессбар, все равно ничего не загрузится
+        if (mLoadComments && (mTotalCommentsCount != 0)) {
             mCommentsLoadMoreProgress.setVisibility(View.VISIBLE);
             mCommentsLoadMoreButton.setVisibility(View.INVISIBLE);
             return;

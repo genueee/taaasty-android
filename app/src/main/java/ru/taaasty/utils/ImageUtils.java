@@ -38,6 +38,7 @@ import java.util.Locale;
 import it.sephiroth.android.library.picasso.Picasso;
 import it.sephiroth.android.library.picasso.Target;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.NativeLruCache;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
@@ -49,19 +50,37 @@ public class ImageUtils {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ImageUtils";
 
+    private static final String IMAGE_CACHE_PREFIX = "_tasty_";
+
     private final CircleTransformation mCircleTransformation;
 
     private int mMaxTextureSize ;
 
     private static ImageUtils sInstance;
 
+    private NativeLruCache mCache;
+
     private ImageUtils() {
         mCircleTransformation = new CircleTransformation();
+        mCache = NetworkUtils.getInstance().getImageCache();
     }
 
     public static ImageUtils getInstance() {
         if (sInstance == null) sInstance = new ImageUtils();
         return sInstance;
+    }
+
+    public void putBitmapToCache(String key, Bitmap bitmap) {
+        mCache.set(IMAGE_CACHE_PREFIX + key, bitmap);
+    }
+
+    @Nullable
+    public Bitmap getBitmapFromCache(String key) {
+        return mCache.get(IMAGE_CACHE_PREFIX + key);
+    }
+
+    public Bitmap removeBitmapFromCache(String key) {
+        return mCache.remove(IMAGE_CACHE_PREFIX + key);
     }
 
     public static int calculateInSampleSize(

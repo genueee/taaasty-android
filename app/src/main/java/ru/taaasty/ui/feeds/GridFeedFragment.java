@@ -2,6 +2,7 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -20,6 +21,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedGridItemAdapter;
 import ru.taaasty.adapters.grid.GridEntryBase;
+import ru.taaasty.adapters.grid.GridImageEntry;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.Stats;
@@ -170,12 +172,21 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             public void onClick(View v) {
                 if (mGridView != null) {
                     long postId = mGridView.getChildItemId(v);
-
                     if (postId != View.NO_ID) {
                         if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + postId);
+                        Bitmap thumbnail = null;
+                        RecyclerView.ViewHolder holder = mGridView.getChildViewHolder(v);
+                        if (holder instanceof GridImageEntry) {
+                            thumbnail = ((GridImageEntry)holder).getCachedImage();
+                            if (thumbnail == null) {
+                                if (DBG) Log.v(TAG, "thumbnail is null");
+                            }
+                        }
+
                         new ShowPostActivity.Builder(getActivity())
                                 .setEntryId(postId)
                                 .setEntry(mAdapter.getItemById(postId))
+                                .setThumbnailBitmap(thumbnail, "GridFeedFragment-" + postId + "-")
                                 .setSrcView(v)
                                 .startActivity();
                     }

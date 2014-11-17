@@ -1,7 +1,9 @@
 package ru.taaasty.adapters.list;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.view.View;
@@ -116,6 +118,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                 .error(R.drawable.image_load_error)
                 .into(mImageView, this);
 
+    }
+
+    public Bitmap getCachedImage() {
+        Drawable drawable = mImageView.getDrawable();
+        if (drawable instanceof BitmapDrawable) return ((BitmapDrawable) drawable).getBitmap();
+        return null;
     }
 
     private void setupTitle(Entry item, int parentWidth) {
