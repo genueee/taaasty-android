@@ -107,7 +107,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
             newDatetime = null;
         } else {
             newDay = mDayFormat.format(date);
-            newDatetime = mDatetimeFormat.format(date).toLowerCase();
+            newDatetime = mDatetimeFormat.format(date).toLowerCase(Locale.getDefault());
         }
 
         if (getNextView() == mRootView0) {

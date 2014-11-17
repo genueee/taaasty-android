@@ -1,11 +1,14 @@
 package ru.taaasty;
 
 import android.app.Application;
+import android.content.res.Configuration;
 import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
+
+import java.util.Locale;
 
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
@@ -42,6 +45,7 @@ public class TaaastyApplication extends Application {
         ImageUtils.getInstance().onAppInit();
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
+        resetLanguage();
     }
 
     @Override
@@ -69,5 +73,21 @@ public class TaaastyApplication extends Application {
         }
         return mAnalyticsTracker;
     }
+
+        private void resetLanguage() {
+        Configuration config = getBaseContext().getResources().getConfiguration();
+
+        // Locale.US - это обычно юзеры, не делающие менять язык. Подстраиваемся под них
+        if (config.locale == null
+                || (config.locale.equals(Locale.US))
+                || (config.locale.equals(Locale.ROOT))) {
+            Locale locale = new Locale("ru_RU");
+            Log.i(TAG, "Reset locale " + config.locale + " to " + locale);
+            Locale.setDefault(locale);
+            config.locale = locale;
+            getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+        }
+    }
+
 
 }

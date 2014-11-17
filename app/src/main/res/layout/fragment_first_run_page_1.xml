@@ -23,6 +23,6 @@
             android:layout_gravity="center"
             android:scaleType="fitCenter"
             tools:src="@drawable/screenshot_1"
-            />
+            tools:ignore="ContentDescription" />
     </net.leolink.android.simpleinfinitecarousel.MyLinearLayout>
 </LinearLayout>

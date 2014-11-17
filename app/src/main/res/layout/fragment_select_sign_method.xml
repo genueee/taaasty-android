@@ -49,7 +49,8 @@
             <ImageView
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_sign_vkontakte" />
+                android:src="@drawable/ic_sign_vkontakte"
+                tools:ignore="ContentDescription"/>
 
             <ImageView
                 android:layout_width="wrap_content"
@@ -80,6 +81,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:scaleType="fitXY"
+                tools:ignore="ContentDescription"
                 android:src="@drawable/login_button_divider_dark" />
 
             <TextView

@@ -98,6 +98,8 @@ android {
 
     lintOptions {
         warning 'InvalidPackage'
+        disable 'RtlHardcoded'
+
     }
 
     testfairyConfig {
