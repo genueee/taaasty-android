@@ -1,5 +1,6 @@
 package ru.taaasty.adapters;
 
+import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -32,6 +33,8 @@ import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiComments;
+import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
+import ru.taaasty.ui.post.FastReplyDialogActivity;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Subscriber;
 import rx.Subscription;
@@ -80,7 +83,13 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     private final CommentViewBinder mCommentViewBinder;
 
-    protected abstract void initClickListeners(RecyclerView.ViewHolder holder, int type);
+    /**
+     * Установка click listener'ов на элементы.
+     * @return true, если все было сделано и дефолтное действие не требуется
+     */
+    protected abstract boolean initClickListeners(RecyclerView.ViewHolder holder, int type);
+
+
     protected abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent);
     protected abstract void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
 
@@ -154,6 +163,25 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         if (showComments) {
             mCommentViewBinder = new CommentViewBinder();
             mCommentsLoader = new CommentsLoader();
+            setOnCommentButtonClickListener(new CommentsAdapter.OnCommentButtonClickListener() {
+
+                @Override
+                public void onReplyToCommentClicked(View view, Comment comment) {
+                    Integer location = getFeed().findCommentLocation(comment.getId());
+                    if (location == null) return;
+                    FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
+                }
+
+                @Override
+                public void onDeleteCommentClicked(View view, Comment comment) {
+                    DeleteOrReportDialogActivity.startDeleteComment(view.getContext(), comment.getId());
+                }
+
+                @Override
+                public void onReportContentClicked(View view, Comment comment) {
+                    DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
+                }
+            });
         } else {
             mCommentsLoader = null;
             mCommentViewBinder = null;
@@ -163,7 +191,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        RecyclerView.ViewHolder holder;
+        final RecyclerView.ViewHolder holder;
         View child;
         switch (viewType) {
             case VIEW_TYPE_HEADER:
@@ -200,7 +228,31 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
                 throw new IllegalStateException();
         }
         if (holder instanceof  ListEntryBase) ((ListEntryBase)holder).setParentWidth(parent.getWidth());
-        initClickListeners(holder, viewType);
+
+        if (!initClickListeners(holder, viewType)) {
+            switch (viewType) {
+                case FeedItemAdapter.VIEW_TYPE_COMMENT:
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onCommentClicked((CommentsAdapter.ViewHolder)holder);
+                        }
+                    });
+                    break;
+                case VIEW_TYPE_REPLY_FORM:
+                    holder.itemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Entry entry = getAnyEntryAtHolderPosition(holder);
+                            if (entry == null) return;
+                            FastReplyDialogActivity.startReplyToPost(v.getContext(), entry);
+                        }
+                    });
+                    break;
+                default:
+                    break;
+            }
+        }
         return holder;
     }
 
@@ -347,6 +399,43 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
         notifyItemRangeChanged(0, mFeed.size());
+    }
+
+    void onCommentClicked(CommentsAdapter.ViewHolder holder) {
+        // TODO: делать анимации при смене статуса коммментария в другом месте
+        final Comment comment = getCommentAtHolderPosition(holder);
+        if (comment == null) return;
+        FeedList feed = getFeed();
+        if (feed.getSelectedCommentId() != null
+                && feed.getSelectedCommentId() == comment.getId()) {
+            feed.setSelectedCommentId(null);
+        } else {
+            if (feed.isEmpty()) return;
+            feed.setSelectedCommentId(null);
+
+            ValueAnimator va = createShowCommentButtonsAnimator(holder);
+            va.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    getFeed().setSelectedCommentId(comment.getId());
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            va.start();
+        }
     }
 
     public void onUpdateRatingStart(long entryId) {

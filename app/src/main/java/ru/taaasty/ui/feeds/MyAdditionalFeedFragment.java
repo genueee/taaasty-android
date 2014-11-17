@@ -381,8 +381,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         @Override
-        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            if (!(pHolder instanceof ListEntryBase)) return;
+        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (!(pHolder instanceof ListEntryBase)) return true;
             pHolder.itemView.setOnClickListener(mOnItemClickListener);
 
             ListEntryBase holder = (ListEntryBase)pHolder;
@@ -396,6 +396,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                     }
                 });
             }
+            return true;
         }
 
 

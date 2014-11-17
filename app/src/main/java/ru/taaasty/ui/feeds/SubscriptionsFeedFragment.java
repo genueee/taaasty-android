@@ -1,7 +1,5 @@
 package ru.taaasty.ui.feeds;
 
-import android.animation.Animator;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -22,12 +20,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedList;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
-import ru.taaasty.model.Comment;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -35,8 +31,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
-import ru.taaasty.ui.post.FastReplyDialogActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -233,28 +227,20 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
-    class Adapter extends FeedItemAdapter implements CommentsAdapter.OnCommentButtonClickListener {
+    class Adapter extends FeedItemAdapter {
 
         public Adapter(Context context, FeedList feed) {
             super(context, feed, true, true);
-            setOnCommentButtonClickListener(this);
         }
 
         @Override
-        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-
-            switch (pViewType) {
-                case FeedItemAdapter.VIEW_TYPE_COMMENT:
-                    pHolder.itemView.setOnClickListener(mOnCommentClickListener);
-                    break;
-                case VIEW_TYPE_REPLY_FORM:
-                    setOnCommentFormClickListener((ReplyCommentFormViewHolder)pHolder);
-                    break;
-                default:
-                    // Все посты
-                    if (pHolder instanceof ListEntryBase) setPostClickListener((ListEntryBase)pHolder);
-                    break;
+        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            // Все посты
+            if (pHolder instanceof ListEntryBase) {
+                setPostClickListener((ListEntryBase)pHolder);
+                return true;
             }
+            return false;
         }
 
         @Override
@@ -267,17 +253,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-        }
-
-        private void setOnCommentFormClickListener(final ReplyCommentFormViewHolder holder) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Entry entry = getAnyEntryAtHolderPosition(holder);
-                    if (entry == null) return;
-                    FastReplyDialogActivity.startReplyToPost(getActivity(), entry);
-                }
-            });
         }
 
         private void setPostClickListener(final ListEntryBase pHolder) {
@@ -298,76 +273,12 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
             }
         }
 
-        void onCommentClicked(CommentsAdapter.ViewHolder holder) {
-            // TODO: делать анимации при смене статуса коммментария в другом месте
-            final Comment comment = getCommentAtHolderPosition(holder);
-            if (comment == null) return;
-            FeedList feed = getFeed();
-            if (feed.getSelectedCommentId() != null
-                    && feed.getSelectedCommentId() == comment.getId()) {
-                feed.setSelectedCommentId(null);
-            } else {
-                if (feed.isEmpty()) return;
-                feed.setSelectedCommentId(null);
-
-                ValueAnimator va = createShowCommentButtonsAnimator(holder);
-                va.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        mListView.setEnabled(false);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        mListView.setEnabled(true);
-                        getFeed().setSelectedCommentId(comment.getId());
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animator animation) {
-
-                    }
-                });
-                va.start();
-            }
-        }
-
-        @Override
-        public void onReplyToCommentClicked(View view, Comment comment) {
-            Integer location = getFeed().findCommentLocation(comment.getId());
-            if (location == null) return;
-            FastReplyDialogActivity.startReplyToComment(getActivity(), getFeed().getAnyEntry(location), comment);
-        }
-
-        @Override
-        public void onDeleteCommentClicked(View view, Comment comment) {
-            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), comment.getId());
-        }
-
-        @Override
-        public void onReportContentClicked(View view, Comment comment) {
-            DeleteOrReportDialogActivity.startReportComment(getActivity(), comment.getId());
-        }
-
         final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
                 Entry entry = getAnyEntryAtHolderPosition(vh);
                 if (entry != null) onFeedItemClicked(v, entry);
-            }
-        };
-
-        final View.OnClickListener mOnCommentClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
-                onCommentClicked((CommentsAdapter.ViewHolder)vh);
             }
         };
     }

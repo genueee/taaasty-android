@@ -283,14 +283,15 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         @Override
-        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            if (pHolder instanceof ListEntryBase || pViewType == FeedItemAdapter.VIEW_TYPE_COMMENT) {
+        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            // Все посты
+            if (pHolder instanceof ListEntryBase) {
                 pHolder.itemView.setOnClickListener(mOnItemClickListener);
+                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                return true;
             }
 
-            if (pHolder instanceof ListEntryBase) {
-                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-            }
+            return false;
         }
 
         private View.OnClickListener mOnItemClickListener = new View.OnClickListener() {

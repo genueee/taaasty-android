@@ -243,10 +243,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
 
         @Override
-        protected void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            if (!(pHolder instanceof ListEntryBase)) return;
+        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+            if (!(pHolder instanceof ListEntryBase)) return true;
             pHolder.itemView.setOnClickListener(mOnItemClickListener);
             ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+            return true;
         }
 
         final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {

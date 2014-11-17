@@ -11,6 +11,7 @@
     android:minHeight="42dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
+    android:layout_marginBottom="16dp"
     android:text="@string/reply_to_post"
     android:textColor="@color/text_color_feed_item_gray"
     android:textSize="16sp" />
