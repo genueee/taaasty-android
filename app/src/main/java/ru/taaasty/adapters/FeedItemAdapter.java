@@ -174,7 +174,10 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
                 @Override
                 public void onDeleteCommentClicked(View view, Comment comment) {
-                    DeleteOrReportDialogActivity.startDeleteComment(view.getContext(), comment.getId());
+                    int location = getFeed().findCommentLocation(comment.getId());
+                    DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
+                            mFeed.get(location).entry.getId(),
+                            comment.getId());
                 }
 
                 @Override
@@ -392,8 +395,14 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         if (!mShowComments) return;
         long entryId = feedListItem.entry.getId();
         boolean isLoading = mCommentsLoader.isCommentsLoading(entryId);
+        int commentsCount = feedListItem.entry.getCommentsCount();
         int commentsShown = mFeed.getCommentsCount(entryId);
-        holder.setupCommentStatus(isLoading, feedListItem.entry.getCommentsCount(), commentsShown);
+        if (commentsCount < commentsShown) {
+            // Скорее всего, уведомление об изменении статьи пришло раньше, чем уведомление об удалении комментария.
+            // В этом случае, ничего страшного, но на всякий случай, корректируем
+            commentsCount = commentsShown;
+        }
+        holder.setupCommentStatus(isLoading, commentsCount, commentsShown);
     }
 
     public void setFeedDesign(TlogDesign design) {

@@ -18,6 +18,8 @@ import ru.taaasty.R;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.PostRemoved;
 import ru.taaasty.events.ReportCommentSent;
+import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.model.Entry;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
@@ -61,16 +63,17 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     Subscription mSubscription = SubscriptionHelper.empty();
 
-    private static void startActivityAction(Context context, int actionId, long entityId) {
+    private static void startActivityAction(Context context, int actionId, long postId, long commentId) {
         Intent i = new Intent(context, DeleteOrReportDialogActivity.class);
         i.putExtra(ARG_ACTION_ID, actionId);
         switch(actionId) {
             case ACTION_DELETE_COMMENT:
             case ACTION_REPORT_COMMENT:
-                i.putExtra(ARG_COMMENT_ID, entityId);
+                i.putExtra(ARG_POST_ID, postId);
+                i.putExtra(ARG_COMMENT_ID, commentId);
                 break;
             default:
-                i.putExtra(ARG_POST_ID, entityId);
+                i.putExtra(ARG_POST_ID, postId);
                 break;
         }
 
@@ -78,19 +81,19 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
     }
 
     public static void startDeletePost(Context context, long postId) {
-        startActivityAction(context, ACTION_DELETE_POST, postId);
+        startActivityAction(context, ACTION_DELETE_POST, postId, -1);
     }
 
     public static void startReportPost(Context context, long postId) {
-        startActivityAction(context, ACTION_REPORT_POST, postId);
+        startActivityAction(context, ACTION_REPORT_POST, postId, -1);
     }
 
-    public static void startDeleteComment(Context context, long commentId) {
-        startActivityAction(context, ACTION_DELETE_COMMENT, commentId);
+    public static void startDeleteComment(Context context, long postId, long commentId) {
+        startActivityAction(context, ACTION_DELETE_COMMENT, postId, commentId);
     }
 
     public static void startReportComment(Context context, long commentId) {
-        startActivityAction(context, ACTION_REPORT_COMMENT, commentId);
+        startActivityAction(context, ACTION_REPORT_COMMENT, -1, commentId);
     }
 
     @Override
@@ -128,7 +131,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
                 mActionHandler = new ReportPostActionHandler(postId);
                 break;
             case ACTION_DELETE_COMMENT:
-                mActionHandler = new DeleteCommentActionHandler(commentId);
+                mActionHandler = new DeleteCommentActionHandler(postId, commentId);
                 break;
             case ACTION_REPORT_COMMENT:
                 mActionHandler = new ReportCommentActionHandler(commentId);
@@ -188,6 +191,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         @Override
         public void onNext(Object o) {
             if (DBG) Log.v(TAG, "response: " + o);
+            mActionHandler.onNext(o);
         }
     };
 
@@ -197,6 +201,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         abstract Observable<Object> createObservable();
         abstract void onError(Throwable e);
         abstract void onCompleted();
+        abstract void onNext(Object o);
     }
 
     private class DeletePostActionHandler implements ActionHandler {
@@ -229,6 +234,10 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
             EventBus.getDefault().post(new PostRemoved(mPostId));
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.post_removed, Toast.LENGTH_LONG).show();
         }
+
+        @Override
+        public void onNext(Object o) {
+        }
     }
 
     private class ReportPostActionHandler implements ActionHandler {
@@ -260,13 +269,22 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         public void onCompleted() {
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.post_complaint_is_sent, Toast.LENGTH_LONG).show();
         }
+
+        @Override
+        public void onNext(Object o) {
+        }
     }
 
     private class DeleteCommentActionHandler implements ActionHandler {
 
+        private final long mPostId;
+
         private final long mCommentId;
 
-        public DeleteCommentActionHandler(long commentId) {
+        private Entry mNewEntry;
+
+        public DeleteCommentActionHandler(long postId, long commentId) {
+            mPostId = postId;
             mCommentId = commentId;
         }
 
@@ -279,7 +297,12 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         @Override
         public Observable<Object> createObservable() {
             ApiComments service = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
-            return service.deleteComment(mCommentId);
+            ApiEntries entriesApi = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+
+            Observable<Object> delete = service.deleteComment(mCommentId);
+            Observable<Entry> updateEntry = entriesApi.getEntry(mPostId, false);
+
+            return delete.concatWith(updateEntry);
         }
 
         @Override
@@ -289,8 +312,17 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onCompleted() {
-            EventBus.getDefault().post(new CommentRemoved(mCommentId));
+            EventBus bus = EventBus.getDefault();
+            bus.post(new CommentRemoved(mCommentId));
+            if (mNewEntry != null) bus.post(new UserLikeOrCommentUpdate(mNewEntry));
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.comment_removed, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onNext(Object o) {
+            if (o instanceof Entry) {
+                mNewEntry = (Entry) o;
+            }
         }
     }
 
@@ -323,6 +355,10 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         public void onCompleted() {
             EventBus.getDefault().post(new ReportCommentSent(mCommentId));
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.comment_complaint_is_sent, Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onNext(Object o) {
         }
     }
 }

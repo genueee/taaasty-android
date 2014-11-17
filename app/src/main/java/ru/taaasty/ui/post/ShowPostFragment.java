@@ -1160,7 +1160,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onDeleteCommentClicked(View view, Comment comment) {
-            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), comment.getId());
+            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), mPostId, comment.getId());
         }
 
         @Override

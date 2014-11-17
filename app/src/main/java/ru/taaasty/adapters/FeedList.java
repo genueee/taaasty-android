@@ -257,7 +257,8 @@ public class FeedList implements Parcelable {
                 long commentEntryId = mFeed.get(i).entry.getId();
                 mFeed.remove(i);
                 mListener.onItemRemoved(i);
-                for (int j = i; j >= 0; i--) {
+                // Статья, скорее всего, изменилась.
+                for (int j = i; j >= 0; j--) {
                     if (mFeed.get(i).isEntry() && mFeed.get(i).entry.getId() == commentEntryId) {
                         mListener.onItemChanged(j);
                         break;
