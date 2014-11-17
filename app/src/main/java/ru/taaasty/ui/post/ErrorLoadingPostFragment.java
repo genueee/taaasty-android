@@ -50,6 +50,7 @@ public class ErrorLoadingPostFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        inflater = getActivity().getLayoutInflater(); // Calligraphy and support-21 bug
         View root = inflater.inflate(R.layout.fragment_error_loading_post, container, false);
         TextView textView = (TextView) root.findViewById(R.id.error_text);
         ImageView iconView = (ImageView) root.findViewById(R.id.icon);

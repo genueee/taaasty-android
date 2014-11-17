@@ -206,6 +206,7 @@ public class ShowPostFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        inflater = getActivity().getLayoutInflater(); // Calligraphy and support-21 bug
         View v = inflater.inflate(R.layout.fragment_show_post, container, false);
 
         mListView = (ListView) v.findViewById(R.id.list_view);
