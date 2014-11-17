@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
@@ -17,6 +18,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.TlogDesign;
@@ -83,7 +85,7 @@ public class CommentViewBinder {
         assert vh.actionView != null;
 
         // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
-        int textLeft = vh.comment.getLeft();
+        int textLeft = vh.comment.getLeft() - vh.avatar.getLeft();
         PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", 0, -textLeft);
         PropertyValuesHolder dAlphaButtons = PropertyValuesHolder.ofFloat("dAlphaButtons",0f, 1f);
 
@@ -115,9 +117,18 @@ public class CommentViewBinder {
                 vh.avatar.setVisibility(View.GONE);
                 vh.date.setVisibility(View.GONE);
 
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
-                lp.rightMargin = vh.actionView.getWidth();
-                vh.comment.setLayoutParams(lp);
+                if (vh.actionView.getWidth() == 0) {
+                    if (BuildConfig.DEBUG) Log.v("CommentViewBinder", "actionView width is 0");
+                    vh.actionView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                        @Override
+                        public boolean onPreDraw() {
+                            vh.actionView.getViewTreeObserver().removeOnPreDrawListener(this);
+                            return !updateCommentRightPadding(vh);
+                        }
+                    });
+                } else {
+                    updateCommentRightPadding(vh);
+                }
 
                 vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
@@ -137,6 +148,24 @@ public class CommentViewBinder {
         });
         return va;
     }
+
+    private boolean updateCommentRightPadding(CommentsAdapter.ViewHolder vh) {
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+        int width = vh.actionView.getWidth();
+        if (lp.rightMargin != width) {
+            lp.rightMargin = width;
+            vh.comment.setLayoutParams(lp);
+            return true;
+        }
+        return false;
+    }
+
+    private final ViewTreeObserver.OnPreDrawListener mActionViewOnPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
+        @Override
+        public boolean onPreDraw() {
+            return false;
+        }
+    };
 
     public ValueAnimator createHideButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
         vh.inflateActionViewStub();
