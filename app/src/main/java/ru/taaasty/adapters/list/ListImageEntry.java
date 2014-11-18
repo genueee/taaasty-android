@@ -46,7 +46,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
 
         mContext = context;
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mPicasso = Picasso.with(context);
         mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
         mGifForegroundDrawable = context.getResources().getDrawable(R.drawable.embedd_play_foreground);
 

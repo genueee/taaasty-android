@@ -11,12 +11,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.iframely.Link;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.ImageSize;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EllipsizingTextView;
@@ -40,7 +40,7 @@ public class GridEmbeddEntry extends GridEntryBase {
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
 
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mPicasso = Picasso.with(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);

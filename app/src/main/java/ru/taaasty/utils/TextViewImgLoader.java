@@ -67,7 +67,7 @@ public class TextViewImgLoader {
 
     public TextViewImgLoader(Context context, OnClickListener listener) {
         mListener = listener;
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mPicasso = Picasso.with(context);
     }
 
     public void loadImages(TextView view) {

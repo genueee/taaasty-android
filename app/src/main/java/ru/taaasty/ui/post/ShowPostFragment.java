@@ -57,6 +57,7 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
@@ -774,7 +775,7 @@ public class ShowPostFragment extends Fragment {
             final ImageView finalImageView = imageView;
             // Если у нас есть миниаютра, то нет смысла пугать юезра прогрессбарами
             mDynamicContentProgress.setVisibility(hasThumbnail ? View.GONE : View.VISIBLE);
-            RequestCreator request = NetworkUtils.getInstance().getPicasso(getActivity())
+            RequestCreator request = Picasso.with(getActivity())
                     .load(url)
                     .placeholder(loadingDrawable)
                     .fit()

@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
 import java.lang.annotation.Retention;
@@ -459,7 +460,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.headerUserFeedMain,
                     mFeedDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
             holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq = NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
+            RequestCreator rq = Picasso.with(holder.itemView.getContext())
                     .load(backgroudUrl);
             if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
                 rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)

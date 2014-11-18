@@ -356,7 +356,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 }
             };
             holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq = NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
+            RequestCreator rq = Picasso.with(holder.itemView.getContext())
                     .load(backgroudUrl);
             if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
                 rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)

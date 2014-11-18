@@ -22,10 +22,10 @@ import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.NetworkUtils;
 import uk.co.senab.photoview.PhotoView;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
@@ -115,7 +115,7 @@ public class ShowPhotoFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
+        Picasso picasso = Picasso.with(getActivity());
 
         if (mPreviewBitmap != null) {
             picasso.load(mPreviewBitmap)
@@ -250,7 +250,7 @@ public class ShowPhotoFragment extends Fragment {
     private final Target mPicassoTarget = new Target() {
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            NetworkUtils.getInstance().getPicasso(getActivity()).cancelRequest(mPicassoPreviewTarget);
+            Picasso.with(getActivity()).cancelRequest(mPicassoPreviewTarget);
             View v = getView();
             if (v == null) return;
             v.findViewById(R.id.progressView).setVisibility(View.GONE);
@@ -266,7 +266,7 @@ public class ShowPhotoFragment extends Fragment {
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
-            NetworkUtils.getInstance().getPicasso(getActivity()).cancelRequest(mPicassoPreviewTarget);
+            Picasso.with(getActivity()).cancelRequest(mPicassoPreviewTarget);
             View v = getView();
             if (v == null) return;
             v.findViewById(R.id.progressView).setVisibility(View.GONE);

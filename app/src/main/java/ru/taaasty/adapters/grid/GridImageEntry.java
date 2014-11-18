@@ -47,7 +47,7 @@ public class GridImageEntry extends GridEntryBase implements Callback {
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
 
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mPicasso = Picasso.with(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mGifForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);

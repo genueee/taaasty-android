@@ -57,10 +57,6 @@ public final class NetworkUtils {
 
     private NativeLruCache mPicassoCache;
 
-    private Picasso mPicasso;
-
-    private final Object mSyncObject = new Object();
-
     private NetworkUtils() {
         mGson = new GsonBuilder()
                 .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -79,6 +75,7 @@ public final class NetworkUtils {
     public void onAppInit(Context context) {
         initOkHttpClient(context);
         initLruMemoryCache(context);
+        initPicasso(context);
     }
 
     public NativeLruCache getImageCache() {
@@ -112,6 +109,30 @@ public final class NetworkUtils {
         mPicassoCache = new NativeLruCache(cacheSize);
     }
 
+    private void initPicasso(Context context) {
+        Picasso picasso = new Picasso.Builder(context.getApplicationContext())
+                .memoryCache(mPicassoCache)
+                .downloader(new OkHttpDownloader(mOkHttpClient) {
+                                @Override
+                                protected HttpURLConnection openConnection(Uri uri) throws IOException {
+                                    if (DBG) Log.v(TAG, "Load uri: " + uri);
+                                    return super.openConnection(uri);
+                                }
+                            }
+                )
+                .listener(new Picasso.Listener() {
+                    @Override
+                    public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
+                        Log.i(TAG, "onImageLoadFailed() uri: " + uri, exception);
+                        if (exception instanceof RuntimeException && (exception.getCause() instanceof OutOfMemoryError)) {
+                            mPicassoCache.clear();
+                        }
+                    }
+                })
+                .build();
+        Picasso.setSingletonInstance(picasso);
+    }
+
     public void onTrimMemory() {
         mPicassoCache.clear();
     }
@@ -135,35 +156,6 @@ public final class NetworkUtils {
 
     public OkHttpClient getOkHttpClient() {
         return mOkHttpClient;
-    }
-
-    public Picasso getPicasso(Context context) {
-        synchronized (mSyncObject) {
-            if (mPicasso == null) {
-                initLruMemoryCache(context.getApplicationContext());
-                mPicasso = new Picasso.Builder(context.getApplicationContext())
-                        .memoryCache(mPicassoCache)
-                        .downloader(new OkHttpDownloader(mOkHttpClient) {
-                                        @Override
-                                        protected HttpURLConnection openConnection(Uri uri) throws IOException {
-                                            // if (DBG) Log.v(TAG, "Load uri: " + uri);
-                                            return super.openConnection(uri);
-                                        }
-                                    }
-                        )
-                        .listener(new Picasso.Listener() {
-                            @Override
-                            public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                                Log.i(TAG, "onImageLoadFailed() uri: " + uri, exception);
-                                if (exception instanceof  RuntimeException && (exception.getCause() instanceof OutOfMemoryError)) {
-                                    mPicassoCache.clear();
-                                }
-                            }
-                        })
-                        .build();
-            }
-            return mPicasso;
-        }
     }
 
     public void factoryReset(Context context) {

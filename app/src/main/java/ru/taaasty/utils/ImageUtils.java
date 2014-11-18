@@ -345,7 +345,7 @@ public class ImageUtils {
             return;
         }
 
-        picasso = NetworkUtils.getInstance().getPicasso(context);
+        picasso = Picasso.with(context);
         stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
         stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 

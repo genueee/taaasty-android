@@ -55,7 +55,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         mFollowProcess = new HashSet<>(1);
         mListener = listener;
         mImageUtils = ImageUtils.getInstance();
-        mPicasso = NetworkUtils.getInstance().getPicasso(context);
+        mPicasso = Picasso.with(context);
         mStubPlaceholder = context.getResources().getDrawable(R.drawable.image_loading_drawable);
         mHandler = new Handler();
         setHasStableIds(true);

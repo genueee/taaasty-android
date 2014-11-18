@@ -16,9 +16,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import de.greenrobot.event.EventBus;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
+
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
@@ -196,7 +196,7 @@ public class UserInfoFragment extends Fragment {
         mUserTitle = null;
         mSubscribeButton = null;
         mUnsubscribeButton = null;
-        Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
+        Picasso picasso = Picasso.with(getActivity());
         if (mTargetSetHeaderBackground != null) {
             picasso.cancelRequest(mTargetSetHeaderBackground);
             mTargetSetHeaderBackground = null;
@@ -325,7 +325,7 @@ public class UserInfoFragment extends Fragment {
 
         mAvatarLoadTarget = new ImageUtils.ImageViewTarget(mAvatarView, false) {
 
-            final Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
+            final Picasso picasso = Picasso.with(getActivity());
 
             @Override
             public void onDrawableReady(Drawable drawable) {
@@ -456,7 +456,7 @@ public class UserInfoFragment extends Fragment {
     private void setupDesign() {
         TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
 
-        final Picasso picasso = NetworkUtils.getInstance().getPicasso(getActivity());
+        final Picasso picasso = Picasso.with(getActivity());
         String backgroudUrl = design.getBackgroundUrl();
         if (!TextUtils.isEmpty(backgroudUrl)) {
             mTargetSetHeaderBackground = new TargetSetHeaderBackground(

@@ -31,7 +31,6 @@ import ru.taaasty.events.PostUploadStatus;
 import ru.taaasty.model.PostEntry;
 import ru.taaasty.model.PostImageEntry;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.NetworkUtils;
 
 public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -240,7 +239,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             mMakeImageButtonLayout.setVisibility(View.GONE);
             mImageView.setVisibility(View.VISIBLE);
 
-            Picasso picasso = NetworkUtils.getInstance().getPicasso( getActivity() );
+            Picasso picasso = Picasso.with(getActivity());
 
             picasso.load(mImageUri)
                     .placeholder(R.drawable.image_loading_drawable)
