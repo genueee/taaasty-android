@@ -1,6 +1,5 @@
 package ru.taaasty.service;
 
-import retrofit.client.Response;
 import retrofit.http.DELETE;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
@@ -18,13 +17,17 @@ import rx.Observable;
 
 public interface ApiEntries {
 
-    public static final String PRIVACY_PRIVATE = "private";
-    public static final String PRIVACY_PUBLIC = "public";
-    public static final String PRIVACY_LIVE = "live";
-
     @Multipart
     @POST("/entries/image.json")
-    Response createImagePostSync(
+    Entry createImagePostSync(
+            @Part("title") String title,
+            @Part("privacy") String privacy,
+            @Part("file") TypedOutput file);
+
+    @Multipart
+    @PUT("/entries/image/{id}.json")
+    Entry updateImagePostSync(
+            @Path("id") String id,
             @Part("title") String title,
             @Part("privacy") String privacy,
             @Part("file") TypedOutput file);
@@ -32,39 +35,28 @@ public interface ApiEntries {
 
     @FormUrlEncoded
     @POST("/entries/text.json")
-    Observable<Object> createTextPost(@Field("title") String title,
-                                      @Field("text") String text,
-                                      @Field("privacy") String privacy);
-
-    @FormUrlEncoded
-    @POST("/entries/text.json")
-    Response createTextPostSync(@Field("title") String title,
+    Entry createTextPostSync(@Field("title") String title,
                                       @Field("text") String text,
                                       @Field("privacy") String privacy);
 
     @FormUrlEncoded
     @PUT("/entries/text/{id}.json")
-    Observable<Object> updateTextPost(
+    Entry updateTextPostSync(
             @Path("id") String id,
             @Field("title") String title,
             @Field("text") String text,
             @Field("privacy") String privacy);
 
-    @FormUrlEncoded
-    @POST("/entries/quote.json")
-    Observable<Object> createQuoteEntry(@Field("text") String text,
-                                      @Field("source") String source,
-                                      @Field("privacy") String privacy);
 
     @FormUrlEncoded
     @POST("/entries/quote.json")
-    Response createQuoteEntrySync(@Field("text") String text,
+    Entry createQuoteEntrySync(@Field("text") String text,
                                         @Field("source") String source,
                                         @Field("privacy") String privacy);
 
     @FormUrlEncoded
     @PUT("/entries/quote/{id}.json")
-    Observable<Object> updateQuoteEntry(
+    Entry updateQuoteEntrySync(
             @Path("id") String id,
             @Field("text") String text,
             @Field("source") String source,

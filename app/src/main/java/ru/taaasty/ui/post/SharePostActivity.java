@@ -27,13 +27,11 @@ public class SharePostActivity extends Activity {
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
 
-        // Хрен знает, когда будет готово, и будет ли вообще
-        findViewById(R.id.ic_edit_post).setVisibility(View.GONE);
-
         boolean isMyEntry = mEntry.isMyEntry();
         findViewById(R.id.ic_add_post_to_favorites).setVisibility(isMyEntry ? View.GONE : View.VISIBLE);
-        findViewById(R.id.ic_report_post).setVisibility(isMyEntry ? View.GONE : View.VISIBLE);
-        findViewById(R.id.ic_delete_post).setVisibility(isMyEntry ? View.VISIBLE : View.GONE);
+        findViewById(R.id.ic_report_post).setVisibility(mEntry.canReport() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.ic_delete_post).setVisibility(mEntry.canDelete() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.ic_edit_post).setVisibility(mEntry.canEdit() ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -61,14 +59,17 @@ public class SharePostActivity extends Activity {
 
     public void reportPost(View view) {
         DeleteOrReportDialogActivity.startReportPost(this, mEntry.getId());
+        finish();
     }
 
     public void editPost(View view) {
-        notReadyYet();
+        EditPostActivity.startEditPostActivity(this, mEntry);
+        finish();
     }
 
     public void deletePost(View view) {
         DeleteOrReportDialogActivity.startDeletePost(this, mEntry.getId());
+        finish();
     }
 
     public void runPostActionActivity( String action ) {

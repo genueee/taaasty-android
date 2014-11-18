@@ -4,11 +4,11 @@ package ru.taaasty.events;
 /**
  * Пользователь удалил пост
  */
-public class PostRemoved {
+public class EntryRemoved {
 
     public final long postId;
 
-    public PostRemoved(long postId) {
+    public EntryRemoved(long postId) {
         this.postId = postId;
     }
 }

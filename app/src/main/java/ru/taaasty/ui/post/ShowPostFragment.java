@@ -76,8 +76,8 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.ReportCommentSent;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
@@ -389,7 +389,7 @@ public class ShowPostFragment extends Fragment {
         if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
         mCurrentEntry.setCommentsCount( mCurrentEntry.getCommentsCount() - 1 );
         mEntryBottomActionBar.setComments(mCurrentEntry);
-        EventBus.getDefault().post(new UserLikeOrCommentUpdate(mCurrentEntry));
+        EventBus.getDefault().post(new EntryChanged(mCurrentEntry));
     }
 
     public void onEventMainThread(ReportCommentSent event) {
@@ -399,6 +399,13 @@ public class ShowPostFragment extends Fragment {
             if (commentSelected != null && commentSelected.equals(event.commentId)) {
                 mCommentsAdapter.clearSelectedCommentId();
             }
+        }
+    }
+
+    public void onEventMainThread(EntryChanged event) {
+        if (event.postEntry.getId() == mCurrentEntry.getId() && mCurrentEntry != event.postEntry) {
+            mCurrentEntry = event.postEntry;
+            setupEntry();
         }
     }
 
@@ -1307,7 +1314,7 @@ public class ShowPostFragment extends Fragment {
         public void onCompleted() {
             if (mReplyToCommentText != null) mReplyToCommentText.setText("");
             mCurrentEntry.setCommentsCount(mCurrentEntry.getCommentsCount() + 1);
-            EventBus.getDefault().post(new UserLikeOrCommentUpdate(mCurrentEntry));
+            EventBus.getDefault().post(new EntryChanged(mCurrentEntry));
             mEntryBottomActionBar.setComments(mCurrentEntry);
         }
 
@@ -1369,7 +1376,7 @@ public class ShowPostFragment extends Fragment {
             mUpdateRating = false;
             mCurrentEntry = entry;
             setupEntry();
-            EventBus.getDefault().post(new UserLikeOrCommentUpdate(entry));
+            EventBus.getDefault().post(new EntryChanged(entry));
         }
 
         @Override

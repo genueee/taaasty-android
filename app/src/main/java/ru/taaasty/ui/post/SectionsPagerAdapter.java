@@ -23,7 +23,7 @@ public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
     public Fragment getItem(int position) {
         switch (Page.values()[position]) {
             case TEXT_POST:
-                return CreateTextPostFragment.newInstance();
+                return CreateTextPostFragment.newCreatePostInstance();
             case IMAGE_POST:
                 return CreateImagePostFragment.newInstance();
             case QUOTE_POST:

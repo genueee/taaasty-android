@@ -21,7 +21,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.CommentChanged;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Entry;
 import ru.taaasty.service.ApiComments;
@@ -213,7 +213,7 @@ public class FastReplyDialogActivity extends Activity {
             if (mReplyText != null) mReplyText.setText("");
             mEntry.setCommentsCount(mEntry.getCommentsCount() + 1);
             // TODO: здесь надо обновлять с сервера
-            EventBus.getDefault().post(new UserLikeOrCommentUpdate(mEntry));
+            EventBus.getDefault().post(new EntryChanged(mEntry));
             watchForIme = false;
             ActivityCompat.finishAfterTransition(FastReplyDialogActivity.this);
         }

@@ -1,14 +1,17 @@
 package ru.taaasty.model;
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringDef;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.lang.annotation.Retention;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,7 +22,17 @@ import ru.taaasty.model.iframely.IFramely;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
 
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 public class Entry implements Parcelable {
+
+    @Retention(SOURCE)
+    @StringDef({
+            PRIVACY_PUBLIC,
+            PRIVACY_PRIVATE,
+            PRIVACY_PUBLIC_WITH_VOTING
+    })
+    public @interface EntryPrivacy {}
 
     public static final String ENTRY_TYPE_TEXT = "text";
 
@@ -28,6 +41,12 @@ public class Entry implements Parcelable {
     public static final String ENTRY_TYPE_VIDEO = "video";
 
     public static final String ENTRY_TYPE_QUOTE = "quote";
+
+    public static final String PRIVACY_PUBLIC_WITH_VOTING = "public_with_voting";
+
+    public static final String PRIVACY_PUBLIC = "public";
+
+    public static final String PRIVACY_PRIVATE = "private";
 
     /**
      * Сортировка по убыванию даты создания (более новые - в начале списка)
@@ -73,10 +92,6 @@ public class Entry implements Parcelable {
     @SerializedName("rating")
     private Rating mRating;
 
-    @SerializedName("image_url")
-    @Nullable
-    private String mImageUrl;
-
     @SerializedName("title")
     private String mTitle;
 
@@ -97,6 +112,10 @@ public class Entry implements Parcelable {
 
     @SerializedName("via")
     private String mVia;
+
+    @SerializedName("privacy")
+    @EntryPrivacy
+    private String mPrivacy;
 
     @SerializedName("image_attachments")
     private List<ImageInfo> mImages;
@@ -161,10 +180,6 @@ public class Entry implements Parcelable {
         return mEntryUrl;
     }
 
-    public String getImageUrl() {
-        return mImageUrl;
-    }
-
     public String getTitle() {
         return mTitle;
     }
@@ -183,6 +198,11 @@ public class Entry implements Parcelable {
 
     public IFramely getIframely() {
         return mIframely;
+    }
+
+    @EntryPrivacy
+    public String getPrivacy() {
+        return mPrivacy;
     }
 
 
@@ -236,6 +256,13 @@ public class Entry implements Parcelable {
         return mImages == null ? Collections.<ImageInfo>emptyList() : mImages;
     }
 
+    /**
+     * @return true если пост открытый
+     */
+    public boolean isPublic() {
+        return PRIVACY_PUBLIC.equals(mPrivacy);
+    }
+
     public Rating getRating() {
         return mRating != null ? mRating : Rating.DUMMY;
     }
@@ -247,6 +274,26 @@ public class Entry implements Parcelable {
     public boolean isMyEntry() {
         Long me = UserManager.getInstance().getCurrentUserId();
         return me != null && (me == mAuthor.getId());
+    }
+
+    public boolean canEdit() {
+        return isMyEntry(); // TODO: исправить, когда будет в API
+    }
+
+    public boolean canReport() {
+        return !isMyEntry(); // TODO: исправить, когда будет в API
+    }
+
+    public boolean canDelete() {
+        return isMyEntry(); // TODO: исправить, когда будет в API
+    }
+
+    @Nullable
+    public Uri getFirstImageUri() {
+        if (mImages == null || mImages.isEmpty()) return null;
+        String url = mImages.get(0).image.url;
+        if (TextUtils.isEmpty(url)) return null;
+        return Uri.parse(url);
     }
 
     public Entry() {
@@ -263,10 +310,10 @@ public class Entry implements Parcelable {
                 ", mUpdatedAt=" + mUpdatedAt +
                 ", mEntryUrl='" + mEntryUrl + '\'' +
                 ", mRating=" + mRating +
-                ", mImageUrl='" + mImageUrl + '\'' +
                 ", mTitle='" + mTitle + '\'' +
                 ", mText='" + mText + '\'' +
                 ", mSource='" + mSource + '\'' +
+                ", mPrivacy='" + mPrivacy + '\'' +
                 ", mVia='" + mVia + '\'' +
                 ", mImages=" + mImages +
                 '}';
@@ -287,7 +334,6 @@ public class Entry implements Parcelable {
         dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
         dest.writeString(this.mEntryUrl);
         dest.writeParcelable(this.mRating, flags);
-        dest.writeString(this.mImageUrl);
         dest.writeString(this.mTitle);
         dest.writeString(this.mVideoUrl);
         dest.writeString(this.mCoverUrl);
@@ -295,6 +341,7 @@ public class Entry implements Parcelable {
         dest.writeString(this.mText);
         dest.writeString(this.mSource);
         dest.writeString(this.mVia);
+        dest.writeString(this.mPrivacy);
         dest.writeTypedList(mImages);
     }
 
@@ -309,7 +356,6 @@ public class Entry implements Parcelable {
         this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
         this.mEntryUrl = in.readString();
         this.mRating = in.readParcelable(Rating.class.getClassLoader());
-        this.mImageUrl = in.readString();
         this.mTitle = in.readString();
         this.mVideoUrl = in.readString();
         this.mCoverUrl = in.readString();
@@ -317,6 +363,8 @@ public class Entry implements Parcelable {
         this.mText = in.readString();
         this.mSource = in.readString();
         this.mVia = in.readString();
+        //noinspection ResourceType
+        this.mPrivacy = in.readString();
         this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
     }
 

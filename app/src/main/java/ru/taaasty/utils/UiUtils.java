@@ -7,6 +7,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.TextUtils;
 
 import java.util.List;
@@ -74,6 +75,22 @@ public class UiUtils {
         }
 
         return Html.fromHtml(text);
+    }
+
+    /**
+     * Безопасный вариант {@linkplain Html#toHtml(android.text.Spanned)}
+     * При ошибках возвращается cs.toString(),
+     */
+    public static String safeToHtml(CharSequence cs) {
+        Spanned spanned;
+        if (TextUtils.isEmpty(cs)) return "";
+        if (cs instanceof  Spanned) {
+            spanned = (Spanned)cs;
+        } else {
+            spanned = new SpannedString(cs);
+        }
+
+        return Html.toHtml(spanned);
     }
 
     public static CharSequence removeTrailingWhitespaces(CharSequence source) {

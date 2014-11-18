@@ -26,8 +26,8 @@ import ru.taaasty.adapters.list.ListQuoteEntry;
 import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.CommentChanged;
 import ru.taaasty.events.CommentRemoved;
-import ru.taaasty.events.PostRemoved;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
@@ -492,7 +492,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         return mLoading.get();
     }
 
-    public void onEventMainThread(UserLikeOrCommentUpdate update) {
+    public void onEventMainThread(EntryChanged update) {
         mFeed.updateEntry(update.postEntry);
     }
 
@@ -501,7 +501,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         mFeed.deleteComment(event.commentId);
     }
 
-    public void onEventMainThread(PostRemoved event) {
+    public void onEventMainThread(EntryRemoved event) {
         mFeed.deleteEntry(event.postId);
     }
 

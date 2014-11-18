@@ -19,8 +19,8 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UploadService;
-import ru.taaasty.events.PostUploadStatus;
-import ru.taaasty.model.PostEntry;
+import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.PostForm;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 
@@ -98,7 +98,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         switch (item.getItemId()) {
             case android.R.id.home:
                 finish();
-                break;
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -112,7 +112,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     void onCreatePostClicked() {
-        PostEntry post;
+        PostForm post;
         CreatePostFragmentBase fragment;
 
         fragment = (CreatePostFragmentBase)mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
@@ -130,7 +130,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         return findViewById(R.id.private_post_indicator).isActivated();
     }
 
-    public void onEventMainThread(PostUploadStatus status) {
+    public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
         if (status.successfully) {
             // Переходим на страницу, в зависимости от статуса блокировки

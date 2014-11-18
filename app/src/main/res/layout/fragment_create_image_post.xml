@@ -48,7 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/CreatePostEditText"
-            android:inputType="textCapSentences"
+            android:inputType="textCapSentences|textMultiLine"
             android:layout_marginBottom="4dp"
             android:layout_marginTop="4dp"
             android:layout_marginLeft="10dp"

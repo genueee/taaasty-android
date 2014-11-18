@@ -1,11 +1,11 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.PostEntry;
+import ru.taaasty.model.PostForm;
 
 /**
  * Created by alexey on 04.09.14.
  */
-public class PostUploadStatus {
+public class EntryUploadStatus {
 
     public static final int STATUS_UPLOAD_STARTED = 1;
     public static final int STATUS_UPLOAD_FINISHED = 2;
@@ -16,23 +16,23 @@ public class PostUploadStatus {
 
     public Throwable exception;
 
-    public PostEntry entry;
+    public PostForm entry;
 
     public String error = "";
 
-    public PostUploadStatus() {
+    public EntryUploadStatus() {
     }
 
-    public static PostUploadStatus createPostCompleted(PostEntry entry) {
-        PostUploadStatus status = new PostUploadStatus();
+    public static EntryUploadStatus createPostCompleted(PostForm entry) {
+        EntryUploadStatus status = new EntryUploadStatus();
         status.entry = entry;
         status.status = STATUS_UPLOAD_FINISHED;
         status.successfully = true;
         return status;
     }
 
-    public static PostUploadStatus createPostFinishedWithError(PostEntry entry, String error, Throwable ex) {
-        PostUploadStatus status = new PostUploadStatus();
+    public static EntryUploadStatus createPostFinishedWithError(PostForm entry, String error, Throwable ex) {
+        EntryUploadStatus status = new EntryUploadStatus();
         status.entry = entry;
         status.status = STATUS_UPLOAD_FINISHED;
         status.successfully = false;

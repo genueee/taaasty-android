@@ -7,14 +7,15 @@ import android.net.Uri;
 import android.util.Log;
 
 import de.greenrobot.event.EventBus;
-import retrofit.client.Response;
-import ru.taaasty.events.PostUploadStatus;
+import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
-import ru.taaasty.model.PostEntry;
-import ru.taaasty.model.PostImageEntry;
-import ru.taaasty.model.PostQuoteEntry;
-import ru.taaasty.model.PostTextEntry;
+import ru.taaasty.model.Entry;
+import ru.taaasty.model.PostForm;
+import ru.taaasty.model.PostImageForm;
+import ru.taaasty.model.PostQuoteForm;
+import ru.taaasty.model.PostTextForm;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.service.ApiDesignSettings;
@@ -22,6 +23,7 @@ import ru.taaasty.service.ApiEntries;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.UiUtils;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -37,13 +39,15 @@ public class UploadService extends IntentService {
     // TODO: Rename actions, choose action names that describe tasks that this
     // IntentService can perform, e.g. ACTION_FETCH_NEW_ITEMS
     private static final String ACTION_POST_ENTRY = "ru.taaasty.action.POST_ENTRY";
+    private static final String ACTION_EDIT_ENTRY = "ru.taaasty.action.EDIT_ENTRY";
 
     private static final String ACTION_UPLOAD_USERPIC = "ru.taaasty.action.UPLOAD_USERPIC";
     private static final String ACTION_UPLOAD_BACKGROUND = "ru.taaasty.action.UPLOAD_BACKGROUND";
 
-    // TODO: Rename parameters
-    private static final String EXTRA_ENTRY = "ru.taaasty.extra.ENTRY";
 
+    private static final String EXTRA_FORM = "ru.taaasty.extra.FORM";
+
+    private static final String EXTRA_ENTRY_ID = "ru.taaasty.extra.ENTRY_ID";
     private static final String EXTRA_USER_ID = "ru.taaasty.extra.USER_ID";
     private static final String EXTRA_IMAGE_URI = "ru.taaasty.extra.IMAGE_URI";
 
@@ -57,10 +61,18 @@ public class UploadService extends IntentService {
      *
      * @see IntentService
      */
-    public static void startPostEntry(Context context, PostEntry entry) {
+    public static void startPostEntry(Context context, PostForm form) {
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_POST_ENTRY);
-        intent.putExtra(EXTRA_ENTRY, entry);
+        intent.putExtra(EXTRA_FORM, form);
+        context.startService(intent);
+    }
+
+    public static void startEditEntry(Context context, long entryId, PostForm form) {
+        Intent intent = new Intent(context, UploadService.class);
+        intent.setAction(ACTION_EDIT_ENTRY);
+        intent.putExtra(EXTRA_ENTRY_ID, entryId);
+        intent.putExtra(EXTRA_FORM, form);
         context.startService(intent);
     }
 
@@ -92,8 +104,12 @@ public class UploadService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_POST_ENTRY.equals(action)) {
-                PostEntry entry = intent.getParcelableExtra(EXTRA_ENTRY);
+                PostForm entry = intent.getParcelableExtra(EXTRA_FORM);
                 handlePostEntry(entry);
+            } else if (ACTION_EDIT_ENTRY.equals(action)) {
+                PostForm entry = intent.getParcelableExtra(EXTRA_FORM);
+                long postId = intent.getLongExtra(EXTRA_ENTRY_ID, -1);
+                handleEditEntry(postId, entry);
             } else if (ACTION_UPLOAD_USERPIC.equals(action)) {
                 Uri imageUri = intent.getParcelableExtra(EXTRA_IMAGE_URI);
                 long userId = intent.getLongExtra(EXTRA_USER_ID, -1);
@@ -110,37 +126,80 @@ public class UploadService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handlePostEntry(PostEntry entry) {
-        PostUploadStatus status;
-        Response response;
+    private void handlePostEntry(PostForm form) {
+        EntryUploadStatus status;
+        Entry response = null;
 
         try {
-            if (entry instanceof PostTextEntry) {
-                PostTextEntry pte = (PostTextEntry)entry;
-                response = mApiEntriesService.createTextPostSync(pte.title, pte.text, entry.privacy);
-            } else if (entry instanceof PostQuoteEntry) {
-                PostQuoteEntry pqe = (PostQuoteEntry)entry;
-                response = mApiEntriesService.createQuoteEntrySync(pqe.text, pqe.source, entry.privacy);
-            } else if (entry instanceof PostImageEntry) {
-                PostImageEntry pie = (PostImageEntry)entry;
+            if (form instanceof PostTextForm) {
+                PostTextForm postText = (PostTextForm)form;
+                response = mApiEntriesService.createTextPostSync(
+                        UiUtils.safeToHtml(postText.title),
+                        UiUtils.safeToHtml(postText.text), form.privacy);
+            } else if (form instanceof PostQuoteForm) {
+                PostQuoteForm postQuote = (PostQuoteForm)form;
+                response = mApiEntriesService.createQuoteEntrySync(
+                        UiUtils.safeToHtml(postQuote.text),
+                        UiUtils.safeToHtml(postQuote.source), form.privacy);
+            } else if (form instanceof PostImageForm) {
+                PostImageForm postImage = (PostImageForm)form;
                 response = mApiEntriesService.createImagePostSync(
-                        pie.title,
-                        entry.privacy,
-                        pie.imageUri == null ? null : new ContentTypedOutput(this, pie.imageUri, null)
+                        UiUtils.safeToHtml(postImage.title),
+                        form.privacy,
+                        postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
             } else {
                 throw new IllegalStateException();
             }
-            status = PostUploadStatus.createPostCompleted(entry);
+            status = EntryUploadStatus.createPostCompleted(form);
         } catch (NetworkUtils.ResponseErrorException ree) {
-            status = PostUploadStatus.createPostFinishedWithError(entry, ree.error.error, ree);
+            status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;
-            status = PostUploadStatus.createPostFinishedWithError(entry, getString(R.string.error_vote), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
         EventBus.getDefault().post(status);
+        if (response != null) EventBus.getDefault().post(new EntryChanged(response));
+    }
+
+    private void handleEditEntry(long entryId, PostForm form) {
+        EntryUploadStatus status;
+        Entry response = null;
+
+        try {
+            if (form instanceof PostTextForm) {
+                PostTextForm postText = (PostTextForm)form;
+                response = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
+                        postText.title == null ? null : UiUtils.safeToHtml(postText.title),
+                        postText.text == null ? null : UiUtils.safeToHtml(postText.text), form.privacy);
+            } else if (form instanceof PostQuoteForm) {
+                PostQuoteForm postQuote = (PostQuoteForm)form;
+                response = mApiEntriesService.updateQuoteEntrySync(String.valueOf(entryId),
+                        postQuote.text == null ? null : UiUtils.safeToHtml(postQuote.text),
+                        postQuote.source == null ? null : UiUtils.safeToHtml(postQuote.source), form.privacy);
+            } else if (form instanceof PostImageForm) {
+                PostImageForm postImage = (PostImageForm)form;
+                response = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
+                        postImage.title == null ? null : UiUtils.safeToHtml(postImage.title),
+                        form.privacy,
+                        postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
+                );
+            } else {
+                throw new IllegalStateException();
+            }
+            status = EntryUploadStatus.createPostCompleted(form);
+        } catch (NetworkUtils.ResponseErrorException ree) {
+            status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
+        } catch (Exception ex) {
+            if (DBG) throw ex;
+            status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
+        }
+
+        if (DBG) Log.v(TAG, "status: " + status);
+        EventBus.getDefault().post(status);
+        if (response != null) EventBus.getDefault().post(new EntryChanged(response));
     }
 
     private void handleUploadUserpic(long userId, Uri imageUri) {

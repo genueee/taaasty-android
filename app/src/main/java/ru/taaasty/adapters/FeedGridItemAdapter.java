@@ -27,8 +27,8 @@ import ru.taaasty.adapters.grid.GridEntryPendingResource;
 import ru.taaasty.adapters.grid.GridImageEntry;
 import ru.taaasty.adapters.grid.GridQuoteEntry;
 import ru.taaasty.adapters.grid.GridTextEntry;
-import ru.taaasty.events.PostRemoved;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
+import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -229,11 +229,11 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         mFeedAppendSubscription.unsubscribe();
     }
 
-    public void onEventMainThread(UserLikeOrCommentUpdate update) {
+    public void onEventMainThread(EntryChanged update) {
         updateEntry(update.postEntry);
     }
 
-    public void onEventMainThread(PostRemoved event) {
+    public void onEventMainThread(EntryRemoved event) {
         deleteEntry(event.postId);
     }
 

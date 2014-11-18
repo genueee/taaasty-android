@@ -233,13 +233,13 @@ public class FeedList implements Parcelable {
 
     /**
      * Удаление записи из списка
-     * @param entryId ID записи
+     * @param entryId ID статьи
      */
     public void deleteEntry(long entryId) {
         int size = mFeed.size();
-        for (int i = size - 1; i > 0; i--) {
+        for (int i = size - 1; i >= 0; i--) {
             // Удаляем все записи, комментарии и формы ответа
-            if (mFeed.get(i).getId() == entryId) {
+            if (mFeed.get(i).entry.getId() == entryId) {
                 mFeed.remove(i);
                 mListener.onItemRemoved(i);
             }

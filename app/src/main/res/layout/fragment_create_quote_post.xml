@@ -13,7 +13,7 @@
         <EditText
             android:id="@+id/text"
             android:layout_marginTop="8dp"
-            android:inputType="textCapSentences"
+            android:inputType="textCapSentences|textMultiLine"
             android:hint="@string/quote_text_hint"
             style="@style/CreatePostEditText" />
 
@@ -22,7 +22,7 @@
             style="@style/CreatePostEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="textCapSentences"
+            android:inputType="textCapSentences|textMultiLine"
             android:gravity="top|right"
             android:scrollHorizontally="false"
             android:hint="@string/quote_source_hint"

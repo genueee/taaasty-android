@@ -16,9 +16,9 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.CommentRemoved;
-import ru.taaasty.events.PostRemoved;
+import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.events.ReportCommentSent;
-import ru.taaasty.events.UserLikeOrCommentUpdate;
 import ru.taaasty.model.Entry;
 import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiEntries;
@@ -231,7 +231,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onCompleted() {
-            EventBus.getDefault().post(new PostRemoved(mPostId));
+            EventBus.getDefault().post(new EntryRemoved(mPostId));
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.post_removed, Toast.LENGTH_LONG).show();
         }
 
@@ -314,7 +314,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         public void onCompleted() {
             EventBus bus = EventBus.getDefault();
             bus.post(new CommentRemoved(mCommentId));
-            if (mNewEntry != null) bus.post(new UserLikeOrCommentUpdate(mNewEntry));
+            if (mNewEntry != null) bus.post(new EntryChanged(mNewEntry));
             Toast.makeText(DeleteOrReportDialogActivity.this, R.string.comment_removed, Toast.LENGTH_LONG).show();
         }
 

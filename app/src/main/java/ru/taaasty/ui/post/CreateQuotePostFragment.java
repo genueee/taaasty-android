@@ -12,8 +12,8 @@ import android.widget.EditText;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
-import ru.taaasty.events.PostUploadStatus;
-import ru.taaasty.model.PostQuoteEntry;
+import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.PostQuoteForm;
 
 public class CreateQuotePostFragment extends CreatePostFragmentBase {
 
@@ -21,8 +21,15 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     private static final String SHARED_PREFS_KEY_TEXT = "text";
     private static final String SHARED_PREFS_KEY_SOURCE = "source";
 
+    private static final String ARG_EDIT_POST = "edit_post";
+    private static final String ARG_ORIGINAL_TEXT = "original_text";
+
     private EditText mTextView;
     private EditText mSourceView;
+
+    private boolean mEditPost;
+
+    private PostQuoteForm mOriginal;
 
     private OnCreatePostInteractionListener mListener;
 
@@ -35,6 +42,17 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     public static CreateQuotePostFragment newInstance() {
         return new CreateQuotePostFragment();
     }
+
+    public static CreateQuotePostFragment newEditPostInstance(PostQuoteForm originalText) {
+        CreateQuotePostFragment fragment = new CreateQuotePostFragment();
+        Bundle bundle = new Bundle(2);
+        bundle.putBoolean(ARG_EDIT_POST, true);
+        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
     public CreateQuotePostFragment() {
         // Required empty public constructor
     }
@@ -43,6 +61,11 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
+        if (getArguments() != null) {
+            mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
+            mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
+            if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
+        }
     }
 
     @Override
@@ -52,10 +75,10 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     }
 
     @Override
-    public PostQuoteEntry getForm() {
-        PostQuoteEntry form= new PostQuoteEntry();
-        form.text = mTextView.getText().toString();
-        form.source = mSourceView.getText().toString();
+    public PostQuoteForm getForm() {
+        PostQuoteForm form= new PostQuoteForm();
+        form.text = mTextView.getText();
+        form.source = mSourceView.getText();
         return form;
     }
 
@@ -65,6 +88,12 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         View root = inflater.inflate(R.layout.fragment_create_quote_post, container, false);
         mTextView = (EditText)root.findViewById(R.id.text);
         mSourceView = (EditText)root.findViewById(R.id.edit_quote_source);
+
+        if (mEditPost) {
+            mTextView.setText(mOriginal.text);
+            mSourceView.setText(mOriginal.source);
+        }
+
         mTextView.addTextChangedListener(mTextWatcher);
         return root;
     }
@@ -72,13 +101,13 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     @Override
     public void onResume() {
         super.onResume();
-        restoreInputValues();
+        if (!mEditPost) restoreInputValues();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        saveInputValues();
+        if (!mEditPost) saveInputValues();
     }
 
     @Override
@@ -87,19 +116,14 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         EventBus.getDefault().unregister(this);
     }
 
-    public void onEventMainThread(PostUploadStatus status) {
+    public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
-        if (status.successfully && status.entry instanceof PostQuoteEntry) {
+        if (status.successfully && status.entry instanceof PostQuoteForm && !mEditPost) {
             // Скорее всего наша форма. Очищаем все и вся
             if (mTextView != null) mTextView.setText("");
             if (mSourceView != null) mSourceView.setText("");
             clearSharedPrefs();
         }
-    }
-
-    public void setTextPostForm(CharSequence title, CharSequence text) {
-        mTextView.setText(title);
-        mSourceView.setText(text);
     }
 
     private final TextWatcher mTextWatcher = new TextWatcher() {
@@ -125,16 +149,18 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     }
 
     private void saveInputValues() {
-        if (mSourceView == null || mTextView == null || getActivity() == null) return;
+        if (mSourceView == null || mTextView == null || getActivity() == null || mEditPost) return;
         saveInputValues(mTextView.getText().toString(), mSourceView.getText().toString());
     }
 
     private void clearSharedPrefs() {
+        if (mEditPost) return;
         getActivity().getSharedPreferences(SHARED_PREFS_NAME,0).edit().clear().commit();
     }
 
     private void saveInputValues(String text, String source) {
         if (getActivity() == null) return;
+        if (mEditPost) return;
 
         getActivity().getSharedPreferences(SHARED_PREFS_NAME,0)
                 .edit()
@@ -145,6 +171,7 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
 
     private void restoreInputValues() {
         if (mTextView == null || mSourceView == null || getActivity() == null) return;
+        if (mEditPost) return;
         SharedPreferences prefs = getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0);
         String text = prefs.getString(SHARED_PREFS_KEY_TEXT, null);
         String source = prefs.getString(SHARED_PREFS_KEY_SOURCE, null);

@@ -32,7 +32,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.FragmentActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.events.PostRemoved;
+import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -405,7 +405,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
     }
 
-    public void onEventMainThread(PostRemoved event) {
+    public void onEventMainThread(EntryRemoved event) {
         if( event.postId == mPostId) {
             finish();
         }

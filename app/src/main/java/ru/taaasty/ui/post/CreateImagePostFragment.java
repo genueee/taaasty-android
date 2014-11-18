@@ -27,14 +27,17 @@ import java.net.URISyntaxException;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.events.PostUploadStatus;
-import ru.taaasty.model.PostEntry;
-import ru.taaasty.model.PostImageEntry;
+import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.PostForm;
+import ru.taaasty.model.PostImageForm;
 import ru.taaasty.utils.ImageUtils;
 
 public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreateImagePostFragment";
+
+    private static final String ARG_EDIT_POST = "edit_post";
+    private static final String ARG_ORIGINAL_TEXT = "original_text";
 
     private static final String SHARED_PREFS_NAME = "CreateImagePostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
@@ -44,6 +47,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 101;
     private static final int REQUEST_FEATHER_PHOTO = Activity.RESULT_FIRST_USER + 102;
 
+    private static final String KEY_IMAGE_URI = "ru.taaasty.ui.post.CreateImagePostFragment.KEY_IMAGE_URI";
     private static final String KEY_MAKE_PHOTO_DST_URI = "ru.taaasty.ui.post.CreateImagePostFragment.KEY_MAKE_PHOTO_DST_URI";
 
     private EditText mTitleView;
@@ -56,9 +60,24 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Nullable
     private Uri mImageUri;
 
+    private boolean mEditPost;
+
+    private PostImageForm mOriginal;
+
     public static CreateImagePostFragment newInstance() {
         return new CreateImagePostFragment();
     }
+
+    public static CreateImagePostFragment newEditPostInstance(PostImageForm originalText) {
+        CreateImagePostFragment fragment = new CreateImagePostFragment();
+        Bundle bundle = new Bundle(2);
+        bundle.putBoolean(ARG_EDIT_POST, true);
+        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+
     public CreateImagePostFragment() {
         // Required empty public constructor
     }
@@ -66,7 +85,18 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null) mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_MAKE_PHOTO_DST_URI);
+        if (DBG) Log.v(TAG, "onCreate()");
+        if (savedInstanceState != null) {
+            mImageUri = savedInstanceState.getParcelable(KEY_IMAGE_URI);
+            mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_MAKE_PHOTO_DST_URI);
+        }
+
+        if (getArguments() != null) {
+            mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
+            mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
+            if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
+        }
+
         EventBus.getDefault().register(this);
     }
 
@@ -84,6 +114,13 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnLongClickListener(onChoosePhotoClickListener);
         mImageView.setOnClickListener(onChoosePhotoClickListener);
         mImageView.setOnLongClickListener(onChoosePhotoClickListener);
+
+        if (mEditPost && savedInstanceState == null) {
+            mTitleView.setText(mOriginal.title);
+            mImageUri = mOriginal.imageUri;
+            refreshImageView();
+        }
+
         return root;
     }
 
@@ -106,14 +143,18 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Override
     public void onResume() {
         super.onResume();
-        restoreInputValues();
+        if (!mEditPost) {
+            restoreInputValues();
+        } else {
+            refreshImageView();
+        }
         validateFormIfVisible();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        saveInputValues();
+        if (!mEditPost) saveInputValues();
     }
 
     @Override
@@ -126,11 +167,12 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mMakePhotoDstUri != null) outState.putParcelable(KEY_MAKE_PHOTO_DST_URI, mMakePhotoDstUri);
+        if (mImageUri != null) outState.putParcelable(KEY_IMAGE_URI, mImageUri);
     }
 
-    public void onEventMainThread(PostUploadStatus status) {
+    public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
-        if (status.successfully && status.entry instanceof PostImageEntry) {
+        if (status.successfully && status.entry instanceof PostImageForm && !mEditPost) {
             // Скорее всего наша форма. Очищаем все и вся
             if (mTitleView != null) mTitleView.setText("");
             mImageUri = null;
@@ -143,7 +185,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     public void onDeleteImageClicked() {
         mImageUri = null;
         validateFormIfVisible();
-        saveInputValues();
+        if (!mEditPost) saveInputValues();
         refreshImageView();
     }
 
@@ -168,8 +210,8 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     }
 
     @Override
-    public PostEntry getForm() {
-        PostImageEntry form = new PostImageEntry();
+    public PostForm getForm() {
+        PostImageForm form = new PostImageForm();
         form.title = mTitleView.getText().toString();
         form.imageUri = mImageUri;
         return form;
@@ -178,6 +220,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (DBG) Log.v(TAG, "onActivityResult()");
         Uri mOriginalImageUri = mImageUri;
         Uri imageUri = null;
 
@@ -219,10 +262,12 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
         if (!ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
             if (mImageUri != null) ImageUtils.galleryAddPic(getActivity(), mImageUri);
-            getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0)
-                    .edit()
-                    .putString(SHARED_PREFS_KEY_IMAGE_URI, mImageUri == null ? "" : mImageUri.toString())
-                    .commit();
+            if (!mEditPost) {
+                getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0)
+                        .edit()
+                        .putString(SHARED_PREFS_KEY_IMAGE_URI, mImageUri == null ? "" : mImageUri.toString())
+                        .commit();
+            }
         }
     }
 
@@ -279,25 +324,25 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             if (getActivity() == null) return;
             mImageUri = null;
             validateFormIfVisible();
-            saveInputValues();
+            if (!mEditPost) saveInputValues();
             refreshImageView();
             Toast.makeText(getActivity(), R.string.error_loading_image, Toast.LENGTH_LONG).show();
-            refreshImageView();
 
         }
     };
 
     private void saveInputValues() {
-        if (mTitleView == null || getActivity() == null) return;
+        if (mTitleView == null || getActivity() == null || mEditPost) return;
         saveInputValues(mTitleView.getText().toString(), mImageUri);
     }
 
     private void clearSharedPrefs() {
+        if (mEditPost) return;
         getActivity().getSharedPreferences(SHARED_PREFS_NAME,0).edit().clear().commit();
     }
 
     private void saveInputValues(String title, @Nullable Uri imageUri) {
-        if (getActivity() == null) return;
+        if (getActivity() == null || mEditPost) return;
 
         getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0)
                 .edit()
@@ -307,7 +352,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     }
 
     private void restoreInputValues() {
-        if (mTitleView == null || getActivity() == null) return;
+        if (mTitleView == null || getActivity() == null || mEditPost) return;
         SharedPreferences prefs = getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0);
         String title = prefs.getString(SHARED_PREFS_KEY_TITLE, null);
         String imageUri = prefs.getString(SHARED_PREFS_KEY_IMAGE_URI, null);

@@ -120,6 +120,7 @@
     <string name="quote_text_hint">Текст цитаты</string>
     <string name="create_post_button_content_description">Опубликовать пост</string>
     <string name="post_created">Пост добавлен</string>
+    <string name="post_edited">Пост изменен</string>
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
     <string name="subscribe_content_description">Подписаться</string>
@@ -219,5 +220,8 @@
     <string name="title_activity_fast_reply_dialog">Быстрый ответ</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_edit_post">EditPostActivity</string>
+    <string name="post_can_only_be_edited_on_website">Этот пост можно отредактировать только на сайте</string>
+    <string name="post_has_not_been_changed">В статье ничего не поменялось</string>
 
 </resources>

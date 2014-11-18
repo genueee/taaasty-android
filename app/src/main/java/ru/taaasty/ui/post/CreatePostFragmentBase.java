@@ -5,7 +5,7 @@ import android.app.Fragment;
 import android.util.Log;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.model.PostEntry;
+import ru.taaasty.model.PostForm;
 
 public abstract class CreatePostFragmentBase extends Fragment {
     private static final String TAG = "CreatePostFragmentBase";
@@ -45,7 +45,7 @@ public abstract class CreatePostFragmentBase extends Fragment {
         mListener = null;
     }
 
-    public abstract PostEntry getForm();
+    public abstract PostForm getForm();
 
     void validateFormIfVisible() {
         if (getUserVisibleHint()) validateForm();
