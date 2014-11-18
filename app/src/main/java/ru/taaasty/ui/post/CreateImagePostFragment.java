@@ -1,7 +1,6 @@
 package ru.taaasty.ui.post;
 
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -18,14 +17,14 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.aviary.android.feather.library.Constants;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import de.greenrobot.event.EventBus;
-import it.sephiroth.android.library.picasso.Callback;
-import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.PostUploadStatus;

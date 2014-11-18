@@ -23,7 +23,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import it.sephiroth.android.library.picasso.Picasso;
+import com.squareup.picasso.Picasso;
+
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;

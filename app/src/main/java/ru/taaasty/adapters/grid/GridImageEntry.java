@@ -14,10 +14,10 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
-import it.sephiroth.android.library.picasso.Callback;
-import it.sephiroth.android.library.picasso.Picasso;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
@@ -31,7 +31,7 @@ import ru.taaasty.widgets.EllipsizingTextView;
 /**
 * Created by alexey on 28.09.14.
 */
-public class GridImageEntry extends GridEntryBase implements Callback  {
+public class GridImageEntry extends GridEntryBase implements Callback {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;

@@ -26,6 +26,8 @@ import android.widget.ImageView;
 import com.aviary.android.feather.headless.utils.MegaPixels;
 import com.aviary.android.feather.library.Constants;
 import com.aviary.android.feather.sdk.FeatherActivity;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
@@ -35,8 +37,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import it.sephiroth.android.library.picasso.Picasso;
-import it.sephiroth.android.library.picasso.Target;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.NativeLruCache;
 import ru.taaasty.R;

@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.util.Log;
 import android.util.LruCache;
 
-import it.sephiroth.android.library.picasso.Cache;
+import com.squareup.picasso.Cache;
 
 /**
  * Created by alexey on 29.09.14.

@@ -27,7 +27,8 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.widget.ImageView;
 
-import it.sephiroth.android.library.picasso.Picasso;
+import com.squareup.picasso.Picasso;
+
 import ru.taaasty.Constants;
 
 public final class PicassoDrawable extends BitmapDrawable {

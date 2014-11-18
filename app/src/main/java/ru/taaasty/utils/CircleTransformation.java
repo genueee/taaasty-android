@@ -5,7 +5,7 @@ import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import it.sephiroth.android.library.picasso.Transformation;
+import com.squareup.picasso.Transformation;
 
 public class CircleTransformation implements Transformation {
     public CircleTransformation() {

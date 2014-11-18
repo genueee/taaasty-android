@@ -18,10 +18,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.RequestCreator;
+
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-import it.sephiroth.android.library.picasso.RequestCreator;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -304,7 +305,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             RequestCreator rq =  NetworkUtils.getInstance().getPicasso(holder.itemView.getContext())
                     .load(backgroudUrl);
             if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2, true)
+                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
                         .centerCrop();
             }
             rq.into(holder.feedDesignTarget);
