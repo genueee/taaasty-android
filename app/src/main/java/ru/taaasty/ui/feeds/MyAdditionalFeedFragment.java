@@ -22,7 +22,6 @@ import android.widget.TextView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import it.sephiroth.android.library.picasso.RequestCreator;
@@ -47,6 +46,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.CirclePageStaticIndicator;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -268,9 +268,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         if (user == null) {
             // XXX
         } else {
-            String name = user.getName();
-            if (name == null) name = "";
-            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
+            String name = UiUtils.capitalize(user.getName());
             if (mAdapter != null) {
                 mAdapter.setTitleUser(name, user);
             }

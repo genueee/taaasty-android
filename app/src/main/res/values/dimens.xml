@@ -47,5 +47,6 @@
 
     <dimen name="image_loading_placeholder_default_size">64dp</dimen>
     <dimen name="grid_feed_item_margin">2.5dp</dimen>
+    <dimen name="user_name_text_size">32sp</dimen>
 
 </resources>

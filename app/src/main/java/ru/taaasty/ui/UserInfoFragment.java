@@ -35,6 +35,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -380,7 +381,7 @@ public class UserInfoFragment extends Fragment {
 
     private void setupUserName() {
         assert mUser != null;
-        mUserName.setText(mUser.getName());
+        mUserName.setText(UiUtils.capitalize(mUser.getName()));
     }
 
     private void setupUserTitle() {

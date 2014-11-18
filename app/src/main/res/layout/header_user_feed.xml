@@ -45,7 +45,7 @@
                 android:paddingRight="8dp"
                 android:singleLine="true"
                 android:textColor="@android:color/white"
-                android:textSize="32sp"
+                android:textSize="@dimen/user_name_text_size"
                 tools:text="Genue" />
 
         </LinearLayout>
