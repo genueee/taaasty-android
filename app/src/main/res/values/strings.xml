@@ -116,6 +116,7 @@
     <string name="image_post_content_description">Пост — изображение</string>
     <string name="quote_post_content_description">Пост — цитата</string>
     <string name="is_private_post_content_description">Приватный пост</string>
+    <string name="is_with_voting">С голосованием</string>
     <string name="quote_source_hint">Подпись</string>
     <string name="quote_text_hint">Текст цитаты</string>
     <string name="create_post_button_content_description">Опубликовать пост</string>

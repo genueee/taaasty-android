@@ -1,0 +1,7 @@
+<selector  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:constantSize="true">
+    <item android:state_pressed="true" android:drawable="@drawable/ic_post_with_vote_pressed"/>
+    <item android:state_activated="true" android:drawable="@drawable/ic_post_with_vote_activated"/>
+    <item android:state_focused="true" android:drawable="@drawable/ic_post_with_vote_pressed"/>
+    <item android:drawable="@drawable/ic_post_with_vote_normal"/>
+</selector>

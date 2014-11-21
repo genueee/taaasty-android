@@ -166,10 +166,7 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             if (v != null) v.setVisibility(currentItem == page ? View.VISIBLE : View.INVISIBLE);
         }
         mCreatePostButtons.setActivated(currentItem.buttonViewId);
-
-        mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
-
-        mCreatePostButtons.findViewById(R.id.private_post_indicator).setActivated(!mEntry.isPublic());
+        mCreatePostButtons.setPrivacy(mEntry.getPrivacy());
     }
 
     private void setupActionBar() {
@@ -210,7 +207,7 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             return;
         }
         post = fragment.getForm();
-        post.setIsPrivate(isPostPrivate());
+        post.privacy = mCreatePostButtons.getPrivacy();
         originalPost = getOriginalPost();
         if (!originalPost.equals(post)) {
             UploadService.startEditEntry(this, mEntry.getId(), getChangedPost(post));
@@ -311,10 +308,6 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         return res;
     }
 
-    private boolean isPostPrivate() {
-        return findViewById(R.id.private_post_indicator).isActivated();
-    }
-
     private void setUploadingStatus(boolean uploading) {
         View progress = findViewById(R.id.progress);
         progress.setVisibility(uploading ? View.VISIBLE : View.GONE);
@@ -331,19 +324,6 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             ert.setError(error);
         }
     }
-
-    private final CreatePostButtons.onCreatePostButtonsListener mCreatePostButtonsListener = new CreatePostButtons.onCreatePostButtonsListener() {
-        @Override
-        public void onCreatePostButtonClicked(View v) {
-            switch (v.getId()) {
-                case R.id.private_post_indicator:
-                    v.setActivated(!v.isActivated());
-                    break;
-                default:
-                    break;
-            }
-        }
-    };
 
     private CreateImagePostFragment getCurrentImagePostFragment() {
         Fragment fragment = getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);

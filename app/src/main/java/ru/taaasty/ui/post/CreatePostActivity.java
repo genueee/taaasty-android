@@ -20,6 +20,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UploadService;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
@@ -32,7 +33,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
 
     private static final String SHARED_PREFS_NAME = "CreatePostActivity";
-    private static final String SHARED_PREFS_KEY_PRIVATE_POST_STATUS = "provate_post_status";
+    private static final String SHARED_PREFS_KEY_POST_PRIVACY = "post_privacy";
     private static final String SHARED_PREFS_KEY_INITIAL_SECTION = "initial_section";
 
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -47,14 +48,22 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         setContentView(R.layout.activity_create_post);
 
         Page currentItem = Page.TEXT_POST;
-        boolean postPrivate = false;
+        @Entry.EntryPrivacy
+        String postPrivacy = Entry.PRIVACY_PUBLIC;
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(this, getFragmentManager());
 
         if (savedInstanceState == null) {
             // Восстанавливаем значения последнего поста
             SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
-            postPrivate = prefs.getBoolean(SHARED_PREFS_KEY_PRIVATE_POST_STATUS, false);
+            //noinspection ResourceType
+            postPrivacy = prefs.getString(SHARED_PREFS_KEY_POST_PRIVACY, Entry.PRIVACY_PUBLIC);
+            if (!Entry.PRIVACY_PUBLIC.equals(postPrivacy)
+                    && !Entry.PRIVACY_PRIVATE.equals(postPrivacy)
+                    && !Entry.PRIVACY_PUBLIC_WITH_VOTING.equals(postPrivacy)
+                    ) {
+                postPrivacy = Entry.PRIVACY_PUBLIC;
+            }
             String currentItemString = prefs.getString(SHARED_PREFS_KEY_INITIAL_SECTION, null);
             if (currentItemString != null) {
                 currentItem = Page.valueOfPrefsName(currentItemString);
@@ -69,7 +78,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mViewPager.setOffscreenPageLimit(3);
         mCreatePostButtons = (CreatePostButtons)findViewById(R.id.buttons);
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
-        mCreatePostButtons.findViewById(R.id.private_post_indicator).setActivated(postPrivate);
+        mCreatePostButtons.setPrivacy(postPrivacy);
 
         final ActionBar ab = getActionBar();
         if (ab != null) {
@@ -121,13 +130,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             return;
         }
         post = fragment.getForm();
-        post.setIsPrivate(isPostPrivate());
+        post.privacy = mCreatePostButtons.getPrivacy();
         UploadService.startPostEntry(this, post);
         setUploadingStatus(true);
-    }
-
-    public boolean isPostPrivate() {
-        return findViewById(R.id.private_post_indicator).isActivated();
     }
 
     public void onEventMainThread(EntryUploadStatus status) {
@@ -135,7 +140,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         if (status.successfully) {
             // Переходим на страницу, в зависимости от статуса блокировки
             Toast.makeText(this, R.string.post_created, Toast.LENGTH_LONG).show();
-            if (status.entry.isPrivate()) {
+            if (Entry.PRIVACY_PRIVATE.equals(status.entry.privacy)) {
                 // Пост приватный. Переход к скрытым записям
                 setResult(CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN);
             } else {
@@ -171,14 +176,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private final CreatePostButtons.onCreatePostButtonsListener mCreatePostButtonsListener = new CreatePostButtons.onCreatePostButtonsListener() {
         @Override
         public void onCreatePostButtonClicked(View v) {
-           switch (v.getId()) {
-               case R.id.private_post_indicator:
-                   v.setActivated(!v.isActivated());
-                   break;
-               default:
-                   if (v.isActivated()) return;
-                   mViewPager.setCurrentItem(Page.valueOfButtonViewId(v.getId()).ordinal(), true);
-           }
+            if (v.isActivated()) return;
+            mViewPager.setCurrentItem(Page.valueOfButtonViewId(v.getId()).ordinal(), true);
         }
     };
 
@@ -255,7 +254,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private void saveState() {
         getSharedPreferences(SHARED_PREFS_NAME, 0)
                 .edit()
-                .putBoolean(SHARED_PREFS_KEY_PRIVATE_POST_STATUS, isPostPrivate())
+                .putString(SHARED_PREFS_KEY_POST_PRIVACY, mCreatePostButtons.getPrivacy())
                 .putString(SHARED_PREFS_KEY_INITIAL_SECTION,
                         Page.values()[mViewPager.getCurrentItem()].namePrefs)
                 .commit();

@@ -7,13 +7,7 @@ import android.os.Parcelable;
  */
 public abstract class PostForm implements Parcelable {
 
+    @Entry.EntryPrivacy
     public String privacy = Entry.PRIVACY_PUBLIC;
 
-    public void setIsPrivate(boolean isPrivate) {
-        privacy = isPrivate ? Entry.PRIVACY_PRIVATE : Entry.PRIVACY_PUBLIC;
-    }
-
-    public boolean isPrivate() {
-        return Entry.PRIVACY_PRIVATE.equals(privacy);
-    }
 }
