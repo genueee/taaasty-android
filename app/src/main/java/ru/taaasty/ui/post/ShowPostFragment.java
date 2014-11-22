@@ -99,6 +99,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.TileBitmapDrawable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -527,6 +528,28 @@ public class ShowPostFragment extends Fragment {
     }
 
     private void setupPostImage() {
+        if (mListView == null) return;
+        if (mListView.getWidth() != 0) {
+            setupPostImageTreeMeasured();
+        }
+
+        // Для устанвоки картинки почти для всех типов крайне желательно знать ширину контента
+        mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                ViewTreeObserver vo = mListView.getViewTreeObserver();
+                if (vo.isAlive()) {
+                    mListView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    setupPostImageTreeMeasured();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        });
+    }
+
+    private void setupPostImageTreeMeasured() {
         if (mCurrentEntry.isYoutubeVideo()) {
             setupYoutubePostImage();
         } else if (mCurrentEntry.isEmbedd()) {
@@ -722,7 +745,6 @@ public class ShowPostFragment extends Fragment {
         int parentWidth = mListView.getWidth();
         imgSize = image.image.geometry.toImageSize();
         imgSize.shrinkToWidth(parentWidth);
-        imgSize.shrinkToMaxTextureSize();
 
         if (imgSize.width < image.image.geometry.width) {
             // Изображение было уменьшено под размеры imageView
@@ -731,13 +753,11 @@ public class ShowPostFragment extends Fragment {
         } else {
             // Изображение должно быть увеличено под размеры ImageView
             imgSize.stretchToWidth(parentWidth);
-            imgSize.cropToMaxTextureSize();
             imgViewHeight = (int)Math.ceil(imgSize.height);
         }
 
         imageView.setVisibility(View.VISIBLE);
         contentLayout.setVisibility(View.VISIBLE);
-
 
         final String url;
         if (!TextUtils.isEmpty(image.image.path)) {
@@ -778,6 +798,9 @@ public class ShowPostFragment extends Fragment {
 
         if (image.isAnimatedGif()) {
             loadGif(url, imageView);
+        } else if (imgSize.width > ImageUtils.getInstance().getMaxTextureSize()
+                || imgSize.height > ImageUtils.getInstance().getMaxTextureSize()) {
+            loadLargeImage(url, imageView);
         } else {
             final ImageView finalImageView = imageView;
             // Если у нас есть миниаютра, то нет смысла пугать юезра прогрессбарами
@@ -830,6 +853,59 @@ public class ShowPostFragment extends Fragment {
                         author, images, title, url);
             }
         });
+    }
+
+    private void loadLargeImage(String url, final ImageView imageView) {
+        if (mOkHttpClient == null) {
+            mOkHttpClient = NetworkUtils.getInstance().getOkHttpClient();
+        }
+
+        Request request = new Request.Builder()
+                .url(url)
+                .tag(mGifLoadingTag)
+                .build();
+
+        mDynamicContentProgress.setVisibility(View.VISIBLE);
+        mOkHttpClient
+                .newCall(request)
+                .enqueue(new com.squareup.okhttp.Callback() {
+
+                    @Override
+                    public void onFailure(Request request, IOException e) {
+                        reportError(e);
+                    }
+
+                    @Override
+                    public void onResponse(Response response) throws IOException {
+                        try {
+                            if (!response.isSuccessful()) {
+                                throw new IOException("Unexpected code " + response);
+                            }
+                            TileBitmapDrawable.attachTileBitmapDrawable(imageView,
+                                    response.body().bytes(), null, null);
+                            imageView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mDynamicContentProgress.setVisibility(View.GONE);
+                                }
+                            });
+                        } catch (Throwable e) {
+                            reportError(e);
+                        }
+                    }
+
+                    private void reportError(final Throwable exception) {
+                        imageView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mDynamicContentProgress.setVisibility(View.GONE);
+                                imageView.setImageResource(R.drawable.image_load_error);
+                                if (mListener != null)
+                                    mListener.notifyError(getString(R.string.error_loading_image), exception);
+                            }
+                        });
+                    }
+                });
     }
 
     private void loadGif(String url, final ImageView imageView) {

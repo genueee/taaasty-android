@@ -1,6 +1,7 @@
 package ru.taaasty.widgets;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -37,6 +38,11 @@ public class HackyViewPager extends ViewPager {
     public HackyViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
         isLocked = false;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
     }
 
     @Override

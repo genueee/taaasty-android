@@ -150,6 +150,26 @@ public class UiUtils {
         return Math.max(Math.min(value, right), left);
     }
 
+    public static int clamp(int value, int left, int right) {
+        return Math.max(Math.min(value, right), left);
+    }
+
+    public static int ceilLog2(float value) {
+        int i;
+        for (i = 0; i < 31; i++) {
+            if ((1 << i) >= value) break;
+        }
+        return i;
+    }
+
+    public static int floorLog2(float value) {
+        int i;
+        for (i = 0; i < 31; i++) {
+            if ((1 << i) > value) break;
+        }
+        return i - 1;
+    }
+
     public static String parseYoutubeVideoId(String youtubeUrl) {
         Pattern youtubePattern = Pattern.compile(".*(?:youtu.be\\/|v\\/|u\\/\\w\\/|embed\\/|watch\\?v=)([^#\\&\\?]*).*");
         Matcher m = youtubePattern.matcher(youtubeUrl);

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -54,7 +55,7 @@ public class ImageUtils {
 
     private final CircleTransformation mCircleTransformation;
 
-    private int mMaxTextureSize ;
+    private static volatile int sMaxTextureSize = 2048;
 
     private static ImageUtils sInstance;
 
@@ -435,16 +436,16 @@ public class ImageUtils {
     }
 
     public void onAppInit() {
-        initMaxTextureSize();
+        initMaxTextureSize(new Canvas());
     }
 
-    private void initMaxTextureSize() {
+    public static void initMaxTextureSize(Canvas hardwareAcceleratedCanvas) {
         // XXX: не работает нихера
         /*
         int[] maxTextureSize = new int[]{0};
         try {
             GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
-            mMaxTextureSize = maxTextureSize[0];
+            sMaxTextureSize = maxTextureSize[0];
             if (maxTextureSize[0] == 0) {
                 Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE is 0");
                 EGL10 egl = (EGL10) EGLContext.getEGL();
@@ -452,22 +453,25 @@ public class ImageUtils {
                 GL10 gl = (GL10) ctx.getGL();
                 IntBuffer val = IntBuffer.allocate(1);
                 gl.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, val);
-                mMaxTextureSize = val.get();
-                if (mMaxTextureSize == 0) {
+                sMaxTextureSize = val.get();
+                if (sMaxTextureSize == 0) {
                     Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE - 2 is 0");
-                    mMaxTextureSize = 2048;
+                    sMaxTextureSize = 2048;
                 }
             }
         } catch (Throwable ex) {
             Log.i("ImageUtils", "initMaxTextureSize() error", ex);
-            mMaxTextureSize = 2048;
+            sMaxTextureSize = 2048;
         }
         */
-        mMaxTextureSize = 2048;
+
+        if (hardwareAcceleratedCanvas.isHardwareAccelerated()) {
+            sMaxTextureSize = hardwareAcceleratedCanvas.getMaximumBitmapWidth();
+        }
     }
 
     public int getMaxTextureSize() {
-        return mMaxTextureSize;
+        return sMaxTextureSize;
     }
 
 }

@@ -3,12 +3,14 @@ package ru.taaasty.widgets;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.utils.ImageUtils;
 
 import static junit.framework.Assert.assertEquals;
 
@@ -178,6 +180,12 @@ public class ImageViewCompat extends ImageView {
         }
 
         setMeasuredDimension(widthSize, heightSize);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (canvas.isHardwareAccelerated()) ImageUtils.initMaxTextureSize(canvas);
     }
 
     private int resolveAdjustedSize(int desiredSize, int maxSize,
