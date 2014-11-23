@@ -78,7 +78,7 @@ public class CreatePostButtons extends LinearLayout {
             View v = getChildAt(i);
             if (v.getId() == R.id.private_post_indicator
                     || v.getId() == R.id.is_with_voting_indicator
-                    ) continue; // XXX: не учавствует
+                    ) continue; // XXX: не участвует
             v.setActivated(mActivatedElement == v.getId());
         }
     }

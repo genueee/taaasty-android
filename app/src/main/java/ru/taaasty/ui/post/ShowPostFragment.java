@@ -527,6 +527,28 @@ public class ShowPostFragment extends Fragment {
     }
 
     private void setupPostImage() {
+        if (mListView == null) return;
+        if (mListView.getWidth() != 0) {
+            setupPostImageTreeMeasured();
+        }
+
+        // Для устанвоки картинки почти для всех типов крайне желательно знать ширину контента
+        mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                ViewTreeObserver vo = mListView.getViewTreeObserver();
+                if (vo.isAlive()) {
+                    mListView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    setupPostImageTreeMeasured();
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        });
+    }
+
+    private void setupPostImageTreeMeasured() {
         if (mCurrentEntry.isYoutubeVideo()) {
             setupYoutubePostImage();
         } else if (mCurrentEntry.isEmbedd()) {
