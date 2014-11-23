@@ -91,13 +91,4 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
         SubscriptionsFeedFragment fragment = (SubscriptionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.refreshData();
     }
-
-    /**
-     * Юзер ткнул по аватарке в комментарии
-     * @param view
-     */
-    public void onClickOpenTlog(View view) {
-        TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
-    }
-
 }

@@ -221,14 +221,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
     }
 
-    /**
-     * Тык с комментария
-     * @param view
-     */
-    public void onClickOpenTlog(View view) {
-        TlogActivity.startTlogActivity(this, (long) view.getTag(R.id.author), view);
-    }
-
     private void refreshData() {
         TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.refreshData();

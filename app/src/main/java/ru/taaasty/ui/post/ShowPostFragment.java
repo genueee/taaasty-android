@@ -91,6 +91,7 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ImageLoadingGetter;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.ImageUtils;
@@ -1244,6 +1245,11 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onReportContentClicked(View view, Comment comment) {
             DeleteOrReportDialogActivity.startReportComment(getActivity(), comment.getId());
+        }
+
+        @Override
+        public void onAuthorAvatarClicked(View view, Comment comment) {
+            TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
         }
     };
 

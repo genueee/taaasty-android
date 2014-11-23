@@ -33,6 +33,7 @@ import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiComments;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
 import ru.taaasty.ui.post.FastReplyDialogActivity;
 import ru.taaasty.utils.NetworkUtils;
@@ -155,28 +156,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         mPendingResource = pendingResource;
         mCommentViewBinder = new CommentViewBinder();
         mCommentsLoader = new CommentsLoader();
-        setOnCommentButtonClickListener(new CommentsAdapter.OnCommentButtonClickListener() {
-
-            @Override
-            public void onReplyToCommentClicked(View view, Comment comment) {
-                Integer location = getFeed().findCommentLocation(comment.getId());
-                if (location == null) return;
-                FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
-            }
-
-            @Override
-            public void onDeleteCommentClicked(View view, Comment comment) {
-                int location = getFeed().findCommentLocation(comment.getId());
-                DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
-                        mFeed.get(location).entry.getId(),
-                        comment.getId());
-            }
-
-            @Override
-            public void onReportContentClicked(View view, Comment comment) {
-                DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
-            }
-        });
+        setOnCommentButtonClickListener(mOnCommentButtonClickListener);
         setHasStableIds(false);
     }
 
@@ -227,6 +207,14 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
                         @Override
                         public void onClick(View v) {
                             onCommentClicked((CommentsAdapter.ViewHolder)holder);
+                        }
+                    });
+                    ((CommentsAdapter.ViewHolder)holder).avatar.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Comment comment = getCommentAtHolderPosition(holder);
+                            if (comment == null) return;
+                            mOnCommentButtonClickListener.onAuthorAvatarClicked(v, comment);
                         }
                     });
                     break;
@@ -534,10 +522,6 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     }
 
     private void bindComment(CommentsAdapter.ViewHolder holder, Comment comment) {
-        // TODO: избавиться
-        holder.avatar.setTag(R.id.author, comment.getAuthor().getId());
-        holder.comment.setTag(R.id.author, comment.getAuthor().getId());
-
         Long selectedCommentId = mFeed.getSelectedCommentId();
         if (selectedCommentId != null && selectedCommentId == comment.getId()) {
             mCommentViewBinder.bindSelectedComment(holder, comment, mFeedDesign);
@@ -545,6 +529,34 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
             mCommentViewBinder.bindNotSelectedComment(holder, comment, mFeedDesign);
         }
     }
+
+    private final CommentsAdapter.OnCommentButtonClickListener mOnCommentButtonClickListener = new CommentsAdapter.OnCommentButtonClickListener() {
+
+        @Override
+        public void onReplyToCommentClicked(View view, Comment comment) {
+            Integer location = getFeed().findCommentLocation(comment.getId());
+            if (location == null) return;
+            FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
+        }
+
+        @Override
+        public void onDeleteCommentClicked(View view, Comment comment) {
+            int location = getFeed().findCommentLocation(comment.getId());
+            DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
+                    mFeed.get(location).entry.getId(),
+                    comment.getId());
+        }
+
+        @Override
+        public void onReportContentClicked(View view, Comment comment) {
+            DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
+        }
+
+        @Override
+        public void onAuthorAvatarClicked(View view, Comment comment) {
+            TlogActivity.startTlogActivity(view.getContext(), comment.getAuthor().getId(), view);
+        }
+    };
 
     /**
      * Загрузчик комментариев для постов

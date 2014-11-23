@@ -12,12 +12,12 @@
         android:layout_height="wrap_content"
         android:background="@drawable/list_selector_holo_light"
         android:baselineAligned="true"
-        android:clickable="false"
-        android:descendantFocusability="blocksDescendants"
         android:minHeight="48dp"
         android:paddingBottom="16dp"
         android:paddingLeft="38dp"
         android:paddingTop="8dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
         <ImageView
@@ -26,7 +26,7 @@
             android:layout_height="@dimen/avatar_small_diameter"
             android:layout_marginRight="10dp"
             android:background="@drawable/list_selector_holo_light"
-            android:onClick="onClickOpenTlog"
+            android:clickable="true"
             android:src="@drawable/avatar_dummy"
             tools:ignore="ContentDescription" />
 

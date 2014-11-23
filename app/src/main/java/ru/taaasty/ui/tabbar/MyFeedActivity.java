@@ -201,14 +201,6 @@ public class MyFeedActivity extends TabbarActivityBase implements
         mCurrentUserDesign = design;
     }
 
-    /**
-     * Юзер ткнул по аватарке в комментарии
-     * @param view
-     */
-    public void onClickOpenTlog(View view) {
-        TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
-    }
-
     void refreshData() {
         if (mSectionsPagerAdapter == null) return;
         Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());

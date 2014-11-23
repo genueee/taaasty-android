@@ -34,10 +34,13 @@ public class CommentsAdapter extends BaseAdapter {
 
     private TlogDesign mFeedDesign;
 
+    private final OnCommentButtonClickListener mListener;
+
     public CommentsAdapter(Context context, OnCommentButtonClickListener listener) {
         super();
         mInfater = LayoutInflater.from(context);
         mComments = new ArrayList<>();
+        mListener = listener;
         mCommentViewBinder = new CommentViewBinder();
         mCommentViewBinder.setOnCommentButtonClickListener(listener);
         mFeedDesign = TlogDesign.DUMMY;
@@ -130,23 +133,27 @@ public class CommentsAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder vh;
+        final ViewHolder vh;
         View res;
 
         if (convertView == null) {
             res = mInfater.inflate(R.layout.comments_item, parent, false);
             vh = new ViewHolder(res);
             res.setTag(R.id.comment_view_holder, vh);
+            vh.avatar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onAuthorAvatarClicked(v, vh.currentComment);
+                    }
+                }
+            });
         } else {
             res = convertView;
             vh = (ViewHolder) res.getTag(R.id.comment_view_holder);
         }
 
         Comment comment = mComments.get(position);
-
-        // TODO: избавиться
-        vh.avatar.setTag(R.id.author, comment.getAuthor().getId());
-        vh.comment.setTag(R.id.author, comment.getAuthor().getId());
 
         if (mSelectedCommentId != null && mSelectedCommentId == comment.getId()) {
             mCommentViewBinder.bindSelectedComment(vh, comment, mFeedDesign);
@@ -161,19 +168,21 @@ public class CommentsAdapter extends BaseAdapter {
         public void onReplyToCommentClicked(View view, Comment comment);
         public void onDeleteCommentClicked(View view, Comment comment);
         public void onReportContentClicked(View view, Comment comment);
+        public void onAuthorAvatarClicked(View view, Comment comment);
     }
 
     private static class ActionViewClickListener implements View.OnClickListener {
-
         private Comment mComment;
         private OnCommentButtonClickListener mListener;
 
-        public ActionViewClickListener(Comment comment, OnCommentButtonClickListener listener) {
-            setComment(comment, listener);
+        public ActionViewClickListener() {
         }
 
-        public void setComment(Comment comment, OnCommentButtonClickListener listener) {
+        public void setListnener(OnCommentButtonClickListener listener) {
             mListener = listener;
+        }
+
+        public void setComment(Comment comment) {
             mComment = comment;
         }
 
@@ -229,6 +238,8 @@ public class CommentsAdapter extends BaseAdapter {
         @Nullable
         private ActionViewClickListener actionViewClickListener;
 
+        public Comment currentComment;
+
         public ViewHolder(View v) {
             super(v);
             avatarCommentRoot = v.findViewById(R.id.avatar_comment_root);
@@ -238,24 +249,24 @@ public class CommentsAdapter extends BaseAdapter {
             actionViewStub = (ViewStub) v.findViewById(R.id.stub);
         }
 
-        public void inflateActionViewStub() {
+        public void inflateActionViewStub(OnCommentButtonClickListener listener) {
             if (actionViewStub == null) return;
             actionView = actionViewStub.inflate();
             actionViewStub = null;
             replyToCommentButton = actionView.findViewById(R.id.reply_to_comment);
             deleteCommentButton = actionView.findViewById(R.id.delete_comment);
             reportButton = actionView.findViewById(R.id.report_to_moderator);
+
+            actionViewClickListener = new ActionViewClickListener();
+            actionViewClickListener.setListnener(listener);
+            replyToCommentButton.setOnClickListener(actionViewClickListener);
+            deleteCommentButton.setOnClickListener(actionViewClickListener);
+            reportButton.setOnClickListener(actionViewClickListener);
         }
 
-        public void setActionViewListener(Comment comment, OnCommentButtonClickListener listener) {
-            if (actionViewClickListener == null) {
-                actionViewClickListener = new ActionViewClickListener(comment, listener);
-                replyToCommentButton.setOnClickListener(actionViewClickListener);
-                deleteCommentButton.setOnClickListener(actionViewClickListener);
-                reportButton.setOnClickListener(actionViewClickListener);
-            } else {
-                actionViewClickListener.setComment(comment, listener);
-            }
+        public void setComment(Comment comment) {
+            currentComment = comment;
+            if (actionViewClickListener != null) actionViewClickListener.setComment(comment);
         }
     }
 }

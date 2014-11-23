@@ -48,6 +48,7 @@ public class CommentViewBinder {
     }
 
     public void bindNotSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
+        vh.setComment(comment);
         if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
         bindAuthor(vh, comment);
         bindDate(vh, comment);
@@ -61,6 +62,7 @@ public class CommentViewBinder {
     }
 
     public void bindSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
+        vh.setComment(comment);
         bindCommentText(vh, comment, design);
         bindActionView(vh, comment);
         vh.actionView.setVisibility(View.VISIBLE);
@@ -81,7 +83,7 @@ public class CommentViewBinder {
 
     public ValueAnimator createShowButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
         if (vh == null) throw new NullPointerException();
-        vh.inflateActionViewStub();
+        vh.inflateActionViewStub(mListener);
         assert vh.actionView != null;
 
         // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
@@ -168,7 +170,7 @@ public class CommentViewBinder {
     };
 
     public ValueAnimator createHideButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
-        vh.inflateActionViewStub();
+        vh.inflateActionViewStub(mListener);
 
         final int textLeft = vh.comment.getLeft();
         final PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
@@ -222,8 +224,7 @@ public class CommentViewBinder {
     }
 
     private void bindActionView(CommentsAdapter.ViewHolder vh, Comment comment) {
-        vh.inflateActionViewStub();
-        vh.setActionViewListener(comment, mListener);
+        vh.inflateActionViewStub(mListener);
         vh.deleteCommentButton.setVisibility(comment.canDelete() ? View.VISIBLE : View.GONE);
         vh.reportButton.setVisibility(comment.canReport() ? View.VISIBLE : View.GONE);
     }

@@ -221,7 +221,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         }
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -399,10 +398,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         }
 
         ab.setTitle(title);
-    }
-
-    public void onClickOpenTlog(View view) {
-        TlogActivity.startTlogActivity(this, (long)view.getTag(R.id.author), view);
     }
 
     public void onEventMainThread(EntryRemoved event) {

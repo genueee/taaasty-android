@@ -10,12 +10,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:baselineAligned="true"
-        android:clickable="false"
         android:minHeight="48dp"
         android:paddingBottom="16dp"
         android:layout_marginLeft="@dimen/post_item_comments_padding_left"
         android:paddingTop="8dp"
-        android:descendantFocusability="blocksDescendants"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
         <ImageView
@@ -23,9 +23,9 @@
             android:layout_width="@dimen/avatar_small_diameter"
             android:layout_height="@dimen/avatar_small_diameter"
             tools:ignore="ContentDescription"
+            android:clickable="true"
             android:layout_marginRight="10dp"
             android:background="@drawable/list_selector_holo_light"
-            android:onClick="onClickOpenTlog"
             android:src="@drawable/avatar_dummy" />
 
         <ru.taaasty.widgets.LinkifiedTextView
