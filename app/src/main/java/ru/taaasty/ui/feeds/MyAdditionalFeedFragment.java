@@ -384,23 +384,25 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         @Override
         protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            if (!(pHolder instanceof ListEntryBase)) return true;
-            pHolder.itemView.setOnClickListener(mOnItemClickListener);
 
-            ListEntryBase holder = (ListEntryBase)pHolder;
-            holder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-            if (mShowUserAvatar) {
-                holder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
-                        if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                    }
-                });
+            // Все посты
+            if (pHolder instanceof ListEntryBase) {
+                pHolder.itemView.setOnClickListener(mOnItemClickListener);
+                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                if (mShowUserAvatar) {
+                    ((ListEntryBase)pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
+                            if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                        }
+                    });
+                }
+                return true;
             }
-            return true;
-        }
 
+            return false;
+        }
 
         final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
             @Override

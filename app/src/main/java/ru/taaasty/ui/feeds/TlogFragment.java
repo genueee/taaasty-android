@@ -286,7 +286,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         private User mUser = User.DUMMY;
 
         public Adapter(Context context, FeedList feed) {
-            super(context, feed, true, false);
+            super(context, feed, false);
         }
 
         @Override

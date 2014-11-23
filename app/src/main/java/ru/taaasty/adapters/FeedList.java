@@ -32,17 +32,14 @@ public class FeedList implements Parcelable {
     // Созданный объект для #sortUniqItems()
     private final Map<Object, FeedListItem> mSortUniqMap;
 
-    private final boolean isListWithComments;
-
     /**
      * ID комментария, для которого показывается меню с доп. действиями
      */
     private Long mSelectedCommentId;
 
-    public FeedList(boolean addComments) {
+    public FeedList() {
         mFeed = new ArrayList<>();
         mSortUniqMap = new HashMap<>();
-        isListWithComments = addComments;
     }
 
     public void setListener(FeedChangedListener listener) {
@@ -156,7 +153,7 @@ public class FeedList implements Parcelable {
     public void setFeed(List<FeedListItem> feed) {
         mFeed.clear();
         mFeed.addAll(feed);
-        if (isListWithComments)  for (FeedListItem item: feed) {
+        for (FeedListItem item: feed) {
             if (item.isEntry()) mFeed.add(FeedListItem.createReplyForm(item.entry));
         }
         sortUniqItems();
@@ -173,7 +170,7 @@ public class FeedList implements Parcelable {
         boolean adedAllItems = true;
         int location = mFeed.size();
         mFeed.addAll(wrapEntries(feed));
-        if (isListWithComments)  for (Entry e: feed) mFeed.add(FeedListItem.createReplyForm(e));
+        for (Entry e: feed) mFeed.add(FeedListItem.createReplyForm(e));
         sortUniqItems();
         int locationAfter = mFeed.size();
         /*
@@ -195,7 +192,7 @@ public class FeedList implements Parcelable {
      */
     public void addEntries(List<Entry> entries) {
         mFeed.addAll(wrapEntries(entries));
-        if (isListWithComments)  for (Entry e: entries) mFeed.add(FeedListItem.createReplyForm(e));
+        for (Entry e: entries) mFeed.add(FeedListItem.createReplyForm(e));
         sortUniqItems();
         mListener.onDataSetChanged();
     }
@@ -327,7 +324,6 @@ public class FeedList implements Parcelable {
 
     private boolean refreshCommentReplyButton(Entry entry) {
         boolean dataSetChanged = false;
-        if (!isListWithComments) return false;
 
         boolean itemFound = false;
         for (FeedListItem item : mFeed) {
@@ -363,13 +359,11 @@ public class FeedList implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeTypedList(mFeed);
-        dest.writeByte(isListWithComments ? (byte) 1 : (byte) 0);
         dest.writeValue(this.mSelectedCommentId);
     }
 
     private FeedList(Parcel in) {
         mFeed = in.createTypedArrayList(FeedListItem.CREATOR);
-        this.isListWithComments = in.readByte() != 0;
         this.mSelectedCommentId = (Long) in.readValue(Long.class.getClassLoader());
         mSortUniqMap = new HashMap<>(mFeed.size());
     }

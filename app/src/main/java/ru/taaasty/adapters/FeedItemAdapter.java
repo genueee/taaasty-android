@@ -71,8 +71,6 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     private final int mPendingResource;
 
-    private final boolean mShowComments;
-
     private final Set<Long> mUpdateRatingEntrySet;
 
     private AtomicBoolean mLoading = new AtomicBoolean(false);
@@ -97,15 +95,11 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedListItem entry);
     }
 
-    public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showComments, boolean showUserAvatar) {
-        this(context, feed, showUserAvatar, showComments, R.layout.endless_loading_indicator);
-    }
-
     public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar) {
-        this(context, feed, showUserAvatar, false, R.layout.endless_loading_indicator);
+        this(context, feed, showUserAvatar, R.layout.endless_loading_indicator);
     }
 
-    public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar, boolean showComments, int pendingResource) {
+    public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar, int pendingResource) {
         super();
 
         FeedList.FeedChangedListener feedChangedListener = new FeedList.FeedChangedListener() {
@@ -151,7 +145,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
             }
         };
 
-        mFeed = feed != null ? feed : new FeedList(showComments);
+        mFeed = feed != null ? feed : new FeedList();
         mFeed.setListener(feedChangedListener);
         mContext = context;
         mInfater = LayoutInflater.from(context);
@@ -159,37 +153,31 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         mUpdateRatingEntrySet = new HashSet<>();
         mShowUserAvatar = showUserAvatar;
         mPendingResource = pendingResource;
-        mShowComments = showComments;
-        if (showComments) {
-            mCommentViewBinder = new CommentViewBinder();
-            mCommentsLoader = new CommentsLoader();
-            setOnCommentButtonClickListener(new CommentsAdapter.OnCommentButtonClickListener() {
+        mCommentViewBinder = new CommentViewBinder();
+        mCommentsLoader = new CommentsLoader();
+        setOnCommentButtonClickListener(new CommentsAdapter.OnCommentButtonClickListener() {
 
-                @Override
-                public void onReplyToCommentClicked(View view, Comment comment) {
-                    Integer location = getFeed().findCommentLocation(comment.getId());
-                    if (location == null) return;
-                    FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
-                }
+            @Override
+            public void onReplyToCommentClicked(View view, Comment comment) {
+                Integer location = getFeed().findCommentLocation(comment.getId());
+                if (location == null) return;
+                FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
+            }
 
-                @Override
-                public void onDeleteCommentClicked(View view, Comment comment) {
-                    int location = getFeed().findCommentLocation(comment.getId());
-                    DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
-                            mFeed.get(location).entry.getId(),
-                            comment.getId());
-                }
+            @Override
+            public void onDeleteCommentClicked(View view, Comment comment) {
+                int location = getFeed().findCommentLocation(comment.getId());
+                DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
+                        mFeed.get(location).entry.getId(),
+                        comment.getId());
+            }
 
-                @Override
-                public void onReportContentClicked(View view, Comment comment) {
-                    DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
-                }
-            });
-        } else {
-            mCommentsLoader = null;
-            mCommentViewBinder = null;
-        }
-        setHasStableIds(!mShowComments);
+            @Override
+            public void onReportContentClicked(View view, Comment comment) {
+                DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
+            }
+        });
+        setHasStableIds(false);
     }
 
     @Override
@@ -273,10 +261,8 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
             Entry entry = feedListItem.entry;
             ((ListEntryBase) viewHolder).getEntryActionBar().setOnItemListenerEntry(entry);
             ((ListEntryBase) viewHolder).setupEntry(entry, mFeedDesign);
-            if (mShowComments) {
-                mCommentsLoader.onBindComment(entry, feedLocation);
-                bindCommentProgressbar((ListEntryBase) viewHolder, feedListItem);
-            }
+            mCommentsLoader.onBindComment(entry, feedLocation);
+            bindCommentProgressbar((ListEntryBase) viewHolder, feedListItem);
         } else if (feedListItem.isReplyForm()) {
         } else {
             bindComment((CommentsAdapter.ViewHolder) viewHolder, feedListItem.comment);
@@ -392,7 +378,6 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
      * @param feedListItem
      */
     private void bindCommentProgressbar(ListEntryBase holder, FeedListItem feedListItem) {
-        if (!mShowComments) return;
         long entryId = feedListItem.entry.getId();
         boolean isLoading = mCommentsLoader.isCommentsLoading(entryId);
         int commentsCount = feedListItem.entry.getCommentsCount();
@@ -497,7 +482,6 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     }
 
     public void onEventMainThread(CommentRemoved event) {
-        if (!mShowComments) return;
         mFeed.deleteComment(event.commentId);
     }
 

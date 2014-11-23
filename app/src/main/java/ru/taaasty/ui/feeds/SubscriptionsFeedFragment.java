@@ -233,7 +233,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     class Adapter extends FeedItemAdapter {
 
         public Adapter(Context context, FeedList feed) {
-            super(context, feed, true, true);
+            super(context, feed, true);
         }
 
         @Override
