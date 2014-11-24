@@ -13,9 +13,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.Objects;
 
 /**
- * Created by alexey on 22.10.14.
+ * Уведомление
  */
 public class Notification implements Parcelable {
 
@@ -26,10 +27,14 @@ public class Notification implements Parcelable {
     public static final String ENTITY_TYPE_COMMENT = "Comment";
 
     public static Comparator<Notification> SORT_BY_CREATED_AT_COMPARATOR = new Comparator<Notification>() {
-
         @Override
         public int compare(Notification lhs, Notification rhs) {
-            return lhs.createdAt.compareTo(rhs.createdAt);
+            int createdAtDiff = lhs.createdAt.compareTo(rhs.createdAt);
+            if (createdAtDiff == 0) {
+                return Objects.compare(lhs.id, rhs.id);
+            } else {
+                return createdAtDiff;
+            }
         }
     };
 

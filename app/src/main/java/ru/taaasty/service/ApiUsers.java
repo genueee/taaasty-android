@@ -1,5 +1,7 @@
 package ru.taaasty.service;
 
+import java.util.List;
+
 import retrofit.http.DELETE;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
@@ -7,10 +9,12 @@ import retrofit.http.GET;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.Part;
+import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.RecoveryPasswordResponse;
 import ru.taaasty.model.Status;
+import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
 import rx.Observable;
 
@@ -68,5 +72,14 @@ public interface ApiUsers {
      */
     @DELETE("/users/userpic.json")
     Observable<Status> deleteUserpic();
+
+    /**
+     * Список пользователей, имена которых включают запрос
+     * @param query
+     * @param limit
+     * @return
+     */
+    @GET("/users/predict.json")
+    Observable<List<User>> predict(@Query("query") String query, @Query("limit") Integer limit);
 
 }

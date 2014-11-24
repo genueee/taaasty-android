@@ -9,7 +9,7 @@
     <!-- Диаметр окружности с аватаркой автора в ленте -->
     <dimen name="avatar_small_diameter">48dp</dimen>
 
-    <dimen name="avatar_feed_list_diameter">42dp</dimen>
+    <dimen name="avatar_small_diameter_42dp">42dp</dimen>
 
     <!-- Диаметр окружноти с аватаркой в заголовке на странице пользователя -->
     <dimen name="avatar_normal_diameter">120dp</dimen>

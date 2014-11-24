@@ -182,9 +182,7 @@ public class ImageUtils {
             sh.setIntrinsicWidth(width);
             sh.setIntrinsicHeight(height);
         } else if (drawable instanceof NinePatchDrawable) {
-            drawable.setBounds(0, 0, width, height); // XXX: а оно точно работает?
         } else {
-            drawable.setBounds(0, 0, width, height);
             if (BuildConfig.DEBUG) Log.e("ImageUtils", "changeDrawableIntristicSizeAndBounds() of " + drawable.getClass().toString(),  new IllegalStateException("unsupported"));
         }
         return mutable;

@@ -42,6 +42,11 @@ public interface Constants {
     public static final int LIST_FEED_INITIAL_LENGTH = 15;
 
     /**
+     * Кол-во последних сообщений
+     */
+    public static final int MESSAGES_INITIAL_LENGTH = 15;
+
+    /**
      * Кол-во по подгрузке
      */
     public static final int LIST_FEED_APPEND_LENGTH = 50;

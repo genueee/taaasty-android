@@ -1,0 +1,58 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="ru.taaasty.ui.messages.NotificationsFragment">
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        tools:visibility="visible"
+        style="?android:progressBarStyleLarge"
+        android:layout_centerInParent="true" />
+
+    <TextView
+        android:id="@+id/empty_text"
+        android:text="@string/no_conversations"
+        tools:visibility="visible"
+        style="@style/EmptyTextStyle" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/initiate_conversation"
+        android:scrollbars="vertical"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        android:paddingBottom="8dp"
+        android:paddingRight="4dp"
+        android:divider="@drawable/followings_list_divider"
+        android:scrollbarStyle="outsideOverlay"
+        android:smoothScrollbar="false"
+        android:overScrollMode="never"
+        android:clipToPadding="false"
+        tools:listitem="@layout/notifications_item"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@id/initiate_conversation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/btn_green_background"
+        android:layout_alignParentBottom="true"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:minHeight="50dp"
+        android:padding="16dp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        android:clickable="true"
+        android:text="@string/initiate_conversation" />
+
+</RelativeLayout>

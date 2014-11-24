@@ -2,8 +2,12 @@ package ru.taaasty.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
+import java.util.Comparator;
 import java.util.Date;
+
+import ru.taaasty.utils.Objects;
 
 /**
  * Created by alexey on 22.10.14.
@@ -18,7 +22,7 @@ public class Conversation implements Parcelable {
 
     public Date updatedAt;
 
-    public long recipient_id;
+    public long recipientId;
 
     public User recipient = User.DUMMY;
 
@@ -30,7 +34,26 @@ public class Conversation implements Parcelable {
 
     public Message lastMessage = Message.DUMMY;
 
+    public static Comparator<Conversation> SORT_BY_CREATED_AT_COMPARATOR = new Comparator<Conversation>() {
+        @Override
+        public int compare(Conversation lhs, Conversation rhs) {
+            int createdAtDiff = lhs.createdAt.compareTo(rhs.createdAt);
+            if (createdAtDiff == 0) {
+                return Objects.compare(lhs.id, rhs.id);
+            } else {
+                return createdAtDiff;
+            }
+        }
+    };
+
     public static class Message implements Parcelable {
+
+        public static Comparator<Message> SORT_BY_ID_COMPARATOR = new Comparator<Message>() {
+            @Override
+            public int compare(Message lhs, Message rhs) {
+                return Objects.unsignedCompare(lhs.id, rhs.id);
+            }
+        };
 
         public static final Message DUMMY = new Message();
 
@@ -38,11 +61,22 @@ public class Conversation implements Parcelable {
 
         public long userId;
 
+        public long conversationId;
+
         public long recipientId;
 
-        public Date created_at;
+        @Nullable
+        public String uuid;
 
-        public String content_html;
+        public Date createdAt;
+
+        @Nullable
+        public Date readAt;
+
+        public String contentHtml;
+
+        public Message() {
+        }
 
         @Override
         public int describeContents() {
@@ -53,24 +87,28 @@ public class Conversation implements Parcelable {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeLong(this.id);
             dest.writeLong(this.userId);
+            dest.writeLong(this.conversationId);
             dest.writeLong(this.recipientId);
-            dest.writeLong(created_at != null ? created_at.getTime() : -1);
-            dest.writeString(this.content_html);
-        }
-
-        public Message() {
+            dest.writeString(this.uuid);
+            dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
+            dest.writeLong(readAt != null ? readAt.getTime() : -1);
+            dest.writeString(this.contentHtml);
         }
 
         private Message(Parcel in) {
             this.id = in.readLong();
             this.userId = in.readLong();
+            this.conversationId = in.readLong();
             this.recipientId = in.readLong();
-            long tmpCreated_at = in.readLong();
-            this.created_at = tmpCreated_at == -1 ? null : new Date(tmpCreated_at);
-            this.content_html = in.readString();
+            this.uuid = in.readString();
+            long tmpCreatedAt = in.readLong();
+            this.createdAt = tmpCreatedAt == -1 ? null : new Date(tmpCreatedAt);
+            long tmpReadAt = in.readLong();
+            this.readAt = tmpReadAt == -1 ? null : new Date(tmpReadAt);
+            this.contentHtml = in.readString();
         }
 
-        public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
+        public static final Creator<Message> CREATOR = new Creator<Message>() {
             public Message createFromParcel(Parcel source) {
                 return new Message(source);
             }
@@ -92,7 +130,7 @@ public class Conversation implements Parcelable {
         dest.writeLong(this.userId);
         dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
         dest.writeLong(updatedAt != null ? updatedAt.getTime() : -1);
-        dest.writeLong(this.recipient_id);
+        dest.writeLong(this.recipientId);
         dest.writeParcelable(this.recipient, 0);
         dest.writeInt(this.unreadMessagesCount);
         dest.writeInt(this.unreceivedMessagesCount);
@@ -110,7 +148,7 @@ public class Conversation implements Parcelable {
         this.createdAt = tmpCreatedAt == -1 ? null : new Date(tmpCreatedAt);
         long tmpUpdatedAt = in.readLong();
         this.updatedAt = tmpUpdatedAt == -1 ? null : new Date(tmpUpdatedAt);
-        this.recipient_id = in.readLong();
+        this.recipientId = in.readLong();
         this.recipient = in.readParcelable(User.class.getClassLoader());
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();

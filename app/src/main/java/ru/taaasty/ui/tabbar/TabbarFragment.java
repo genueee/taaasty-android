@@ -20,7 +20,7 @@ public class TabbarFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TabbarFragment";
 
-    private static final String BUNDLE_ARG_ACIVATED_ELEMENT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_ACIVATED_ELEMENT";
+    private static final String BUNDLE_ARG_ACTIVATED_ELEMENT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_ACTIVATED_ELEMENT";
 
     private static final String BUNDLE_ARG_NOTIFICATIONS_COUNT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_NOTIFICATIONS_COUNT";
 
@@ -51,7 +51,7 @@ public class TabbarFragment extends Fragment {
             mActivatedElement = View.NO_ID;
             mUnreadNotificationsCount = -1;
         } else {
-            mActivatedElement = savedInstanceState.getInt(BUNDLE_ARG_ACIVATED_ELEMENT);
+            mActivatedElement = savedInstanceState.getInt(BUNDLE_ARG_ACTIVATED_ELEMENT);
             mUnreadNotificationsCount = savedInstanceState.getInt(BUNDLE_ARG_NOTIFICATIONS_COUNT);
         }
         PusherService.requestCountStatus(getActivity());
@@ -92,7 +92,7 @@ public class TabbarFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(BUNDLE_ARG_ACIVATED_ELEMENT, mActivatedElement);
+        outState.putInt(BUNDLE_ARG_ACTIVATED_ELEMENT, mActivatedElement);
         outState.putInt(BUNDLE_ARG_NOTIFICATIONS_COUNT, mUnreadNotificationsCount);
     }
 

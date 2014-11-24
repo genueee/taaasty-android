@@ -15,4 +15,8 @@
     <item type="id" name="feed_view_type_other"/>
     <item type="id" name="feed_view_type_pending_indicator"/>
 
+    <item type="id" name="conversation_view_header"/>
+    <item type="id" name="conversation_view_my_message"/>
+    <item type="id" name="conversation_view_their_message"/>
+
 </resources>

@@ -140,7 +140,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
                 intent.putExtra(UserInfoActivity.ARG_USER_ID, (long)mUserId);
             }
             if (mUser != null) intent.putExtra(UserInfoActivity.ARG_USER, mUser);
-            if (mTlogDesign != null) intent.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, mTlogDesign);
+
+            TlogDesign design = mTlogDesign;
+            if (design == null && mUser != null) design = mUser.getDesign();
+            if (design != null) intent.putExtra(UserInfoActivity.ARG_TLOG_DESIGN, design);
+
             if (mAvatarThumbnailSizeRes != null) intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, (int)mAvatarThumbnailSizeRes);
 
             if (mThumbnailBitmapCacheKey != null) intent.putExtra(ARG_BACKGROUND_THUMBNAIL_KEY, mThumbnailBitmapCacheKey);

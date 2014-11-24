@@ -16,7 +16,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.subscriptions.CompositeSubscription;
 
 /**
  * подгрузчик записей и коментариев для адаптера
@@ -46,10 +45,6 @@ public abstract class FeedLoader {
      */
     private Subscription mFeedRefreshSubscription;
 
-
-    private CompositeSubscription mLoadCommentsSubscription;
-
-
     protected abstract Observable<Feed> createObservable(Long sinceEntryId, Integer limit);
 
     public FeedLoader(FeedItemAdapter adapter)  {
@@ -64,12 +59,7 @@ public abstract class FeedLoader {
                 FeedLoader.this.onBindViewHolder(viewHolder, position, feedSize, entry);
             }
         });
-        mLoadCommentsSubscription = new CompositeSubscription();
 
-    }
-
-    public void refreshFeed() {
-        refreshFeed(null, Constants.LIST_FEED_INITIAL_LENGTH);
     }
 
     public void refreshFeed(Observable<Feed> observable, int entriesRequested) {

@@ -1,4 +1,4 @@
-package ru.taaasty.ui;
+package ru.taaasty.ui.messages;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -26,6 +26,8 @@ import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.service.ApiRelationships;
+import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;

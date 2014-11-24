@@ -397,6 +397,13 @@
         <item name="fontPath">fonts/PTF75F_W.ttf</item>
     </style>
 
+    <style name="NotificationsTitleTextAppearance">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="fontPath">fonts/ProximaNova-Reg.otf</item>
+    </style>
+
     <style name="FollowingFollowersIndicatorItem">
         <item name="android:layout_height">match_parent</item>
         <item name="android:gravity">center_vertical</item>
@@ -434,6 +441,17 @@
         <item name="android:gravity">center_horizontal</item>
         <item name="android:clickable">true</item>
         <item name="android:background">@drawable/list_selector_holo_light</item>
+    </style>
+
+    <style name="EmptyTextStyle">
+        <item name="android:textColor">@color/text_color_feed_item_gray</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:visibility">invisible</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerInParent">true</item>
     </style>
 
 </resources>

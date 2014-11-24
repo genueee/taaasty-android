@@ -7,4 +7,12 @@ public class Status {
 
     public static String status;
 
+    /**
+     * Статус в результате mark messages as read
+     */
+    public static class MarkMessagesAsRead {
+        public static String status;
+        public int readMessagesCount;
+    }
+
 }

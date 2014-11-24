@@ -41,7 +41,7 @@ public class FontManager {
      * @return Основной шрифт для элементов интерфейса
      */
     public Typeface getMainFont() {
-        return mFontSans;
+        return mFontSystemDefault;
     }
 
     /**

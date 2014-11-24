@@ -74,6 +74,11 @@ public class UserManager {
         // return Observable.from(mCurrentUser);
     }
 
+    @Nullable
+    public CurrentUser getCachedCurrentUser() {
+        return mCurrentUser;
+    }
+
     private void load() {
         SharedPreferences prefs = mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
         mAuthtoken = prefs.getString(SHARED_PREFS_KEY_AUTHTOKEN, null);

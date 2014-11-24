@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.NotificationsFragment">
+    tools:context="ru.taaasty.ui.messages.NotificationsFragment">
 
     <ProgressBar
         android:id="@+id/progress"
@@ -15,7 +15,7 @@
 
     <TextView
         android:id="@+id/empty_text"
-        android:text="@string/no_notifications"
+        android:text="@string/no_conversations"
         android:textColor="@color/text_color_feed_item_gray"
         android:textSize="24sp"
         android:visibility="invisible"
@@ -24,7 +24,6 @@
         android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
-
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"

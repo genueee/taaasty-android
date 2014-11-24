@@ -6,7 +6,10 @@ import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.text.Collator;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.Locale;
 
 /**
 * Created by alexey on 01.08.14.
@@ -14,6 +17,23 @@ import java.util.Date;
 public class User implements Parcelable {
 
     public static User DUMMY = new User();
+
+    public static Comparator<User> SORT_BY_NAME_COMPARATOR = new SortByNameComparator();
+
+    private static class SortByNameComparator implements Comparator<User> {
+
+        private final Collator mCollator;
+
+        public SortByNameComparator() {
+            mCollator = Collator.getInstance(Locale.getDefault());
+            mCollator.setStrength(Collator.TERTIARY);
+        }
+
+        @Override
+        public int compare(User lhs, User rhs) {
+            return mCollator.compare(lhs.mName == null ? ""  : lhs.mName, rhs.mName == null ? "" : rhs.mName);
+        }
+    }
 
     @SerializedName("id")
     long mId = -1;
@@ -74,6 +94,9 @@ public class User implements Parcelable {
         return mName;
     }
 
+    /**
+     * Вариант name'а, используемый в URL. В большинстве случаев, не отличается от name
+     */
     public String getSlug() {
         return mSlug != null ? mSlug : (mName != null ? mName : "");
     }

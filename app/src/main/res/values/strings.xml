@@ -187,9 +187,11 @@
     <string name="delete_post">Удалить</string>
     <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
     <string name="title_activity_share">ShareActivity</string>
-    <string name="notifications_title">Уведомления</string>
+    <string name="title_notifications">Уведомления</string>
+    <string name="title_conversations">Сообщения</string>
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_notifications">Уведомлений нет</string>
+    <string name="no_conversations">Здесь будут отображаться ваши переписки</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
     <string name="facebook_sharing_description">Интересное на тейсти</string>
@@ -219,5 +221,14 @@
     <string name="title_activity_edit_post">EditPostActivity</string>
     <string name="post_can_only_be_edited_on_website">Этот пост можно отредактировать только на сайте</string>
     <string name="post_has_not_been_changed">В статье ничего не поменялось</string>
+    <string name="title_activity_conversation">ConversationActivity</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="your_message">Ваше сообщение</string>
+    <string name="initiate_conversation">Создать переписку</string>
+    <string name="start_typing_friend_name">Начните вводить имя друга, которому хотите написать сообщение</string>
+    <string name="we_cannot_find_this_user">К сожалению, мы не можем найти данного пользователя</string>
+    <string name="error_create_conversation">Ошибка создания переписки</string>
+    <string name="users_load_error">Ошибка загрузки пользователей</string>
 
 </resources>

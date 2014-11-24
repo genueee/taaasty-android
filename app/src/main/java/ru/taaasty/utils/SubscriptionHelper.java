@@ -3,7 +3,7 @@ package ru.taaasty.utils;
 import rx.Subscription;
 
 /**
- * Subscrptions.empty(), но на isUnsubscribed() возвращает true
+ * Subscriptions.empty(), но на isUnsubscribed() возвращает true
  */
 public class SubscriptionHelper {
 
