@@ -218,6 +218,8 @@ public class CommentsAdapter extends BaseAdapter {
         public final View avatarCommentRoot;
         public final ImageView avatar;
         public final TextView comment;
+
+        @Nullable
         public final TextView date;
 
         @Nullable

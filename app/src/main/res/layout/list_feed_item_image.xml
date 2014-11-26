@@ -5,9 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/list_selector_holo_light"
-    android:layout_marginTop="@dimen/feed_item_padding_top"
-    android:layout_marginBottom="@dimen/feed_item_padding_bottom">
+    android:background="@drawable/list_selector_holo_light">
 
     <include layout="@layout/include_feed_item_author"/>
 
@@ -36,10 +34,6 @@
 
     <include layout="@layout/include_post_bottom_action_bar"/>
 
-    <ViewStub
-        android:id="@+id/comments_progress_stub"
-        android:layout="@layout/comments_load_more2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+    <include layout="@layout/comments_load_more2" />
 
 </LinearLayout>

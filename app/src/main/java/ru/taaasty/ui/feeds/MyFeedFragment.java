@@ -40,6 +40,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -109,6 +110,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mDateIndicatorView.setVisibility(View.VISIBLE);

@@ -34,6 +34,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -97,7 +98,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
+        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
 
@@ -107,6 +108,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), true));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {

@@ -4,7 +4,9 @@ import android.animation.Animator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,14 +35,28 @@ public class CommentViewBinder {
 
     private final ImageUtils mImageUtils;
     private final DateFormat mTimeFormatInstance, mDdMmFormatInstance, mMmYyFormatInstance;
+    private final DateFormat mTimeFormatLongInstance, mDdMmFormatLongInstance, mMmYyFormatLongInstance;
 
     private CommentsAdapter.OnCommentButtonClickListener mListener;
 
     public CommentViewBinder() {
         mImageUtils = ImageUtils.getInstance();
+
         mTimeFormatInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.SHORT, Locale.getDefault());
+        // 10 нояб.
         mDdMmFormatInstance = new SimpleDateFormat("dd MMM", Locale.getDefault());
+
+        // Нояб/2010
         mMmYyFormatInstance = new SimpleDateFormat("LL/yyy", Locale.getDefault());
+
+        //
+        mTimeFormatLongInstance = SimpleDateFormat.getTimeInstance(SimpleDateFormat.DEFAULT, Locale.getDefault());
+
+        // 7 Ноября
+        mDdMmFormatLongInstance = new SimpleDateFormat("dd MMMM", Locale.getDefault());
+
+        // 7 Ноября 2010
+        mMmYyFormatLongInstance = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
     }
 
     public void setOnCommentButtonClickListener(CommentsAdapter.OnCommentButtonClickListener listener) {
@@ -51,9 +67,9 @@ public class CommentViewBinder {
         vh.setComment(comment);
         if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
         bindAuthor(vh, comment);
-        bindDate(vh, comment);
+        if (vh.date != null) bindDate(vh, comment);
         vh.avatar.setVisibility(View.VISIBLE);
-        vh.date.setVisibility(View.VISIBLE);
+        if (vh.date != null) vh.date.setVisibility(View.VISIBLE);
 
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
         lp.rightMargin = 0;
@@ -67,7 +83,7 @@ public class CommentViewBinder {
         bindActionView(vh, comment);
         vh.actionView.setVisibility(View.VISIBLE);
         vh.avatar.setVisibility(View.GONE);
-        vh.date.setVisibility(View.GONE);
+        if (vh.date != null) vh.date.setVisibility(View.GONE);
 
         // При помощи comment.maarginRight выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
         // Т.е. он должен быть такой же ширины, как и кнопки.
@@ -101,7 +117,7 @@ public class CommentViewBinder {
                 Float alhaButtons = (Float) animation.getAnimatedValue("dAlphaButtons");
                 vh.avatarCommentRoot.setTranslationX(dxTextLeft);
                 vh.actionView.setAlpha(alhaButtons);
-                vh.date.setAlpha(1 - alhaButtons);
+                if (vh.date != null) vh.date.setAlpha(1 - alhaButtons);
             }
         });
         va.addListener(new Animator.AnimatorListener() {
@@ -117,7 +133,7 @@ public class CommentViewBinder {
                 assert vh.actionView != null;
                 vh.avatarCommentRoot.setTranslationX(0);
                 vh.avatar.setVisibility(View.GONE);
-                vh.date.setVisibility(View.GONE);
+                if (vh.date != null) vh.date.setVisibility(View.GONE);
 
                 if (vh.actionView.getWidth() == 0) {
                     if (BuildConfig.DEBUG) Log.v("CommentViewBinder", "actionView width is 0");
@@ -132,7 +148,7 @@ public class CommentViewBinder {
                     updateCommentRightPadding(vh);
                 }
 
-                vh.date.setAlpha(1f);
+                if (vh.date != null) vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1f);
@@ -185,7 +201,7 @@ public class CommentViewBinder {
                 Float dalpha = (Float) animation.getAnimatedValue("dalpha");
                 Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
                 vh.avatarCommentRoot.setTranslationX(dxTextLeft);
-                vh.date.setAlpha(1f - dalpha);
+                if (vh.date != null) vh.date.setAlpha(1f - dalpha);
                 vh.actionView.setAlpha(dalpha);
             }
         });
@@ -195,8 +211,10 @@ public class CommentViewBinder {
             public void onAnimationStart(Animator animation) {
                 vh.avatarCommentRoot.setTranslationX(-textLeft);
                 vh.avatar.setVisibility(View.VISIBLE);
-                vh.date.setVisibility(View.VISIBLE);
-                vh.date.setMinWidth(0);
+                if (vh.date != null) {
+                    vh.date.setVisibility(View.VISIBLE);
+                    vh.date.setMinWidth(0);
+                }
 
                 ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
                 lp.rightMargin = 0;
@@ -206,7 +224,7 @@ public class CommentViewBinder {
             @Override
             public void onAnimationEnd(Animator animation) {
                 vh.actionView.setAlpha(1);
-                vh.date.setAlpha(1f);
+                if (vh.date != null) vh.date.setAlpha(1f);
                 vh.actionView.setVisibility(View.GONE);
             }
 
@@ -242,26 +260,53 @@ public class CommentViewBinder {
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), item.getAuthor().getId(), context, design.getAuthorTextAppearance());
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
+
+
+        if (vh.date == null) {
+            // Добавляем дату в текст
+            int start = ssb.length();
+            ssb.append(" —\u00A0");
+            ssb.append(getDate(item.getUpdatedAt(), true).replace(" ", "\u00A0"));
+            int textAppearance = design.isLightTheme() ? R.style.TextAppearanceDateCommentInlineWhite : R.style.TextAppearanceDateCommentInlineBlack;
+            TextAppearanceSpan span = new TextAppearanceSpan(context, textAppearance);
+            ssb.setSpan(span, start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
         vh.comment.setText(ssb);
         vh.comment.setTextColor( design.getFeedTextColor(context.getResources()) );
     }
 
     private void bindDate(CommentsAdapter.ViewHolder vh, Comment item) {
-        Date updatedAt = item.getUpdatedAt();
-        long timediff = Math.abs(System.currentTimeMillis() - updatedAt.getTime());
+        if (vh.date != null) vh.date.setText(getDate(item.getUpdatedAt(), false));
+    }
+
+    private String getDate(Date updatedAt, boolean longFormat) {
+        final DateFormat defaultFormat, ddMmDormat, mmYyFormat;
         String date;
+        long timediff = Math.abs(System.currentTimeMillis() - updatedAt.getTime());
+
+        if (longFormat) {
+            defaultFormat = mTimeFormatLongInstance;
+            ddMmDormat = mDdMmFormatLongInstance;
+            mmYyFormat = mMmYyFormatLongInstance;
+        } else {
+            defaultFormat = mTimeFormatInstance;
+            ddMmDormat = mDdMmFormatInstance;
+            mmYyFormat = mMmYyFormatInstance;
+        }
+
         if (timediff < 24 * 60 * 60 * 1000l) {
-            date = mTimeFormatInstance.format(updatedAt);
+            date = defaultFormat.format(updatedAt);
         } else {
             Calendar lastYear = Calendar.getInstance();
             lastYear.add(Calendar.YEAR, -1);
             if (updatedAt.after(lastYear.getTime())) {
-                date = mDdMmFormatInstance.format(updatedAt);
+                date = ddMmDormat.format(updatedAt);
             } else {
-                date = mMmYyFormatInstance.format(updatedAt);
+                date = mmYyFormat.format(updatedAt);
             }
         }
-        vh.date.setText(date);
+        return date;
     }
 
 

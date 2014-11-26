@@ -3,19 +3,25 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="42dp">
+    android:id="@+id/comments_load_more_container"
+    android:visibility="gone"
+    tools:visibility="visible"
+    android:layout_height="34dp">
 
     <TextView
         android:id="@+id/comments_load_more"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
+        android:paddingLeft="@dimen/feed_item_padding_right"
+        android:paddingRight="@dimen/following_followers_padding_right"
         android:textColor="@color/text_color_feed_item_gray"
         android:textSize="16sp"
-        tools:text="Загрузить ещё 15 комментариев..."
-        android:gravity="center" />
+        android:singleLine="true"
+        android:ellipsize="end"
+        tools:text="Загрузить оставшиеся 21 комментарий adsf …"
+        android:gravity="center"
+        android:paddingBottom="2.5dp" />
 
     <ProgressBar
         android:id="@+id/comments_load_more_progress"

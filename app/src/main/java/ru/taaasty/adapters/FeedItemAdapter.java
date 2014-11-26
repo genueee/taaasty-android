@@ -624,7 +624,8 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
 
         private void startLoad(Entry entry) {
-            Subscription s = mApiComments.getComments(entry.getId(), null, null, null, 3)
+            Subscription s;
+            s = mApiComments.getComments(entry.getId(), null, null, null, 3)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new CommentsSubscriber(entry));
             mLoadCommentsSubscriptions.put(entry.getId(), s);

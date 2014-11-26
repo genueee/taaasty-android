@@ -38,6 +38,7 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -149,6 +150,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
 

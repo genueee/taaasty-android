@@ -210,6 +210,7 @@
     <string name="menu_friends">Друзья</string>
     <string name="menu_quit">Выйти</string>
     <string name="reply_to_post">Ответить…</string>
+    <string name="add_comment">Добавить комментарий…</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>

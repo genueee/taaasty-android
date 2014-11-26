@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- comments_item с конскими отступами слева и справа и пока без кнопок -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,12 +9,13 @@
         android:id="@+id/avatar_comment_root"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingRight="@dimen/feed_item_padding_right"
         android:background="@drawable/list_selector_holo_light"
         android:baselineAligned="true"
         android:minHeight="48dp"
-        android:paddingBottom="16dp"
-        android:paddingLeft="38dp"
-        android:paddingTop="8dp"
+        android:paddingTop="4dp"
+        android:paddingBottom="12dp"
+        android:paddingLeft="@dimen/feed_item_padding_left"
         android:focusable="false"
         android:focusableInTouchMode="false"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
@@ -24,6 +24,7 @@
             android:id="@+id/avatar"
             android:layout_width="@dimen/avatar_small_diameter"
             android:layout_height="@dimen/avatar_small_diameter"
+            android:layout_gravity="top"
             android:layout_marginRight="10dp"
             android:background="@drawable/list_selector_holo_light"
             android:clickable="true"
@@ -34,28 +35,14 @@
             android:id="@+id/comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_weight="1"
-            android:gravity="center_vertical"
+            android:layout_marginTop="10dp"
             android:linksClickable="true"
             android:minHeight="48dp"
+            android:lineSpacingMultiplier="1.1"
             android:textIsSelectable="false"
-            android:textSize="14sp"
-            tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен" />
-
-        <TextView
-            android:id="@+id/date_relative"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="28dp"
-            android:layout_marginTop="3dp"
-            android:gravity="fill_vertical"
-            android:singleLine="true"
-            android:textColor="@color/text_color_feed_item_gray"
-            android:textSize="10sp"
-            tools:ignore="RtlSymmetry,SmallSp"
-            tools:text="28 мрт" />
+            android:textSize="16sp"
+            tools:text="yesokey Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен. Есть у моего друга рассказ. Могу скинуть:) Если тебе ещё нужен"
+            android:layout_weight="1" />
     </LinearLayout>
 
     <ViewStub
