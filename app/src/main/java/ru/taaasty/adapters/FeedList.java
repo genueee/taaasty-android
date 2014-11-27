@@ -3,6 +3,7 @@ package ru.taaasty.adapters;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import junit.framework.Assert;
 
@@ -20,6 +21,9 @@ import ru.taaasty.utils.Objects;
 
 /**
  * Список элементов фида: постов, комментариев, прочих лементов
+ *
+ * TODO: Вынести "загрузить NN комментариев" в отдельный элемент списка?
+ * TODO: Вынести все элементы в хэши и заменить везде в списке на id?
  */
 public class FeedList implements Parcelable {
     private static final String TAG = "FeedList";
@@ -137,15 +141,6 @@ public class FeedList implements Parcelable {
         return null;
     }
 
-    public Integer findCommentFormLocation(long entryId) {
-        int size = mFeed.size();
-        for (int i = 0; i < size; ++i) {
-            if (mFeed.get(i).isReplyForm()
-                    && mFeed.get(i).entry.getId() == entryId) return i;
-        }
-        return null;
-    }
-
     /**
      * Установка списка. Существующий список очищается.
      * @param feed Список
@@ -199,17 +194,33 @@ public class FeedList implements Parcelable {
 
     /**
      * Добавление комментариев одной статьи, либо обновление, если они там есть.
-     * @param entry Запись
-     * @param comments Комментарии к этой записи
      */
-    public void addComments(Entry entry, List<Comment> comments) {
-        // TODO: более умный вариант
-        for (Comment comment: comments) {
-            mFeed.add(FeedListItem.createComment(entry, comment));
+    public void addComments(long entryId, List<Comment> comments) {
+        if (comments == null || comments.isEmpty()) return;
+
+        Integer entryLocation = findEntryLocation(entryId);
+        if (entryLocation == null) {
+            // скорее всего, статья удалена из списка. Пропускаем.
+            if (DBG) Log.e(TAG, "addComments no entry with id " + entryId);
+            return;
         }
+
+        Entry entry = get(entryLocation).entry;
+        mFeed.addAll(entryLocation + 1, wrapComments(entry, comments));
+
         refreshCommentReplyButton(entry);
+
+        // TODO: более умный вариант
+        ArrayList<FeedListItem> before = new ArrayList<>(mFeed);
         sortUniqItems();
-        mListener.onDataSetChanged();
+        if (before.equals(mFeed)) {
+            if (DBG) Log.v(TAG, "addComments() inserted " + comments.size() + " comments");
+            // На всякий случай, обновляем индикатор
+            mListener.onItemChanged(entryLocation);
+            mListener.onItemRangeInserted(entryLocation + 1, comments.size());
+        } else {
+            mListener.onDataSetChanged();
+        }
     }
 
     /**
@@ -322,6 +333,20 @@ public class FeedList implements Parcelable {
         return Arrays.asList(newFeed);
     }
 
+    private List<FeedListItem> wrapComments(Entry entry, List<Comment> comments) {
+        FeedListItem newFeed[] = new FeedListItem[comments.size()];
+        int size = comments.size();
+        for (int i=0; i<size; ++i) {
+            newFeed[i] = FeedListItem.createComment(entry, comments.get(i));
+        }
+        return Arrays.asList(newFeed);
+    }
+
+    /**
+     * Добавляет кнопку "ответить на комментари", если её ещё нет
+     * @param entry
+     * @return
+     */
     private boolean refreshCommentReplyButton(Entry entry) {
         boolean dataSetChanged = false;
 

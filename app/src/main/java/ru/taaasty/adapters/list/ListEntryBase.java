@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -16,6 +17,7 @@ import ru.taaasty.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
+
 
 public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
@@ -69,12 +71,12 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
             mCommentLoadMore.setVisibility(View.INVISIBLE);
             mCommentsProgressRoot.setVisibility(View.VISIBLE);
         } else {
-            int commentsToLoad = commentsTotal - commentsShown;
+            int commentsToLoad = Math.min(commentsTotal - commentsShown, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
 
             if (commentsToLoad == 0) {
                 mCommentsProgressRoot.setVisibility(View.GONE);
             } else {
-                mCommentLoadMore.setText(getResources().getQuantityString(R.plurals.other_n_comments, commentsToLoad, commentsToLoad));
+                mCommentLoadMore.setText(getResources().getQuantityString(R.plurals.load_n_comments, commentsToLoad, commentsToLoad));
                 mCommentLoadMore.setVisibility(View.VISIBLE);
                 mCommentsProgressRoot.setVisibility(View.VISIBLE);
             }

@@ -11,13 +11,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -42,7 +45,11 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 /**
- * Created by alexey on 31.10.14.
+ *
+ * TODO: хранить в data fragment'е?
+ * TODO: вынести загрузчик коммментариев
+ * TODO: вынести загрузчик комментариев в отдельный поток, обновлять список из этого потока, а не в главном
+ * TODO: скроллить список после подгрузки комментариев
  */
 public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
@@ -230,6 +237,17 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
                     break;
                 default:
                     break;
+            }
+        } else {
+            if (holder instanceof ListEntryBase) {
+                ((ListEntryBase) holder).mCommentLoadMore.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Entry entry = getAnyEntryAtHolderPosition(holder);
+                        if (entry == null) return;
+                        if (mCommentsLoader != null) mCommentsLoader.startLoadMoreComments(entry);
+                    }
+                });
             }
         }
         return holder;
@@ -480,7 +498,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     public void onEventMainThread(CommentChanged event) {
         // Это скорее всего возврат из ответа на комментарий. Снимаем выделение.
         mFeed.setSelectedCommentId(null);
-        mFeed.addComments(event.entry, Collections.singletonList(event.comment));
+        mFeed.addComments(event.entry.getId(), Collections.singletonList(event.comment));
     }
 
     protected ValueAnimator createHideCommentButtonsAnimator(CommentsAdapter.ViewHolder holder) {
@@ -566,7 +584,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         public static final int MAX_QUEUE_SIZE = 3;
         private final LongSparseArray<Subscription> mLoadCommentsSubscriptions;
 
-        private final LongSparseArray<Comments> mComments;
+        private final LongSparseArray<ArrayList<Comment>> mComments;
 
         private final ApiComments mApiComments;
 
@@ -585,6 +603,24 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
         public boolean isCommentsLoading(long entryId) {
             return mLoadCommentsSubscriptions.get(entryId) != null;
+        }
+
+        public void startLoadMoreComments(Entry entry) {
+            long entryId;
+            Long topCommentId;
+            List<Comment> comments;
+
+            entryId = entry.getId();
+            comments = mComments.get(entryId);
+            if (mLoadCommentsSubscriptions.get(entryId) != null) return;
+            if (comments == null || comments.isEmpty()) {
+                topCommentId = null;
+            } else {
+                topCommentId = comments.get(0).getId();
+            }
+            startLoad(entryId, topCommentId, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
+            int location = getFeed().findEntryLocation(entryId);
+            notifyItemChanged(getAdapterPosition(location));
         }
 
         public void onBindComment(Entry entry, int feedLocation) {
@@ -624,19 +660,23 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
 
         private void startLoad(Entry entry) {
+            startLoad(entry.getId(), null, 3);
+        }
+
+        private void startLoad(long entryId, Long topCommentId, int limit) {
             Subscription s;
-            s = mApiComments.getComments(entry.getId(), null, null, null, 3)
+            s = mApiComments.getComments(entryId, null, topCommentId, ApiComments.ORDER_DESC, limit)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new CommentsSubscriber(entry));
-            mLoadCommentsSubscriptions.put(entry.getId(), s);
+                    .subscribe(new CommentsSubscriber(entryId));
+            mLoadCommentsSubscriptions.put(entryId, s);
         }
 
         public class CommentsSubscriber extends Subscriber<Comments> {
 
-            public final Entry entry;
+            public final long entryId;
 
-            public CommentsSubscriber(Entry entry) {
-                this.entry = entry;
+            public CommentsSubscriber(long entryId) {
+                this.entryId = entryId;
             }
 
             @Override
@@ -650,11 +690,18 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
             @Override
             public void onNext(Comments comments) {
-                Subscription s = mLoadCommentsSubscriptions.get(entry.getId());
-                mLoadCommentsSubscriptions.remove(entry.getId());
+                Subscription s = mLoadCommentsSubscriptions.get(entryId);
+                mLoadCommentsSubscriptions.remove(entryId);
                 s.unsubscribe();
-                mComments.put(entry.getId(), comments);
-                mFeed.addComments(entry, comments.comments);
+                mFeed.addComments(entryId, comments.comments);
+
+                ArrayList<Comment> list = mComments.get(entryId);
+                if (list == null) {
+                    list = new ArrayList<>(comments.comments.size());
+                    mComments.put(entryId, list);
+                }
+                list.addAll(comments.comments);
+                Collections.sort(list, Comment.ORDER_BY_DATE_ID_COMARATOR);
             }
         }
     }
