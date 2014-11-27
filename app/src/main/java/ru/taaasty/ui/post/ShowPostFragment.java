@@ -99,6 +99,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
@@ -494,6 +495,7 @@ public class ShowPostFragment extends Fragment {
             mPostContentView.setVisibility(View.VISIBLE);
             setupPostImage();
             setupPostText();
+            setupPostDate();
         }
         mListView.setOnScrollListener(mScrollListener);
     }
@@ -525,6 +527,44 @@ public class ShowPostFragment extends Fragment {
             }
             tw.setTextColor(textColor);
         }
+    }
+
+    private void setupPostDate() {
+        final View fragmentView = getView();
+        if (fragmentView == null) return;
+        DateIndicatorWidget dateView = (DateIndicatorWidget)fragmentView.findViewById(R.id.date_indicator);
+        dateView.setDate(mCurrentEntry.getCreatedAt());
+        if (dateView.getVisibility() != View.VISIBLE) {
+            if (fragmentView.getHeight() != 0) {
+                setupDateViewTopMargin();
+            } else {
+                fragmentView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        ViewTreeObserver vo = fragmentView.getViewTreeObserver();
+                        if (vo.isAlive()) {
+                            fragmentView.getViewTreeObserver().removeOnPreDrawListener(this);
+                            setupDateViewTopMargin();
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                });
+            }
+        }
+        dateView.setVisibility(View.VISIBLE);
+    }
+
+    private void setupDateViewTopMargin() {
+        if (getView() == null || getView().getRootView() == null) return;
+        DateIndicatorWidget dateView = (DateIndicatorWidget)getView().findViewById(R.id.date_indicator);
+        View rootView = getView().getRootView();
+        int marginTop = rootView.getHeight() - dateView.getHeight() - getResources().getDimensionPixelSize(R.dimen.date_indicator_margin_bottom);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)dateView.getLayoutParams();
+        lp.topMargin = marginTop;
+        dateView.setLayoutParams(lp);
+        dateView.setVisibility(View.VISIBLE);
     }
 
     private void setupPostImage() {

@@ -17,8 +17,15 @@
         android:paddingBottom="80dp"
         tools:listitem="@layout/post_item" />
 
+    <ru.taaasty.widgets.DateIndicatorWidget
+        android:id="@+id/date_indicator"
+        android:visibility="invisible"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="460dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
     <include layout="@layout/include_reply_container"/>
-
 
 </RelativeLayout>
