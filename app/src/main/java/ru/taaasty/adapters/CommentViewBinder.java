@@ -91,7 +91,7 @@ public class CommentViewBinder {
 
     public ValueAnimator createShowButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
         if (vh == null) throw new NullPointerException();
-        vh.inflateActionViewStub(mListener);
+        bindActionView(vh, vh.currentComment);
         assert vh.actionView != null;
 
         // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
