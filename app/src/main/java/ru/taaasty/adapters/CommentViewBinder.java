@@ -75,26 +75,18 @@ public class CommentViewBinder {
         lp.rightMargin = 0;
         vh.comment.setLayoutParams(lp);
         bindCommentText(vh, comment, design);
+        updateCommentRightPadding(vh, false);
     }
 
     public void bindSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
+        bindActionView(vh, comment);
         vh.setComment(comment);
         bindCommentText(vh, comment, design);
-        bindActionView(vh, comment);
+
         vh.actionView.setVisibility(View.VISIBLE);
         vh.avatar.setVisibility(View.GONE);
         if (vh.date != null) vh.date.setVisibility(View.GONE);
-
-        // При помощи comment.maarginRight выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
-        // Т.е. он должен быть такой же ширины, как и кнопки.
-        // Если ширина кнопок ещё неизвестна, то надо, по идее, дождаться её определения
-        if (vh.actionView.getWidth() != 0) {
-            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
-            lp.rightMargin = vh.actionView.getWidth();
-            vh.comment.setLayoutParams(lp);
-        } else {
-            Log.e("CommentsAdapter", "actionView width is 0", new IllegalStateException());
-        }
+        updateCommentRightPadding(vh, true);
     }
 
     public ValueAnimator createShowButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
@@ -134,24 +126,11 @@ public class CommentViewBinder {
                 vh.avatarCommentRoot.setTranslationX(0);
                 vh.avatar.setVisibility(View.GONE);
                 if (vh.date != null) vh.date.setVisibility(View.GONE);
-
-                if (vh.actionView.getWidth() == 0) {
-                    if (BuildConfig.DEBUG) Log.v("CommentViewBinder", "actionView width is 0");
-                    vh.actionView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                        @Override
-                        public boolean onPreDraw() {
-                            vh.actionView.getViewTreeObserver().removeOnPreDrawListener(this);
-                            return !updateCommentRightPadding(vh);
-                        }
-                    });
-                } else {
-                    updateCommentRightPadding(vh);
-                }
-
                 if (vh.date != null) vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1f);
+                updateCommentRightPadding(vh, true);
             }
 
             @Override
@@ -166,24 +145,6 @@ public class CommentViewBinder {
         });
         return va;
     }
-
-    private boolean updateCommentRightPadding(CommentsAdapter.ViewHolder vh) {
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
-        int width = vh.actionView.getWidth();
-        if (lp.rightMargin != width) {
-            lp.rightMargin = width;
-            vh.comment.setLayoutParams(lp);
-            return true;
-        }
-        return false;
-    }
-
-    private final ViewTreeObserver.OnPreDrawListener mActionViewOnPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
-        @Override
-        public boolean onPreDraw() {
-            return false;
-        }
-    };
 
     public ValueAnimator createHideButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
         vh.inflateActionViewStub(mListener);
@@ -241,6 +202,45 @@ public class CommentViewBinder {
         return va;
     }
 
+    /**
+     * При помощи comment.maarginRight выравниваем текст комментария, чтобы он не налезал на кнопки с действиями.
+     * Если ширина кнопок ещё неизвестна, то дожидаемся её определения
+     */
+    private void updateCommentRightPadding(final CommentsAdapter.ViewHolder vh, boolean isSelectedComment) {
+        if (vh.actionView == null) return;
+        if (!isSelectedComment) {
+            updateCommentRightPaddingMeasured(vh, 0);
+            return;
+        }
+
+        if (vh.actionView.getWidth() == 0) {
+            if (BuildConfig.DEBUG) Log.v("CommentViewBinder", "actionView width is 0");
+            vh.actionView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    if (vh.actionView != null && vh.actionView.getViewTreeObserver().isAlive()) {
+                        vh.actionView.getViewTreeObserver().removeOnPreDrawListener(this);
+                        return !updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
+                    } else {
+                        return true;
+                    }
+                }
+            });
+        } else {
+            updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
+        }
+    }
+
+    private boolean updateCommentRightPaddingMeasured(CommentsAdapter.ViewHolder vh, int newRightPadding) {
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+        if (lp.rightMargin != newRightPadding) {
+            lp.rightMargin = newRightPadding;
+            vh.comment.setLayoutParams(lp);
+            return true;
+        }
+        return false;
+    }
+
     private void bindActionView(CommentsAdapter.ViewHolder vh, Comment comment) {
         vh.inflateActionViewStub(mListener);
         vh.deleteCommentButton.setVisibility(comment.canDelete() ? View.VISIBLE : View.GONE);
@@ -260,7 +260,6 @@ public class CommentViewBinder {
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), item.getAuthor().getId(), context, design.getAuthorTextAppearance());
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
-
 
         if (vh.date == null) {
             // Добавляем дату в текст

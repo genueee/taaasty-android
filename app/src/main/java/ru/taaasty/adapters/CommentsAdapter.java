@@ -178,7 +178,7 @@ public class CommentsAdapter extends BaseAdapter {
         public ActionViewClickListener() {
         }
 
-        public void setListnener(OnCommentButtonClickListener listener) {
+        public void setListener(OnCommentButtonClickListener listener) {
             mListener = listener;
         }
 
@@ -252,23 +252,29 @@ public class CommentsAdapter extends BaseAdapter {
         }
 
         public void inflateActionViewStub(OnCommentButtonClickListener listener) {
-            if (actionViewStub == null) return;
-            actionView = actionViewStub.inflate();
-            actionViewStub = null;
-            replyToCommentButton = actionView.findViewById(R.id.reply_to_comment);
-            deleteCommentButton = actionView.findViewById(R.id.delete_comment);
-            reportButton = actionView.findViewById(R.id.report_to_moderator);
+            if (actionViewStub != null) {
+                actionView = actionViewStub.inflate();
+                actionViewStub = null;
+                replyToCommentButton = actionView.findViewById(R.id.reply_to_comment);
+                deleteCommentButton = actionView.findViewById(R.id.delete_comment);
+                reportButton = actionView.findViewById(R.id.report_to_moderator);
+            }
 
-            actionViewClickListener = new ActionViewClickListener();
-            actionViewClickListener.setListnener(listener);
-            replyToCommentButton.setOnClickListener(actionViewClickListener);
-            deleteCommentButton.setOnClickListener(actionViewClickListener);
-            reportButton.setOnClickListener(actionViewClickListener);
+            if (actionViewClickListener == null) initActionViewClickListener(listener);
         }
 
         public void setComment(Comment comment) {
             currentComment = comment;
             if (actionViewClickListener != null) actionViewClickListener.setComment(comment);
+        }
+
+        // TODO: не должно его здесь быть. Переделать всё.
+        private void initActionViewClickListener(OnCommentButtonClickListener listener) {
+            actionViewClickListener = new ActionViewClickListener();
+            actionViewClickListener.setListener(listener);
+            replyToCommentButton.setOnClickListener(actionViewClickListener);
+            deleteCommentButton.setOnClickListener(actionViewClickListener);
+            reportButton.setOnClickListener(actionViewClickListener);
         }
     }
 }
