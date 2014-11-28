@@ -75,6 +75,10 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
             if (commentsToLoad == 0) {
                 mCommentsProgressRoot.setVisibility(View.GONE);
+            } else if (commentsToLoad < Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP) {
+                mCommentLoadMore.setText(R.string.load_all_comments);
+                mCommentLoadMore.setVisibility(View.VISIBLE);
+                mCommentsProgressRoot.setVisibility(View.VISIBLE);
             } else {
                 mCommentLoadMore.setText(getResources().getQuantityString(R.plurals.load_n_comments, commentsToLoad, commentsToLoad));
                 mCommentLoadMore.setVisibility(View.VISIBLE);

@@ -660,7 +660,10 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
 
         private void startLoad(Entry entry) {
-            startLoad(entry.getId(), null, 3);
+            // Выбираем количество предзагружаеых комментариев так, чтобы
+            // не показывать "загрузить ещё 1 комментарий"
+            int preloadLimit = entry.getCommentsCount() <= 5 ? 5 : 3;
+            startLoad(entry.getId(), null, preloadLimit);
         }
 
         private void startLoad(long entryId, Long topCommentId, int limit) {
@@ -689,19 +692,22 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
             }
 
             @Override
-            public void onNext(Comments comments) {
+            public void onNext(Comments commentsReply) {
                 Subscription s = mLoadCommentsSubscriptions.get(entryId);
                 mLoadCommentsSubscriptions.remove(entryId);
                 s.unsubscribe();
-                mFeed.addComments(entryId, comments.comments);
+                mFeed.addComments(entryId, commentsReply);
 
+                // Обновляем локальный comments
                 ArrayList<Comment> list = mComments.get(entryId);
                 if (list == null) {
-                    list = new ArrayList<>(comments.comments.size());
+                    list = new ArrayList<>(commentsReply.comments.size());
                     mComments.put(entryId, list);
                 }
-                list.addAll(comments.comments);
-                Collections.sort(list, Comment.ORDER_BY_DATE_ID_COMARATOR);
+                if (!commentsReply.comments.isEmpty()) {
+                    list.addAll(commentsReply.comments);
+                    Collections.sort(list, Comment.ORDER_BY_DATE_ID_COMARATOR);
+                }
             }
         }
     }

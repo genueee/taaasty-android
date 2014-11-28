@@ -16,6 +16,7 @@ import java.util.Map;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.model.Comment;
+import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.utils.Objects;
 
@@ -194,6 +195,30 @@ public class FeedList implements Parcelable {
 
     /**
      * Добавление комментариев одной статьи, либо обновление, если они там есть.
+     * Если значение комментариев статьи изменилось, обновляется и это значение
+     */
+    public void addComments(long entryId, Comments commentsReply) {
+        if (commentsReply == null) return;
+
+        Integer entryLocation = findEntryLocation(entryId);
+        if (entryLocation == null) {
+            // скорее всего, статья удалена из списка. Пропускаем.
+            if (DBG) Log.e(TAG, "addComments no entry with id " + entryId);
+            return;
+        }
+
+        addComments(entryLocation, commentsReply.comments);
+
+        // Обновлям кол-во комментариев, если оно изменилось
+        Entry entry = get(entryLocation).entry;
+        if (entry.getCommentsCount() != commentsReply.totalCount) {
+            entry.setCommentsCount(commentsReply.totalCount);
+            mListener.onItemChanged(entryLocation);
+        }
+    }
+
+    /**
+     * Добавление комментариев одной статьи, либо обновление, если они там есть.
      */
     public void addComments(long entryId, List<Comment> comments) {
         if (comments == null || comments.isEmpty()) return;
@@ -205,6 +230,10 @@ public class FeedList implements Parcelable {
             return;
         }
 
+        addComments(entryLocation, comments);
+    }
+
+    private void addComments(int entryLocation, List<Comment> comments) {
         Entry entry = get(entryLocation).entry;
         mFeed.addAll(entryLocation + 1, wrapComments(entry, comments));
 
