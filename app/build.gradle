@@ -83,7 +83,7 @@ android {
             resValue "string", "app_name", "Тейсти dbg" + getRevision()
         }
         release {
-            runProguard true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-aviary.pro'
             signingConfig signingConfigs.release
         }
@@ -91,7 +91,7 @@ android {
             applicationIdSuffix ".beta";
             versionNameSuffix "b-" + getRevision()
             resValue "string", "app_name", "Тейсти beta"
-            runProguard true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-aviary.pro'
             signingConfig signingConfigs.beta
         }
@@ -115,7 +115,6 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
-
 }
 
 dependencies {

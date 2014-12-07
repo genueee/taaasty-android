@@ -209,7 +209,7 @@
         <!-- Aviary Cds Content Provider -->
         <provider
             android:name="com.aviary.android.feather.cds.AviaryCdsProvider"
-            android:authorities="ru.taaasty.AviaryCdsProvider"
+            android:authorities="${applicationId}.AviaryCdsProvider"
             android:exported="false"
             android:process=":aviarycds"
             android:syncable="true" />
