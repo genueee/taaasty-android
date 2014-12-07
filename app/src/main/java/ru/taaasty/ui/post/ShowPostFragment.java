@@ -318,7 +318,8 @@ public class ShowPostFragment extends Fragment {
         outState.putParcelable(KEY_CURRENT_ENTRY, mCurrentEntry);
         outState.putParcelable(KEY_TLOG_DESIGN, mDesign);
         if (mCommentsAdapter != null) {
-            outState.putParcelableArrayList(KEY_COMMENTS, mCommentsAdapter.getComments());
+            ArrayList<Comment> comments = new ArrayList<>(mCommentsAdapter.getComments());
+            outState.putParcelableArrayList(KEY_COMMENTS, comments);
         } else {
             outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
         }

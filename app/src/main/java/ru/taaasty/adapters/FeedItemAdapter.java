@@ -22,6 +22,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -110,7 +111,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar, int pendingResource) {
         super();
 
-        FeedList.FeedChangedListener feedChangedListener = new FeedList.FeedChangedListener() {
+        SortedList.OnListChangedListener onListChangedListener = new SortedList.OnListChangedListener() {
 
             @Override
             public void onDataSetChanged() {
@@ -154,7 +155,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         };
 
         mFeed = feed != null ? feed : new FeedList();
-        mFeed.setListener(feedChangedListener);
+        mFeed.setListener(onListChangedListener);
         mContext = context;
         mInfater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;

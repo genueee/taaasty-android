@@ -641,7 +641,7 @@ public class ConversationFragment extends Fragment {
                     if (mListView.getChildCount() > 2) {
                         oldTopId = mListView.getChildItemId(mListView.getChildAt(1));
                     }
-                    if (!mAdapter.prependMessages(messages.messages)) keepOnAppending = false;
+                    mAdapter.addMessages(messages.messages);
                     if (oldTopId != null) {
                         Integer newPosition = mAdapter.findPositionById(oldTopId);
                         if (newPosition != null) scrollListToPosition(newPosition, false);

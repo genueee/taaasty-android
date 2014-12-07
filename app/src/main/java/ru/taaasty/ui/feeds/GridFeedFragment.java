@@ -377,7 +377,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onNext(Feed feed) {
             if (DBG) Log.e(TAG, "onNext " + feed.toString());
-            if (mAdapter != null) mAdapter.refreshItems(feed.entries);
+            if (mAdapter != null) mAdapter.insertEntries(feed.entries);
         }
     };
 

@@ -19,13 +19,12 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
@@ -38,7 +37,7 @@ import ru.taaasty.utils.UiUtils;
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
 
     public static final int REFRESH_NOTIFICATIONS_PERIOD = 10000;
-    private final ArrayList<Notification> mNotifications;
+    private final NotificationsList mNotifications;
     private final ImageUtils mImageUtils;
     private final Picasso mPicasso;
     private final InteractionListener mListener;
@@ -51,7 +50,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     public NotificationsAdapter(Context context, InteractionListener listener) {
         mContext = context;
-        mNotifications = new ArrayList<>(10);
+        mNotifications = new NotificationsList();
         mFollowProcess = new HashSet<>(1);
         mListener = listener;
         mImageUtils = ImageUtils.getInstance();
@@ -108,42 +107,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     public void setNotifications(List<Notification> notifications) {
-        mNotifications.clear();
-        mNotifications.addAll(notifications);
-        Collections.sort(notifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
-        notifyDataSetChanged();
+        mNotifications.resetItems(notifications);
     }
 
     public void addNotification(Notification notification) {
-        if (mNotifications.isEmpty()
-                || (notification.createdAt.compareTo(mNotifications.get(0).createdAt) > 0)
-                ) {
-            mNotifications.add(0, notification);
-            notifyItemInserted(0);
-        } else {
-            boolean itemReplaced = false;
-            int size = mNotifications.size();
-            for (int i=0; i<size; ++i) {
-                Notification old = mNotifications.get(i);
-                if (old.id == notification.id) {
-                    itemReplaced = true;
-                    mNotifications.set(i, notification);
-                    if (old.createdAt.equals(notification.createdAt)) {
-                        notifyItemChanged(i);
-                    } else {
-                        Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
-                        notifyDataSetChanged();
-                    }
-                    break;
-                }
-            }
-            if (!itemReplaced) {
-                mNotifications.add(notification);
-                Collections.sort(mNotifications, Notification.SORT_BY_CREATED_AT_COMPARATOR);
-                notifyDataSetChanged();
-            }
-        }
-
+        mNotifications.insertItem(notification);
         onNotificationFollowUnfollowStopped(notification.id);
     }
 
@@ -273,6 +241,60 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             }
         }
     };
+
+    private final class NotificationsList extends SortedList<Notification> implements SortedList.OnListChangedListener {
+
+        public NotificationsList() {
+            super(Notification.SORT_BY_CREATED_AT_COMPARATOR);
+            setListener(this);
+
+        }
+
+        @Override
+        public long getItemId(Notification item) {
+            return item.id;
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemChanged(int location) {
+            notifyItemChanged(location);
+        }
+
+        @Override
+        public void onItemInserted(int location) {
+            notifyItemInserted(location);
+        }
+
+        @Override
+        public void onItemRemoved(int position) {
+            notifyItemRemoved(position);
+        }
+
+        @Override
+        public void onItemMoved(int fromLocation, int toLocation) {
+            notifyItemMoved(fromLocation, toLocation);
+        }
+
+        @Override
+        public void onItemRangeChanged(int locationStart, int itemCount) {
+            notifyItemRangeChanged(locationStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeInserted(int locationStart, int itemCount) {
+            notifyItemRangeInserted(locationStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int locationStart, int itemCount) {
+            notifyItemRangeRemoved(locationStart, itemCount);
+        }
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public final ImageView avatar;

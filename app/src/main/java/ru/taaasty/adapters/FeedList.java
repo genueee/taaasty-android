@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.SortedList;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
@@ -32,7 +33,7 @@ public class FeedList implements Parcelable {
 
     private final List<FeedListItem> mFeed;
 
-    private FeedChangedListener mListener;
+    private SortedList.OnListChangedListener mListener;
 
     // Созданный объект для #sortUniqItems()
     private final Map<Object, FeedListItem> mSortUniqMap;
@@ -47,7 +48,7 @@ public class FeedList implements Parcelable {
         mSortUniqMap = new HashMap<>();
     }
 
-    public void setListener(FeedChangedListener listener) {
+    public void setListener(SortedList.OnListChangedListener listener) {
         mListener = listener;
     }
 
@@ -392,17 +393,6 @@ public class FeedList implements Parcelable {
         }
 
         return dataSetChanged;
-    }
-
-    public interface FeedChangedListener {
-        public void onDataSetChanged();
-        public void onItemChanged(int location);
-        public void onItemInserted(int location);
-        public void onItemRemoved(int position);
-        public void onItemMoved(int fromLocation, int toLocation);
-        public void onItemRangeChanged(int locationStart, int itemCount);
-        public void onItemRangeInserted(int locationStart, int itemCount);
-        public void onItemRangeRemoved(int locationStart, int itemCount);
     }
 
     @Override

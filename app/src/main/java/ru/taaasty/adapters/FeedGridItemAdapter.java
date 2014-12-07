@@ -10,16 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.grid.GridEmbeddEntry;
 import ru.taaasty.adapters.grid.GridEntryBase;
 import ru.taaasty.adapters.grid.GridEntryHeader;
@@ -40,7 +37,7 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntryBase> {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "FeedGridItemAdapter2";
+    private static final String TAG = "FeedGridItemAdapter";
 
     private static final int VIEW_TYPE_HEADER = R.id.feed_view_type_header;
     private static final int VIEW_TYPE_IMAGE = R.id.feed_view_type_image;
@@ -50,7 +47,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     private static final int VIEW_TYPE_PENDING = R.id.feed_view_type_pending_indicator;
 
 
-    private final List<Entry> mFeed;
+    private final EntryFeed mFeed;
     private final LayoutInflater mInfater;
     private final int mGridColumnCount;
     final int mGridFeedPadding;
@@ -76,7 +73,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
 
     public FeedGridItemAdapter(Context context, int pendingResource) {
         super();
-        mFeed = new ArrayList<>();
+        mFeed = new EntryFeed();
         mInfater = LayoutInflater.from(context);
         mGridColumnCount = context.getResources().getInteger(R.integer.live_feed_column_count);
         mGridFeedPadding = context.getResources().getDimensionPixelSize(R.dimen.grid_feed_item_margin);
@@ -216,8 +213,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     }
 
     public Entry getItemById(long id) {
-        for (Entry e: mFeed) if (e.getId() == id) return e;
-        return null;
+        return mFeed.findItem(id);
     }
 
     public void onCreate() {
@@ -247,54 +243,19 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     }
 
     public void setFeed(List<Entry> feed) {
-        mFeed.clear();
-        mFeed.addAll(feed);
-        sortUniqItems();
-        notifyDataSetChanged();
+        mFeed.resetItems(feed);
     }
 
-    public void appendFeed(List<Entry> feed) {
-        int position = mFeed.size() + 1;
-        mFeed.addAll(feed);
-        sortUniqItems();
-        int positionAfter = mFeed.size() + 1;
-        if (DBG && positionAfter - position != feed.size()) {
-            //setKeepOnAppending(false);
-            throw new IllegalStateException("В добавляемых записях есть записи с id уже в списке. Скорее всего, баг");
-        }
-        if (positionAfter - position > 0) {
-            notifyItemRangeInserted(position, positionAfter - position);
-        } else {
-            //setKeepOnAppending(false);
-        }
+    public void insertEntries(List<Entry> feed) {
+        mFeed.insertItems(feed);
     }
 
     public void updateEntry(Entry entry) {
-        int size = mFeed.size();
-        for (int i=0; i < size; ++i) {
-            if (mFeed.get(i).getId() == entry.getId()) {
-                mFeed.set(i, entry);
-                notifyItemChanged(i + 1);
-                break;
-            }
-        }
+        mFeed.insertItem(entry);
     }
 
     public void deleteEntry(long id) {
-        int size = mFeed.size();
-        for (int i=0; i < size; ++i) {
-            if (mFeed.get(i).getId() == id) {
-                mFeed.remove(i);
-                notifyItemRemoved(i + 1);
-                break;
-            }
-        }
-    }
-
-    public void refreshItems(List<Entry> items) {
-        mFeed.addAll(items);
-        sortUniqItems();
-        notifyDataSetChanged();
+        mFeed.deleteItem(id);
     }
 
     public boolean isEmpty() {
@@ -302,7 +263,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     }
 
     public List<Entry> getFeed() {
-        return Collections.unmodifiableList(mFeed);
+        return mFeed.getItems();
     }
 
     public void stopAppending() {
@@ -317,7 +278,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         if (data == null || data.entries.isEmpty()) {
             stopAppending();
         } else {
-            appendFeed(data.entries);
+            insertEntries(data.entries);
         }
     }
 
@@ -354,7 +315,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
 
     private void setLoading(boolean newValue) {
         if (mLoading.compareAndSet(!newValue, newValue)) {
-            notifyDataSetChanged();
+            notifyItemRemoved(mFeed.size() + 1);
         }
     }
 
@@ -366,12 +327,12 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         return position == mFeed.size() + 1;
     }
 
-    private void sortUniqItems() {
-        Map<Long, Entry> map = new HashMap<>(mFeed.size());
-        for (Entry c: mFeed) map.put(c.getId(), c);
-        mFeed.clear();
-        mFeed.addAll(map.values());
-        Collections.sort(mFeed, Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR);
+    private int getAdapterPosition(int listLocation) {
+        return listLocation + 1;
+    }
+
+    private int getListLocation(int adapterPosition) {
+        return adapterPosition - 1;
     }
 
     private final Observer<Feed> mFeedAppendObserver = new Observer<Feed>() {
@@ -394,5 +355,66 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
             setLoading(false);
         }
     };
+
+    private final class EntryFeed extends SortedList<Entry> implements SortedList.OnListChangedListener  {
+
+        public EntryFeed() {
+            super(Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR);
+            setListener(this);
+        }
+
+        @Override
+        public long getItemId(Entry item) {
+            return item.getId();
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            notifyDataSetChanged();
+            if (DBG) Log.v(TAG, "onDataSetChanged");
+        }
+
+        @Override
+        public void onItemChanged(int location) {
+            notifyItemChanged(getAdapterPosition(location));
+            if (DBG) Log.v(TAG, "onItemChanged " + location);
+        }
+
+        @Override
+        public void onItemInserted(int location) {
+            notifyItemInserted(getAdapterPosition(location));
+            if (DBG) Log.v(TAG, "onItemInserted " + location);
+        }
+
+        @Override
+        public void onItemRemoved(int location) {
+            notifyItemRemoved(getAdapterPosition(location));
+            if (DBG) Log.v(TAG, "onItemRemoved " + location);
+        }
+
+        @Override
+        public void onItemMoved(int fromLocation, int toLocation) {
+            notifyItemMoved(getAdapterPosition(fromLocation), toLocation);
+            if (DBG) Log.v(TAG, "onItemRemoved " + fromLocation + " -> " + toLocation);
+        }
+
+        @Override
+        public void onItemRangeChanged(int locationStart, int itemCount) {
+            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
+            if (DBG) Log.v(TAG, "onItemRangeChanged " + locationStart + " : " + itemCount);
+        }
+
+        @Override
+        public void onItemRangeInserted(int locationStart, int itemCount) {
+            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
+            if (DBG) Log.v(TAG, "onItemRangeInserted " + locationStart + " : " + itemCount);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int locationStart, int itemCount) {
+            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
+            if (DBG) Log.v(TAG, "onItemRangeRemoved " + locationStart + " : " + itemCount);
+        }
+    }
 
 }

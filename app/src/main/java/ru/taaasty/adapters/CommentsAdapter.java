@@ -12,21 +12,17 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.TlogDesign;
 
 public class CommentsAdapter extends BaseAdapter {
     private final LayoutInflater mInfater;
 
-    private final ArrayList<Comment> mComments;
+    private final CommentsList mComments;
 
     private Long mSelectedCommentId;
 
@@ -39,7 +35,7 @@ public class CommentsAdapter extends BaseAdapter {
     public CommentsAdapter(Context context, OnCommentButtonClickListener listener) {
         super();
         mInfater = LayoutInflater.from(context);
-        mComments = new ArrayList<>();
+        mComments = new CommentsList();
         mListener = listener;
         mCommentViewBinder = new CommentViewBinder();
         mCommentViewBinder.setOnCommentButtonClickListener(listener);
@@ -47,14 +43,11 @@ public class CommentsAdapter extends BaseAdapter {
     }
 
     public void setComments(List<Comment> comments) {
-        mComments.clear();
-        appendComments(comments);
-        sortUniqComments();
-        notifyDataSetChanged();
+        mComments.resetItems(comments);
     }
 
-    public ArrayList<Comment> getComments() {
-        return mComments;
+    public List<Comment> getComments() {
+        return mComments.getItems();
     }
 
     public void setFeedDesign(TlogDesign design) {
@@ -63,30 +56,11 @@ public class CommentsAdapter extends BaseAdapter {
     }
 
     public void appendComments(List<Comment> comments) {
-        mComments.addAll(comments);
-        sortUniqComments();
-        notifyDataSetChanged();
+        mComments.insertItems(comments);
     }
 
     public void deleteComment(long commentId) {
-        boolean dataChanged = false;
-        Iterator<Comment> i = mComments.iterator();
-        while (i.hasNext()) {
-            if (i.next().getId() == commentId) {
-                i.remove();
-                dataChanged = true;
-                break;
-            }
-        }
-        if (dataChanged) notifyDataSetChanged();
-    }
-
-    private void sortUniqComments() {
-        Map<Long, Comment> map = new HashMap<>(mComments.size());
-        for (Comment c: mComments) map.put(c.getId(), c);
-        mComments.clear();
-        mComments.addAll(map.values());
-        Collections.sort(mComments, Comment.ORDER_BY_DATE_ID_COMARATOR);
+        mComments.deleteItem(commentId);
     }
 
     public Long getTopCommentId() {
@@ -213,6 +187,60 @@ public class CommentsAdapter extends BaseAdapter {
         final CommentsAdapter.ViewHolder vh = (CommentsAdapter.ViewHolder) view.getTag(R.id.comment_view_holder);
         return mCommentViewBinder.createShowButtonsAnimator(vh);
     }
+
+    private final class CommentsList extends SortedList<Comment> implements SortedList.OnListChangedListener {
+
+        public CommentsList() {
+            super(Comment.ORDER_BY_DATE_ID_COMARATOR);
+            setListener(this);
+        }
+
+        @Override
+        public long getItemId(Comment item) {
+            return item.getId();
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemChanged(int location) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemInserted(int location) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemRemoved(int location) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemMoved(int fromLocation, int toLocation) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemRangeChanged(int locationStart, int itemCount) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemRangeInserted(int locationStart, int itemCount) {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemRangeRemoved(int locationStart, int itemCount) {
+            notifyDataSetChanged();
+        }
+    }
+
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final View avatarCommentRoot;

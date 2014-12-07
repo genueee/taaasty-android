@@ -14,15 +14,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.TlogDesign;
@@ -48,7 +47,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     private final LayoutInflater mInflater;
 
-    private final List<Conversation.Message> mMessages;
+    private final MessageFeed mMessages;
 
     protected TlogDesign mFeedDesign;
 
@@ -58,7 +57,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     public ConversationAdapter(Context context) {
         super();
-        mMessages = new ArrayList<>();
+        mMessages = new MessageFeed();
         mInflater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
         mUserManager = UserManager.getInstance();
@@ -141,46 +140,12 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
     }
 
-    public void resetMessages(List<Conversation.Message> messages) {
-        mMessages.clear();
-        mMessages.addAll(messages);
-        sortUniqMessages();
-        notifyDataSetChanged();
-    }
-
     public void addMessages(List<Conversation.Message> messages) {
-        if (messages == null || messages.isEmpty()) return;
-        if (messages.size() == 1) {
-            addMessage(messages.get(0));
-            return;
-        }
-
-        int intialLocation = mMessages.size();
-        mMessages.addAll(messages);
-        ArrayList<Conversation.Message> old = new ArrayList<>(mMessages);
-        sortUniqMessages();
-        if (messages.equals(old)) {
-            notifyItemRangeInserted(getAdapterPosition(intialLocation), messages.size());
-        } else {
-            notifyDataSetChanged();
-        }
+        mMessages.insertItems(messages);
     }
 
     public void addMessage(Conversation.Message message) {
-        if (message == null) return;
-        int size = mMessages.size();
-        int pos = 0;
-        while (pos < size) {
-            if (mMessages.get(pos).id >= message.id) break;
-            pos += 1;
-        }
-        if (size == 0 || pos == size || mMessages.get(pos).id != message.id) {
-            mMessages.add(pos, message);
-            notifyItemInserted(getAdapterPosition(pos));
-        } else {
-            mMessages.set(pos, message);
-            notifyItemChanged(getAdapterPosition(pos));
-        }
+        mMessages.insertItem(message);
     }
 
     public void markMessagesAsRead(List<UpdateMessages.UpdateMessageInfo> messageInfos) {
@@ -206,21 +171,6 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 notifyItemChanged(getAdapterPosition(i));
             }
         }
-    }
-
-    public boolean prependMessages(List<Conversation.Message> messages) {
-        if (messages == null || messages.isEmpty()) return false;
-
-        mMessages.addAll(0, messages);
-        ArrayList<Conversation.Message> old = new ArrayList<>(mMessages);
-        sortUniqMessages();
-        if (!mMessages.equals(old)) {
-            if (DBG) junit.framework.Assert.fail("После добавление сообщений список получился криво отсортирован. Скорее всего, баг");
-            notifyDataSetChanged();
-        } else {
-            notifyItemRangeInserted(0, messages.size());
-        }
-        return  true;
     }
 
     public boolean isEmpty() {
@@ -353,13 +303,57 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
     }
 
-    private void sortUniqMessages() {
-        LongSparseArray<Conversation.Message> messagesArray = new LongSparseArray<>(mMessages.size());
-        for (Conversation.Message msg: mMessages) { messagesArray.put(msg.id, msg); }
-        mMessages.clear();
-        int length = messagesArray.size();
-        for (int i=0; i<length; ++i) mMessages.add(messagesArray.valueAt(i));
-        Collections.sort(mMessages, Conversation.Message.SORT_BY_ID_COMPARATOR);
+    private final class MessageFeed extends SortedList<Conversation.Message> implements SortedList.OnListChangedListener {
+
+        public MessageFeed() {
+            super(Conversation.Message.SORT_BY_ID_COMPARATOR);
+            setListener(this);
+        }
+
+        @Override
+        public long getItemId(Conversation.Message item) {
+            return item.id;
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemChanged(int location) {
+            notifyItemChanged(getAdapterPosition(location));
+        }
+
+        @Override
+        public void onItemInserted(int location) {
+            notifyItemInserted(getAdapterPosition(location));
+        }
+
+        @Override
+        public void onItemRemoved(int location) {
+            notifyItemRemoved(getAdapterPosition(location));
+        }
+
+        @Override
+        public void onItemMoved(int fromLocation, int toLocation) {
+            notifyItemMoved(getAdapterPosition(fromLocation), getAdapterPosition(toLocation));
+        }
+
+        @Override
+        public void onItemRangeChanged(int locationStart, int itemCount) {
+            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
+        }
+
+        @Override
+        public void onItemRangeInserted(int locationStart, int itemCount) {
+            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int locationStart, int itemCount) {
+            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
+        }
     }
 
     public static class ViewHolderMessage extends RecyclerView.ViewHolder {

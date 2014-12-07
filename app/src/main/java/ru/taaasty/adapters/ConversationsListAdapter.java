@@ -14,13 +14,10 @@ import android.widget.ImageView;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 
-import com.google.android.gms.internal.id;
-
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ru.taaasty.R;
+import ru.taaasty.SortedList;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
@@ -35,13 +32,13 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private final ImageUtils mImageUtils;
 
-    private final List<Conversation> mConversations;
+    private final ConversationsList mConversations;
 
     private final Handler mHandler;
 
     public ConversationsListAdapter() {
         super();
-        mConversations = new ArrayList<>();
+        mConversations = new ConversationsList();
         mImageUtils = ImageUtils.getInstance();
         mHandler = new Handler();
         setHasStableIds(true);
@@ -85,27 +82,11 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     public void setConversations(List<Conversation> conversations) {
-        mConversations.clear();
-        mConversations.addAll(conversations);
-        Collections.sort(conversations, Conversation.SORT_BY_CREATED_AT_COMPARATOR);
-        notifyDataSetChanged();
+        mConversations.resetItems(conversations);
     }
 
     public void addConversation(Conversation conversation) {
-        if (conversation == null) return;
-        int size = mConversations.size();
-        int pos = 0;
-        while (pos < size) {
-            if (mConversations.get(pos).id >= conversation.id) break;
-            pos += 1;
-        }
-        if (size == 0 || pos == size || mConversations.get(pos).id != conversation.id) {
-            mConversations.add(pos, conversation);
-            notifyItemInserted(pos);
-        } else {
-            mConversations.set(pos, conversation);
-            notifyItemChanged(pos);
-        }
+        mConversations.insertItem(conversation);
     }
 
     @Nullable
@@ -188,6 +169,58 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         }
     };
 
+    private final class ConversationsList extends SortedList<Conversation> implements SortedList.OnListChangedListener {
+
+        public ConversationsList() {
+            super(Conversation.SORT_BY_CREATED_AT_COMPARATOR);
+            setListener(this);
+        }
+
+        @Override
+        public long getItemId(Conversation item) {
+            return item.id;
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void onItemChanged(int location) {
+            notifyItemChanged(location);
+        }
+
+        @Override
+        public void onItemInserted(int location) {
+            notifyItemInserted(location);
+        }
+
+        @Override
+        public void onItemRemoved(int location) {
+            notifyItemRemoved(location);
+        }
+
+        @Override
+        public void onItemMoved(int fromLocation, int toLocation) {
+            notifyItemMoved(fromLocation, toLocation);
+        }
+
+        @Override
+        public void onItemRangeChanged(int locationStart, int itemCount) {
+            notifyItemRangeChanged(locationStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeInserted(int locationStart, int itemCount) {
+            notifyItemRangeChanged(locationStart, itemCount);
+        }
+
+        @Override
+        public void onItemRangeRemoved(int locationStart, int itemCount) {
+            notifyItemRangeRemoved(locationStart, itemCount);
+        }
+    }
 
     public class ViewHolder extends RecyclerView.ViewHolder  {
 
