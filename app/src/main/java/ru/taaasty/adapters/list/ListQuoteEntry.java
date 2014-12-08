@@ -19,7 +19,6 @@ public class ListQuoteEntry extends  ListEntryBase {
         super(context, v, showUserAvatar);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
         mSource = (TextView) v.findViewById(R.id.source);
-        mText.setMaxLines(10);
     }
 
     @Override

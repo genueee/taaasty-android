@@ -25,7 +25,7 @@
             android:contentDescription="@string/feed_item_image_content_description" />
     </FrameLayout>
 
-    <ru.taaasty.widgets.EllipsizingTextView
+    <TextView
         android:id="@+id/feed_item_title"
         android:layout_marginTop="14dp"
         style="@style/PostText"

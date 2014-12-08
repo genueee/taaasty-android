@@ -25,12 +25,11 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.EllipsizingTextView;
 
 public class ListImageEntry extends ListEntryBase implements Callback {
     private final FrameLayout mImageLayout;
     private final ImageView mImageView;
-    private final EllipsizingTextView mTitle;
+    private final TextView mTitle;
 
     private Context mContext;
     private final Picasso mPicasso;
@@ -43,14 +42,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
-        mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
+        mTitle = (TextView) v.findViewById(R.id.feed_item_title);
 
         mContext = context;
         mPicasso = Picasso.with(context);
         mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
         mGifForegroundDrawable = context.getResources().getDrawable(R.drawable.embedd_play_foreground);
-
-        mTitle.setMaxLines(10);
     }
 
     @Override

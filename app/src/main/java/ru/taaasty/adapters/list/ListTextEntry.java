@@ -28,8 +28,6 @@ public class ListTextEntry extends ListEntryBase {
         mContext = context;
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
-        mTitle.setMaxLines(2);
-        mText.setMaxLines(10);
     }
 
     @Override

@@ -22,7 +22,6 @@ import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.EllipsizingTextView;
 
 /**
  * Created by alexey on 28.09.14.
@@ -32,7 +31,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
     private final ImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
     private final Drawable mEmbeddForegroundDrawable;
-    private final EllipsizingTextView mTitle;
+    private final TextView mTitle;
 
     private final Context mContext;
     private final Picasso mPicasso;
@@ -42,15 +41,13 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         super(context, v, showUserAvatar);
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
-        mTitle = (EllipsizingTextView) v.findViewById(R.id.feed_item_title);
+        mTitle = (TextView) v.findViewById(R.id.feed_item_title);
 
         mContext = context;
         mPicasso = Picasso.with(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
-
-        mTitle.setMaxLines(2);
     }
 
     @Override
