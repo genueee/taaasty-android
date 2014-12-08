@@ -143,7 +143,7 @@ dependencies {
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.0.10+'
     compile 'uk.co.chrisjenx:calligraphy:1.1.+'
-    compile(group: 'com.aviary.android.feather.sdk', name: 'aviary-sdk', version: '3.4.3.+') {
+    compile(group: 'com.aviary.android.feather.sdk', name: 'aviary-sdk', version: '3.4.3.351') {
         exclude(group: 'com.squareup.okhttp', module: 'okhttp')
         exclude(group: 'com.squareup.okhttp', module: 'okhttp-urlconnection')
         exclude(group: 'com.intellij', module: 'annotations')
@@ -155,6 +155,16 @@ dependencies {
         exclude(group: 'com.squareup.okhttp', module: 'okhttp-urlconnection')
         exclude(group: 'com.intellij', module: 'annotations')
         exclude(group: 'commons-io', module: 'commons-io')
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency { DependencyResolveDetails details ->
+            if (details.requested.group == 'com.aviary.android.feather.sdk' && details.requested.name == 'common-library') {
+                details.useVersion '3.1.2'
+            }
+        }
     }
 }
 
