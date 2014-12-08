@@ -19,6 +19,8 @@ public class AdditionalMenuActivity extends ActivityBase {
         for (int vid: new int[] {
                 R.id.settings,
                 R.id.friends,
+                R.id.hidden,
+                R.id.favorites,
                 R.id.logout,
                 R.id.back_button
 

@@ -8,6 +8,14 @@
         android:title="@string/menu_settings"
         android:showAsAction="never"/>
 
+    <item android:id="@+id/menu_favorites"
+        android:title="@string/menu_favorites"
+        android:showAsAction="never"/>
+
+    <item android:id="@+id/menu_hidden"
+        android:title="@string/menu_hidden"
+        android:showAsAction="never"/>
+
     <item android:id="@+id/menu_friends"
         android:title="@string/menu_friends"
         android:showAsAction="never"/>

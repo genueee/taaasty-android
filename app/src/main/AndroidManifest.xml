@@ -72,6 +72,12 @@
             </intent-filter>
         </activity>
         <activity
+            android:name="ru.taaasty.ui.feeds.AdditionalFeedActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
             android:name="ru.taaasty.ui.AdditionalMenuActivity"
             android:label="@string/title_activity_additional_menu"
             android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"

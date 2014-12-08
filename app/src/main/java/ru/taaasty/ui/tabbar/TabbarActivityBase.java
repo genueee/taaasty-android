@@ -12,6 +12,7 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
@@ -106,10 +107,10 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {
         switch (resultCode) {
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
-                switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG);
+                switchToMyFeed();
                 break;
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
-                switchToMyFeed(MyFeedActivity.SECTION_HIDDEN);
+                openHidden();
                 break;
         }
     }
@@ -138,15 +139,16 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         overridePendingTransition(0, 0);
     }
 
-    void switchToMyFeed() { switchToMyFeed(MyFeedActivity.SECTION_MY_TLOG); }
-
-    void switchToMyFeed(int initialSection) {
+    void switchToMyFeed() {
         Intent i = new Intent(this, MyFeedActivity.class);
-        i.putExtra(MyFeedActivity.ARG_KEY_SHOW_SECTION, initialSection);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
         finish();
         overridePendingTransition(0, 0);
+    }
+
+    void openHidden() {
+        AdditionalFeedActivity.startHiddenRecordsActivity(this, null);
     }
 
     void switchToNotifications() {

@@ -50,18 +50,6 @@
 
         </LinearLayout>
 
-        <ru.taaasty.widgets.CirclePageStaticIndicator
-            android:id="@+id/circle_page_indicator"
-            style="@style/LiveFeedCirclePageStaticIndicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/avatar_user_name"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="8dp"
-            android:padding="4dp"
-            app:cpsi_count="3"
-            app:cpsi_selected_item="0" />
-
     </RelativeLayout>
 
     <FrameLayout

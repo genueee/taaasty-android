@@ -52,7 +52,6 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.CirclePageStaticIndicator;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -77,8 +76,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public static final int FEED_TYPE_PRIVATE = 3;
 
     private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";
-    private static final String BUNDLE_ARG_PAGE_IDX = "BUNDLE_ARG_PAGE_IDX";
-    private static final String BUNDLE_ARG_PAGE_COUNT = "BUNDLE_ARG_PAGE_COUNT";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.feed_items";
     private static final String BUNDLE_KEY_CURRENT_USER = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.curremt_user";
@@ -103,13 +100,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     private DateIndicatorWidget mDateIndicatorView;
 
-    public static MyAdditionalFeedFragment newInstance(@FeedType int type,
-                                                       int pageIdx, int pageCount) {
+    public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
         Bundle b = new Bundle();
         b.putInt(BUNDLE_ARG_FEED_TYPE, type);
-        b.putInt(BUNDLE_ARG_PAGE_IDX, pageIdx);
-        b.putInt(BUNDLE_ARG_PAGE_COUNT, pageCount);
         usf.setArguments(b);
         return usf;
     }
@@ -348,9 +342,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         private final int mFeedNameVisibility;
         private final int mFeedNameLeftDrawable;
 
-        private final int mPageIdx;
-        private final int mPageCount;
-
         private User mUser = User.DUMMY;
 
         public Adapter(Context context, List<Entry> feed, boolean showUserAvatar) {
@@ -358,8 +349,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
             Bundle args = getArguments();
             //noinspection ResourceType
-            mPageIdx = args.getInt(BUNDLE_ARG_PAGE_IDX, 0);
-            mPageCount = args.getInt(BUNDLE_ARG_PAGE_COUNT, 3);
 
             switch (mFeedType) {
                 case FEED_TYPE_MAIN:
@@ -433,7 +422,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             HeaderHolder holder = new HeaderHolder(child);
             holder.avatarView.setOnClickListener(mOnClickListener);
             bindTitleName(holder);
-            bindPageIndicator(holder);
             return holder;
         }
 
@@ -481,16 +469,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                     holder.avatarView,
                     R.dimen.avatar_normal_diameter
             );
-        }
-
-        void bindPageIndicator(HeaderHolder holder) {
-            CirclePageStaticIndicator pageIndicator = (CirclePageStaticIndicator) holder.itemView.findViewById(R.id.circle_page_indicator);
-            if (mPageCount == 0) {
-                pageIndicator.setVisibility(View.GONE);
-            } else {
-                pageIndicator.setCount(mPageCount);
-                pageIndicator.setSelected(mPageIdx);
-            }
         }
 
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {

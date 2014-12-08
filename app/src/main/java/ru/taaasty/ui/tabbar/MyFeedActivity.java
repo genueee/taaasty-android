@@ -3,7 +3,6 @@ package ru.taaasty.ui.tabbar;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -11,7 +10,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,50 +18,33 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 
-import java.util.Locale;
-
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.AdditionalMenuActivity;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.feeds.IRereshable;
-import ru.taaasty.ui.feeds.MyAdditionalFeedFragment;
 import ru.taaasty.ui.feeds.MyFeedFragment;
-import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.NetworkUtils;
 
 
-public class MyFeedActivity extends TabbarActivityBase implements
-        MyAdditionalFeedFragment.OnFragmentInteractionListener,
-        MyFeedFragment.OnFragmentInteractionListener {
+public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedActivity";
 
     public static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
 
-    public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.tabbar.MyAdditionalFeedFragment.KEY_SHOW_PAGE";
-
-    public static final int SECTION_MY_TLOG = 0;
-    public static final int SECTION_FAVORITES = 1;
-    public static final int SECTION_HIDDEN = 2;
-
     private static final String KEY_CURRENT_USER = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER";
     private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER_DESIGN";
 
-    SectionsPagerAdapter mSectionsPagerAdapter;
-    ViewPager mViewPager;
-
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
-
-    private String mBackgroundBitmapKey;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,16 +55,12 @@ public class MyFeedActivity extends TabbarActivityBase implements
         if (savedInstanceState != null) {
             mCurrentUser = savedInstanceState.getParcelable(KEY_CURRENT_USER);
             mCurrentUserDesign = savedInstanceState.getParcelable(KEY_CURRENT_USER_DESIGN);
+        } else {
+            Fragment fragment = MyFeedFragment.newInstance();
+            getFragmentManager().beginTransaction()
+                    .add(R.id.container, fragment)
+                    .commit();
         }
-
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_MY_TLOG);
-        mViewPager.setCurrentItem(initialSection, false);
     }
 
     @Override
@@ -134,6 +111,12 @@ public class MyFeedActivity extends TabbarActivityBase implements
             case R.id.menu_friends:
                 openFriends();
                 break;
+            case R.id.menu_favorites:
+                openFavorites();
+                break;
+            case R.id.menu_hidden:
+                openHidden();
+                break;
             case R.id.menu_quit:
                 logout();
                 break;
@@ -152,12 +135,12 @@ public class MyFeedActivity extends TabbarActivityBase implements
 
     @Override
     void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {
+
         switch (resultCode) {
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
-                if (mViewPager != null) mViewPager.setCurrentItem(SECTION_MY_TLOG, false);
                 break;
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN:
-                if (mViewPager != null) mViewPager.setCurrentItem(SECTION_HIDDEN, false);
+                openHidden();
                 break;
         }
         // говно
@@ -184,11 +167,6 @@ public class MyFeedActivity extends TabbarActivityBase implements
     }
 
     @Override
-    public void onAvatarClicked(View view, User user, TlogDesign design) {
-        TlogActivity.startTlogActivity(this, user.getId(), view);
-    }
-
-    @Override
     public void onSharePostMenuClicked(Entry entry) {
         Intent intent = new Intent(this, SharePostActivity.class);
         intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
@@ -202,8 +180,7 @@ public class MyFeedActivity extends TabbarActivityBase implements
     }
 
     void refreshData() {
-        if (mSectionsPagerAdapter == null) return;
-        Fragment current = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+        Fragment current = getFragmentManager().findFragmentById(R.id.container);
         if (current != null) ((IRereshable)current).refreshData();
     }
 
@@ -213,6 +190,12 @@ public class MyFeedActivity extends TabbarActivityBase implements
                 break;
             case R.id.friends:
                 openFriends();
+                break;
+            case R.id.favorites:
+                openFavorites();
+                break;
+            case R.id.hidden:
+                openHidden();
                 break;
             case R.id.settings:
                 if (DBG) Log.v(TAG, "onAdditionMenuItemClicked settings");
@@ -236,6 +219,14 @@ public class MyFeedActivity extends TabbarActivityBase implements
         i.putExtra(FollowingFollowersActivity.ARG_USER, mCurrentUser);
         i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_FRIENDS);
         startActivity(i);
+    }
+
+    void openFavorites() {
+        AdditionalFeedActivity.startFavoritesActivity(this, null);
+    }
+
+    void openHidden() {
+        AdditionalFeedActivity.startHiddenRecordsActivity(this, null);
     }
 
     void logout() {
@@ -265,44 +256,5 @@ public class MyFeedActivity extends TabbarActivityBase implements
                 System.exit(0);
             }
         }.execute();
-    }
-
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
-
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-        @Override
-        public Fragment getItem(int position) {
-            switch (position) {
-                case SECTION_MY_TLOG:
-                    return MyFeedFragment.newInstance();
-                case SECTION_FAVORITES:
-                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedFragment.FEED_TYPE_FAVORITES, position, getCount());
-                case SECTION_HIDDEN:
-                    return MyAdditionalFeedFragment.newInstance(MyAdditionalFeedFragment.FEED_TYPE_PRIVATE, position, getCount());
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
-
-        @Override
-        public int getCount() {
-            return 3;
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case SECTION_MY_TLOG:
-                    return getString(R.string.title_my_feed).toUpperCase(Locale.getDefault());
-                case SECTION_FAVORITES:
-                    return getString(R.string.title_favorites).toUpperCase(Locale.getDefault());
-                case SECTION_HIDDEN:
-                    return getString(R.string.title_hidden_entries).toUpperCase(Locale.getDefault());
-            }
-            return null;
-        }
     }
 }
