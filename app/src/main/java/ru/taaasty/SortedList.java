@@ -143,6 +143,11 @@ public abstract class SortedList<E> {
         }
     }
 
+    public Long getLastEntryId() {
+        if (isEmpty()) return null;
+        return getIdAt(mList.size() - 1);
+    }
+
     private void sortUniqItems() {
         int size = mList.size();
         LongSparseArray<E> messagesArray = new LongSparseArray<>(size);

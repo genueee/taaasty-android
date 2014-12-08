@@ -14,15 +14,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.adapters.FeedList;
-import ru.taaasty.adapters.grid.GridEntryHeader;
+import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.ParallaxedHeaderHolder;
+import ru.taaasty.adapters.ParallaxedHeaderHolderTitleSubtitle;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.CurrentUser;
@@ -134,8 +136,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        FeedList feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        List<Entry> feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
         mAdapter = new Adapter(getActivity(), feed);
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
@@ -157,8 +159,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            FeedList feed = mAdapter.getFeed();
-            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
+            List<Entry> feed = mAdapter.getFeed().getItems();
+            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<>(feed));
         }
         if (mTlogDesign != null) {
             outState.putParcelable(BUNDLE_KEY_FEED_DESIGN, mTlogDesign);
@@ -230,9 +232,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
-    class Adapter extends FeedItemAdapter {
+    class Adapter extends FeedItemAdapterLite {
 
-        public Adapter(Context context, FeedList feed) {
+        public Adapter(Context context, List<Entry> feed) {
             super(context, feed, true);
         }
 
@@ -299,9 +301,9 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         };
     }
 
-    class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+    class FeedLoader extends ru.taaasty.ui.feeds.FeedLoaderLite {
 
-        public FeedLoader(FeedItemAdapter adapter) {
+        public FeedLoader(FeedItemAdapterLite adapter) {
             super(adapter);
         }
 

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -25,14 +26,15 @@ import com.squareup.picasso.RequestCreator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.adapters.FeedList;
+import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -140,8 +142,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         boolean showUserAvatar = (mFeedType == FEED_TYPE_FRIENDS) || (mFeedType == FEED_TYPE_FAVORITES);
 
-        FeedList feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        List<Entry> feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
         mAdapter = new Adapter(getActivity(), feed, showUserAvatar);
         mAdapter.onCreate();
 
@@ -194,8 +196,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            FeedList feed = mAdapter.getFeed();
-            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
+            List<Entry> feed = mAdapter.getFeed().getItems();
+            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<Parcelable>(feed));
         }
         outState.putParcelable(BUNDLE_KEY_CURRENT_USER, mCurrentUser);
     }
@@ -340,7 +342,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
-    public class Adapter extends FeedItemAdapter {
+    public class Adapter extends FeedItemAdapterLite {
         private String mTitle;
         private final int mFeedName;
         private final int mFeedNameVisibility;
@@ -351,7 +353,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         private User mUser = User.DUMMY;
 
-        public Adapter(Context context, FeedList feed, boolean showUserAvatar) {
+        public Adapter(Context context, List<Entry> feed, boolean showUserAvatar) {
             super(context, feed, showUserAvatar);
 
             Bundle args = getArguments();
@@ -601,9 +603,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
     };
 
-    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoaderLite {
 
-        public MyFeedLoader(FeedItemAdapter adapter) {
+        public MyFeedLoader(FeedItemAdapterLite adapter) {
             super(adapter);
         }
 

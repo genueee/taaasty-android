@@ -72,7 +72,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     private FeedList mFeed;
 
-    private final LayoutInflater mInfater;
+    private final LayoutInflater mInflater;
 
     protected TlogDesign mFeedDesign;
 
@@ -101,14 +101,14 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     protected abstract void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
 
     public interface InteractionListener {
-        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize, FeedListItem entry);
+        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
     }
 
     public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar) {
         this(context, feed, showUserAvatar, R.layout.endless_loading_indicator);
     }
 
-    public FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar, int pendingResource) {
+    private FeedItemAdapter(Context context, @Nullable FeedList feed, boolean showUserAvatar, int pendingResource) {
         super();
 
         SortedList.OnListChangedListener onListChangedListener = new SortedList.OnListChangedListener() {
@@ -157,7 +157,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         mFeed = feed != null ? feed : new FeedList();
         mFeed.setListener(onListChangedListener);
         mContext = context;
-        mInfater = LayoutInflater.from(context);
+        mInflater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
         mUpdateRatingEntrySet = new HashSet<>();
         mShowUserAvatar = showUserAvatar;
@@ -176,31 +176,31 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
             case VIEW_TYPE_HEADER:
                 return onCreateHeaderViewHolder(parent);
             case VIEW_TYPE_PENDING:
-                child = mInfater.inflate(mPendingResource, parent, false);
+                child = mInflater.inflate(mPendingResource, parent, false);
                 holder = new RecyclerView.ViewHolder(child) {};
                 break;
             case VIEW_TYPE_COMMENT:
-                child = mInfater.inflate(R.layout.comments_item2, parent, false);
+                child = mInflater.inflate(R.layout.comments_item2, parent, false);
                 holder = new CommentsAdapter.ViewHolder(child);
                 break;
             case VIEW_TYPE_REPLY_FORM:
-                child = mInfater.inflate(R.layout.list_comment_reply_form, parent, false);
+                child = mInflater.inflate(R.layout.list_comment_reply_form, parent, false);
                 holder = new ReplyCommentFormViewHolder(child);
                 break;
             case VIEW_TYPE_IMAGE:
-                child = mInfater.inflate(R.layout.list_feed_item_image, parent, false);
+                child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
                 holder = new ListImageEntry(mContext, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_EMBEDD:
-                child = mInfater.inflate(R.layout.list_feed_item_image, parent, false);
+                child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
                 holder = new ListEmbeddEntry(mContext, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_QUOTE:
-                child = mInfater.inflate(R.layout.list_feed_item_quote, parent, false);
+                child = mInflater.inflate(R.layout.list_feed_item_quote, parent, false);
                 holder = new ListQuoteEntry(mContext, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_OTHER:
-                child = mInfater.inflate(R.layout.list_feed_item_text, parent, false);
+                child = mInflater.inflate(R.layout.list_feed_item_text, parent, false);
                 holder = new ListTextEntry(mContext, child, mShowUserAvatar);
                 break;
             default:
@@ -276,7 +276,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
 
         if (mInteractionListener != null)
-            mInteractionListener.onBindViewHolder(viewHolder,feedLocation, mFeed.size(), feedListItem);
+            mInteractionListener.onBindViewHolder(viewHolder,feedLocation, mFeed.size());
     }
 
     @Override

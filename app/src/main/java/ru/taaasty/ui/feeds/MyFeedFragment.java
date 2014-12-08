@@ -21,6 +21,8 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
@@ -28,8 +30,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.adapters.FeedItemAdapter;
-import ru.taaasty.adapters.FeedList;
+import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -146,8 +147,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mAdapter != null) {
-            FeedList feed = mAdapter.getFeed();
-            outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
+            List<Entry> feed = mAdapter.getFeed().getItems();
+            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<Entry>(feed));
         }
     }
 
@@ -155,8 +156,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        FeedList feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_ITEMS);
+        List<Entry> feed = null;
+        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
         mAdapter = new Adapter(getActivity(), feed);
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
@@ -240,11 +241,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
-    class Adapter extends FeedItemAdapter {
+    class Adapter extends FeedItemAdapterLite {
         private String mTitle;
         private User mUser = User.DUMMY;
 
-        public Adapter(Context context, FeedList feed) {
+        public Adapter(Context context, List<Entry> feed) {
             super(context, feed, false);
         }
 
@@ -462,11 +463,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
     };
 
-    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+    class MyFeedLoader extends FeedLoaderLite {
 
         private final ApiMyFeeds mFeedsService;
 
-        public MyFeedLoader(FeedItemAdapter adapter) {
+        public MyFeedLoader(FeedItemAdapterLite adapter) {
             super(adapter);
             mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
         }

@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.adapters.FeedItemAdapter;
+import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.model.Feed;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
@@ -17,15 +18,15 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 
 /**
- * подгрузчик записей и коментариев для адаптера
+ * подгрузчик записей
  */
-public abstract class FeedLoader {
+public abstract class FeedLoaderLite {
 
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "FeedLoader";
+    private static final String TAG = "FeedLoaderLite";
     public static final int ENTRIES_TO_TRIGGER_APPEND = 3;
 
-    private final FeedItemAdapter mAdapter;
+    private final FeedItemAdapterLite mAdapter;
 
     private final Handler mHandler;
 
@@ -46,7 +47,7 @@ public abstract class FeedLoader {
 
     protected abstract Observable<Feed> createObservable(Long sinceEntryId, Integer limit);
 
-    public FeedLoader(FeedItemAdapter adapter)  {
+    public FeedLoaderLite(FeedItemAdapterLite adapter)  {
         mAdapter = adapter;
         mHandler = new Handler();
         mKeepOnAppending = new AtomicBoolean(true);
@@ -55,7 +56,7 @@ public abstract class FeedLoader {
         mAdapter.setInteractionListener(new FeedItemAdapter.InteractionListener() {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
-                FeedLoader.this.onBindViewHolder(viewHolder, position, feedSize);
+                FeedLoaderLite.this.onBindViewHolder(viewHolder, position, feedSize);
             }
         });
 
@@ -120,16 +121,13 @@ public abstract class FeedLoader {
     protected void onLoadNext(boolean isRefresh, int entriesRequested, Feed feed) {
         if (DBG) Log.e(TAG, "onNext " + feed.toString());
         boolean keepOnAppending = (feed != null) && (feed.entries.size() == entriesRequested);
-        if (feed != null && !feed.entries.isEmpty()) {
-            if (isRefresh) {
-                // XXX: мы здесь не удаляем записи. Т.е.если по каким-то причинам фид станет короче,
-                // у нас останутся старые записи
-                mAdapter.getFeed().addEntries(feed.entries);
-            } else {
-                if (!mAdapter.getFeed().appendEntries(feed.entries)) keepOnAppending = false;
-            }
-        }
 
+        if (feed != null) {
+            int sizeBefore = mAdapter.getFeed().size();
+            mAdapter.getFeed().insertItems(feed.entries);
+            if (entriesRequested != 0 && sizeBefore == mAdapter.getFeed().size())
+                keepOnAppending = false;
+        }
         setKeepOnAppending(keepOnAppending);
         mAdapter.setLoading(false);
     }
@@ -155,17 +153,17 @@ public abstract class FeedLoader {
 
         @Override
         public void onCompleted() {
-            FeedLoader.this.onLoadCompleted(mIsRefresh, mEntriesRequested);
+            FeedLoaderLite.this.onLoadCompleted(mIsRefresh, mEntriesRequested);
         }
 
         @Override
         public void onError(Throwable e) {
-            FeedLoader.this.onLoadError(mIsRefresh, mEntriesRequested, e);
+            FeedLoaderLite.this.onLoadError(mIsRefresh, mEntriesRequested, e);
         }
 
         @Override
         public void onNext(Feed feed) {
-            FeedLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, feed);
+            FeedLoaderLite.this.onLoadNext(mIsRefresh, mEntriesRequested, feed);
         }
     }
 
