@@ -152,7 +152,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), true));
+        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarVisibleOnPost()));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -182,7 +182,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         List<Entry> feed = null;
         if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-        mAdapter = new Adapter(getActivity(), feed, !(mFeedType == FEED_ANONYMOUS));
+        mAdapter = new Adapter(getActivity(), feed, isUserAvatarVisibleOnPost());
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
         mListView.setAdapter(mAdapter);
@@ -263,6 +263,10 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     public void onEventMainThread(OnStatsLoaded event) {
         if (mAdapter != null) mAdapter.notifyItemChanged(0);
+    }
+
+    boolean isUserAvatarVisibleOnPost() {
+        return mFeedType != FEED_ANONYMOUS;
     }
 
     void setRefreshing(boolean refresh) {
