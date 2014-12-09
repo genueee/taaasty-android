@@ -22,8 +22,7 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedList;
-import ru.taaasty.adapters.ParallaxedHeaderHolder;
-import ru.taaasty.adapters.ParallaxedHeaderHolderTitleSubtitle;
+import ru.taaasty.adapters.grid.GridEntryHeader;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.CurrentUser;
@@ -39,7 +38,6 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
-import ru.taaasty.widgets.SmartTextSwitcher;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -251,8 +249,12 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
             View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
-            ParallaxedHeaderHolder holder = new ParallaxedHeaderHolderTitleSubtitle(child);
-            ((SmartTextSwitcher)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)child.getLayoutParams();
+            params.bottomMargin = 0;
+            child.setLayoutParams(params);
+            GridEntryHeader holder = new GridEntryHeader(parent.getContext(), child);
+            holder.setTitleSubtitle(R.string.my_subscriptions, null);
+            holder.bindEntry(null);
             return holder;
         }
 

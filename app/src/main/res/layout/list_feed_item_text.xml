@@ -12,11 +12,12 @@
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_title"
         style="@style/PostTitle"
+        android:paddingTop="0dp"
         android:visibility="gone"
         tools:text="Ролики"
         android:textSize="28sp"
         android:textIsSelectable="false"
-        tools:visibility="visible"/>
+        tools:visibility="visible" />
 
     <ru.taaasty.widgets.EllipsizingTextView
         android:id="@+id/feed_item_text"

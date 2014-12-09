@@ -6,25 +6,28 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
+    android:background="?android:selectableItemBackground"
     android:paddingLeft="@dimen/feed_item_padding_left"
     android:paddingRight="@dimen/feed_item_padding_right"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
     tools:ignore="UseCompoundDrawables">
 
     <ImageView
         android:id="@+id/avatar"
-        android:layout_width="@dimen/avatar_small_diameter"
+        android:layout_width="34dp"
         tools:ignore="contentDescription"
-        android:layout_height="@dimen/avatar_small_diameter"
+        android:layout_height="34dp"
         android:layout_gravity="center"
-        android:layout_marginRight="16dp"
+        android:layout_marginRight="12dp"
         android:src="@drawable/avatar_dummy" />
 
     <TextView
         android:id="@+id/author"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:minHeight="64dp"
+        android:minHeight="24dp"
         android:textColor="@color/text_color_feed_item_gray"
         android:textSize="14sp"
         tools:text="alyonaruban" />
