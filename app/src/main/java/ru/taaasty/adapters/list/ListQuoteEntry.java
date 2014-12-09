@@ -3,30 +3,44 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
 
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.utils.UiUtils;
 
 public class ListQuoteEntry extends  ListEntryBase {
     private final TextView mText;
     private final TextView mSource;
 
+    private User mUser;
+
     public ListQuoteEntry(Context context, View v, boolean showUserAvatar) {
         super(context, v, showUserAvatar);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
         mSource = (TextView) v.findViewById(R.id.source);
+
+        mText.setMovementMethod(LinkMovementMethod.getInstance());
+        mSource.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override
     public void setupEntry(Entry entry, TlogDesign design) {
         super.setupEntry(entry, design);
+        mUser = entry.getAuthor();
         setupText(entry);
         setupSource(entry);
         applyFeedStyle(design);
+    }
+
+    @Override
+    public void recycle() {
+        mText.setText(null);
+        mSource.setText(null);
     }
 
     @Override

@@ -24,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -45,13 +44,14 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class ShowPostActivity extends FragmentActivityBase implements ShowPostFragment.OnFragmentInteractionListener {
+public class ShowPostActivity extends FragmentActivityBase implements ShowPostFragment.OnFragmentInteractionListener, ShowCommentsFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
     private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
     private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
+    private static final String ARG_SHOW_FULL_POST = "ru.taaasty.ui.feeds.ShowPostActivity.show_full_post";
     private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
     private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
 
@@ -67,6 +67,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     private boolean mImeVisible;
 
     private boolean mYoutubeFullscreen = false;
+
+    private boolean mShowFullPost;
 
     private long mPostId;
 
@@ -87,6 +89,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         private Bitmap mThumbnailBitmap;
 
         private String mThumbnailBitmapCacheKey;
+
+        private boolean mShowFullPost;
 
         public Builder(Context context) {
             mContext = context;
@@ -123,6 +127,11 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             return this;
         }
 
+        public Builder setShowFullPost(boolean enable) {
+            mShowFullPost = enable;
+            return this;
+        }
+
         public Intent buildIntent() {
             if (mPostId == null && mEntry == null) {
                 throw new IllegalStateException("post not defined");
@@ -133,6 +142,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
             if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
+            if (mShowFullPost) intent.putExtra(ShowPostActivity.ARG_SHOW_FULL_POST, mShowFullPost);
 
             if (mThumbnailBitmap != null) {
                 String key = mThumbnailBitmapCacheKey != null ? mThumbnailBitmapCacheKey : "thumbnail";
@@ -173,6 +183,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
         mHideActionBarHandler = new Handler();
 
+        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
+
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
             mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
@@ -185,9 +197,16 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
-            Fragment postFragment = ShowPostFragment.newInstance(mPostId, entry, design, thumbnailKey);
+
+            Fragment fragment;
+            if (mShowFullPost) {
+                fragment = ShowPostFragment.newInstance(mPostId, entry, design, thumbnailKey);
+            } else {
+                fragment = ShowCommentsFragment.newInstance(mPostId, entry, design, thumbnailKey);
+            }
+
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, postFragment)
+                    .replace(R.id.container, fragment)
                     .commit();
         }
 
@@ -297,25 +316,13 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
     @Override
     public void onShowImageClicked(User author, List<String> images, String title, String previewUrl) {
-        ArrayList<String> imagesList;
-        Intent i = new Intent(this, ShowPhotoActivity.class);
-
-        if (images instanceof ArrayList) {
-            imagesList = (ArrayList<String>) images;
-        } else {
-            imagesList = new ArrayList<>(images);
-        }
-        i.putStringArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
-        i.putExtra(ShowPhotoActivity.ARG_TITLE, title);
-        i.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
-        if (previewUrl != null) i.putExtra(ShowPhotoActivity.ARG_PREVIEW_URL, previewUrl);
-
-        startActivity(i);
+        ShowPhotoActivity.startShowPhotoActivity(this, author, title, images, previewUrl, null);
     }
 
     @Override
-    public void onBottomReached(int listBottom, int listViewHeight) {
-        if (DBG) Log.v(TAG, "onBottomReached");
+    public void onEdgeReached(boolean atTop) {
+        if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
+        if (!atTop) return;
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         if (mYoutubeFullscreen) return;
         ActionBar ab = getActionBar();
@@ -323,8 +330,8 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
-    public void onBottomUnreached() {
-        if (DBG) Log.v(TAG, "onBottomUnreached");
+    public void onEdgeUnreached() {
+        if (DBG) Log.v(TAG, "onEdgeUnreached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         if (mYoutubeFullscreen) return;
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
@@ -365,9 +372,14 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     };
 
     private Entry getCurrentEntry() {
-        ShowPostFragment fragment = (ShowPostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment == null) return null;
-        return fragment.getCurrentEntry();
+        if (fragment instanceof  ShowPostFragment) {
+            return ((ShowPostFragment) fragment).getCurrentEntry();
+        } else if (fragment instanceof  ShowCommentsFragment) {
+            return ((ShowCommentsFragment) fragment).getCurrentEntry();
+        }
+        return null;
     }
 
     void showShareMenu() {

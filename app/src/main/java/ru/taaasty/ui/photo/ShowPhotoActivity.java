@@ -1,14 +1,19 @@
 package ru.taaasty.ui.photo;
 
 import android.app.ActionBar;
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v13.app.FragmentStatePagerAdapter;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewPager;
 import android.text.Html;
 import android.view.MenuItem;
@@ -20,6 +25,7 @@ import java.util.List;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.PhotoScrollPositionIndicator;
@@ -39,6 +45,47 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     private PhotoAdapter mAdapter;
     private PhotoScrollPositionIndicator mIndicator;
     private boolean mIndicatorVisible = false;
+
+    public static void startShowPhotoActivity(Context context,
+                                              User author,
+                                              String title,
+                                              List<String> images,
+                                              String previewUrl,
+                                              View animateFrom) {
+        ArrayList<String> imagesList;
+        Intent intent = new Intent(context, ShowPhotoActivity.class);
+
+        if (images instanceof ArrayList) {
+            imagesList = (ArrayList<String>) images;
+        } else {
+            imagesList = new ArrayList<>(images);
+        }
+        intent.putStringArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
+        intent.putExtra(ShowPhotoActivity.ARG_TITLE, title);
+        intent.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
+        if (previewUrl != null) intent.putExtra(ShowPhotoActivity.ARG_PREVIEW_URL, previewUrl);
+
+        if (animateFrom != null) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            if (context instanceof Activity) {
+                ActivityCompat.startActivity((Activity) context, intent, options.toBundle());
+            } else {
+                context.startActivity(intent);
+            }
+        } else {
+            context.startActivity(intent);
+        }
+    }
+
+    public static void startShowPhotoActivity(Context context, Entry entry, String previewUrl, View animateFrom) {
+        final ArrayList<String> images = entry.getImageUrls(false);
+        startShowPhotoActivity(context, entry.getAuthor(), entry.getTitle(), images,  previewUrl, animateFrom);
+    }
+
+    public static boolean canShowEntry(Entry entry) {
+        return !entry.getImageUrls(false).isEmpty();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -33,7 +32,6 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
-import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -253,32 +251,15 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
             // Все посты
             if (pHolder instanceof ListEntryBase) {
-                pHolder.itemView.setOnClickListener(mOnItemClickListener);
                 ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                // Клики на картинках
+                FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
                 return true;
             }
 
+
             return false;
         }
-
-        final View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
-                Entry entry = getAnyEntryAtHolderPosition(vh);
-                Bitmap thumbnail = null;
-                if (vh instanceof ListImageEntry) thumbnail = ((ListImageEntry) vh).getCachedImage();
-                if (entry != null) {
-                    if (DBG) Log.v(TAG, "onFeedItemClicked postId: " + entry.getId());
-                    new ShowPostActivity.Builder(getActivity())
-                            .setEntry(entry)
-                            .setSrcView(v)
-                            .setThumbnailBitmap(thumbnail, "MyFeedFragment" + entry.getId())
-                            .setDesign(mCurrentUser == null ? null : mCurrentUser.getDesign())
-                            .startActivity();
-                }
-            }
-        };
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {

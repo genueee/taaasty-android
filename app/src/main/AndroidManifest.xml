@@ -93,6 +93,7 @@
             android:label="@string/title_activity_show_post"
             android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
             android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize|stateHidden"
             android:theme="@style/ShowPostTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

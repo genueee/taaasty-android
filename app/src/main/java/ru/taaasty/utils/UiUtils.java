@@ -9,7 +9,9 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.TextUtils;
+import android.text.style.ImageSpan;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -159,4 +161,16 @@ public class UiUtils {
             return youtubeUrl;
         }
     }
+
+    public static ArrayList<String> getImageSpanUrls(CharSequence seq) {
+        if (TextUtils.isEmpty(seq) || !(seq instanceof Spanned)) return new ArrayList<>(0);
+        Spanned spanned = (Spanned)seq;
+        ImageSpan images[] = spanned.getSpans(0, spanned.length(), ImageSpan.class);
+        ArrayList<String> sources = new ArrayList<>(images.length);
+        for (ImageSpan imageSpan: images) {
+            if (!TextUtils.isEmpty(imageSpan.getSource())) sources.add(imageSpan.getSource());
+        }
+        return sources;
+    }
+
 }

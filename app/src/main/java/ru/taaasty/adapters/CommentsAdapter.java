@@ -52,7 +52,7 @@ public class CommentsAdapter extends BaseAdapter {
 
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
-        notifyDataSetChanged();
+        if (!isEmpty()) notifyDataSetChanged();
     }
 
     public void appendComments(List<Comment> comments) {
@@ -111,7 +111,7 @@ public class CommentsAdapter extends BaseAdapter {
         View res;
 
         if (convertView == null) {
-            res = mInfater.inflate(R.layout.comments_item, parent, false);
+            res = mInfater.inflate(R.layout.comments_item2, parent, false);
             vh = new ViewHolder(res);
             res.setTag(R.id.comment_view_holder, vh);
             vh.avatar.setOnClickListener(new View.OnClickListener() {

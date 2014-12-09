@@ -232,5 +232,6 @@
     <string name="error_create_conversation">Ошибка создания переписки</string>
     <string name="users_load_error">Ошибка загрузки пользователей</string>
     <string name="title_activity_additional_feed">AdditionalFeedActivity</string>
+    <string name="no_comments_hint">Здесь будут комментарии</string>
 
 </resources>

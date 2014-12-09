@@ -25,7 +25,6 @@ import android.text.Html;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -1029,30 +1028,13 @@ public class ShowPostFragment extends Fragment {
         }
 
         TextViewImgLoader.OnClickListener onImgClickListener = new TextViewImgLoader.OnClickListener() {
-
             @Override
             public void onImageClicked(TextView widget, String source) {
                 if (DBG) Log.v(TAG, "onImageClicked. widget: " + widget + " source: " + source);
                 CharSequence seq = widget.getText();
-                if (seq instanceof  Spanned) {
-                    Spanned spanned = (Spanned)seq;
-                    ImageSpan images[] = spanned.getSpans(0, spanned.length(), ImageSpan.class);
-                    ArrayList<String> sources = new ArrayList<>(images.length);
-                    for (ImageSpan imageSpan: images) {
-                        if (!TextUtils.isEmpty(imageSpan.getSource())) sources.add(imageSpan.getSource());
-                    }
-                    if (!sources.isEmpty() && mListener != null) {
-                        final String title;
-                        final User author;
-                        if (mCurrentEntry != null) {
-                            title = mCurrentEntry.getTitle();
-                            author = mCurrentEntry.getAuthor();
-                        } else {
-                            title = "";
-                            author = null;
-                        }
-                        mListener.onShowImageClicked(author, sources, title, null);
-                    }
+                ArrayList<String> sources = UiUtils.getImageSpanUrls(seq);
+                if (!sources.isEmpty()) {
+                    mListener.onShowImageClicked(mCurrentEntry.getAuthor(), sources, mCurrentEntry.getTitle(), null);
                 }
             }
         };
@@ -1295,40 +1277,30 @@ public class ShowPostFragment extends Fragment {
     };
 
     private final AbsListView.OnScrollListener mScrollListener = new  AbsListView.OnScrollListener() {
-        private boolean mBottomReachedCalled = false;
+            private boolean mEdgeReachedCalled = false;
 
-        @Override
-        public void onScrollStateChanged(AbsListView view, int scrollState) {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
 
-        }
-
-        @Override
-        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-            final int lastItem = firstVisibleItem + visibleItemCount;
-            int lastBottom = 0;
-            int viewBottom = 0;
-
-            boolean atBottom = false;
-
-            if (lastItem == totalItemCount) {
-                lastBottom = view.getChildAt(view.getChildCount() - 1).getBottom();
-                viewBottom = view.getBottom() - view.getPaddingBottom();
-                if (DBG) Log.v(TAG, "child bottom: " + lastBottom + " view bottom: " + viewBottom);
-                atBottom = lastBottom <= viewBottom;
             }
 
-            if (atBottom) {
-                if (!mBottomReachedCalled) {
-                    mBottomReachedCalled = true;
-                    if (mListener != null) mListener.onBottomReached(lastBottom, viewBottom);
-                }
-            } else {
-                if (mBottomReachedCalled) {
-                    mBottomReachedCalled = false;
-                    if (mListener != null) mListener.onBottomUnreached();
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                boolean atTop = !view.canScrollVertically(-1);
+                boolean atEdge = atTop || !view.canScrollVertically(1);
+
+                if (atEdge) {
+                    if (!mEdgeReachedCalled) {
+                        mEdgeReachedCalled = true;
+                        if (mListener != null) mListener.onEdgeReached(atTop);
+                    }
+                } else {
+                    if (mEdgeReachedCalled) {
+                        mEdgeReachedCalled = false;
+                        if (mListener != null) mListener.onEdgeUnreached();
+                    }
                 }
             }
-        }
     };
 
     private final Observer<Entry> mCurrentEntryObserver = new Observer<Entry>() {
@@ -1596,8 +1568,8 @@ public class ShowPostFragment extends Fragment {
         public void onSharePostMenuClicked(Entry entry);
         public void onShowImageClicked(User author, List<String> images, String title, String previewUrl);
 
-        public void onBottomReached(int listBottom, int listViewHeight);
-        public void onBottomUnreached();
+        public void onEdgeReached(boolean atTop);
+        public void onEdgeUnreached();
         public void setPostBackgroundColor(int color);
 
         public void onYoutubeFullscreen(boolean isFullscreen);

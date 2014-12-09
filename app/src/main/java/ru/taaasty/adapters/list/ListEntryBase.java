@@ -112,4 +112,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     }
 
     public ViewGroup getAvatarAuthorView() { return mAvatarAuthor; }
+
+    public abstract void recycle();
+
 }

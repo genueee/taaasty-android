@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/list_selector_holo_light">
+    android:orientation="vertical">
 
     <include layout="@layout/include_feed_item_author"/>
 

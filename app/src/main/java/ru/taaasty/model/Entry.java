@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import com.google.gson.annotations.SerializedName;
 
 import java.lang.annotation.Retention;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import ru.taaasty.UserManager;
 import ru.taaasty.model.iframely.IFramely;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
 
@@ -257,6 +259,20 @@ public class Entry implements Parcelable {
 
     public List<ImageInfo> getImages() {
         return mImages == null ? Collections.<ImageInfo>emptyList() : mImages;
+    }
+
+    public ArrayList<String> getImageUrls(boolean includeAnimatedGifs) {
+        if (mImages == null) return new ArrayList<>(0);
+        final ArrayList<String> images = new ArrayList<>(mImages.size());
+        for (ImageInfo imageInfo: mImages) {
+            if (!includeAnimatedGifs && imageInfo.isAnimatedGif()) continue;
+            if (!TextUtils.isEmpty(imageInfo.image.path)) {
+                images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
+            } else {
+                images.add(imageInfo.image.url);
+            }
+        }
+        return images;
     }
 
     /**

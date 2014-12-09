@@ -31,7 +31,6 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
-import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
@@ -296,31 +295,13 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
             // Все посты
             if (pHolder instanceof ListEntryBase) {
-                pHolder.itemView.setOnClickListener(mOnItemClickListener);
                 ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
                 return true;
             }
 
             return false;
         }
-
-        private View.OnClickListener mOnItemClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                RecyclerView.ViewHolder vh = mListView.getChildViewHolder(v);
-                Entry entry = getAnyEntryAtHolderPosition(vh);
-                Bitmap thumbnail = null;
-                if (vh instanceof ListImageEntry) thumbnail = ((ListImageEntry) vh).getCachedImage();
-                if (entry != null) {
-                    new ShowPostActivity.Builder(getActivity())
-                            .setEntry(entry)
-                            .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
-                            .setThumbnailBitmap(thumbnail, "TlogFragment-" + entry.getId() + "-")
-                            .setSrcView(v)
-                            .startActivity();
-                }
-            }
-        };
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
