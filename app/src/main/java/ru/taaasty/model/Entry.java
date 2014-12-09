@@ -42,6 +42,9 @@ public class Entry implements Parcelable {
 
     public static final String ENTRY_TYPE_QUOTE = "quote";
 
+    // Устаревший тип song
+    public static final String ENTRY_TYPE_SONG = "song";
+
     public static final String PRIVACY_PUBLIC_WITH_VOTING = "public_with_voting";
 
     public static final String PRIVACY_PUBLIC = "public";
@@ -93,7 +96,7 @@ public class Entry implements Parcelable {
     private Rating mRating;
 
     @SerializedName("title")
-    private String mTitle;
+    private String mTitle = "";
 
     @SerializedName("video_url")
     private String mVideoUrl;
@@ -105,7 +108,7 @@ public class Entry implements Parcelable {
     private IFramely mIframely;
 
     @SerializedName("text")
-    private String mText;
+    private String mText = "";
 
     @SerializedName("source")
     private String mSource;
