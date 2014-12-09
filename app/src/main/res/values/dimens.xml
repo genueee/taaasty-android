@@ -29,6 +29,7 @@
     <!-- Расстояние между постами в ленте, если посты показываются без аватарки в заголовке. Чуть больше, чем с аватаркой -->
     <dimen name="feed_list_inter_post_distance">28dp</dimen>
     <dimen name="feed_comments_padding_bottom">4dp</dimen>
+    <dimen name="feed_top_text_padding_bottom">24dp</dimen>
 
     <dimen name="feed_grid_item_padding_left">7dp</dimen>
     <dimen name="feed_grid_item_padding_right">7dp</dimen>
