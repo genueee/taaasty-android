@@ -3,6 +3,7 @@ package ru.taaasty.ui.tabbar;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -17,27 +18,52 @@ import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.Locale;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
+import ru.taaasty.events.OnStatsLoaded;
+import ru.taaasty.model.Stats;
+import ru.taaasty.service.ApiApp;
 import ru.taaasty.ui.feeds.GridFeedFragment;
+import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 
 public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
 
+    private static final String BUNDLE_KEY_FEED_STATS = "feed_stats";
+
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
     CirclePageIndicator mCircleIndicator;
     ParallaxedView mCircleIndicatorParallaxedView;
+
+    private ApiApp mApiStatsService;
+
+    private Subscription mStatsSubscription = SubscriptionHelper.empty();
+
+    @Nullable
+    private Stats mStats;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
 
+        mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
+
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+
+        if (savedInstanceState != null) {
+            mStats = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_STATS);
+        }
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -49,6 +75,12 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
             @Override
             protected void translatePreICS(View view, float offset) { throw new IllegalStateException("Not implemented"); }
         };
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startRefreshStats();
     }
 
     @Override
@@ -77,6 +109,18 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mStats != null) outState.putParcelable(BUNDLE_KEY_FEED_STATS, mStats);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mStatsSubscription.unsubscribe();
+    }
+
+    @Override
     int getCurrentTabId() {
         return R.id.btn_tabbar_live;
     }
@@ -91,6 +135,21 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     public void onGridTopViewScroll(GridFeedFragment fragment, boolean headerVisible, int viewTop) {
         if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
         updateCircleIndicatorPosition(headerVisible, viewTop);
+    }
+
+    @Override
+    public void startRefreshStats() {
+        if (mStatsSubscription.isUnsubscribed()) {
+            if (DBG) Log.v(TAG, "startRefreshStats");
+            mStatsSubscription = AndroidObservable.bindActivity(this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(mStatsObserver);
+        }
+    }
+
+    @Nullable
+    @Override
+    public Stats getStats() {
+        return mStats;
     }
 
     /**
@@ -109,7 +168,12 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
         if (page != null && page instanceof GridFeedFragment) {
             GridFeedFragment gff = (GridFeedFragment) page;
             gff.refreshData();
+            startRefreshStats();
         }
+    }
+
+    void notifyStatsChanged() {
+        EventBus.getDefault().post(new OnStatsLoaded(mStats));
     }
 
     void updateCircleIndicatorPosition(boolean isFirstItemVisible, int firstItemTop) {
@@ -175,5 +239,24 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
             return null;
         }
     }
+
+    private final Observer<Stats> mStatsObserver = new Observer<Stats>() {
+        @Override
+        public void onCompleted() {
+            notifyStatsChanged();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.e(TAG, "onError", e);
+            notifyError(getString(R.string.server_error), e);
+        }
+
+        @Override
+        public void onNext(Stats st) {
+            mStats = st;
+        }
+    };
+
 
 }

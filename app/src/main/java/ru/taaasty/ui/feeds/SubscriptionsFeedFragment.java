@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import java.util.NoSuchElementException;
 
@@ -40,6 +39,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.SmartTextSwitcher;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -252,7 +252,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
             View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
             ParallaxedHeaderHolder holder = new ParallaxedHeaderHolderTitleSubtitle(child);
-            ((TextView)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
+            ((SmartTextSwitcher)child.findViewById(R.id.title)).setText(R.string.my_subscriptions);
             return holder;
         }
 

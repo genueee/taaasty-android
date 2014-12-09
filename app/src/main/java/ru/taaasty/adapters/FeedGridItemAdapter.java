@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,14 +45,9 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     private static final int VIEW_TYPE_OTHER = R.id.feed_view_type_other;
     private static final int VIEW_TYPE_PENDING = R.id.feed_view_type_pending_indicator;
 
-
     private final EntryFeed mFeed;
     private final LayoutInflater mInfater;
     private final int mGridColumnCount;
-    final int mGridFeedPadding;
-
-    private String mHeaderTitle;
-    private String mHeaderSubtitle;
 
     private AtomicBoolean mKeepOnAppending = new AtomicBoolean(true);
     private AtomicBoolean mLoading = new AtomicBoolean(false);
@@ -62,6 +56,9 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
 
     private final Handler mHandler;
     private Subscription mFeedAppendSubscription = SubscriptionHelper.empty();
+
+    protected abstract GridEntryBase onCreateHeaderViewHolder(ViewGroup parent);
+    protected abstract void onBindHeaderViewHolder(GridEntryBase holder);
 
     protected abstract Observable<Feed> createObservable(Long sinceEntryId);
     protected abstract void onRemoteError(Throwable e);
@@ -76,7 +73,6 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         mFeed = new EntryFeed();
         mInfater = LayoutInflater.from(context);
         mGridColumnCount = context.getResources().getInteger(R.integer.live_feed_column_count);
-        mGridFeedPadding = context.getResources().getDimensionPixelSize(R.dimen.grid_feed_item_margin);
         mHandler = new Handler();
         mPendingResource = pendingResource;
         setHasStableIds(true);
@@ -88,17 +84,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
         Context context = parent.getContext();
         switch (viewType) {
             case VIEW_TYPE_HEADER:
-                res = mInfater.inflate(R.layout.header_title_subtitle, parent, false);
-                if (res.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
-                    StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams)res.getLayoutParams();
-                    lp.setFullSpan(true);
-                    // XXX: жесткий хак, но работает и я не знаю, как сделать лучше
-                    // Нужено, чтобы по бокам сетки и между элементами были одинаковые отступы
-                    lp.leftMargin = -1 * mGridFeedPadding;
-                    lp.rightMargin = -1 * mGridFeedPadding;
-                    res.setLayoutParams(lp);
-                }
-                return new GridEntryHeader2(context, res);
+                return onCreateHeaderViewHolder(parent);
             case VIEW_TYPE_PENDING:
                 res = mInfater.inflate(mPendingResource, parent, false);
                 if (res.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
@@ -127,8 +113,7 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
     @Override
     public void onBindViewHolder(GridEntryBase holder, int position) {
         if (isHeaderPosition(position)) {
-            ((GridEntryHeader) holder).setTitleSubtitle(mHeaderTitle, mHeaderSubtitle);
-            holder.bindEntry(null);
+            onBindHeaderViewHolder(holder);
         } else if (!isPendingIndicatorPosition(position)) {
             Entry item = mFeed.get(position - 1);
             holder.bindEntry(item);
@@ -231,15 +216,6 @@ public abstract class FeedGridItemAdapter extends RecyclerView.Adapter<GridEntry
 
     public void onEventMainThread(EntryRemoved event) {
         deleteEntry(event.postId);
-    }
-
-
-    public void setHeader(String title, String subtitle) {
-        if (TextUtils.equals(mHeaderTitle, title)
-                && TextUtils.equals(mHeaderSubtitle, subtitle)) return;
-        mHeaderTitle = title;
-        mHeaderSubtitle = subtitle;
-        notifyItemChanged(0);
     }
 
     public void setFeed(List<Entry> feed) {

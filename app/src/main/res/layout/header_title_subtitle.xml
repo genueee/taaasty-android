@@ -18,23 +18,55 @@
         android:layout_gravity="center"
         tools:ignore="UselessParent">
 
-        <TextView
+        <ru.taaasty.widgets.SmartTextSwitcher
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:text="@string/title_live_feed"
-            android:textColor="@android:color/white"
-            android:textSize="34sp" />
+            android:layout_gravity="center_horizontal">
 
-        <TextView
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_live_feed"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@android:color/white"
+                android:textSize="34sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_live_feed"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@android:color/white"
+                android:textSize="34sp" />
+
+        </ru.taaasty.widgets.SmartTextSwitcher>
+
+
+        <ru.taaasty.widgets.SmartTextSwitcher
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="2dp"
-            android:textColor="@color/text_color_feed_item_gray"
-            tools:text="12 записей за последний час"
-            android:textSize="14sp" />
+            android:paddingTop="2dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_color_feed_item_gray"
+                android:layout_gravity="center_horizontal"
+                tools:text="12 записей за последний час"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/text_color_feed_item_gray"
+                android:layout_gravity="center_horizontal"
+                tools:text="12 записей за последний час"
+                android:textSize="14sp" />
+
+        </ru.taaasty.widgets.SmartTextSwitcher>
+
     </LinearLayout>
 </FrameLayout>

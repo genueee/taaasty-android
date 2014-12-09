@@ -2,7 +2,6 @@ package ru.taaasty.adapters.grid;
 
 import android.content.Context;
 import android.view.View;
-import android.widget.TextView;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 
@@ -10,25 +9,28 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.model.Entry;
+import ru.taaasty.widgets.SmartTextSwitcher;
 
 /**
  * Created by alexey on 30.10.14.
  */
 public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderHolder {
 
-    private final TextView mTitleView;
-    private final TextView mSubtitleView;
+    private final SmartTextSwitcher mTitleView;
+    private final SmartTextSwitcher mSubtitleView;
     final View titleSubtitleContainer;
     private final ParallaxedView mParallaxedView;
 
-    private CharSequence mTitle;
+    private int mTitle;
     private CharSequence mSubtitle;
 
     public GridEntryHeader(Context context, View v) {
         super(context, v, 0);
-        mTitleView = (TextView)v.findViewById(R.id.title);
-        mSubtitleView = (TextView)v.findViewById(R.id.subtitle);
+        mTitleView = (SmartTextSwitcher)v.findViewById(R.id.title);
+        mSubtitleView = (SmartTextSwitcher)v.findViewById(R.id.subtitle);
+
         titleSubtitleContainer = v.findViewById(R.id.title_subtitle_container);
+
         mParallaxedView = new ParallaxedView(titleSubtitleContainer) {
             // Ставим для titleSubtitleContainer прозрачность в зависимости от видимой части всего заголовка
             protected void setOpacity(View view, float offset) {
@@ -50,7 +52,7 @@ public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderH
         mSubtitleView.setText(mSubtitle);
     }
 
-    public void setTitleSubtitle(String title, String subtitle) {
+    public void setTitleSubtitle(int title, String subtitle) {
         mTitle = title;
         mSubtitle = subtitle;
     }

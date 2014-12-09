@@ -53,4 +53,5 @@ public interface Constants {
 
     static final int FEED_TITLE_BACKGROUND_BLUR_RADIUS = 16;
     float DEFAULT_PARALLAX_FACTOR = 1.9f;
+    String TLOG_NEWS = "news";
 }

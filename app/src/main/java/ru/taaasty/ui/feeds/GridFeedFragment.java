@@ -16,16 +16,18 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedGridItemAdapter;
 import ru.taaasty.adapters.grid.GridEntryBase;
+import ru.taaasty.adapters.grid.GridEntryHeader;
 import ru.taaasty.adapters.grid.GridImageEntry;
+import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.Stats;
-import ru.taaasty.service.ApiApp;
 import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
@@ -48,20 +50,18 @@ import rx.functions.Action0;
  * Use the {@link GridFeedFragment#createLiveFeedInstance} factory method to
  * create an instance of this fragment.
  */
-public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class GridFeedFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "GridFeedFragment";
 
     private static final String ARG_FEED_TYPE = "feed_type";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
-    private static final String BUNDLE_KEY_FEED_STATS = "feed_stats";
 
     private static final int FEED_LIVE = 0;
     private static final int FEED_BEST = 1;
     private static final int FEED_NEWS = 2;
     private static final int FEED_ANONYMOUS = 3;
-    private static final String TLOG_NEWS = "news";
 
     private int mFeedType = FEED_LIVE;
 
@@ -71,13 +71,9 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private RecyclerView mGridView;
 
     private ApiFeeds mApiFeedsService;
-    private ApiApp mApiStatsService;
     private FeedGridItemAdapter mAdapter;
 
     private Subscription mFeedSubscription = SubscriptionHelper.empty();
-    private Subscription mStatsSubscription = SubscriptionHelper.empty();
-
-    private Stats mStats;
 
     public static GridFeedFragment createLiveFeedInstance() {
         GridFeedFragment fragment = new GridFeedFragment();
@@ -119,7 +115,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mApiFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiFeeds.class);
-        mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
         mFeedType = getArguments().getInt(ARG_FEED_TYPE);
     }
 
@@ -129,7 +124,14 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         View v = inflater.inflate(R.layout.fragment_grid_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mGridView = (RecyclerView) mRefreshLayout.findViewById(R.id.live_feed_grid_view);
-        mRefreshLayout.setOnRefreshListener(this);
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData();
+                if (mListener != null) mListener.startRefreshStats();
+            }
+        });
+        EventBus.getDefault().register(this);
         return v;
     }
 
@@ -157,10 +159,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             if (entries != null) {
                 mAdapter.setFeed(entries);
             }
-
-            mStats = (Stats)savedInstanceState.getParcelable(BUNDLE_KEY_FEED_STATS);
         }
-        refreshFeedHeader();
 
         if (mAdapter.getFeed().isEmpty() && !mRefreshLayout.isRefreshing()) refreshData();
 
@@ -195,6 +194,57 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         };
 
         mAdapter = new FeedGridItemAdapter(getActivity()) {
+
+            @Override
+            protected GridEntryBase onCreateHeaderViewHolder(ViewGroup parent) {
+                View res = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
+                if (res.getLayoutParams() instanceof StaggeredGridLayoutManager.LayoutParams) {
+                    int gridFeedPadding = parent.getResources().getDimensionPixelSize(R.dimen.grid_feed_item_margin);
+                    StaggeredGridLayoutManager.LayoutParams lp = (StaggeredGridLayoutManager.LayoutParams)res.getLayoutParams();
+                    lp.setFullSpan(true);
+                    // XXX: жесткий хак, но работает и я не знаю, как сделать лучше
+                    // Нужено, чтобы по бокам сетки и между элементами были одинаковые отступы
+                    lp.leftMargin = -1 * gridFeedPadding;
+                    lp.rightMargin = -1 * gridFeedPadding;
+                    res.setLayoutParams(lp);
+                }
+                return new GridEntryHeader2(parent.getContext(), res);
+            }
+
+            @Override
+            protected void onBindHeaderViewHolder(GridEntryBase holder) {
+                int title;
+                String subtitle;
+
+                title = getTitle();
+                Stats stats = mListener == null ? null : mListener.getStats();
+                if (stats == null) {
+                    subtitle = null;
+                } else {
+                    switch(mFeedType)
+                    {
+                        case FEED_LIVE:
+                            subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, stats.publicEntriesInDayCount, stats.publicEntriesInDayCount);
+                            break;
+                        case FEED_BEST:
+                            subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, stats.bestEntriesInDayCount, stats.bestEntriesInDayCount);
+                            break;
+                        case FEED_ANONYMOUS:
+                            subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, stats.anonymousEntriesInDayCount, stats.anonymousEntriesInDayCount);
+                            break;
+                        case FEED_NEWS:
+                            int count = UiUtils.getEntriesLastDay(mAdapter.getFeed());
+                            subtitle = getResources().getQuantityString(R.plurals.news_last_day, count, count);
+                            break;
+                        default:
+                            throw new IllegalStateException();
+                    }
+                }
+
+                ((GridEntryHeader) holder).setTitleSubtitle(title, subtitle);
+                holder.bindEntry(null);
+            }
+
             @Override
             protected Observable<Feed> createObservable(Long sinceEntryId) {
                 return AndroidObservable.bindFragment(GridFeedFragment.this, createObservabelFeed(sinceEntryId, Constants.GRID_FEED_APPEND_LENGTH));
@@ -236,18 +286,14 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             ArrayList<Entry> entriesArrayList = new ArrayList<>(entries);
             outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, entriesArrayList);
         }
-
-        if(mStats != null) {
-            outState.putParcelable(BUNDLE_KEY_FEED_STATS, mStats);
-        }
     }
 
     @Override
     public void onDestroyView() {
-        mFeedSubscription.unsubscribe();
-        mStatsSubscription.unsubscribe();
         super.onDestroyView();
+        mFeedSubscription.unsubscribe();
         mGridView = null;
+        EventBus.getDefault().unregister(this);
         if (mAdapter != null) {
             mAdapter.onDestroy();
             mAdapter = null;
@@ -274,9 +320,8 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         return v0.getTop();
     }
 
-    @Override
-    public void onRefresh() {
-        refreshData();
+    public void onEventMainThread(OnStatsLoaded event) {
+        if (mAdapter != null) mAdapter.notifyItemChanged(0);
     }
 
     private Observable<Feed> createObservabelFeed(@Nullable Long sinceEntryId, int length) {
@@ -289,7 +334,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 return mApiFeedsService.getAnonymousFeed(sinceEntryId, length);
             case FEED_NEWS:
                 ApiTlog tlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
-                return tlogService.getEntries(TLOG_NEWS, sinceEntryId, length);
+                return tlogService.getEntries(Constants.TLOG_NEWS, sinceEntryId, length);
             default:
                 throw new IllegalStateException();
         }
@@ -297,7 +342,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     public void refreshData() {
         mFeedSubscription.unsubscribe();
-        mStatsSubscription.unsubscribe();
         mRefreshLayout.setRefreshing(true);
         if (DBG) Log.v(TAG, "setRefreshing true");
         mFeedSubscription = AndroidObservable.bindFragment(this, createObservabelFeed(null, Constants.GRID_FEED_INITIAL_LENGTH))
@@ -311,9 +355,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                     }
                 })
                 .subscribe(mFeedObserver);
-
-        mStatsSubscription = AndroidObservable.bindFragment( this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mStatsObserver);
     }
 
     private int getTitle() {
@@ -329,37 +370,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             default:
                 throw new IllegalStateException();
         }
-    }
-
-    private void refreshFeedHeader() {
-        String subtitle;
-
-        if (mAdapter == null) return;
-
-        if (mStats == null) {
-            subtitle = null;
-        } else {
-            switch(getTitle())
-            {
-                case R.string.title_live_feed:
-                    subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mStats.publicEntriesInDayCount, mStats.publicEntriesInDayCount);
-                    break;
-                case R.string.title_best_feed:
-                    subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mStats.bestEntriesInDayCount, mStats.bestEntriesInDayCount);
-                    break;
-                case R.string.title_anonymous_feed:
-                    subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mStats.anonymousEntriesInDayCount, mStats.anonymousEntriesInDayCount);
-                    break;
-                default:
-                {
-                    // Новости
-                    int count = UiUtils.getEntriesLastDay(mAdapter.getFeed());
-                    subtitle = getResources().getQuantityString(R.plurals.news_last_day, count, count);
-                }
-                break;
-            }
-        }
-        mAdapter.setHeader(getResources().getString(getTitle()), subtitle);
     }
 
     private final Observer<Feed> mFeedObserver = new Observer<Feed>() {
@@ -381,24 +391,6 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     };
 
-    private final Observer<Stats> mStatsObserver = new Observer<Stats>() {
-        @Override
-        public void onCompleted() {
-            refreshFeedHeader();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            mListener.notifyError(getString(R.string.server_error), e);
-        }
-
-        @Override
-        public void onNext(Stats st) {
-            mStats = st;
-        }
-    };
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -411,5 +403,7 @@ public class GridFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onGridTopViewScroll(GridFeedFragment fragment, boolean headerVisible, int headerTop);
+        public void startRefreshStats();
+        public @Nullable Stats getStats();
     }
 }

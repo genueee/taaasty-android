@@ -159,5 +159,4 @@ public class UiUtils {
             return youtubeUrl;
         }
     }
-
 }
