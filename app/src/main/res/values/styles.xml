@@ -63,6 +63,7 @@
     </style>
 
     <style name="TlogActivity" parent="TlogActivityBase">
+        <item name="android:homeAsUpIndicator">@drawable/ic_back_white</item>
     </style>
 
     <style name="UserInfoActivity" parent="AppThemeDark">
