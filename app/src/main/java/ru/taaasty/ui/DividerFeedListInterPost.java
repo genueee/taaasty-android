@@ -6,9 +6,6 @@ import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-import junit.framework.Assert;
-
-import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -70,9 +67,8 @@ public class DividerFeedListInterPost extends RecyclerView.ItemDecoration {
                 // У всех постов, кроме первого, делаем отступ сверху
                 outRect.set(0, mDividerSize, 0, 0);
                 initialized = true;
-            } else {
+            } else if (parent.getAdapter() instanceof  FeedItemAdapter) {
                 RecyclerView.Adapter adaper = parent.getAdapter();
-                if (BuildConfig.DEBUG) Assert.assertTrue(adaper instanceof  FeedItemAdapter);
                 int position = holder.getPosition();
                 if (!(position + 1 >= adaper.getItemCount())
                         && adaper.getItemViewType(position) == FeedItemAdapter.VIEW_TYPE_COMMENT
