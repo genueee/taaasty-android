@@ -320,6 +320,9 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
             View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
+            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)child.getLayoutParams();
+            params.bottomMargin = 0;
+            child.setLayoutParams(params);
             return new Header2(parent.getContext(), child);
         }
 
