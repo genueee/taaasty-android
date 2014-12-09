@@ -66,6 +66,7 @@ public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderH
         refreshParallaxOffset();
     }
 
+
     public void refreshParallaxOffset() {
         int top = -itemView.getTop();
         float factor = Constants.DEFAULT_PARALLAX_FACTOR;

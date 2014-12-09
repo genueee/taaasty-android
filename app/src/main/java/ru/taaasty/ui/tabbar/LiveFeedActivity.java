@@ -2,6 +2,7 @@ package ru.taaasty.ui.tabbar;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
@@ -23,9 +24,15 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Stats;
+import ru.taaasty.model.TlogDesign;
+import ru.taaasty.model.User;
 import ru.taaasty.service.ApiApp;
 import ru.taaasty.ui.feeds.GridFeedFragment;
+import ru.taaasty.ui.feeds.ListFeedFragment;
+import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observer;
@@ -33,8 +40,7 @@ import rx.Subscription;
 import rx.android.observables.AndroidObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
-
-public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFragment.OnFragmentInteractionListener {
+public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
 
@@ -132,7 +138,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
     }
 
     @Override
-    public void onGridTopViewScroll(GridFeedFragment fragment, boolean headerVisible, int viewTop) {
+    public void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int viewTop) {
         if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
         updateCircleIndicatorPosition(headerVisible, viewTop);
     }
@@ -158,7 +164,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
      */
     void onPrimaryItemChanged(Fragment newFragment) {
         if (DBG) Log.v(TAG, "onPrimaryItemChanged()" + newFragment);
-        GridFeedFragment fragment = (GridFeedFragment)newFragment;
+        ListFeedFragment fragment = (ListFeedFragment)newFragment;
         updateCircleIndicatorPosition(fragment.isHeaderVisisble(), fragment.getHeaderTop());
     }
 
@@ -185,6 +191,18 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
         }
     }
 
+    @Override
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
+        TlogActivity.startTlogActivity(this, user.getId(), view);
+    }
+
+    @Override
+    public void onSharePostMenuClicked(Entry entry) {
+        Intent intent = new Intent(this, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        startActivity(intent);
+    }
+
     public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
 
         private Fragment mPrimaryItem;
@@ -197,13 +215,13 @@ public class LiveFeedActivity extends TabbarActivityBase implements GridFeedFrag
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return GridFeedFragment.createLiveFeedInstance();
+                    return ListFeedFragment.createLiveFeedInstance();
                 case 1:
-                    return GridFeedFragment.createBestFeedInstance();
+                    return ListFeedFragment.createBestFeedInstance();
                 case 2:
-                    return GridFeedFragment.createAnonymousFeedInstance();
+                    return ListFeedFragment.createAnonymousFeedInstance();
                 case 3:
-                    return GridFeedFragment.createNewsFeedInstance();
+                    return ListFeedFragment.createNewsFeedInstance();
                 default:
                     throw new IllegalArgumentException();
             }

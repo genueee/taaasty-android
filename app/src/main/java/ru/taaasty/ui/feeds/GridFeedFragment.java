@@ -186,6 +186,7 @@ public class GridFeedFragment extends Fragment {
                                 .setEntryId(postId)
                                 .setEntry(mAdapter.getItemById(postId))
                                 .setThumbnailBitmap(thumbnail, "GridFeedFragment-" + postId + "-")
+                                .setThumbnailBitmap(thumbnail, "GridFeedFragment-" + postId + "-")
                                 .setSrcView(v)
                                 .startActivity();
                     }
