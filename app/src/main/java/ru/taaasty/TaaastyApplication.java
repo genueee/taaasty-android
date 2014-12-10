@@ -42,7 +42,7 @@ public class TaaastyApplication extends Application {
         FontManager.onAppInit(this);
         UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);
-        ImageUtils.getInstance().onAppInit();
+        ImageUtils.getInstance().onAppInit(this);
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
         resetLanguage();

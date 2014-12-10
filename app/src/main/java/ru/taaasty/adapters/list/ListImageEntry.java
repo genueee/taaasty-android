@@ -130,6 +130,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         ImageSize imgSize;
         int resizeToWidth = 0;
         int imgViewHeight;
+        boolean fitMaxTextureSize = false;
 
         recycleGifDrawable();
         mImageProgressBar.setVisibility(View.GONE);
@@ -143,7 +144,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         ImageInfo image = item.getImages().get(0);
         imgSize = image.image.geometry.toImageSize();
         imgSize.shrinkToWidth(parentWidth);
-        imgSize.shrinkToMaxTextureSize();
 
         if (imgSize.width < image.image.geometry.width) {
             // Изображение было уменьшено под размеры imageView
@@ -160,7 +160,23 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         // XXX: У некоторых картинок может не быть image.image.path
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-        if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
+
+        // Здесь можем сломать aspect ratio, поэтому потом восстанавливаем его в picasso
+        int maxTextureSize = ImageUtils.getInstance().getMaxTextureSize();
+        int thumborWidth = resizeToWidth  > 0 ? resizeToWidth : image.image.geometry.width;
+        int thumborHeight = resizeToWidth > 0 ? imgViewHeight : image.image.geometry.height;
+        if (thumborWidth > maxTextureSize) {
+            thumborWidth = maxTextureSize;
+            fitMaxTextureSize = true;
+        }
+        if (thumborHeight > maxTextureSize) {
+            thumborHeight = maxTextureSize;
+            fitMaxTextureSize = true;
+        }
+        if ((resizeToWidth != 0) || fitMaxTextureSize) {
+            b.resize(thumborWidth,
+                    fitMaxTextureSize ? thumborHeight : 0).fitIn();
+        }
 
         ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
@@ -171,7 +187,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         if (image.isAnimatedGif()) {
             loadGif(mImageViewUrl, mImageView);
         } else {
-            mPicasso
+                mPicasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)

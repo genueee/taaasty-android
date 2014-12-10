@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
+import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -52,9 +53,12 @@ public class ImageUtils {
 
     private static final String IMAGE_CACHE_PREFIX = "_tasty_";
 
+    private static final String MAX_TEXTURE_SIZE_SHARED_FILE = "max_texture_size";
+    private static final String MAX_TEXTURE_SIZE_SHARED_KEY = "max_texture_size";
+
     private final CircleTransformation mCircleTransformation;
 
-    private int mMaxTextureSize ;
+    private static int sMaxTextureSize = 2048;
 
     private static ImageUtils sInstance;
 
@@ -432,40 +436,37 @@ public class ImageUtils {
         }
     }
 
-    public void onAppInit() {
-        initMaxTextureSize();
+    public void onAppInit(Context context) {
+        loadMaxTextureSize(context);
     }
 
-    private void initMaxTextureSize() {
-        // XXX: не работает нихера
-        /*
-        int[] maxTextureSize = new int[]{0};
-        try {
-            GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxTextureSize, 0);
-            mMaxTextureSize = maxTextureSize[0];
-            if (maxTextureSize[0] == 0) {
-                Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE is 0");
-                EGL10 egl = (EGL10) EGLContext.getEGL();
-                EGLContext ctx = egl.eglGetCurrentContext();
-                GL10 gl = (GL10) ctx.getGL();
-                IntBuffer val = IntBuffer.allocate(1);
-                gl.glGetIntegerv(GL10.GL_MAX_TEXTURE_SIZE, val);
-                mMaxTextureSize = val.get();
-                if (mMaxTextureSize == 0) {
-                    Log.v("ImageUtils", "GL_MAX_TEXTURE_SIZE - 2 is 0");
-                    mMaxTextureSize = 2048;
-                }
-            }
-        } catch (Throwable ex) {
-            Log.i("ImageUtils", "initMaxTextureSize() error", ex);
-            mMaxTextureSize = 2048;
+    public static void initMaxTextureSize(Context context, Canvas hardwareAcceleratedCanvas) {
+        if (hardwareAcceleratedCanvas == null || !hardwareAcceleratedCanvas.isHardwareAccelerated()) {
+            return;
         }
-        */
-        mMaxTextureSize = 2048;
+
+        int textureSize = Math.min(hardwareAcceleratedCanvas.getMaximumBitmapHeight(),
+                hardwareAcceleratedCanvas.getMaximumBitmapWidth());
+        if (DBG) Log.v(TAG, "initMaxTextureSize texture size: " + textureSize);
+        if (textureSize > 0 && textureSize != sMaxTextureSize)  {
+            sMaxTextureSize = textureSize;
+            saveMaxTextureSize(context);
+        }
     }
 
-    public int getMaxTextureSize() {
-        return mMaxTextureSize;
+    private void loadMaxTextureSize(Context context) {
+        sMaxTextureSize = context.getSharedPreferences(MAX_TEXTURE_SIZE_SHARED_FILE, 0)
+                .getInt(MAX_TEXTURE_SIZE_SHARED_KEY, sMaxTextureSize);
+    }
+
+    private static void saveMaxTextureSize(Context context) {
+        context.getSharedPreferences(MAX_TEXTURE_SIZE_SHARED_FILE, 0).edit()
+                .putInt(MAX_TEXTURE_SIZE_SHARED_KEY, sMaxTextureSize)
+                .apply();
+    }
+
+    public static int getMaxTextureSize() {
+        return sMaxTextureSize;
     }
 
 }
