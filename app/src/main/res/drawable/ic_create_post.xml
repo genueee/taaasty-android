@@ -2,7 +2,6 @@
 
 <selector
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:constantSize="true"
     android:enterFadeDuration="@integer/longAnimTime"
     android:exitFadeDuration="@integer/longAnimTime"
     >

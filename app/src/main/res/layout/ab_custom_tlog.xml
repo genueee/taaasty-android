@@ -4,44 +4,38 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="?android:actionBarSize"
-    android:layout_gravity="right"
-    android:layout_marginTop="2dp"
-    android:layout_marginBottom="2dp"
-    android:layout_marginRight="4dp"
-    >
+    android:layout_gravity="right">
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/unsubscribe"
         android:visibility="invisible"
         tools:visibility="visible"
-        android:src="@drawable/ic_create_post"
-        android:padding="4dp"
+        android:src="@drawable/ic_ab_subscribed"
         android:contentDescription="@string/unsubscribe_content_description"
         android:scaleType="centerInside"
         android:clickable="true"
-        android:layout_width="wrap_content"
+        android:layout_width="?android:actionBarSize"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical|right"
-        android:layout_marginRight="4dp" />
+        android:layout_gravity="center"
+        android:padding="11dp" />
 
     <ru.taaasty.widgets.HintedImageView
         android:id="@+id/subscribe"
         android:src="@drawable/ic_ab_subscribe_normal"
-        android:padding="4dp"
         android:contentDescription="@string/subscribe_content_description"
         android:scaleType="centerInside"
         tools:visibility="visible"
         android:clickable="true"
-        android:layout_width="wrap_content"
+        android:layout_width="?android:actionBarSize"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical|right"
-        android:layout_marginRight="4dp" />
+        android:layout_gravity="center_vertical"
+        android:padding="4dp" />
 
     <ProgressBar
         android:id="@+id/follow_unfollow_progress"
-        android:padding="4dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|right"/>
+        android:layout_width="?android:actionBarSize"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:padding="11dp" />
 
 </FrameLayout>

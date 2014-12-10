@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:enterFadeDuration="@integer/shortAnimTime"
+    android:exitFadeDuration="@integer/shortAnimTime"
+    android:constantSize="true"
+    >
+    <item android:state_enabled="false">
+        <bitmap android:src="@drawable/ic_create_post_disabled"
+            android:gravity="center"
+            />
+    </item>
+    <item android:state_activated="true">
+        <bitmap android:src="@drawable/ic_create_post_pressed"
+            android:gravity="center"
+            />
+    </item>
+
+    <item android:state_pressed="true" android:state_activated="false">
+        <bitmap android:src="@drawable/ic_create_post_pressed"
+            android:gravity="center"
+            />
+    </item>
+
+    <item android:state_focused="true">
+        <bitmap android:src="@drawable/ic_create_post_pressed"
+            android:gravity="center"
+            />
+     </item>
+    <item>
+        <bitmap android:src="@drawable/ic_create_post_normal"
+            android:gravity="center"
+            />
+    </item>
+</selector>
