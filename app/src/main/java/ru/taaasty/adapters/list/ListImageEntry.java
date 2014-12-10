@@ -160,7 +160,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         // XXX: У некоторых картинок может не быть image.image.path
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-        b.filter(ThumborUrlBuilder.quality(60));
         if (resizeToWidth != 0) b.resize(resizeToWidth, 0);
 
         ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
