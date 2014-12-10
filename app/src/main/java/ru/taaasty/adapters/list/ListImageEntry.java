@@ -264,6 +264,9 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
                     private byte[] readResponseWithProgress(Response response) throws  IOException {
                         byte bytes[];
+                        int pos;
+                        int nRead;
+                        long lastTs, lastPos;
 
                         final long contentLength = response.body().contentLength();
                         if (contentLength < 0 || contentLength > Integer.MAX_VALUE) {
@@ -279,16 +282,19 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                             }
                         });
                         InputStream source = response.body().byteStream();
-                        int pos = 0;
-                        int nRead;
+
                         bytes = new byte[(int)contentLength];
-                        long lastTs = System.nanoTime();
+                        pos = 0;
+                        lastTs = System.nanoTime();
+                        lastPos = 0;
                         try {
                             while ((nRead = source.read(bytes, pos, bytes.length - pos)) != -1) {
                                 pos += nRead;
 
                                 long newTs = System.nanoTime();
-                                if (newTs - lastTs >= 500 * 1e6 || (pos == bytes.length)) {
+                                if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
+                                    lastTs = newTs;
+                                    lastPos = pos;
                                     final int finalPos = pos;
                                     mImageProgressBar.post(new Runnable() {
                                         @Override
