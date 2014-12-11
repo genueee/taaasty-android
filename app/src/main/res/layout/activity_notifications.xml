@@ -66,6 +66,7 @@
 
     <FrameLayout
         android:id="@+id/initiate_conversation_container"
+        android:layout_above="@id/tabbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

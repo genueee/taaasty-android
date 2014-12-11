@@ -39,15 +39,43 @@
             android:src="@drawable/btn_tabbar_notifications"
             android:clickable="false" />
 
-        <ImageView
-            android:id="@+id/tabbar_notification_indicator"
+        <ru.taaasty.widgets.SquareTextView
+            android:id="@+id/unread_notifications_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="6dp"
-            android:clickable="false"
-            android:src="@drawable/tabbar_notification_indicator"
+            android:layout_gravity="center"
+            android:background="@drawable/conversations_list_unread_messages_background"
+            android:gravity="center"
+            android:padding="4dp"
+            android:textSize="10sp"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            tools:text="100"
+            android:layout_marginLeft="17dp"
+            android:layout_marginBottom="10dp"
             tools:ignore="ContentDescription" />
+
+        <ru.taaasty.widgets.SquareTextView
+            android:id="@+id/unread_conversations_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/unread_conversations_count"
+            android:gravity="center"
+            android:padding="4dp"
+            android:textSize="10sp"
+            android:singleLine="true"
+            android:textColor="@android:color/black"
+            android:visibility="invisible"
+            tools:text="100"
+            tools:visibility="visible"
+            android:layout_marginRight="17dp"
+            android:layout_marginBottom="10dp"
+            tools:ignore="ContentDescription" />
+
+
     </FrameLayout>
 
     <ru.taaasty.widgets.HintedExtendedImageView

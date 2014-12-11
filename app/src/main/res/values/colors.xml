@@ -23,6 +23,10 @@
 
     <color name="feed_title_overlay">#b3000000</color>
 
+    <color name="conversation_background_overlay">#b3000000</color>
+
+    <color name="unread_conversations_count_background">#fff627</color>
+
     <color name="feed_dark_background_color">#ff1e1e1e</color>
     <color name="feed_light_background_color">#ffeeeeee</color>
 

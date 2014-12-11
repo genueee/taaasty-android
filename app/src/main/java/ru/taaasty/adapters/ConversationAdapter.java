@@ -17,7 +17,6 @@ import java.text.DateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -37,11 +36,9 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ru.taaasty.adapters.ConversationAdapter";
 
-    private static final int VIEW_TYPE_HEADER = R.id.conversation_view_header;
-    private static final int VIEW_TYPE_MY_MESSAGE = R.id.conversation_view_my_message;
-    private static final int VIEW_TYPE_THEIR_MESSAGE = R.id.conversation_view_their_message;
-
-    private static final int HEADERS_COUNT = 1;
+    public static final int VIEW_TYPE_HEADER_MORE_BUTTON = R.id.conversation_view_more_button;
+    public static final int VIEW_TYPE_MY_MESSAGE = R.id.conversation_view_my_message;
+    public static final int VIEW_TYPE_THEIR_MESSAGE = R.id.conversation_view_their_message;
 
     private UserManager mUserManager;
 
@@ -49,9 +46,9 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     private final MessageFeed mMessages;
 
-    protected TlogDesign mFeedDesign;
+    private boolean showLoadMoreButton;
 
-    private final AtomicBoolean mLoading = new AtomicBoolean();
+    protected TlogDesign mFeedDesign;
 
     private final ImageUtils mImageUtils;
 
@@ -70,8 +67,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         View res;
         RecyclerView.ViewHolder holder;
         switch (viewType) {
-            case VIEW_TYPE_HEADER:
-                holder = onCreateHeaderViewHolder(parent);
+            case VIEW_TYPE_HEADER_MORE_BUTTON:
+                holder = onCreateHeaderViewHolder(parent, viewType);
                 break;
             case VIEW_TYPE_MY_MESSAGE:
                 res = mInflater.inflate(R.layout.conversation_my_message, parent, false);
@@ -91,10 +88,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-        if (isHeaderPosition(position)) {
-            bindHeader(viewHolder);
-        } else if (isPendingIndicatorPosition(position)) {
-            // Ничего не делаем
+        if (isLoadMoreIndicatorPosition(position)) {
+            bindHeader(viewHolder, position);
         } else {
             bindMessage((ViewHolderMessage) viewHolder, mMessages.get(getFeedLocation(position)));
         }
@@ -102,13 +97,13 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public int getItemCount() {
-        return mMessages.size() + HEADERS_COUNT;
+        return mMessages.size() + getHeadersCount();
     }
 
     @Override
     public int getItemViewType(int position) {
-        if (isHeaderPosition(position)) {
-            return VIEW_TYPE_HEADER;
+        if (isLoadMoreIndicatorPosition(position)) {
+            return VIEW_TYPE_HEADER_MORE_BUTTON;
         }
 
         Conversation.Message message = mMessages.get(getFeedLocation(position));
@@ -122,22 +117,6 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     @Override
     public long getItemId(int position) {
         return isPositionInFeed(position) ? mMessages.get(getFeedLocation(position)).id : RecyclerView.NO_ID;
-    }
-
-    @Override
-    public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
-        super.onViewAttachedToWindow(holder);
-        if (holder instanceof IParallaxedHeaderHolder) {
-            holder.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder)holder);
-        }
-    }
-
-    @Override
-    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
-        super.onViewDetachedFromWindow(holder);
-        if (holder instanceof IParallaxedHeaderHolder) {
-            holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) holder);
-        }
     }
 
     public void addMessages(List<Conversation.Message> messages) {
@@ -184,7 +163,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public abstract void initClickListeners(RecyclerView.ViewHolder holder);
 
     public int getLastPosition() {
-        return mMessages.size() + HEADERS_COUNT - 1;
+        return mMessages.size() + getHeadersCount() - 1;
     }
 
     @Nullable
@@ -213,41 +192,53 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         notifyDataSetChanged();
     }
 
-    public void setLoading(boolean newValue) {
-        if (mLoading.compareAndSet(!newValue, newValue)) {
+    public void setShowLoadMoreButton(boolean show) {
+        if (show != showLoadMoreButton) {
+            showLoadMoreButton = show;
             notifyDataSetChanged();
         }
     }
 
-    public boolean isLoading() {
-        return mLoading.get();
+    public void refreshRelativeDates(RecyclerView recyclerView) {
+        int childCount = recyclerView.getChildCount();
+        for (int i =0; i < childCount; ++i) {
+            RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+            if (holder != null && holder instanceof ViewHolderMessage) {
+                ViewHolderMessage messageHolder = (ViewHolderMessage) holder;
+                String newDate = getDate(recyclerView.getContext(), messageHolder.createdAtValue);
+                if (!newDate.equals(messageHolder.date.getText().toString())) notifyItemChanged(holder.getPosition());
+            }
+        }
     }
 
-    private boolean isHeaderPosition(int position) {
-        return position == 0;
+    protected boolean isLoadMoreIndicatorPosition(int position) {
+        if (!showLoadMoreButton) {
+            return false;
+        } else {
+            return position == 0;
+        }
     }
 
-    private boolean isPendingIndicatorPosition(int position) {
-        return position == mMessages.size() + HEADERS_COUNT;
-    }
-
-    private boolean isPositionInFeed(int position) {
+    protected boolean isPositionInFeed(int position) {
         return position != RecyclerView.NO_POSITION
-                && !isHeaderPosition(position)
-                && !isPendingIndicatorPosition(position);
+                && !isLoadMoreIndicatorPosition(position);
+    }
+
+    private int getHeadersCount() {
+        return showLoadMoreButton ? 1 : 0;
     }
 
     private int getFeedLocation(int adapterPosition) {
-        return adapterPosition - HEADERS_COUNT;
+        return adapterPosition - getHeadersCount();
     }
 
     private int getAdapterPosition(int feedLocation) {
-        return feedLocation + HEADERS_COUNT;
+        return feedLocation + getHeadersCount();
     }
 
-    protected abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent);
+    protected abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType);
 
-    protected abstract void bindHeader(RecyclerView.ViewHolder holder);
+    protected abstract void bindHeader(RecyclerView.ViewHolder holder, int position);
 
     @Nullable
     protected abstract User getMember(long userUuid);
@@ -285,21 +276,23 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         mImageUtils.loadAvatar(user, holder.avatar, R.dimen.avatar_small_diameter);
     }
 
-    // TODO: обновление даты
-    // TODO: кривой индикатор
     private void bindMessageDate(ViewHolderMessage holder, Conversation.Message message) {
-        DateFormat df = DateFormat.getDateTimeInstance();
-        String date;
-        if (message.readAt != null) {
-            date = df.format(message.readAt);
-        } else {
-            date = df.format(message.createdAt);
-        }
+        String date = getDate(holder.itemView.getContext(), message.createdAt.getTime());
         holder.date.setText(date);
-
         if (holder.isMyMessage) {
             holder.date.setCompoundDrawablesWithIntrinsicBounds(0, 0,
-                    message.readAt == null ? R.drawable.ic_done_grey600_18dp : R.drawable.ic_done_all_grey600_18dp, 0);
+                    message.readAt == null ? R.drawable.ic_done_grey_10dp : R.drawable.ic_done_all_grey_10dp, 0);
+        }
+        holder.createdAtValue = message.createdAt.getTime();
+    }
+
+    private String getDate(Context context, long pDate) {
+        String date = UiUtils.getRelativeDate(context, pDate);
+        if (date == null) {
+            DateFormat df = DateFormat.getDateTimeInstance();
+            return df.format(pDate);
+        } else {
+            return date;
         }
     }
 
@@ -365,6 +358,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         public final TextView text;
 
         public final TextView date;
+
+        long createdAtValue;
 
         public static ViewHolderMessage createMyMessageHolder(View root) {
             return new ViewHolderMessage(root, true);

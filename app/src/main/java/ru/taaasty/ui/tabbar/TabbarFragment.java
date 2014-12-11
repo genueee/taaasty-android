@@ -1,18 +1,29 @@
 package ru.taaasty.ui.tabbar;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
-import ru.taaasty.events.NotificationsCountStatus;
+import ru.taaasty.events.MessagingStatusReceived;
+import ru.taaasty.model.MessagingStatus;
 
 
 public class TabbarFragment extends Fragment {
@@ -23,6 +34,7 @@ public class TabbarFragment extends Fragment {
     private static final String BUNDLE_ARG_ACTIVATED_ELEMENT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_ACTIVATED_ELEMENT";
 
     private static final String BUNDLE_ARG_NOTIFICATIONS_COUNT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_NOTIFICATIONS_COUNT";
+    private static final String BUNDLE_ARG_CONVERSATIONS_COUNT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_CONVERSATIONS_COUNT";
 
     private static final int[] sItemIds = new int[] {
             R.id.btn_tabbar_subscriptions,
@@ -32,13 +44,18 @@ public class TabbarFragment extends Fragment {
             R.id.btn_tabbar_my_feed
     };
 
-    private View mNotificationsIndicator;
+    private TextView mNotificationsCountView;
+    private TextView mConversationsCountView;
 
     private onTabbarButtonListener mListener;
 
     private int mActivatedElement;
 
     private int mUnreadNotificationsCount;
+    private int mUnreadConversationsCount;
+
+    PusherService mPusherService;
+    boolean mBound = false;
 
     public TabbarFragment() {
     }
@@ -53,8 +70,8 @@ public class TabbarFragment extends Fragment {
         } else {
             mActivatedElement = savedInstanceState.getInt(BUNDLE_ARG_ACTIVATED_ELEMENT);
             mUnreadNotificationsCount = savedInstanceState.getInt(BUNDLE_ARG_NOTIFICATIONS_COUNT);
+            mUnreadConversationsCount = savedInstanceState.getInt(BUNDLE_ARG_CONVERSATIONS_COUNT);
         }
-        PusherService.requestCountStatus(getActivity());
     }
 
     @Override
@@ -73,7 +90,8 @@ public class TabbarFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.tabbar, container, false);
-        mNotificationsIndicator = view.findViewById(R.id.tabbar_notification_indicator);
+        mNotificationsCountView = (TextView)view.findViewById(R.id.unread_notifications_count);
+        mConversationsCountView = (TextView)view.findViewById(R.id.unread_conversations_count);
         for (int id: sItemIds) {
             View v = view.findViewById(id);
             v.setOnClickListener(mOnClickListener);
@@ -83,10 +101,20 @@ public class TabbarFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onStart() {
+        super.onStart();
+        Intent intent = new Intent(getActivity(), PusherService.class);
+        getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
         refreshActivated();
-        refreshNotificationIndicator();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mBound) {
+            getActivity().unbindService(mPusherServiceConnection);
+            mBound = false;
+        }
     }
 
     @Override
@@ -94,13 +122,14 @@ public class TabbarFragment extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putInt(BUNDLE_ARG_ACTIVATED_ELEMENT, mActivatedElement);
         outState.putInt(BUNDLE_ARG_NOTIFICATIONS_COUNT, mUnreadNotificationsCount);
+        outState.putInt(BUNDLE_ARG_CONVERSATIONS_COUNT, mUnreadConversationsCount);
     }
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mNotificationsIndicator = null;
+        mNotificationsCountView = null;
+        mConversationsCountView = null;
     }
 
     @Override
@@ -115,18 +144,25 @@ public class TabbarFragment extends Fragment {
         EventBus.getDefault().unregister(this);
     }
 
-    public void onEventMainThread(NotificationsCountStatus event) {
-        if (event.status.code == PusherService.UPDATE_NOTIFICATIONS_STATUS_READY) {
-            mUnreadNotificationsCount = event.unreadCount;
-        } else {
-            mUnreadNotificationsCount = -1;
-        }
-        refreshNotificationIndicator();
+    public void onEventMainThread(MessagingStatusReceived event) {
+        setMessagingStatus(event.data, true);
     }
 
-    public void setUnreadNotificationsCount(int count) {
-        mUnreadNotificationsCount = count;
-        refreshNotificationIndicator();
+    private void setMessagingStatus(@Nullable MessagingStatus status, boolean showSmoothly) {
+        if (DBG) Log.v(TAG, "setMessagingStatus " + status);
+        if (status == null) {
+            boolean changed = (mUnreadNotificationsCount > 0)
+                    || (mUnreadConversationsCount > 0);
+            mUnreadNotificationsCount = 0;
+            mUnreadConversationsCount = 0;
+            if (changed) refreshNotificationIndicator(showSmoothly);
+        } else {
+            boolean changed = (mUnreadNotificationsCount != status.unreadNotificationsCount)
+                    || (mUnreadConversationsCount != status.unreadConversationsCount);
+            mUnreadNotificationsCount = status.unreadNotificationsCount;
+            mUnreadConversationsCount = status.unreadConversationsCount;
+            if (changed) refreshNotificationIndicator(showSmoothly);
+        }
     }
 
     public void setActivated(@IdRes int activated) {
@@ -146,13 +182,11 @@ public class TabbarFragment extends Fragment {
         }
     }
 
-    private void refreshNotificationIndicator() {
-        if (mNotificationsIndicator == null) return;
-        if (mUnreadNotificationsCount <= 0) {
-            mNotificationsIndicator.setVisibility(View.INVISIBLE);
-        } else {
-            mNotificationsIndicator.setVisibility(View.VISIBLE);
-        }
+    private void refreshNotificationIndicator(boolean smoothly) {
+        if (DBG) Log.v(TAG, "refreshNotificationIndicator");
+        if (mNotificationsCountView == null) return;
+        updateIndicatorCount(mNotificationsCountView, mUnreadNotificationsCount, smoothly);
+        updateIndicatorCount(mConversationsCountView, mUnreadConversationsCount, smoothly);
     }
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -162,10 +196,100 @@ public class TabbarFragment extends Fragment {
         }
     };
 
-
     public interface onTabbarButtonListener {
         public void onTabbarButtonClicked(View v);
     }
 
+    private void updateIndicatorCount(TextView view, int count, boolean smoothly) {
+        if (count <= 0) {
+            if (view.getVisibility() == View.VISIBLE) {
+                if (smoothly) hideIndicatorSmoothly(view); else view.setVisibility(View.INVISIBLE);
+            }
+        } else {
+            String cntText;
+            if (count >= 10000) {
+                cntText = "1k+";
+            } else if (count >= 1000) {
+                int thousands = count / 1000;
+                cntText = String.valueOf(thousands) + "k+";
+            } else {
+                cntText = String.valueOf(count);
+            }
+            view.setText(cntText);
+            if (view.getVisibility() != View.VISIBLE) {
+                if (smoothly) showIndicatorSmoothly(view); else view.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void showIndicatorSmoothly(final TextView view) {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime));
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                view.setVisibility(View.VISIBLE);
+                view.setAlpha(0f);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                view.setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                view.setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+        animator.start();
+    }
+
+    private void hideIndicatorSmoothly(final TextView view) {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime));
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                view.setVisibility(View.VISIBLE);
+                view.setAlpha(0f);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                view.setAlpha(1f);
+                view.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                view.setAlpha(1f);
+                view.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+        animator.start();
+    }
+
+    private final ServiceConnection mPusherServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
+            mPusherService = binder.getService();
+            mBound = true;
+            setMessagingStatus(mPusherService.getLastMessagingStatus(), false);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mBound = false;
+            mPusherService = null;
+        }
+    };
 
 }

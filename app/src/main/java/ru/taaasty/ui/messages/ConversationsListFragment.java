@@ -10,10 +10,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -22,9 +25,16 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.model.Conversation;
+import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class ConversationsListFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -44,12 +54,22 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
 
     private ConversationsListAdapter mAdapter;
 
+    private ApiMessenger mApiMessenger;
+
+    private Subscription mConversationsSubscription = SubscriptionHelper.empty();
+
     public static ConversationsListFragment newInstance() {
         return new ConversationsListFragment();
     }
 
     public ConversationsListFragment() {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
     }
 
     @Override
@@ -123,6 +143,12 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        refreshConversationList();
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
         mAdapter.unregisterAdapterDataObserver(mDataObserver);
@@ -142,6 +168,7 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mConversationsSubscription.unsubscribe();
         mAdapter.onStop();
         mListView = null;
         mListener = null;
@@ -158,16 +185,12 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
         mPusherService = binder.getService();
         mBound = true;
-        if (mAdapter != null) mAdapter.setConversations(mPusherService.getConversations());
+        refreshConversationList();
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
         mBound = false;
-    }
-
-    public void onEventMainThread(ru.taaasty.events.NotificationsStatus status) {
-        if (mAdapter != null && mBound) mAdapter.setConversations(mPusherService.getConversations());
     }
 
     public void onEventMainThread(ConversationChanged event) {
@@ -177,15 +200,27 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     private void setNewStatus(PusherService.NotificationsStatus status) {
         switch (status.code) {
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_LOADING:
+                mConversationsSubscription.unsubscribe();
                 setStatusLoading();
                 break;
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_READY:
+                mConversationsSubscription.unsubscribe();
                 setStatusReady();
+                refreshConversationList();
                 break;
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_FAILURE:
+                mConversationsSubscription.unsubscribe();
                 setStatusFailure(status.errorMessage);
                 break;
         }
+    }
+
+    private boolean isRefreshIndicatorShown() {
+        return mProgressView.getVisibility() == View.VISIBLE;
+    }
+
+    private boolean isRefreshing() {
+        return !mConversationsSubscription.isUnsubscribed();
     }
 
     private void setStatusLoading() {
@@ -213,6 +248,40 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         mProgressView.setVisibility(View.INVISIBLE);
         if (mListener != null) mListener.notifyError(error, null);
     }
+
+    public void refreshConversationList() {
+        if (isRefreshing() || !mBound) {
+            if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing() + " bound: " + mBound);
+            return;
+        }
+        if (DBG) Log.v(TAG, "refreshConversationList");
+
+        mConversationsSubscription.unsubscribe();
+        mConversationsSubscription = AndroidObservable.bindFragment(this, mApiMessenger.getConversations(mPusherService.getSocketId()))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mConversationListObserver);
+        setStatusLoading();
+    }
+
+    private final Observer<List<Conversation>> mConversationListObserver = new  Observer<List<Conversation>>() {
+
+        @Override
+        public void onCompleted() {
+            setStatusReady();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.v(TAG, "onError");
+            setStatusFailure(getString(R.string.error_loading_conversations));
+        }
+
+        @Override
+        public void onNext(List<Conversation> conversations) {
+            if (DBG) Log.v(TAG, "onNext");
+            if (mAdapter != null) mAdapter.setConversations(conversations);
+        }
+    };
 
     private final RecyclerView.AdapterDataObserver mDataObserver = new RecyclerView.AdapterDataObserver() {
         @Override

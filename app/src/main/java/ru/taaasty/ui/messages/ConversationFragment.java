@@ -3,7 +3,6 @@ package ru.taaasty.ui.messages;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -22,11 +21,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
-
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,18 +34,14 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.ConversationAdapter;
-import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.ConversationMessages;
 import ru.taaasty.model.Status;
-import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.ui.UserInfoActivity;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -69,6 +62,8 @@ public class ConversationFragment extends Fragment {
 
     private static final String BUNDLE_KEY_CONVERSATION = "ru.taaasty.ui.feeds.ConversationFragment.conversation";
 
+    public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
+
     private OnFragmentInteractionListener mListener;
 
     private Conversation mConversation;
@@ -82,9 +77,13 @@ public class ConversationFragment extends Fragment {
     private EditText mSendMessageText;
     private View mSendMessageButton;
     private View mSendMessageProgress;
+    private View mEmptyView;
+
+    private ListScrollController mListScrollController;
 
     private Subscription mPostMessageSubscription = SubscriptionHelper.empty();
 
+    private Handler mRefreshDatesHandler;
 
     /**
      * Use this factory method to create a new instance of
@@ -108,6 +107,7 @@ public class ConversationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mConversation = getArguments().getParcelable(ARG_CONVERSATION);
+        mListScrollController = new ListScrollController();
     }
 
     @Override
@@ -118,13 +118,14 @@ public class ConversationFragment extends Fragment {
         mSendMessageText = (EditText)v.findViewById(R.id.reply_to_comment_text);
         mSendMessageButton = v.findViewById(R.id.reply_to_comment_button);
         mSendMessageProgress = v.findViewById(R.id.reply_to_comment_progress);
+        mEmptyView = v.findViewById(R.id.empty_view);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
-        // TODO убрать заголовок из списка и включить
-        //lm.setStackFromEnd(true);
+        lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.setOnScrollListener(mScrollListener);
 
         mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
@@ -136,6 +137,9 @@ public class ConversationFragment extends Fragment {
         initSendMessageForm();
 
         EventBus.getDefault().register(this);
+
+        mRefreshDatesHandler = new Handler();
+        refreshDelayed();
 
         return v;
     }
@@ -165,8 +169,9 @@ public class ConversationFragment extends Fragment {
         super.onResume();
         if (mAdapter.isEmpty()) {
             getView().findViewById(R.id.progress).setVisibility(View.VISIBLE);
+            refreshMessages();
         }
-        refreshMessages();
+        mListScrollController.checkScroll();
     }
 
     @Override
@@ -178,8 +183,13 @@ public class ConversationFragment extends Fragment {
         mMessagesLoader = null;
         markMessagesAsRead.onDestroy();
         markMessagesAsRead = null;
+        mListView.setOnScrollListener(null);
         mListView = null;
         mAdapter = null;
+        mListScrollController = null;
+        mRefreshDatesHandler.removeCallbacks(mRefreshDatesRunnable);
+        mRefreshDatesHandler = null;
+        mEmptyView = null;
     }
 
     @Override
@@ -200,6 +210,27 @@ public class ConversationFragment extends Fragment {
         }
     }
 
+    public void onImeKeyboardShown() {
+        if (DBG) Log.v(TAG, "onImeKeyboardShown");
+        smoothScrollToEnd();
+    }
+
+    private void refreshDelayed() {
+        if (mRefreshDatesHandler == null) return;
+        mRefreshDatesHandler.postDelayed(mRefreshDatesRunnable, REFRESH_DATES_DELAY_MILLIS);
+    }
+
+    private final Runnable mRefreshDatesRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mListView == null || mAdapter == null) return;
+            if (DBG) Log.v(TAG, "refreshRelativeDates");
+            mAdapter.refreshRelativeDates(mListView);
+            refreshDelayed();
+        }
+    };
+
+
     private void initSendMessageForm() {
         mSendMessageText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -218,10 +249,6 @@ public class ConversationFragment extends Fragment {
                 sendMessage();
             }
         });
-    }
-
-    private TlogDesign getDesign() {
-        return mConversation.recipient.getDesign();
     }
 
     private void sendMessage() {
@@ -269,18 +296,33 @@ public class ConversationFragment extends Fragment {
     private void addMessageScrollToEnd(Conversation.Message message) {
         if (mAdapter == null) return;
 
-        boolean itWasAtBottom = !mListView.canScrollVertically(1);
         mAdapter.addMessage(message);
-
-        if (itWasAtBottom) {
-            scrollListToPosition(mAdapter.getLastPosition(), true);
-        }
+        smoothScrollToEnd();
     }
 
-    // TODO: сделать анимации добавления, удаления и т.п. так, чтобы этого не нужно было
-    private void scrollListToPosition(final int newPosition, final boolean smooth) {
+    private void smoothScrollToEnd() {
+        scrollListToPosition(mAdapter.getLastPosition(), true);
+    }
+
+    private void checkScrollStateOnPreDraw() {
         if (mListView == null) return;
+        mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (mListView == null) return true;
+                if (mListView.getViewTreeObserver().isAlive()) {
+                    mListView.getViewTreeObserver().removeOnPreDrawListener(this);
+                    mListScrollController.checkScroll();
+                }
+                return true;
+            }
+        });
+    }
+
+    private void scrollListToPosition(final int newPosition, final boolean smooth) {
         if (DBG) Log.v(TAG, "scrollListToPosition pos: " + newPosition + " smooth: " + smooth);
+        if (mListView == null) return;
+        if (mAdapter == null || newPosition < 0) return;
         mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
             public boolean onPreDraw() {
@@ -292,12 +334,47 @@ public class ConversationFragment extends Fragment {
                         mListView.smoothScrollToPosition(newPosition);
                     } else {
                         layoutManager.scrollToPositionWithOffset(newPosition, 0);
+                        checkScrollStateOnPreDraw();
                     }
                     return false;
                 }
                 return true;
             }
         });
+    }
+
+
+    private void addMessagesDoNotScrollList(List<Conversation.Message> messages) {
+        Long oldTopId = null;
+        int oldTopTop = 0;
+
+        ConversationAdapter.ViewHolderMessage top = findTopVisibleMessageViewHolder();
+        if (top != null) {
+            oldTopId = mAdapter.getItemId(top.getPosition());
+            oldTopTop = top.itemView.getTop();
+        }
+
+        mAdapter.addMessages(messages);
+
+        if (oldTopId != null) {
+            Integer newPosition = mAdapter.findPositionById(oldTopId);
+            if (newPosition != null) {
+                LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
+                lm.scrollToPositionWithOffset(newPosition, oldTopTop);
+                checkScrollStateOnPreDraw();
+            }
+        }
+    }
+
+    @Nullable
+    private ConversationAdapter.ViewHolderMessage findTopVisibleMessageViewHolder() {
+        if (mListView == null) return null;
+        int count = mListView.getChildCount();
+        for (int i = 0; i < count; ++i) {
+            RecyclerView.ViewHolder holder = mListView.getChildViewHolder(mListView.getChildAt(i));
+            if (holder instanceof ConversationAdapter.ViewHolderMessage) return (ConversationAdapter.ViewHolderMessage) holder;
+        }
+        return null;
     }
 
     private final Observer<Conversation.Message> mPostMessageObserver = new Observer<Conversation.Message>() {
@@ -317,7 +394,7 @@ public class ConversationFragment extends Fragment {
         }
     };
 
-    static class HeaderHolder extends ParallaxedHeaderHolder {
+    static class HeaderHolder extends RecyclerView.ViewHolder {
         TextView titleView;
         ImageView avatarView;
         public String backgroundUrl = null;
@@ -332,6 +409,19 @@ public class ConversationFragment extends Fragment {
         }
     }
 
+    static class LoadMoreButtonHeaderHolder extends RecyclerView.ViewHolder {
+
+        View loadButton;
+
+        View progress;
+
+        public LoadMoreButtonHeaderHolder(View itemView) {
+            super(itemView);
+            loadButton = itemView.findViewById(R.id.messages_load_more);
+            progress = itemView.findViewById(R.id.messages_load_progress);
+        }
+    }
+
     class Adapter extends ConversationAdapter {
 
         private UserManager mUserManager = UserManager.getInstance();
@@ -342,20 +432,34 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void initClickListeners(RecyclerView.ViewHolder holder) {
+            if (holder instanceof LoadMoreButtonHeaderHolder) {
+                ((LoadMoreButtonHeaderHolder) holder).loadButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mMessagesLoader != null) mMessagesLoader.activateCacheInBackground();
+                    }
+                });
+            }
         }
 
         @Override
-        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
-            HeaderHolder holder = new HeaderHolder(child);
-            holder.avatarView.setOnClickListener(mOnClickListener);
-            return holder;
+        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+            View child;
+            switch (viewType) {
+                case VIEW_TYPE_HEADER_MORE_BUTTON:
+                    child = LayoutInflater.from(parent.getContext()).inflate(R.layout.conversations_load_more_button, mListView, false);
+                    return new LoadMoreButtonHeaderHolder(child);
+                default:
+                    throw new IllegalArgumentException();
+            }
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
             super.onBindViewHolder(viewHolder, position);
-            if (mMessagesLoader != null) mMessagesLoader.onBindViewHolder(viewHolder, position);
+            if (mMessagesLoader != null) {
+                mMessagesLoader.onBindViewHolder(viewHolder, position);
+            }
         }
 
         @Override
@@ -372,11 +476,10 @@ public class ConversationFragment extends Fragment {
         }
 
         @Override
-        protected void bindHeader(RecyclerView.ViewHolder pHolder) {
-            HeaderHolder holder = (HeaderHolder)pHolder;
-            holder.titleView.setText(mConversation.recipient.getName());
-            bindDesign(holder);
-            bindUser(holder);
+        protected void bindHeader(RecyclerView.ViewHolder pHolder, int position) {
+            if (isLoadMoreIndicatorPosition(position)) {
+                mMessagesLoader.bindLoadMoreButton((LoadMoreButtonHeaderHolder) pHolder);
+            }
         }
 
         @Nullable
@@ -388,52 +491,14 @@ public class ConversationFragment extends Fragment {
                 return mConversation.recipient;
             }
         }
-
-        private void bindDesign(HeaderHolder holder) {
-            TlogDesign design = getDesign();
-            String backgroudUrl = design.getBackgroundUrl();
-            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
-            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-
-                    ImageUtils.getInstance().putBitmapToCache(BACKGROUND_BITMAP_KEY, bitmap);
-                }
-            };
-            holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq = Picasso.with(holder.itemView.getContext())
-                    .load(backgroudUrl);
-            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
-                        .centerCrop();
-            }
-            rq.into(holder.feedDesignTarget);
-        }
-
-        private void bindUser(HeaderHolder holder) {
-            ImageUtils.getInstance().loadAvatar(mConversation.recipient.getUserpic(), mConversation.recipient.getName(),
-                    holder.avatarView,
-                    R.dimen.avatar_normal_diameter
-            );
-        }
-
-        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.avatar:
-                        new UserInfoActivity.Builder(getActivity())
-                                .set(mConversation.recipient, v, getDesign())
-                                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
-                                .setBackgroundThumbnailKey(BACKGROUND_BITMAP_KEY)
-                                .startActivity();
-                        break;
-                }
-            }
-        };
     }
+
+    private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(RecyclerView view, int dx, int dy) {
+            if (mListScrollController != null) mListScrollController.checkScroll();
+        }
+    };
 
     /**
      * сервис, отмечающий сообщения как прочитанные
@@ -448,6 +513,9 @@ public class ConversationFragment extends Fragment {
 
         private Subscription mPostMessageSubscription = SubscriptionHelper.empty();
 
+        /**
+         * Выполняется или запланирована отправка на сервер. Устанавливается дл postDelayed, снимается когда очередь пуста.
+         */
         private boolean mDoPost;
 
         private final int POST_DELAY_MS = 200;
@@ -577,23 +645,30 @@ public class ConversationFragment extends Fragment {
 
         private void setKeepOnAppending(boolean newValue) {
             mKeepOnAppending.set(newValue);
+            if (mAdapter != null) mAdapter.setShowLoadMoreButton(newValue);
             setLoadingMessages(false);
         }
 
         private void setLoadingMessages(boolean newValue) {
-            mAdapter.setLoading(newValue);
             mLoadingMessages = newValue;
+            mAdapter.notifyDataSetChanged();
         }
 
         private void activateCacheInBackground() {
             if (DBG) Log.v(TAG, "activateCacheInBackground()");
+
+            if (!mKeepOnAppending.get()
+                    || !mStartAppending
+                    || mAdapter.isEmpty()
+                    || mLoadingMessages) return;
+
             final Long lastEntryId = mAdapter.getTopMessageId();
             if (lastEntryId == null) return;
             mLoadingMessages = true; // Здесь ставим немного раньше, чтобы не наплодить runnable'ов
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    mAdapter.setLoading(true);
+                    mAdapter.notifyDataSetChanged();
                     if (!mMessagesAppendSubscription.isUnsubscribed()) {
                         onFeedIsUnsubscribed(false);
                         mMessagesAppendSubscription.unsubscribe();
@@ -611,6 +686,7 @@ public class ConversationFragment extends Fragment {
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
                 getView().findViewById(R.id.progress).setVisibility(View.GONE);
+                mEmptyView.setVisibility(mAdapter.isEmpty() ? View.VISIBLE : View.GONE);
             }
         }
 
@@ -626,25 +702,9 @@ public class ConversationFragment extends Fragment {
                 if (isRefresh) {
                     mAdapter.addMessages(messages.messages);
                     scrollListToPosition(mAdapter.getLastPosition(), false);
-                    if (!mStartAppending) {
-                        mListView.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                mStartAppending = true;
-                            }
-                        }, 100);
-                    }
+                    mStartAppending = true;
                 } else {
-                    Long oldTopId = null;
-                    // TODO переделать
-                    if (mListView.getChildCount() > 2) {
-                        oldTopId = mListView.getChildItemId(mListView.getChildAt(1));
-                    }
-                    mAdapter.addMessages(messages.messages);
-                    if (oldTopId != null) {
-                        Integer newPosition = mAdapter.findPositionById(oldTopId);
-                        if (newPosition != null) scrollListToPosition(newPosition, false);
-                    }
+                    addMessagesDoNotScrollList(messages.messages);
                 }
             }
 
@@ -657,11 +717,15 @@ public class ConversationFragment extends Fragment {
         }
 
         private void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-            if (!mKeepOnAppending.get()
-                    || !mStartAppending
-                    || mAdapter.isEmpty()
-                    || mLoadingMessages) return;
-            if (position <= 1 + ENTRIES_TO_TRIGGER_APPEND) activateCacheInBackground();
+        }
+
+        public void bindLoadMoreButton(LoadMoreButtonHeaderHolder holder) {
+            if (!mKeepOnAppending.get()) {
+                holder.itemView.setVisibility(View.GONE);
+                return;
+            }
+            holder.loadButton.setVisibility(mLoadingMessages ? View.INVISIBLE : View.VISIBLE);
+            holder.progress.setVisibility(mLoadingMessages ? View.VISIBLE : View.INVISIBLE);
         }
 
         public class MessagesLoadObserver implements Observer<ConversationMessages> {
@@ -692,6 +756,30 @@ public class ConversationFragment extends Fragment {
 
     }
 
+    public class ListScrollController {
+        private boolean mEdgeReachedCalled = true;
+
+        public void checkScroll() {
+            if (mListView == null) return;
+            boolean atTop = !mListView.canScrollVertically(-1);
+            boolean atEdge = atTop || !mListView.canScrollVertically(1);
+
+            if (atEdge) {
+                if (!mEdgeReachedCalled) {
+                    mEdgeReachedCalled = true;
+                    if (mListener != null) mListener.onEdgeReached(atTop);
+                }
+            } else {
+                if (mEdgeReachedCalled) {
+                    mEdgeReachedCalled = false;
+                    if (mListener != null) mListener.onEdgeUnreached();
+                }
+            }
+        }
+    }
+
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onEdgeReached(boolean atTop);
+        public void onEdgeUnreached();
     }
 }

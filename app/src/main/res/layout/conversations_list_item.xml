@@ -62,20 +62,35 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/unread_messages_count"
+    <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="4dp"
-        android:layout_marginRight="8dp"
-        android:minWidth="32dp"
-        android:minHeight="32dp"
-        android:layout_gravity="center_vertical"
-        android:singleLine="true"
-        android:maxWidth="5sp"
-        android:gravity="center"
-        android:background="@drawable/conversations_list_unread_messages_background"
-        android:textColor="@android:color/white"
-        tools:text="100" />
+        android:layout_height="wrap_content">
+
+        <ru.taaasty.widgets.SquareTextView
+            android:id="@+id/unread_messages_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/conversations_list_unread_messages_background"
+            android:gravity="center"
+            android:maxWidth="5sp"
+            android:minHeight="32dp"
+            android:minWidth="32dp"
+            android:padding="4dp"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            tools:text="100" />
+
+        <View
+            android:id="@+id/unreceived_messages_indicator"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            android:background="@drawable/conversations_has_unreceived_messages"
+            />
+    </FrameLayout>
 
 </LinearLayout>

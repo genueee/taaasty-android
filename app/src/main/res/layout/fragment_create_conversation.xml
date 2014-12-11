@@ -6,19 +6,56 @@
     android:animateLayoutChanges="true"
     tools:context="ru.taaasty.ui.messages.InitiateConversationFragment">
 
+    <LinearLayout
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="8dp"
+        android:paddingTop="4dp"
+        android:minHeight="42dp"
+        android:background="@color/semi_transparent_action_bar_dark"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:minHeight="42dp"
+            android:minWidth="42dp"
+            android:scaleType="center"
+            android:contentDescription="@string/action_back_content_description"
+            android:background="?android:selectableItemBackground"
+            android:src="@drawable/ic_back_white" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="58dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:singleLine="true"
+            android:text="@string/partner" />
+
+    </LinearLayout>
+
     <EditText
         android:id="@+id/edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:minHeight="48dp"
+        android:layout_below="@id/action_bar"
+        android:layout_marginTop="4dp"
         android:inputType="textPersonName"
         android:maxLines="1"
         android:singleLine="true"
         android:imeOptions="actionUnspecified"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin">
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin">
 
         <requestFocus />
     </EditText>
@@ -31,7 +68,7 @@
         android:paddingTop="8dp"
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:layout_alignParentBottom="true"
-        tools:listitem="@layout/notifications_item"
+        tools:listitem="@layout/create_conversation_user_name_item"
         android:clipToPadding="false"
         />
 

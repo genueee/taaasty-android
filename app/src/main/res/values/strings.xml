@@ -204,18 +204,29 @@
         <item quantity="other">Пришло %d уведомлений…</item>
     </plurals>
 
+    <plurals name="conversation_received_title">
+        <item quantity="one">Сообщение…</item>
+        <item quantity="few">Получено %d сообщения…</item>
+        <item quantity="many">Получено %d сообщений…</item>
+        <item quantity="other">Получено %d сообщений…</item>
+    </plurals>
+
     <string name="load_messages">Загрузить сообщения…</string>
     <string name="post_can_only_be_edited_on_website">Этот пост можно отредактировать только на сайте</string>
     <string name="post_has_not_been_changed">В статье ничего не поменялось</string>
     <string name="title_activity_conversation">ConversationActivity</string>
     <string name="your_message">Ваше сообщение</string>
-    <string name="initiate_conversation">Создать переписку</string>
+    <string name="create_conversation">Создать переписку</string>
+    <string name="initiate_conversation">Начать переписку</string>
     <string name="start_typing_friend_name">Начните вводить имя друга, которому хотите написать сообщение</string>
     <string name="we_cannot_find_this_user">К сожалению, мы не можем найти данного пользователя</string>
     <string name="error_create_conversation">Ошибка создания переписки</string>
     <string name="users_load_error">Ошибка загрузки пользователей</string>
+    <string name="error_loading_conversations">Ошибка загрузки переписок</string>
     <string name="no_comments_hint">Здесь будут комментарии</string>
     <string name="open_user_tlog">Открыть тлог автора</string>
     <string name="open_comments_content_description">Перейти к комментариям</string>
+    <string name="messages_will_be_displayed_here">Здесь будут отображаться сообщения</string>
+    <string name="partner">Собеседник</string>
 
 </resources>

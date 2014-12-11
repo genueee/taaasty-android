@@ -61,7 +61,9 @@ public abstract class SortedList<E> {
     public void resetItems(@Nullable Collection<E> newItems) {
         if (newItems == null || newItems.isEmpty()) {
             if (!mList.isEmpty()) {
+                int size = mList.size();
                 mList.clear();
+                mListener.onItemRangeRemoved(0, size);
             }
         } else {
             mList.clear();

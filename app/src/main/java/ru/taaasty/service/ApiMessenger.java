@@ -39,9 +39,9 @@ public interface ApiMessenger {
     Observable<List<Conversation>> getConversations(@Query("socket_id") String socketId);
 
     @FormUrlEncoded
-    @POST("/messenger/conversations/by_slug/{slug}.json")
+    @POST("/messenger/conversations/by_user_id/{user_id}.json")
     Observable<Conversation> createConversation(@Field("socket_id") String socketId,
-                                                           @Path("slug") String slug);
+                                                           @Path("user_id") long slug);
 
     @GET("/messenger/conversations/by_id/{id}/messages.json")
     Observable<ConversationMessages> getMessages(@Query("socket_id") String socketId,

@@ -83,6 +83,12 @@ public class InitiateConversationFragment extends Fragment {
         mUserNotFoundView = root.findViewById(R.id.user_not_found_text);
         mProgressView = root.findViewById(R.id.progress);
 
+        root.findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getActivity().getFragmentManager().popBackStack();
+            }
+        });
         LayoutTransition transition = ((ViewGroup) root).getLayoutTransition();
         if (transition != null) transition.setDuration(getResources().getInteger(R.integer.shortAnimTime));
 
@@ -153,7 +159,7 @@ public class InitiateConversationFragment extends Fragment {
     private void initListView() {
         mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider_line));
+        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
 
         mAdapter = new UsernameAdapter(getActivity()) {
             @Override
@@ -232,15 +238,10 @@ public class InitiateConversationFragment extends Fragment {
 
     private void startCreateConversation(long userId) {
         mCreatingConversationSubscription.unsubscribe();
-
         ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
-
-        User user = mAdapter.findUser(userId);
-        if (user == null) return;
-
         mCreatingConversation = true;
         Observable<Conversation> observable = AndroidObservable.bindFragment(this,
-                apiMessenger.createConversation(null, user.getSlug()));
+                apiMessenger.createConversation(null, userId));
         mCreatingConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCreateConversationObservable);

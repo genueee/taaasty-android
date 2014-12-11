@@ -21,7 +21,6 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.adapters.NotificationsAdapter;
 import ru.taaasty.events.NotificationReceived;
-import ru.taaasty.events.NotificationsCountStatus;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.Relationship;
@@ -154,7 +153,10 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     }
 
     public void onEventMainThread(ru.taaasty.events.NotificationsStatus status) {
-        if (mAdapter != null && mBound) mAdapter.setNotifications(mPusherService.getNotifications());
+        if (status.newStatus.code == PusherService.UPDATE_NOTIFICATIONS_STATUS_READY && (mAdapter != null) && mBound) {
+            mAdapter.setNotifications(mPusherService.getNotifications());
+        }
+        setupPusherStatus(status.newStatus);
     }
 
     public void onEventMainThread(NotificationReceived event) {
@@ -165,50 +167,31 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         if (listAtTop) mListView.smoothScrollToPosition(0);
     }
 
-    public void onEventMainThread(NotificationsCountStatus event) {
-        if (event.notificationListRefreshed && mAdapter != null && mBound) {
-            mAdapter.setNotifications(mPusherService.getNotifications());
-        }
-    }
-
-    private void setNewStatus(PusherService.NotificationsStatus status) {
+    private void setupPusherStatus(PusherService.NotificationsStatus status) {
         switch (status.code) {
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_LOADING:
-                setStatusLoading();
+                mAdapterEmpty.setVisibility(View.INVISIBLE);
+                // Не играемся с видимостью ListView - раздражает. При обновлении и спиннер не показываем
+                if (mAdapter != null && !mAdapter.isEmpty()) {
+                    mProgressView.setVisibility(View.INVISIBLE);
+                } else {
+                    mProgressView.setVisibility(View.VISIBLE);
+                }
                 break;
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_READY:
-                setStatusReady();
+                if (mAdapter == null || mAdapter.isEmpty()) {
+                    mAdapterEmpty.setVisibility(View.VISIBLE);
+                } else {
+                    mAdapterEmpty.setVisibility(View.INVISIBLE);
+                }
+                mProgressView.setVisibility(View.INVISIBLE);
                 break;
             case PusherService.UPDATE_NOTIFICATIONS_STATUS_FAILURE:
-                setStatusFailure(status.errorMessage);
+                mAdapterEmpty.setVisibility(View.INVISIBLE);
+                mProgressView.setVisibility(View.INVISIBLE);
+                if (mListener != null) mListener.notifyError(status.errorMessage, null);
                 break;
         }
-    }
-
-    private void setStatusLoading() {
-        mAdapterEmpty.setVisibility(View.INVISIBLE);
-        // Не играемся с видимостью ListView - раздражает. При обновлении и спиннер не показываем
-        if (mAdapter != null && !mAdapter.isEmpty()) {
-            mProgressView.setVisibility(View.INVISIBLE);
-        } else {
-            mProgressView.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void setStatusReady() {
-        if (mAdapter == null || mAdapter.isEmpty()) {
-            mAdapterEmpty.setVisibility(View.VISIBLE);
-        } else {
-            mAdapterEmpty.setVisibility(View.INVISIBLE);
-        }
-
-        mProgressView.setVisibility(View.INVISIBLE);
-    }
-
-    private void setStatusFailure(String error) {
-        mAdapterEmpty.setVisibility(View.INVISIBLE);
-        mProgressView.setVisibility(View.INVISIBLE);
-        if (mListener != null) mListener.notifyError(error, null);
     }
 
     void follow(Notification notification) {
@@ -262,7 +245,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         @Override
         public void onChanged() {
             super.onChanged();
-            if (mBound) setNewStatus(mPusherService.getNotificationsStatus());
+            if (mBound) setupPusherStatus(mPusherService.getNotificationsStatus());
         }
     };
 

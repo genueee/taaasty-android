@@ -32,10 +32,12 @@ import ru.taaasty.UploadService;
 import ru.taaasty.UserManager;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
+import ru.taaasty.model.Conversation;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.ErrorTextView;
@@ -337,6 +339,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     public void onUserAvatarClicked(View view) {
         showChangeAvatarDialog();
+    }
+
+    @Override
+    public void onInitiateConversationClicked(Conversation conversation) {
+        ConversationActivity.startConversationActivity(this, conversation, null);
     }
 
     @Override

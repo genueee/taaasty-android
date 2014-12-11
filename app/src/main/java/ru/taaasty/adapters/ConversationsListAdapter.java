@@ -144,8 +144,10 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             // TODO: анимации переходов и появлений
             holder.msgCount.setVisibility(View.VISIBLE);
             holder.msgCount.setText(String.valueOf(conversation.unreadMessagesCount));
+            holder.unreceivedIndicator.setVisibility(View.INVISIBLE);
         } else {
             holder.msgCount.setVisibility(View.INVISIBLE);
+            holder.unreceivedIndicator.setVisibility(conversation.unreceivedMessagesCount > 0 ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
@@ -232,6 +234,8 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public final TextView  msgCount;
 
+        public final View unreceivedIndicator;
+
         // Защита от повторного использования viewholder'а для другого поста.
         // Если пост изменился, не анимируем старое неверное значение в текущее.
         public long mDateLastConversationId = -1;
@@ -242,6 +246,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             text = (TextView)v.findViewById(R.id.last_message);
             date = (TextSwitcher)v.findViewById(R.id.notification_date);
             msgCount = (TextView)v.findViewById(R.id.unread_messages_count);
+            unreceivedIndicator = v.findViewById(R.id.unreceived_messages_indicator);
         }
     }
 

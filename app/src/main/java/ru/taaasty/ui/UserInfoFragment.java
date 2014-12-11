@@ -25,11 +25,13 @@ import ru.taaasty.UserManager;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
+import ru.taaasty.model.Conversation;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.RelationshipsSummary;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
+import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
@@ -83,7 +85,8 @@ public class UserInfoFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
-    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
+    private Subscription mFollowSubscription = SubscriptionHelper.empty();
+    private Subscription mCreateConversationSubscription = SubscriptionHelper.empty();
 
     // Antoid picasso weak ref
     private TargetSetHeaderBackground mTargetSetHeaderBackground;
@@ -166,6 +169,7 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.entries_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
+        view.findViewById(R.id.initiate_conversation).setOnClickListener(mOnClickListener);
         mSelectBackgroundButtonView.setOnClickListener(mOnClickListener);
 
         mSelectBackgroundButtonView.setVisibility(isMyProfile() ? View.VISIBLE : View.GONE);
@@ -214,8 +218,9 @@ public class UserInfoFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         mUserInfoSubscription.unsubscribe();
+        mCreateConversationSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
     }
 
@@ -511,12 +516,12 @@ public class UserInfoFragment extends Fragment {
         if (mMyRelationship == null) return;
         if (Relationship.isMeSubscribed(mMyRelationship)) return;
 
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,
                 relApi.follow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mFollowObserver);
     }
@@ -525,15 +530,47 @@ public class UserInfoFragment extends Fragment {
         if (mMyRelationship == null) return;
         if (!Relationship.isMeSubscribed(mMyRelationship)) return;
 
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindFragment(this,
                 relApi.unfollow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mFollowObserver);
     }
+
+    private void initiateConversation() {
+        mCreateConversationSubscription.unsubscribe();
+
+        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        Observable<Conversation> observable = AndroidObservable.bindFragment(this,
+                apiMessenger.createConversation(null, mUserId));
+        mCreateConversationSubscription = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mCreateConversationObservable);
+        setupSubscribeButton();
+    }
+
+    private final Observer<Conversation> mCreateConversationObservable = new Observer<Conversation>() {
+
+        @Override
+        public void onCompleted() {
+            setupSubscribeButton();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (mListener != null) mListener.notifyError(getText(R.string.error_create_conversation), e);
+            setupSubscribeButton();
+        }
+
+        @Override
+        public void onNext(Conversation conversation) {
+            if (mListener != null) mListener.onInitiateConversationClicked(conversation);
+        }
+    };
+
 
     private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
         @Override
@@ -594,6 +631,9 @@ public class UserInfoFragment extends Fragment {
                 case R.id.avatar:
                     if (mListener != null) mListener.onUserAvatarClicked(v);
                     break;
+                case R.id.initiate_conversation:
+                    initiateConversation();
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -614,6 +654,7 @@ public class UserInfoFragment extends Fragment {
         public void onEntriesCountClicked(View view);
         public void onSelectBackgroundClicked();
         public void onUserAvatarClicked(View view);
+        public void onInitiateConversationClicked(Conversation conversation);
     }
 
 }

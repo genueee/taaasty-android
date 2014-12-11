@@ -6,7 +6,6 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.format.DateUtils;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.View;
@@ -257,15 +256,8 @@ public class CommentViewBinder {
     }
 
     public String getRelativeDate(Context context, long updatedAt) {
-        long now = System.currentTimeMillis();
-        long time = (updatedAt < now) ? updatedAt : now;
-        long timediff = Math.abs(now - time);
-        if (timediff > 3 * 4 * DateUtils.WEEK_IN_MILLIS) return getDate(time, true);
-
-        return DateUtils.getRelativeDateTimeString(context, time,
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.YEAR_IN_MILLIS,
-                0).toString();
+        String relative = UiUtils.getRelativeDate(context, updatedAt);
+        return relative != null ? relative : getDate(updatedAt, true);
     }
 
     private String getDate(long updatedAt, boolean longFormat) {

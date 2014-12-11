@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.SpannedString;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.style.ImageSpan;
 
 import java.util.ArrayList;
@@ -171,6 +172,19 @@ public class UiUtils {
             if (!TextUtils.isEmpty(imageSpan.getSource())) sources.add(imageSpan.getSource());
         }
         return sources;
+    }
+
+    @Nullable
+    public static String getRelativeDate(Context context, long pDate) {
+        long now = System.currentTimeMillis();
+        long time = (pDate < now) ? pDate : now;
+        long timediff = Math.abs(now - time);
+        if (timediff > 3 * 4 * DateUtils.WEEK_IN_MILLIS) return null;
+
+        return DateUtils.getRelativeDateTimeString(context, time,
+                DateUtils.MINUTE_IN_MILLIS,
+                DateUtils.YEAR_IN_MILLIS,
+                0).toString();
     }
 
 }

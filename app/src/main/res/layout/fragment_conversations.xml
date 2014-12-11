@@ -53,6 +53,6 @@
         android:textColor="@android:color/white"
         android:textStyle="bold"
         android:clickable="true"
-        android:text="@string/initiate_conversation" />
+        android:text="@string/create_conversation" />
 
 </RelativeLayout>
