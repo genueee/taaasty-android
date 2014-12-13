@@ -42,7 +42,6 @@ import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
-import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -350,8 +349,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                         subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, stats.anonymousEntriesInDayCount, stats.anonymousEntriesInDayCount);
                         break;
                     case FEED_NEWS:
-                        int count = UiUtils.getEntriesLastDay(mAdapter.getFeed().getItems());
-                        subtitle = getResources().getQuantityString(R.plurals.news_last_day, count, count);
+                        subtitle = null;
                         break;
                     default:
                         throw new IllegalStateException();
