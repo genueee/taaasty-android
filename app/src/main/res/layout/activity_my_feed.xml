@@ -12,12 +12,70 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"/>
 
-    <FrameLayout
-        android:id="@+id/container"
+    <android.support.v4.widget.DrawerLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/drawer_layout"
         android:layout_above="@id/tabbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <ScrollView
+            android:layout_width="290dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end|right"
+            android:background="@color/additional_menu_background"
+            android:clipToPadding="false"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/favorites"
+                    android:text="@string/title_favorites"
+                    android:drawableLeft="@drawable/ic_favorites"
+                    style="@style/AdditionalMenuItem" />
+
+                <TextView
+                    android:id="@+id/hidden"
+                    android:text="@string/title_hidden_entries"
+                    android:drawableLeft="@drawable/ic_hidden"
+                    style="@style/AdditionalMenuItem" />
+
+                <TextView
+                    android:id="@+id/settings"
+                    android:text="@string/settings"
+                    android:drawableLeft="@drawable/ic_settings"
+                    style="@style/AdditionalMenuItem" />
+
+                <TextView
+                    android:id="@+id/friends"
+                    android:text="@string/friends"
+                    android:drawableLeft="@drawable/ic_friends"
+                    style="@style/AdditionalMenuItem" />
+
+                <TextView
+                    android:id="@+id/logout"
+                    android:text="@string/logout"
+                    android:drawableLeft="@drawable/ic_power_off"
+                    style="@style/AdditionalMenuItem" />
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </android.support.v4.widget.DrawerLayout>
+
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"

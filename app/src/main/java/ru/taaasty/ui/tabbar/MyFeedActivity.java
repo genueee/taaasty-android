@@ -1,6 +1,5 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Fragment;
 import android.app.PendingIntent;
@@ -10,7 +9,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -23,7 +24,6 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.ui.AdditionalMenuActivity;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.feeds.IRereshable;
@@ -46,11 +46,16 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
 
+    private DrawerLayout mDrawerLayout;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_my_feed);
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
         if (savedInstanceState != null) {
             mCurrentUser = savedInstanceState.getParcelable(KEY_CURRENT_USER);
@@ -61,6 +66,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                     .add(R.id.container, fragment)
                     .commit();
         }
+        initDrawerMenu();
     }
 
     @Override
@@ -84,19 +90,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     @Override
     void onCurrentTabButtonClicked() {
         refreshData();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case ADDITIONAL_MENU_REQUEST_CODE:
-                if (resultCode == Activity.RESULT_OK) {
-                    int viewId = data.getIntExtra(AdditionalMenuActivity.RESULT_REQUESTED_VIEW_ID, 0);
-                    onAdditionMenuItemClicked(viewId);
-                }
-                break;
-        }
     }
 
     @Override
@@ -135,7 +128,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {
-
         switch (resultCode) {
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
                 break;
@@ -154,8 +146,11 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     public void onShowAdditionalMenuClicked() {
-        Intent i = new Intent(this, AdditionalMenuActivity.class);
-        startActivityForResult(i, ADDITIONAL_MENU_REQUEST_CODE);
+        if (mDrawerLayout.isDrawerOpen(Gravity.RIGHT)) {
+            mDrawerLayout.closeDrawer(Gravity.RIGHT);
+        } else {
+            mDrawerLayout.openDrawer(Gravity.RIGHT);
+        }
     }
 
     @Override
@@ -206,6 +201,27 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 break;
             default:
                 throw new IllegalStateException();
+        }
+    }
+
+    void initDrawerMenu() {
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onAdditionMenuItemClicked(v.getId());
+                mDrawerLayout.closeDrawer(Gravity.RIGHT);
+            }
+        };
+
+        for (int vid: new int[] {
+                R.id.settings,
+                R.id.friends,
+                R.id.hidden,
+                R.id.favorites,
+                R.id.logout
+
+        }) {
+            findViewById(vid).setOnClickListener(listener);
         }
     }
 

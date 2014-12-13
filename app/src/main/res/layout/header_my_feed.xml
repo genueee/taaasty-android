@@ -8,7 +8,7 @@
     android:background="@android:color/black"
     tools:ignore="Overdraw" >
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/additional_menu"
         android:src="@drawable/ic_additional_menu"
         android:contentDescription="@string/additional_menu"
@@ -21,6 +21,7 @@
         android:minWidth="48dp"
         android:scaleType="center"
         android:clickable="true"
+        android:background="?android:selectableItemBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
