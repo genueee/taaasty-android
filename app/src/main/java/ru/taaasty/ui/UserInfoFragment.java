@@ -461,7 +461,7 @@ public class UserInfoFragment extends Fragment {
         if (!TextUtils.isEmpty(backgroudUrl)) {
             mTargetSetHeaderBackground = new TargetSetHeaderBackground(
                     getActivity().getWindow().getDecorView(),
-                    design, getResources().getColor(R.color.additional_menu_background)) {
+                    design, R.color.additional_menu_background) {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     super.onBitmapLoaded(bitmap, from);

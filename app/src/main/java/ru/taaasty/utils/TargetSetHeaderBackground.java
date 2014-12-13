@@ -34,12 +34,12 @@ public class TargetSetHeaderBackground implements Target {
         this(target, design, foregroundColor, 0);
     }
 
-    public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColor, int blurRadius) {
+    public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColorRes, int blurRadius) {
         if (target == null) throw new NullPointerException();
         mTarget = target;
         mDesign = design;
         mBlurRadius = blurRadius;
-        mForegroundColor = foregroundColor;
+        mForegroundColor = target.getResources().getColor(foregroundColorRes);
     }
 
     @Override

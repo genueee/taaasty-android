@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -434,7 +433,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             String backgroudUrl = mFeedDesign.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.headerUserFeedMain,
-                    mFeedDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
             holder.backgroundUrl = backgroudUrl;
             RequestCreator rq = Picasso.with(holder.itemView.getContext())
                     .load(backgroudUrl);

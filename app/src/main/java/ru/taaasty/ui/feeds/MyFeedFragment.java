@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -289,7 +288,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             String backgroudUrl = mFeedDesign.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    mFeedDesign, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
             holder.backgroundUrl = backgroudUrl;
             RequestCreator rq =  Picasso.with(holder.itemView.getContext())
                     .load(backgroudUrl);

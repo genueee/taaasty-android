@@ -22,6 +22,8 @@
     <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
+    <color name="feed_title_overlay">#b3000000</color>
+
     <color name="feed_dark_background_color">#ff1e1e1e</color>
     <color name="feed_light_background_color">#ffeeeeee</color>
 

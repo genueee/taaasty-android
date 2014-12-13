@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -331,7 +330,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             String backgroudUrl = design.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    design, Color.TRANSPARENT, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     super.onBitmapLoaded(bitmap, from);
