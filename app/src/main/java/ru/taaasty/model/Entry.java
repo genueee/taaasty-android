@@ -11,6 +11,8 @@ import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
+import junit.framework.Assert;
+
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,6 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.iframely.IFramely;
 import ru.taaasty.utils.NetworkUtils;
@@ -207,9 +210,21 @@ public class Entry implements Parcelable {
 
     @EntryPrivacy
     public String getPrivacy() {
-        return mPrivacy;
+        switch (mPrivacy) {
+            case PRIVACY_PRIVATE:
+            case "lock":
+                return PRIVACY_PRIVATE;
+            case PRIVACY_PUBLIC:
+            case "unlock":
+                return PRIVACY_PUBLIC;
+            case PRIVACY_PUBLIC_WITH_VOTING:
+            case "live":
+                return PRIVACY_PUBLIC_WITH_VOTING;
+            default:
+                if (BuildConfig.DEBUG) Assert.fail("unknown privacy " + mPrivacy);
+                return PRIVACY_PUBLIC;
+        }
     }
-
 
     @Nullable
     public String getVideoUrl() { return mVideoUrl; }

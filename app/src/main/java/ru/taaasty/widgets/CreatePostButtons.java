@@ -101,7 +101,7 @@ public class CreatePostButtons extends LinearLayout {
                 showVotingIndicator();
                 break;
             default:
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unknown privacy " + privacy);
         }
     }
 
