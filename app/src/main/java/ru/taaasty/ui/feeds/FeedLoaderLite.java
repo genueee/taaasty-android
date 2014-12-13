@@ -125,7 +125,7 @@ public abstract class FeedLoaderLite {
         if (feed != null) {
             int sizeBefore = mAdapter.getFeed().size();
             mAdapter.getFeed().insertItems(feed.entries);
-            if (entriesRequested != 0 && sizeBefore == mAdapter.getFeed().size())
+            if (!isRefresh && entriesRequested != 0 && sizeBefore == mAdapter.getFeed().size())
                 keepOnAppending = false;
         }
         setKeepOnAppending(keepOnAppending);
