@@ -43,14 +43,14 @@
 
     </LinearLayout>
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/avatar_small_diameter_42dp"
         android:layout_height="@dimen/avatar_small_diameter_42dp"
-        tools:ignore="ContentDescription"
+        android:contentDescription="@string/open_user_tlog"
         android:clickable="true"
         android:layout_marginRight="8dp"
-        android:background="?android:selectableItemBackground"
+        android:foreground="@drawable/clickable_item_circle_background"
         android:src="@drawable/avatar_dummy" />
 
 </LinearLayout>

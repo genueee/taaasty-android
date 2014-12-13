@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingRight="@dimen/feed_item_padding_right"
-        android:background="@drawable/list_selector_holo_light"
+        android:background="?android:selectableItemBackground"
         android:baselineAligned="true"
         android:minHeight="48dp"
         android:paddingTop="4dp"
@@ -20,16 +20,16 @@
         android:focusableInTouchMode="false"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
-        <ImageView
+        <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/avatar"
             android:layout_width="@dimen/avatar_small_diameter"
             android:layout_height="@dimen/avatar_small_diameter"
             android:layout_gravity="top"
             android:layout_marginRight="10dp"
-            android:background="@drawable/list_selector_holo_light"
+            android:foreground="@drawable/clickable_item_circle_background"
             android:clickable="true"
-            android:src="@drawable/avatar_dummy"
-            tools:ignore="ContentDescription" />
+            android:contentDescription="@string/open_user_tlog"
+            android:src="@drawable/avatar_dummy" />
 
         <ru.taaasty.widgets.LinkifiedTextView
             android:id="@+id/comment"

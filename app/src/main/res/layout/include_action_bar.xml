@@ -24,7 +24,7 @@
             android:minWidth="42dp"
             android:scaleType="center"
             android:contentDescription="@string/action_back_content_description"
-            android:background="@drawable/clickable_item_background"
+            android:background="?android:selectableItemBackground"
             android:src="@drawable/ic_back_white" />
 
         <TextView

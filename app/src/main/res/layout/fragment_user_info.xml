@@ -8,7 +8,7 @@
     android:layout_marginTop="@dimen/activity_vertical_margin"
     tools:context="ru.taaasty.ui.UserInfoActivity">
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/select_background_button"
         android:visibility="visible"
         tools:visibility="visible"
@@ -23,7 +23,7 @@
         android:minWidth="42dp"
         android:scaleType="center"
         android:clickable="true"
-        android:background="@drawable/clickable_item_background"
+        android:background="?android:selectableItemBackground"
         android:src="@drawable/ic_magick_wand" />
 
 
@@ -44,7 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-            <ru.taaasty.widgets.HintedImageView
+            <ru.taaasty.widgets.HintedExtendedImageView
                 android:id="@+id/avatar"
                 android:layout_width="@dimen/avatar_large_diameter"
                 android:layout_height="@dimen/avatar_large_diameter"
@@ -140,7 +140,7 @@
 
         <LinearLayout
             android:id="@+id/entries_count"
-            android:background="@drawable/clickable_item_background"
+            android:background="?android:selectableItemBackground"
             style="@style/UserInfoContentColumn">
 
             <TextView

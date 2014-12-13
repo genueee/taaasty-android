@@ -3,35 +3,77 @@ package ru.taaasty.widgets;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.R;
 
 import static junit.framework.Assert.assertEquals;
 
 /**
  * ImageView, который позволяет расширять изображения при adjustViewBounds и на android 4.1
+ * + атрибут foreground
  */
-public class ImageViewCompat extends ImageView {
+public class ExtendedImageView extends ImageView {
 
-    public ImageViewCompat(Context context) {
-        super(context);
-    }
-
-    public ImageViewCompat(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public ImageViewCompat(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
-
+    private Drawable foreground;
     private boolean mAdjustViewBounds = false;
     private int mMaxWidth = Integer.MAX_VALUE;
     private int mMaxHeight = Integer.MAX_VALUE;
+
+    private boolean imageViewInitialized;
+
+    public ExtendedImageView(Context context) {
+        super(context);
+    }
+
+    public ExtendedImageView(Context context, AttributeSet attrs) {
+        super(context, attrs, 0);
+        initImageView(context, attrs);
+    }
+
+    public ExtendedImageView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        initImageView(context, attrs);
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public ExtendedImageView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        initImageView(context, attrs);
+    }
+
+    private void initImageView(Context context, AttributeSet attrs) {
+        if (imageViewInitialized || attrs == null) return;
+
+        imageViewInitialized = true;
+
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ExtendedImageView);
+        Drawable foreground = a.getDrawable(R.styleable.ExtendedImageView_android_foreground);
+        if (foreground != null) {
+            setForeground(foreground);
+        }
+
+        if (a.hasValue(R.styleable.ExtendedImageView_android_maxWidth)) {
+            setMaxWidth(a.getDimensionPixelSize(R.styleable.ExtendedImageView_android_maxWidth, mMaxWidth));
+        }
+
+        if (a.hasValue(R.styleable.ExtendedImageView_android_maxHeight)) {
+            setMaxWidth(a.getDimensionPixelSize(R.styleable.ExtendedImageView_android_maxHeight, mMaxHeight));
+        }
+
+        if (a.hasValue(R.styleable.ExtendedImageView_android_adjustViewBounds)) {
+            setAdjustViewBounds(a.getBoolean(R.styleable.ExtendedImageView_android_adjustViewBounds, mAdjustViewBounds));
+        }
+
+        a.recycle();
+    }
 
     public void setAdjustViewBounds(boolean adjustViewBounds) {
         super.setAdjustViewBounds(adjustViewBounds);
@@ -48,6 +90,61 @@ public class ImageViewCompat extends ImageView {
         mMaxHeight = maxHeight;
     }
 
+    /**
+     * Supply a drawable resource that is to be rendered on top of all of the child
+     * views in the frame layout.
+     *
+     * @param drawableResId The drawable resource to be drawn on top of the children.
+     */
+    public void setForegroundResource(int drawableResId) {
+        setForeground(getContext().getResources().getDrawable(drawableResId));
+    }
+
+    /**
+     * Supply a Drawable that is to be rendered on top of all of the child
+     * views in the frame layout.
+     *
+     * @param drawable The Drawable to be drawn on top of the children.
+     */
+    public void setForeground(Drawable drawable) {
+        if (foreground == drawable) {
+            return;
+        }
+        if (foreground != null) {
+            foreground.setCallback(null);
+            unscheduleDrawable(foreground);
+        }
+
+        foreground = drawable;
+
+        if (drawable != null) {
+            drawable.setCallback(this);
+            if (drawable.isStateful()) {
+                drawable.setState(getDrawableState());
+            }
+        }
+        requestLayout();
+        invalidate();
+    }
+
+    @Override
+    protected boolean verifyDrawable(Drawable who) {
+        return super.verifyDrawable(who) || who == foreground;
+    }
+
+    @Override
+    public void jumpDrawablesToCurrentState() {
+        super.jumpDrawablesToCurrentState();
+        if (foreground != null) foreground.jumpToCurrentState();
+    }
+
+    @Override
+    protected void drawableStateChanged() {
+        super.drawableStateChanged();
+        if (foreground != null && foreground.isStateful()) {
+            foreground.setState(getDrawableState());
+        }
+    }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private void assertParams() {
@@ -61,10 +158,36 @@ public class ImageViewCompat extends ImageView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        if (Build.VERSION.SDK_INT  > Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            return;
+
+        if (Build.VERSION.SDK_INT  <= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            onMeasureApiBelow17(widthMeasureSpec, heightMeasureSpec);
         }
 
+        if (foreground != null) {
+            foreground.setBounds(0, 0, getMeasuredWidth(), getMeasuredHeight());
+            invalidate();
+        }
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        if (foreground != null) {
+            foreground.setBounds(0, 0, w, h);
+            invalidate();
+        }
+    }
+
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
+
+        if (foreground != null) {
+            foreground.draw(canvas);
+        }
+    }
+
+    private void onMeasureApiBelow17(int widthMeasureSpec, int heightMeasureSpec) {
         if (Build.VERSION.SDK_INT > 16) assertParams();
 
         int w;

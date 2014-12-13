@@ -25,7 +25,7 @@
             android:paddingBottom="8dp"
             android:paddingTop="8dp">
 
-            <ru.taaasty.widgets.HintedImageView
+            <ru.taaasty.widgets.HintedExtendedImageView
                 android:id="@+id/avatar"
                 android:layout_width="@dimen/avatar_normal_diameter"
                 android:layout_height="@dimen/avatar_normal_diameter"

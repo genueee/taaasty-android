@@ -6,7 +6,7 @@
     android:layout_height="?android:actionBarSize"
     android:layout_gravity="right">
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/unsubscribe"
         android:visibility="invisible"
         tools:visibility="visible"
@@ -19,7 +19,7 @@
         android:layout_gravity="center"
         android:padding="11dp" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/subscribe"
         android:src="@drawable/ic_ab_subscribe_normal"
         android:contentDescription="@string/subscribe_content_description"

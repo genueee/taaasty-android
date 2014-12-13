@@ -46,5 +46,11 @@
 
     </declare-styleable>
 
+    <declare-styleable name="ExtendedImageView">
+        <attr name="android:foreground"/>
+        <attr name="android:maxWidth"/>
+        <attr name="android:maxHeight"/>
+        <attr name="android:adjustViewBounds"/>
+    </declare-styleable>
 
 </resources>

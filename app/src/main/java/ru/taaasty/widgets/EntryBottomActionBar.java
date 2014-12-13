@@ -172,7 +172,7 @@ public class EntryBottomActionBar {
             mLikesView.setTextColor(design.getFeedActionsTextColor(resources));
             mLikesView.setCompoundDrawablesWithIntrinsicBounds(getNotVotedDrawable(), 0, 0, 0);
             mLikesView.setClickable(true);
-            mLikesView.setBackgroundResource(R.drawable.clickable_item_background);
+            mLikesView.setBackgroundResource(R.drawable.list_selector_holo_light);
         }
         mLikesView.setVisibility(View.VISIBLE);
     }

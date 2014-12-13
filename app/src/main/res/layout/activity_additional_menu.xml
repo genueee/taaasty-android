@@ -5,7 +5,7 @@
     android:gravity="center_horizontal"
     tools:context="ru.taaasty.ui.AdditionalMenuActivity">
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

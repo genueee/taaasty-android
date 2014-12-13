@@ -20,9 +20,9 @@
         android:paddingBottom="8dp"
         android:paddingTop="8dp">
 
-        <ru.taaasty.widgets.HintedImageView
+        <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/avatar"
-            android:background="@drawable/list_selector_holo_light"
+            android:foreground="@drawable/clickable_item_circle_background"
             android:layout_width="@dimen/avatar_normal_diameter"
             android:layout_height="@dimen/avatar_normal_diameter"
             android:clickable="true"

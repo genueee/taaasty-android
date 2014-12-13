@@ -18,14 +18,14 @@
         android:focusableInTouchMode="false"
         tools:ignore="RtlSymmetry,UseCompoundDrawables">
 
-        <ImageView
+        <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/avatar"
             android:layout_width="@dimen/avatar_small_diameter"
             android:layout_height="@dimen/avatar_small_diameter"
-            tools:ignore="ContentDescription"
             android:clickable="true"
             android:layout_marginRight="10dp"
-            android:background="@drawable/list_selector_holo_light"
+            android:contentDescription="@string/open_user_tlog"
+            android:foreground="@drawable/clickable_item_circle_background"
             android:src="@drawable/avatar_dummy" />
 
         <ru.taaasty.widgets.LinkifiedTextView

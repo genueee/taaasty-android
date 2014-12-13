@@ -19,7 +19,7 @@
         tools:visibily="visible"
         tools:visibility="visible">
 
-        <ru.taaasty.widgets.ImageViewCompat
+        <ru.taaasty.widgets.ExtendedImageView
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -23,14 +23,15 @@
         android:drawableLeft="@drawable/ic_like_not_voted_light"
         tools:text="345" />
 
-    <TextView
+    <ru.taaasty.widgets.HintedTextView
         android:id="@+id/comments_count"
         style="@style/PostButtonsItem"
         tools:text="56"
         android:drawableLeft="@drawable/ic_comments_count_light"
+        android:contentDescription="@string/open_comments_content_description"
         android:minWidth="68sp" />
 
-    <TextView
+    <ru.taaasty.widgets.HintedTextView
         android:id="@+id/user_info"
         style="@style/PostButtonsItem"
         android:layout_width="0dp"
@@ -41,13 +42,14 @@
         android:shadowDx="1.1"
         android:shadowDy="1.1"
         android:shadowColor="@android:color/white"
+        android:contentDescription="@string/open_user_tlog"
         android:minWidth="48dp" />
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/more"
         style="@style/PostButtonsItem"
         android:layout_gravity="right"
-        android:background="@drawable/clickable_item_background"
+        android:background="?android:selectableItemBackground"
         android:contentDescription="@string/feed_item_more_content_description"
         android:src="@drawable/ic_more_light" />
 

@@ -5,45 +5,42 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent">
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/reply_to_comment"
         android:src="@drawable/ic_reply_to_comment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/action_reply_to_comment_content_description"
-        android:background="@drawable/clickable_item_background"
+        android:foreground="@drawable/clickable_item_circle_background"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        />
+        android:paddingRight="8dp" />
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/delete_comment"
         android:src="@drawable/ic_delete_comment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/clickable_item_background"
+        android:foreground="@drawable/clickable_item_circle_background"
         android:contentDescription="@string/action_delete_comment_content_description"
         android:visibility="gone"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        />
+        android:paddingRight="8dp" />
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/report_to_moderator"
         android:src="@drawable/ic_report_to_moderator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="@string/action_report_to_moderator_content_description"
-        android:background="@drawable/clickable_item_background"
+        android:foreground="@drawable/clickable_item_circle_background"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
         android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        />
+        android:paddingRight="8dp" />
 
 
 </LinearLayout>

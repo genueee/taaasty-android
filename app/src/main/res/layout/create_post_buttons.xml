@@ -10,7 +10,7 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/text_post"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -21,7 +21,7 @@
         android:src="@drawable/ic_text_post"
         tools:activated="true"/>
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/image_post"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
         android:minWidth="48dp"
         android:src="@drawable/ic_image_post" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/quote_post"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -51,7 +51,7 @@
         android:focusableInTouchMode="false"
         android:layout_weight="1" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/is_with_voting_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -62,7 +62,7 @@
         android:minWidth="48dp"
         android:src="@drawable/ic_post_with_vote_indicator" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/private_post_indicator"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

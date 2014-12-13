@@ -6,7 +6,7 @@
     android:layout_gravity="right"
     >
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/create_post_button"
         android:src="@drawable/ic_create_post"
         android:padding="4dp"

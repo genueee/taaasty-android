@@ -11,12 +11,13 @@
     android:paddingBottom="4dp"
     tools:ignore="UseCompoundDrawables">
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/avatar_small_diameter"
         android:layout_height="@dimen/avatar_small_diameter"
-        tools:ignore="contentDescription"
         android:src="@drawable/avatar_dummy"
+        android:foreground="@drawable/clickable_item_circle_background"
+        android:contentDescription="@string/open_user_tlog"
         android:layout_marginRight="16dp" />
 
 

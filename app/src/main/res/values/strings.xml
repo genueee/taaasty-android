@@ -233,5 +233,9 @@
     <string name="users_load_error">Ошибка загрузки пользователей</string>
     <string name="title_activity_additional_feed">AdditionalFeedActivity</string>
     <string name="no_comments_hint">Здесь будут комментарии</string>
+    <string name="error_loading_conversations">Ошибка загрузки переписок</string>
+    <string name="load_messages">Загрузить сообщения…</string>
+    <string name="open_user_tlog">Открыть тлог автора</string>
+    <string name="open_comments_content_description">Перейти к комментариям</string>
 
 </resources>

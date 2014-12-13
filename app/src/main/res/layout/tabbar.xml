@@ -6,19 +6,19 @@
     android:layout_height="wrap_content"
     tools:context=".widgets.Tabbar">
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_subscriptions"
         style="@style/TabbarButton.First"
         android:contentDescription="@string/btn_tabbar_action_subscriptions"
         android:src="@drawable/btn_tabbar_subscriptions" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_live"
         style="@style/TabbarButton"
         android:contentDescription="@string/btn_tabbar_live_description"
         android:src="@drawable/btn_tabbar_live" />
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_post"
         style="@style/TabbarButton.Action"
         android:contentDescription="@string/btn_tabbar_action_post"
@@ -50,7 +50,7 @@
             tools:ignore="ContentDescription" />
     </FrameLayout>
 
-    <ru.taaasty.widgets.HintedImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_my_feed"
         style="@style/TabbarButton.Last"
         android:contentDescription="@string/tabbar_my_feed_content_description"

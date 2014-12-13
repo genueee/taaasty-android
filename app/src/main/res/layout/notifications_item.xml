@@ -9,20 +9,20 @@
     android:paddingLeft="16dp"
     android:paddingRight="4dp"
     android:gravity="center_vertical"
-    android:background="@drawable/list_selector_holo_light"
+    android:background="?android:selectableItemBackground"
     tools:ignore="UseCompoundDrawables">
 
-    <ImageView
+    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/avatar_small_diameter"
         android:layout_height="@dimen/avatar_small_diameter"
         android:layout_marginRight="16dp"
         android:layout_marginTop="8dp"
         android:layout_gravity="top"
-        android:background="@drawable/list_selector_holo_light"
+        android:foreground="@drawable/clickable_item_circle_background"
         android:clickable="true"
-        android:src="@drawable/avatar_dummy"
-        tools:ignore="contentDescription" />
+        android:contentDescription="@string/open_user_tlog"
+        android:src="@drawable/avatar_dummy" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -76,27 +76,27 @@
         android:layout_height="wrap_content"
         >
 
-        <ImageView
+        <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/relationship_added"
             android:src="@drawable/ic_create_post"
             android:visibility="invisible"
             tools:visibility="visible"
-            tools:ignore="contentDescription"
+            android:contentDescription="@string/unsubscribe_content_description"
             android:padding="4dp"
             android:layout_marginRight="4dp"
-            android:background="@drawable/list_selector_holo_light"
+            android:background="?android:selectableItemBackground"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="center" />
 
-        <ImageView
+        <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/add_relationship"
             android:src="@drawable/ic_relationship_add"
-            tools:ignore="contentDescription"
             tools:visibility="invisible"
             android:padding="4dp"
             android:layout_marginRight="4dp"
-            android:background="@drawable/list_selector_holo_light"
+            android:background="?android:selectableItemBackground"
+            android:contentDescription="@string/subscribe_content_description"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="center" />

@@ -8,7 +8,6 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnLongClickListener;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -20,18 +19,18 @@ import android.widget.Toast;
  *
  * @author Callum Taylor <http://callumtaylor.net>
  */
-public class HintedImageView extends ImageView implements OnLongClickListener
+public class HintedExtendedImageView extends ExtendedImageView implements OnLongClickListener
 {
     private OnLongClickListener mOnLongClickListener;
 
-    public HintedImageView(Context context)
+    public HintedExtendedImageView(Context context)
     {
         super(context);
 
         setOnLongClickListener(this);
     }
 
-    public HintedImageView(Context context, AttributeSet attrs)
+    public HintedExtendedImageView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
 
