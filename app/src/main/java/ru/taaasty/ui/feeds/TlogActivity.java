@@ -5,9 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -23,8 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import com.squareup.picasso.Picasso;
-
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -34,7 +30,6 @@ import ru.taaasty.model.TlogInfo;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.post.SharePostActivity;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.UiUtils;
@@ -56,7 +51,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private long mUserId;
 
     private Drawable mAbBackgroundDrawable;
-    private Drawable mAbIconDrawable;
     int mLastAlpha = 0;
 
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
@@ -98,7 +92,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
         mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
         mAbBackgroundDrawable.setAlpha(0);
-        mAbIconDrawable = new ColorDrawable(Color.TRANSPARENT);
 
         ActionBar ab = getActionBar();
         if (ab != null) {
@@ -106,6 +99,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_tlog);
             ab.setTitle(null);
+            ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
             mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
             mSubscribeView.setOnClickListener(mOnSubscribtionClickListener);
 
@@ -180,8 +174,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         User author = tlogInfo.author;
         mAbTitle = new SpannableString(author.getSlug());
         mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ImageUtils.getInstance().loadAvatar(this, author.getUserpic(), author.getSlug(),
-                mPicassoTarget, android.R.dimen.app_icon_size);
         refreshFollowUnfollowView();
     }
 
@@ -213,7 +205,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 || Math.abs(mLastAlpha - intAlpha) > 20) {
             mLastAlpha = intAlpha;
             mAbBackgroundDrawable.setAlpha(intAlpha);
-            mAbIconDrawable.setAlpha(intAlpha);
             if (mAbTitle != null) {
                 mAlphaForegroundColorSpan.setAlpha(abAlpha);
                 getActionBar().setTitle(mAbTitle);
@@ -303,31 +294,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                     doUnfollow();
                     break;
             }
-        }
-    };
-
-    private final ImageUtils.DrawableTarget mPicassoTarget = new ImageUtils.DrawableTarget() {
-        @Override
-        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-            mAbIconDrawable = new BitmapDrawable(getResources(), bitmap);
-            mAbIconDrawable.setAlpha(mLastAlpha);
-            getActionBar().setIcon(mAbIconDrawable);
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-            notifyError(getText(R.string.error_loading_image), null);
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-        }
-
-        @Override
-        public void onDrawableReady(Drawable drawable) {
-            mAbIconDrawable = drawable;
-            mAbIconDrawable.setAlpha(mLastAlpha);
-            getActionBar().setIcon(mAbIconDrawable);
         }
     };
 }
