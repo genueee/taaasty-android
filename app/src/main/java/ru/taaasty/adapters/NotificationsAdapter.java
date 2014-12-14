@@ -245,7 +245,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     private final class NotificationsList extends SortedList<Notification> implements SortedList.OnListChangedListener {
 
         public NotificationsList() {
-            super(Notification.SORT_BY_CREATED_AT_COMPARATOR);
+            super(Notification.SORT_BY_CREATED_AT_DESC_COMPARATOR);
             setListener(this);
 
         }

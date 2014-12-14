@@ -34,17 +34,25 @@ public class Conversation implements Parcelable {
 
     public Message lastMessage = Message.DUMMY;
 
-    public static Comparator<Conversation> SORT_BY_CREATED_AT_COMPARATOR = new Comparator<Conversation>() {
+    /**
+     * Сортировка по убыванию даты создания (более новые - в начале списка)
+     */
+    public static Comparator<Conversation> SORT_BY_CREATED_AT_DESC_COMPARATOR = new Comparator<Conversation>() {
         @Override
         public int compare(Conversation lhs, Conversation rhs) {
-            int createdAtDiff = lhs.createdAt.compareTo(rhs.createdAt);
-            if (createdAtDiff == 0) {
-                return Objects.compare(lhs.id, rhs.id);
+            if (lhs == null && rhs == null) {
+                return 0;
+            } else if (lhs == null) {
+                return -1;
+            } else if (rhs == null) {
+                return 1;
             } else {
-                return createdAtDiff;
+                int compareDates = rhs.createdAt.compareTo(lhs.createdAt);
+                return compareDates != 0 ? compareDates : Objects.compare(rhs.id, lhs.id);
             }
         }
     };
+
 
     public static class Message implements Parcelable {
 

@@ -172,7 +172,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     private final class ConversationsList extends SortedList<Conversation> implements SortedList.OnListChangedListener {
 
         public ConversationsList() {
-            super(Conversation.SORT_BY_CREATED_AT_COMPARATOR);
+            super(Conversation.SORT_BY_CREATED_AT_DESC_COMPARATOR);
             setListener(this);
         }
 
