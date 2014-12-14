@@ -37,7 +37,6 @@ import ru.taaasty.model.Comments;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiComments;
-import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
 import ru.taaasty.ui.post.FastReplyDialogActivity;
 import ru.taaasty.utils.NetworkUtils;
@@ -222,7 +221,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
                         public void onClick(View v) {
                             Comment comment = getCommentAtHolderPosition(holder);
                             if (comment == null) return;
-                            mOnCommentButtonClickListener.onAuthorAvatarClicked(v, comment);
+                            // TODO mOnCommentButtonClickListener.onAuthorAvatarClicked(v, comment);
                         }
                     });
                     break;
@@ -343,7 +342,7 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
 
     public void setOnCommentButtonClickListener(CommentsAdapter.OnCommentButtonClickListener listener) {
         if (mCommentViewBinder == null) throw new IllegalStateException();
-        mCommentViewBinder.setOnCommentButtonClickListener(listener);
+        // XXX
     }
 
     public FeedList getFeed() {
@@ -507,7 +506,8 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     }
 
     protected ValueAnimator createShowCommentButtonsAnimator(CommentsAdapter.ViewHolder holder) {
-        return mCommentViewBinder.createShowButtonsAnimator(holder);
+        Comment comment = getCommentAtHolderPosition(holder);
+        return mCommentViewBinder.createShowButtonsAnimator(holder, comment);
     }
 
     private FeedListItem getFeedItem(int adapterPosition) {
@@ -552,14 +552,16 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
     private final CommentsAdapter.OnCommentButtonClickListener mOnCommentButtonClickListener = new CommentsAdapter.OnCommentButtonClickListener() {
 
         @Override
-        public void onReplyToCommentClicked(View view, Comment comment) {
+        public void onReplyToCommentClicked(View view, CommentsAdapter.ViewHolder holder) {
+            Comment comment = getCommentAtHolderPosition(holder);
             Integer location = getFeed().findCommentLocation(comment.getId());
             if (location == null) return;
             FastReplyDialogActivity.startReplyToComment(view.getContext(), getFeed().getAnyEntry(location), comment);
         }
 
         @Override
-        public void onDeleteCommentClicked(View view, Comment comment) {
+        public void onDeleteCommentClicked(View view, CommentsAdapter.ViewHolder holder) {
+            Comment comment = getCommentAtHolderPosition(holder);
             int location = getFeed().findCommentLocation(comment.getId());
             DeleteOrReportDialogActivity.startDeleteComment(view.getContext(),
                     mFeed.get(location).entry.getId(),
@@ -567,13 +569,9 @@ public abstract class FeedItemAdapter extends RecyclerView.Adapter {
         }
 
         @Override
-        public void onReportContentClicked(View view, Comment comment) {
+        public void onReportContentClicked(View view, CommentsAdapter.ViewHolder holder) {
+            Comment comment = getCommentAtHolderPosition(holder);
             DeleteOrReportDialogActivity.startReportComment(view.getContext(), comment.getId());
-        }
-
-        @Override
-        public void onAuthorAvatarClicked(View view, Comment comment) {
-            TlogActivity.startTlogActivity(view.getContext(), comment.getAuthor().getId(), view);
         }
     };
 

@@ -9,6 +9,9 @@ import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -16,10 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -83,12 +83,8 @@ public class ShowCommentsFragment extends Fragment {
     private ApiComments mCommentsService;
     private ApiDesignSettings mTlogDesignService;
 
-    private ListView mListView;
-    private CommentsAdapter mCommentsAdapter;
-
-    private View mCommentsLoadMoreContainer;
-    private TextView mCommentsLoadMoreButton;
-    private View mCommentsLoadMoreProgress;
+    private RecyclerView mListView;
+    private Adapter mCommentsAdapter;
 
     private EditText mReplyToCommentText;
     private View mPostButton;
@@ -147,13 +143,8 @@ public class ShowCommentsFragment extends Fragment {
         inflater = getActivity().getLayoutInflater(); // Calligraphy and support-21 bug
         View v = inflater.inflate(R.layout.fragment_show_comments, container, false);
 
-        mListView = (ListView) v.findViewById(R.id.list_view);
+        mListView = (RecyclerView) v.findViewById(R.id.recycler_view);
         mEmptyView = v.findViewById(R.id.empty_view);
-        mCommentsLoadMoreContainer = inflater.inflate(R.layout.comments_load_more, mListView, false);
-        mCommentsLoadMoreButton = (TextView)mCommentsLoadMoreContainer.findViewById(R.id.comments_load_more);
-        mCommentsLoadMoreProgress = mCommentsLoadMoreContainer.findViewById(R.id.comments_load_more_progress);
-
-        mCommentsLoadMoreButton.setOnClickListener(mOnClickListener);
 
         View replyToCommentContainer = v.findViewById(R.id.reply_to_comment_container);
         mReplyToCommentText = (EditText) replyToCommentContainer.findViewById(R.id.reply_to_comment_text);
@@ -190,11 +181,13 @@ public class ShowCommentsFragment extends Fragment {
     public void onViewCreated(View root, Bundle savedInstanceState) {
         super.onViewCreated(root, savedInstanceState);
 
-        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
-        mListView.addHeaderView(mCommentsLoadMoreContainer, null, false);
-        mListView.setAdapter(mCommentsAdapter);
-        mListView.setOnItemClickListener(mOnCommentClickedListener);
+        mCommentsAdapter = new Adapter(getActivity());
+        LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+
+        mListView.setLayoutManager(lm);
         mListView.setOnScrollListener(mScrollListener);
+        mListView.setHasFixedSize(false);
+        mListView.setAdapter(mCommentsAdapter);
 
         if (savedInstanceState != null) {
             mDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
@@ -343,46 +336,15 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     void refreshCommentsStatus() {
-        int commentsToLoad;
-
         updateEmptyView();
-
-        // Пока не определились с количеством
-        if (mTotalCommentsCount < 0) {
-            mCommentsLoadMoreProgress.setVisibility(View.VISIBLE);
-            mCommentsLoadMoreButton.setVisibility(View.GONE);
-            return;
-        }
-
-        // Загружем комментарии
-        // Если всего комментариев 0 - нет смысла показывать прогрессбар, все равно ничего не загрузится
-        if (mLoadComments && (mTotalCommentsCount != 0)) {
-            mCommentsLoadMoreProgress.setVisibility(View.VISIBLE);
-            mCommentsLoadMoreButton.setVisibility(View.INVISIBLE);
-            return;
-        }
-
-        commentsToLoad = mTotalCommentsCount - mCommentsAdapter.getCount();
-        if (commentsToLoad <= 0) {
-            mCommentsLoadMoreProgress.setVisibility(View.GONE);
-            mCommentsLoadMoreButton.setVisibility(View.GONE);
-        } else {
-            if (commentsToLoad < Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP) {
-                mCommentsLoadMoreButton.setText(R.string.load_all_comments);
-            } else {
-                String desc = getResources().getQuantityString(R.plurals.load_n_comments, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
-                mCommentsLoadMoreButton.setText(desc);
-            }
-            mCommentsLoadMoreProgress.setVisibility(View.INVISIBLE);
-            mCommentsLoadMoreButton.setVisibility(View.VISIBLE);
-        }
+        mCommentsAdapter.refreshCommentsStatus();
     }
 
     private void updateEmptyView() {
         if (mCommentsAdapter == null) return;
         boolean shown = (mTotalCommentsCount >= 0)
                 && !mLoadComments
-                && mCommentsAdapter.isEmpty();
+                && !mCommentsAdapter.hasComments();
         mEmptyView.setVisibility(shown ? View.VISIBLE : View.GONE);
     }
 
@@ -438,23 +400,17 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     void unselectCurrentComment(final boolean setNullAtAnd) {
-        View currentView = null;
-        int firstVisible = mListView.getFirstVisiblePosition();
-        int lastVisible = mListView.getLastVisiblePosition();
+        RecyclerView.ViewHolder holder;
         Long selectedComment = mCommentsAdapter.getCommentSelected();
 
         if (selectedComment == null) return;
 
-        for (int pos = firstVisible; pos <= lastVisible; ++pos) {
-            if (selectedComment == mListView.getItemIdAtPosition(pos)) {
-                currentView = mListView.getChildAt(pos - firstVisible);
-            }
-        }
+        holder = mListView.findViewHolderForItemId(selectedComment);
 
-        if (currentView == null) {
+        if (holder == null) {
             mCommentsAdapter.setSelectedCommentId(null);
         } else {
-            ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(currentView);
+            ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator((CommentsAdapter.ViewHolder) holder);
             va.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
@@ -481,78 +437,203 @@ public class ShowCommentsFragment extends Fragment {
         }
     }
 
-    private final AdapterView.OnItemClickListener mOnCommentClickedListener = new AdapterView.OnItemClickListener() {
+    private final class Adapter extends CommentsAdapter {
+
+        private boolean mCommentsLoadInProgress;
+        private CharSequence mCommentsLoadText;
+
+        public Adapter(Context context) {
+            super(context);
+        }
 
         @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, final long id) {
-            if (DBG) Log.v(TAG, "Comment clicked position: " + position + " id: " + id + " item: " + parent.getItemAtPosition(position));
-            if (mCommentsAdapter.getCommentSelected() != null && mCommentsAdapter.getCommentSelected() == id) {
-                unselectCurrentComment();
+        public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comments_load_more, parent, false);
+            return new CommentsLoadMoreViewHolder(view);
+        }
+
+        @Override
+        public void onBindHeaderHolder(RecyclerView.ViewHolder pHolder, int position) {
+            CommentsLoadMoreViewHolder holder = (CommentsLoadMoreViewHolder)pHolder;
+            if (mCommentsLoadInProgress) {
+                holder.progress.setVisibility(View.VISIBLE);
+                holder.button.setVisibility(View.INVISIBLE);
             } else {
-                if (mCommentsAdapter.isEmpty()) return;
-                unselectCurrentComment(false);
-
-                ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
-                va.addListener(new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(Animator animation) {
-                        mListView.setEnabled(false);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        mListView.setEnabled(true);
-                        mCommentsAdapter.setSelectedCommentId(id);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animator animation) {
-
-                    }
-                });
-                va.start();
+                holder.button.setText(mCommentsLoadText);
+                holder.progress.setVisibility(View.INVISIBLE);
+                holder.button.setVisibility(View.VISIBLE);
             }
         }
-    };
-
-    private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
 
         @Override
-        public void onReplyToCommentClicked(View view, Comment comment) {
-            replyToComment(comment);
+        public void initClickListeners(final RecyclerView.ViewHolder holder, int viewType) {
+            switch (viewType) {
+                case CommentsAdapter.VIEW_TYPE_HEADER:
+                    ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            onCommentsLoadMoreButtonClicked();
+                        }
+                    });
+                    break;
+                case CommentsAdapter.VIEW_TYPE_COMMENT:
+                    holder.itemView.setOnClickListener(mOnCommentClickListener);
+                    ((ViewHolder)holder).setOnCommentButtonClickListener(mOnCommentActionListener);
+                    ((ViewHolder)holder).avatar.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Comment comment = getComment(((ViewHolder)holder));
+                            if (comment == null) return;
+                            TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
+                        }
+                    });
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
-        @Override
-        public void onDeleteCommentClicked(View view, Comment comment) {
-            DeleteOrReportDialogActivity.startDeleteComment(getActivity(), mPostId, comment.getId());
+        private void setCommentsLoadMoreInProgress() {
+            setCommentsLoadMoreStatus(true, true, null);
         }
 
-        @Override
-        public void onReportContentClicked(View view, Comment comment) {
-            DeleteOrReportDialogActivity.startReportComment(getActivity(), comment.getId());
+        private void setCommentsLoadMoreGone() {
+            setCommentsLoadMoreStatus(false, false, null);
         }
 
-        @Override
-        public void onAuthorAvatarClicked(View view, Comment comment) {
-            TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
-        }
-    };
-
-    private final AbsListView.OnScrollListener mScrollListener = new  AbsListView.OnScrollListener() {
-        private boolean mEdgeReachedCalled = false;
-
-        @Override
-        public void onScrollStateChanged(AbsListView view, int scrollState) {
-
+        private void setCommentsLoadMoreShowText(CharSequence text) {
+            setCommentsLoadMoreStatus(true, false, text);
         }
 
+        private void setCommentsLoadMoreStatus(boolean isVisible, boolean isInProgress, CharSequence buttonText) {
+            if (isVisible) {
+                boolean inProgressChanged =  (isInProgress != mCommentsLoadInProgress);
+                boolean textChanged = (!TextUtils.equals(buttonText, mCommentsLoadText));
+
+                mCommentsLoadInProgress = isInProgress;
+                mCommentsLoadText = buttonText;
+                if (!isHeaderShown()) {
+                    setShowHeader(true);
+                } else {
+                    if (inProgressChanged || textChanged) notifyItemChanged(0);
+                }
+            } else {
+                mCommentsLoadInProgress = isInProgress;
+                mCommentsLoadText = buttonText;
+                setShowHeader(false);
+            }
+        }
+
+        private void refreshCommentsStatus() {
+            int commentsToLoad;
+            // Пока не определились с количеством
+            if (mTotalCommentsCount < 0) {
+                setCommentsLoadMoreInProgress();
+                return;
+            }
+
+            // Загружем комментарии
+            // Если всего комментариев 0 - нет смысла показывать прогрессбар, все равно ничего не загрузится
+            if (mLoadComments && (mTotalCommentsCount != 0)) {
+                setCommentsLoadMoreInProgress();
+                return;
+            }
+
+            commentsToLoad = mTotalCommentsCount - mCommentsAdapter.getCommentsCount();
+            if (commentsToLoad <= 0) {
+                setCommentsLoadMoreGone();
+            } else {
+                if (commentsToLoad < Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP) {
+                    setCommentsLoadMoreShowText(getText(R.string.load_all_comments));
+                } else {
+                    String desc = getResources().getQuantityString(R.plurals.load_n_comments, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP, Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
+                    setCommentsLoadMoreShowText(desc);
+                }
+            }
+        }
+
+        private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
+
+            @Override
+            public void onReplyToCommentClicked(View view, ViewHolder holder) {
+                Comment comment = getComment(holder);
+                replyToComment(comment);
+            }
+
+            @Override
+            public void onDeleteCommentClicked(View view, ViewHolder holder) {
+                long commentId = getItemId(holder.getPosition());
+                DeleteOrReportDialogActivity.startDeleteComment(getActivity(), mPostId, commentId);
+            }
+
+            @Override
+            public void onReportContentClicked(View view, ViewHolder holder) {
+                long commentId = getItemId(holder.getPosition());
+                DeleteOrReportDialogActivity.startReportComment(getActivity(), commentId);
+            }
+        };
+
+        private final View.OnClickListener mOnCommentClickListener = new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                ViewHolder holder = (ViewHolder) mListView.getChildViewHolder(view);
+                final Long commentId = mListView.getChildItemId(view);
+
+                if (mCommentsAdapter.getCommentSelected() != null
+                        && mCommentsAdapter.getCommentSelected().equals(commentId)) {
+                    unselectCurrentComment();
+                } else {
+                    if (!mCommentsAdapter.hasComments()) return;
+                    unselectCurrentComment(false);
+
+                    ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(holder);
+                    va.addListener(new Animator.AnimatorListener() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+                            mListView.setEnabled(false);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            mListView.setEnabled(true);
+                            mCommentsAdapter.setSelectedCommentId(commentId);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animation) {
+
+                        }
+
+                        @Override
+                        public void onAnimationRepeat(Animator animation) {
+
+                        }
+                    });
+                    va.start();
+                }
+            }
+        };
+    }
+
+    private static class CommentsLoadMoreViewHolder extends RecyclerView.ViewHolder {
+
+        public final TextView button;
+        public final View progress;
+
+        public CommentsLoadMoreViewHolder(View itemView) {
+            super(itemView);
+            button = (TextView)itemView.findViewById(R.id.comments_load_more);
+            progress = itemView.findViewById(R.id.comments_load_more_progress);
+        }
+    }
+
+
+    private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
+        private boolean mEdgeReachedCalled = true;
+
         @Override
-        public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+        public void onScrolled(RecyclerView view, int dx, int dy) {
             boolean atTop = !view.canScrollVertically(-1);
             boolean atEdge = atTop || !view.canScrollVertically(1);
 

@@ -193,7 +193,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
             String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
-            getActionBar().hide();
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }

@@ -37,8 +37,6 @@ public class CommentViewBinder {
     private final DateFormat mTimeFormatInstance, mDdMmFormatInstance, mMmYyFormatInstance;
     private final DateFormat mTimeFormatLongInstance, mDdMmFormatLongInstance, mMmYyFormatLongInstance;
 
-    private CommentsAdapter.OnCommentButtonClickListener mListener;
-
     public CommentViewBinder() {
         mImageUtils = ImageUtils.getInstance();
 
@@ -59,12 +57,7 @@ public class CommentViewBinder {
         mMmYyFormatLongInstance = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
     }
 
-    public void setOnCommentButtonClickListener(CommentsAdapter.OnCommentButtonClickListener listener) {
-        mListener = listener;
-    }
-
     public void bindNotSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
-        vh.setComment(comment);
         if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
         bindAuthor(vh, comment);
         if (vh.date != null) bindDate(vh, comment);
@@ -80,7 +73,6 @@ public class CommentViewBinder {
 
     public void bindSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
         bindActionView(vh, comment);
-        vh.setComment(comment);
         bindCommentText(vh, comment, design);
 
         vh.actionView.setVisibility(View.VISIBLE);
@@ -89,9 +81,9 @@ public class CommentViewBinder {
         updateCommentRightPadding(vh, true);
     }
 
-    public ValueAnimator createShowButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
+    public ValueAnimator createShowButtonsAnimator(final CommentsAdapter.ViewHolder vh, Comment comment) {
         if (vh == null) throw new NullPointerException();
-        bindActionView(vh, vh.currentComment);
+        bindActionView(vh, comment);
         assert vh.actionView != null;
 
         // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
@@ -147,7 +139,7 @@ public class CommentViewBinder {
     }
 
     public ValueAnimator createHideButtonsAnimator(final CommentsAdapter.ViewHolder vh) {
-        vh.inflateActionViewStub(mListener);
+        vh.inflateActionViewStub();
 
         final int textLeft = vh.comment.getLeft();
         final PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
@@ -242,7 +234,7 @@ public class CommentViewBinder {
     }
 
     private void bindActionView(CommentsAdapter.ViewHolder vh, Comment comment) {
-        vh.inflateActionViewStub(mListener);
+        vh.inflateActionViewStub();
         vh.deleteCommentButton.setVisibility(comment.canDelete() ? View.VISIBLE : View.GONE);
         vh.reportButton.setVisibility(comment.canReport() ? View.VISIBLE : View.GONE);
     }

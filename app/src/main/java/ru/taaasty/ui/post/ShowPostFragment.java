@@ -1,7 +1,5 @@
 package ru.taaasty.ui.post;
 
-import android.animation.Animator;
-import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -90,7 +88,6 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.ImageLoadingGetter;
-import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.ImageUtils;
@@ -281,7 +278,7 @@ public class ShowPostFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
+        // XXX mCommentsAdapter = new CommentsAdapter(getActivity(), mOnCommentActionListener);
 
         mAlwaysScrollablePad = new FrameLayout(getActivity());
         AbsListView.LayoutParams lp = new AbsListView.LayoutParams(AbsListView.LayoutParams.MATCH_PARENT, 0);
@@ -291,7 +288,7 @@ public class ShowPostFragment extends Fragment {
         mListView.addHeaderView(mCommentsLoadMoreContainer, null, false);
         mListView.addFooterView(mAlwaysScrollablePad, null, false);
 
-        mListView.setAdapter(mCommentsAdapter);
+        // XXX mListView.setAdapter(mCommentsAdapter);
         mListView.setOnItemClickListener(mOnCommentClickedListener);
         mListView.getViewTreeObserver().addOnGlobalLayoutListener(mTopMarginGlobalLayoutListener);
 
@@ -1103,7 +1100,8 @@ public class ShowPostFragment extends Fragment {
             return;
         }
 
-        commentsToLoad = mTotalCommentsCount - mCommentsAdapter.getCount();
+        // XXX commentsToLoad = mTotalCommentsCount - mCommentsAdapter.getCount();
+        commentsToLoad = 0;
         if (commentsToLoad <= 0) {
             mCommentsLoadMoreProgress.setVisibility(View.GONE);
             mCommentsLoadMoreButton.setVisibility(View.GONE);
@@ -1187,6 +1185,7 @@ public class ShowPostFragment extends Fragment {
         if (currentView == null) {
             mCommentsAdapter.setSelectedCommentId(null);
         } else {
+            /*
             ValueAnimator va = mCommentsAdapter.createHideButtonsAnimator(currentView);
             va.addListener(new Animator.AnimatorListener() {
                 @Override
@@ -1211,6 +1210,7 @@ public class ShowPostFragment extends Fragment {
                 }
             });
             va.start();
+            */
         }
     }
 
@@ -1222,9 +1222,10 @@ public class ShowPostFragment extends Fragment {
             if (mCommentsAdapter.getCommentSelected() != null && mCommentsAdapter.getCommentSelected() == id) {
                 unselectCurrentComment();
             } else {
-                if (mCommentsAdapter.isEmpty()) return;
+                if (!mCommentsAdapter.hasComments()) return;
                 unselectCurrentComment(false);
 
+                /*
                 ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(view);
                 va.addListener(new Animator.AnimatorListener() {
                     @Override
@@ -1249,10 +1250,12 @@ public class ShowPostFragment extends Fragment {
                     }
                 });
                 va.start();
+                */
             }
         }
     };
 
+    /* XXX
     private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
 
         @Override
@@ -1275,6 +1278,7 @@ public class ShowPostFragment extends Fragment {
             TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
         }
     };
+    */
 
     private final AbsListView.OnScrollListener mScrollListener = new  AbsListView.OnScrollListener() {
             private boolean mEdgeReachedCalled = false;

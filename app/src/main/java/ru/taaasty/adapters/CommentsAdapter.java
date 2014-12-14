@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,8 +17,13 @@ import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.model.Comment;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.utils.Objects;
 
-public class CommentsAdapter extends BaseAdapter {
+public abstract class CommentsAdapter extends RecyclerView.Adapter {
+
+    public static final int VIEW_TYPE_HEADER = R.id.comments_header;
+    public static final int VIEW_TYPE_COMMENT = R.id.comment;
+
     private final LayoutInflater mInfater;
 
     private final CommentsList mComments;
@@ -30,16 +34,77 @@ public class CommentsAdapter extends BaseAdapter {
 
     private TlogDesign mFeedDesign;
 
-    private final OnCommentButtonClickListener mListener;
+    private boolean mShowHeader;
 
-    public CommentsAdapter(Context context, OnCommentButtonClickListener listener) {
+    public abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType);
+    public abstract void onBindHeaderHolder(RecyclerView.ViewHolder holder, int position);
+    public abstract void initClickListeners(RecyclerView.ViewHolder holder, int viewType);
+
+    public CommentsAdapter(Context context) {
         super();
         mInfater = LayoutInflater.from(context);
         mComments = new CommentsList();
-        mListener = listener;
         mCommentViewBinder = new CommentViewBinder();
-        mCommentViewBinder.setOnCommentButtonClickListener(listener);
         mFeedDesign = TlogDesign.DUMMY;
+        setHasStableIds(true);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (mShowHeader && position == 0) return VIEW_TYPE_HEADER;
+        return VIEW_TYPE_COMMENT;
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        final RecyclerView.ViewHolder holder;
+
+        switch (viewType) {
+            case VIEW_TYPE_HEADER:
+                holder =  onCreateHeaderViewHolder(parent, viewType);
+                break;
+            case VIEW_TYPE_COMMENT:
+                View res = mInfater.inflate(R.layout.comments_item2, parent, false);
+                holder = new ViewHolder(res);
+                break;
+            default:
+                throw  new IllegalArgumentException();
+        }
+
+        initClickListeners(holder, viewType);
+
+        return holder;
+    }
+
+    @Override
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        if (mShowHeader && position == 0) {
+            onBindHeaderHolder(holder, position);
+            return;
+        }
+
+        Comment comment = mComments.get(getCommentsLocation(position));
+
+        if (mSelectedCommentId != null && mSelectedCommentId == comment.getId()) {
+            mCommentViewBinder.bindSelectedComment((ViewHolder)holder, comment, mFeedDesign);
+        } else {
+            mCommentViewBinder.bindNotSelectedComment((ViewHolder)holder, comment, mFeedDesign);
+        }
+
+    }
+
+    @Override
+    public long getItemId(int position) {
+        if (mShowHeader && position == 0) {
+            return RecyclerView.NO_ID;
+        } else {
+            return mComments.get(getCommentsLocation(position)).getId();
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return mComments.size() + (mShowHeader ? 1 : 0);
     }
 
     public void setComments(List<Comment> comments) {
@@ -52,7 +117,7 @@ public class CommentsAdapter extends BaseAdapter {
 
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
-        if (!isEmpty()) notifyDataSetChanged();
+        if (!mComments.isEmpty()) notifyDataSetChanged();
     }
 
     public void appendComments(List<Comment> comments) {
@@ -63,20 +128,53 @@ public class CommentsAdapter extends BaseAdapter {
         mComments.deleteItem(commentId);
     }
 
+    @Nullable
     public Long getTopCommentId() {
         if (mComments.isEmpty()) return null;
         return mComments.get(0).getId();
     }
 
+    public boolean isHeaderShown() {
+        return mShowHeader;
+    }
+
+    public void setShowHeader(boolean show) {
+        if (show != mShowHeader) {
+            mShowHeader = show;
+            if (show) {
+                notifyItemInserted(0);
+            } else {
+                notifyItemRemoved(0);
+            }
+        }
+    }
+
     public void setSelectedCommentId(Long commentId) {
-        mSelectedCommentId = commentId;
-        notifyDataSetChanged();
+        if (!Objects.equals(mSelectedCommentId, commentId)) {
+            if (mSelectedCommentId != null) {
+                Integer pos = findCommentPosition(mSelectedCommentId);
+                if (pos != null) notifyItemChanged(pos);
+            }
+
+            if (commentId == null) {
+                mSelectedCommentId = null;
+            } else {
+                Integer newPos = findCommentPosition(commentId);
+                if (newPos != null) {
+                    mSelectedCommentId = commentId;
+                    notifyItemChanged(newPos);
+                } else {
+                    mSelectedCommentId = null;
+                }
+            }
+        }
     }
 
     public void clearSelectedCommentId() {
         if (mSelectedCommentId != null) {
+            Integer oldPos = findCommentPosition(mSelectedCommentId);
             mSelectedCommentId = null;
-            notifyDataSetChanged();
+            if (oldPos != null) notifyItemChanged(oldPos);
         }
     }
 
@@ -85,107 +183,49 @@ public class CommentsAdapter extends BaseAdapter {
         return mSelectedCommentId;
     }
 
-    @Override
-    public boolean hasStableIds() {
-        return true;
+    public boolean hasComments() {
+        return !mComments.isEmpty();
     }
 
-    @Override
-    public int getCount() {
+    public int getCommentsCount() {
         return mComments.size();
     }
 
-    @Override
-    public Comment getItem(int position) {
-        return mComments.get(position);
+    private int getAdapterPosition(int commentsLocation) {
+        return commentsLocation + (mShowHeader ? 1 : 0);
     }
 
-    @Override
-    public long getItemId(int position) {
-        return mComments.get(position).getId();
+    private int getCommentsLocation(int adapterPosition) {
+        return adapterPosition - (mShowHeader ? 1 : 0);
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        final ViewHolder vh;
-        View res;
+    @Nullable
+    private Integer findCommentPosition(long commentId) {
+        Integer pos = mComments.findLocation(commentId);
+        return pos == null ? null : getAdapterPosition(pos);
+    }
 
-        if (convertView == null) {
-            res = mInfater.inflate(R.layout.comments_item2, parent, false);
-            vh = new ViewHolder(res);
-            res.setTag(R.id.comment_view_holder, vh);
-            vh.avatar.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mListener != null) {
-                        mListener.onAuthorAvatarClicked(v, vh.currentComment);
-                    }
-                }
-            });
-        } else {
-            res = convertView;
-            vh = (ViewHolder) res.getTag(R.id.comment_view_holder);
-        }
-
-        Comment comment = mComments.get(position);
-
-        if (mSelectedCommentId != null && mSelectedCommentId == comment.getId()) {
-            mCommentViewBinder.bindSelectedComment(vh, comment, mFeedDesign);
-        } else {
-            mCommentViewBinder.bindNotSelectedComment(vh, comment, mFeedDesign);
-        }
-
-        return res;
+    @Nullable
+    public Comment getComment(ViewHolder holder) {
+        if (holder.getPosition() < 0) return null;
+        Integer location = getCommentsLocation(holder.getPosition());
+        if (location == null) return null;
+        return mComments.get(location);
     }
 
     public interface OnCommentButtonClickListener {
-        public void onReplyToCommentClicked(View view, Comment comment);
-        public void onDeleteCommentClicked(View view, Comment comment);
-        public void onReportContentClicked(View view, Comment comment);
-        public void onAuthorAvatarClicked(View view, Comment comment);
+        public void onReplyToCommentClicked(View view, ViewHolder holder);
+        public void onDeleteCommentClicked(View view, ViewHolder holder);
+        public void onReportContentClicked(View view, ViewHolder holder);
     }
 
-    private static class ActionViewClickListener implements View.OnClickListener {
-        private Comment mComment;
-        private OnCommentButtonClickListener mListener;
-
-        public ActionViewClickListener() {
-        }
-
-        public void setListener(OnCommentButtonClickListener listener) {
-            mListener = listener;
-        }
-
-        public void setComment(Comment comment) {
-            mComment = comment;
-        }
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.reply_to_comment:
-                    if (mListener != null) mListener.onReplyToCommentClicked(v, mComment);
-                    break;
-                case R.id.delete_comment:
-                    if (mListener != null) mListener.onDeleteCommentClicked(v, mComment);
-                    break;
-                case R.id.report_to_moderator:
-                    if (mListener != null) mListener.onReportContentClicked(v, mComment);
-                    break;
-                default:
-                    throw new IllegalStateException();
-            }
-        }
+    public ValueAnimator createHideButtonsAnimator(ViewHolder holder) {
+        return mCommentViewBinder.createHideButtonsAnimator(holder);
     }
 
-    public ValueAnimator createHideButtonsAnimator(View view) {
-        final CommentsAdapter.ViewHolder vh = (CommentsAdapter.ViewHolder) view.getTag(R.id.comment_view_holder);
-        return mCommentViewBinder.createHideButtonsAnimator(vh);
-    }
-
-    public ValueAnimator createShowButtonsAnimator(View view) {
-        final CommentsAdapter.ViewHolder vh = (CommentsAdapter.ViewHolder) view.getTag(R.id.comment_view_holder);
-        return mCommentViewBinder.createShowButtonsAnimator(vh);
+    public ValueAnimator createShowButtonsAnimator(ViewHolder holder) {
+        Comment comment = getComment(holder);
+        return mCommentViewBinder.createShowButtonsAnimator(holder, comment);
     }
 
     private final class CommentsList extends SortedList<Comment> implements SortedList.OnListChangedListener {
@@ -207,40 +247,39 @@ public class CommentsAdapter extends BaseAdapter {
 
         @Override
         public void onItemChanged(int location) {
-            notifyDataSetChanged();
+            notifyItemChanged(getAdapterPosition(location));
         }
 
         @Override
         public void onItemInserted(int location) {
-            notifyDataSetChanged();
+            notifyItemInserted(getAdapterPosition(location));
         }
 
         @Override
         public void onItemRemoved(int location) {
-            notifyDataSetChanged();
+            notifyItemRemoved(getAdapterPosition(location));
         }
 
         @Override
         public void onItemMoved(int fromLocation, int toLocation) {
-            notifyDataSetChanged();
+            notifyItemMoved(getAdapterPosition(fromLocation), getAdapterPosition(toLocation));
         }
 
         @Override
         public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyDataSetChanged();
+            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
         }
 
         @Override
         public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyDataSetChanged();
+            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
         }
 
         @Override
         public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyDataSetChanged();
+            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
         }
     }
-
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public final View avatarCommentRoot;
@@ -265,10 +304,7 @@ public class CommentsAdapter extends BaseAdapter {
         @Nullable
         public View reportButton;
 
-        @Nullable
-        private ActionViewClickListener actionViewClickListener;
-
-        public Comment currentComment;
+        private OnCommentButtonClickListener mOnCommentButtonClickListener;
 
         public ViewHolder(View v) {
             super(v);
@@ -279,7 +315,11 @@ public class CommentsAdapter extends BaseAdapter {
             actionViewStub = (ViewStub) v.findViewById(R.id.stub);
         }
 
-        public void inflateActionViewStub(OnCommentButtonClickListener listener) {
+        public void setOnCommentButtonClickListener(OnCommentButtonClickListener listener) {
+            mOnCommentButtonClickListener = listener;
+        }
+
+        public void inflateActionViewStub() {
             if (actionViewStub != null) {
                 actionView = actionViewStub.inflate();
                 actionViewStub = null;
@@ -288,21 +328,30 @@ public class CommentsAdapter extends BaseAdapter {
                 reportButton = actionView.findViewById(R.id.report_to_moderator);
             }
 
-            if (actionViewClickListener == null) initActionViewClickListener(listener);
+            replyToCommentButton.setOnClickListener(mOnActionsListener);
+            deleteCommentButton.setOnClickListener(mOnActionsListener);
+            reportButton.setOnClickListener(mOnActionsListener);
         }
 
-        public void setComment(Comment comment) {
-            currentComment = comment;
-            if (actionViewClickListener != null) actionViewClickListener.setComment(comment);
-        }
+        private final View.OnClickListener mOnActionsListener = new View.OnClickListener()  {
+            @Override
+            public void onClick(View v) {
+                if (mOnCommentButtonClickListener == null) return;
 
-        // TODO: не должно его здесь быть. Переделать всё.
-        private void initActionViewClickListener(OnCommentButtonClickListener listener) {
-            actionViewClickListener = new ActionViewClickListener();
-            actionViewClickListener.setListener(listener);
-            replyToCommentButton.setOnClickListener(actionViewClickListener);
-            deleteCommentButton.setOnClickListener(actionViewClickListener);
-            reportButton.setOnClickListener(actionViewClickListener);
-        }
+                switch (v.getId()) {
+                    case R.id.reply_to_comment:
+                        mOnCommentButtonClickListener.onReplyToCommentClicked(v, ViewHolder.this);
+                        break;
+                    case R.id.delete_comment:
+                        mOnCommentButtonClickListener.onDeleteCommentClicked(v, ViewHolder.this);
+                        break;
+                    case R.id.report_to_moderator:
+                        mOnCommentButtonClickListener.onReportContentClicked(v, ViewHolder.this);
+                        break;
+                    default:
+                        throw new IllegalStateException();
+                }
+            }
+        };
     }
 }
