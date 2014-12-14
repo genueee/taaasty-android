@@ -6,6 +6,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.format.DateUtils;
 import android.text.style.TextAppearanceSpan;
 import android.util.Log;
 import android.view.View;
@@ -255,9 +256,11 @@ public class CommentViewBinder {
 
         if (vh.date == null) {
             // Добавляем дату в текст
+            vh.updatedAtValue = item.getUpdatedAt().getTime();
+            vh.relativeDateValue = getRelativeDate(context, vh.updatedAtValue);
             int start = ssb.length();
             ssb.append(" —\u00A0");
-            ssb.append(getDate(item.getUpdatedAt(), true).replace(" ", "\u00A0"));
+            ssb.append(vh.relativeDateValue.replace(" ", "\u00A0"));
             int textAppearance = design.isLightTheme() ? R.style.TextAppearanceDateCommentInlineWhite : R.style.TextAppearanceDateCommentInlineBlack;
             TextAppearanceSpan span = new TextAppearanceSpan(context, textAppearance);
             ssb.setSpan(span, start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -268,13 +271,25 @@ public class CommentViewBinder {
     }
 
     private void bindDate(CommentsAdapter.ViewHolder vh, Comment item) {
-        if (vh.date != null) vh.date.setText(getDate(item.getUpdatedAt(), false));
+        if (vh.date != null) vh.date.setText(getDate(item.getUpdatedAt().getTime(), false));
     }
 
-    private String getDate(Date updatedAt, boolean longFormat) {
+    public String getRelativeDate(Context context, long updatedAt) {
+        long now = System.currentTimeMillis();
+        long time = (updatedAt < now) ? updatedAt : now;
+        long timediff = Math.abs(now - time);
+        if (timediff > 3 * 4 * DateUtils.WEEK_IN_MILLIS) return getDate(time, true);
+
+        return DateUtils.getRelativeDateTimeString(context, time,
+                DateUtils.MINUTE_IN_MILLIS,
+                DateUtils.YEAR_IN_MILLIS,
+                0).toString();
+    }
+
+    private String getDate(long updatedAt, boolean longFormat) {
         final DateFormat defaultFormat, ddMmDormat, mmYyFormat;
         String date;
-        long timediff = Math.abs(System.currentTimeMillis() - updatedAt.getTime());
+        long timediff = Math.abs(System.currentTimeMillis() - updatedAt);
 
         if (longFormat) {
             defaultFormat = mTimeFormatLongInstance;
@@ -291,7 +306,7 @@ public class CommentViewBinder {
         } else {
             Calendar lastYear = Calendar.getInstance();
             lastYear.add(Calendar.YEAR, -1);
-            if (updatedAt.after(lastYear.getTime())) {
+            if (new Date(updatedAt).after(lastYear.getTime())) {
                 date = ddMmDormat.format(updatedAt);
             } else {
                 date = mmYyFormat.format(updatedAt);

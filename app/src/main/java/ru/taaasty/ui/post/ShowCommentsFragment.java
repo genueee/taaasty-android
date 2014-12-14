@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -60,7 +61,7 @@ import rx.functions.Action0;
  */
 public class ShowCommentsFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ShowPostFragment";
+    private static final String TAG = "ShowCommentsFragment";
     private static final String ARG_POST_ID = "post_id";
     private static final String ARG_TLOG_DESIGN = "tlog_design";
     private static final String ARG_ENTRY = "entry";
@@ -71,6 +72,7 @@ public class ShowCommentsFragment extends Fragment {
     private static final String KEY_COMMENTS = "comments";
     private static final String KEY_TOTAL_COMMENTS_COUNT = "total_comments_count";
     private static final String KEY_LOAD_COMMENTS = "load_comments";
+    public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
 
     private OnFragmentInteractionListener mListener;
 
@@ -99,6 +101,8 @@ public class ShowCommentsFragment extends Fragment {
 
     private boolean mLoadComments;
     private int mTotalCommentsCount = -1;
+
+    private Handler mRefreshDatesHandler;
 
     /**
      * Use this factory method to create a new instance of
@@ -201,6 +205,9 @@ public class ShowCommentsFragment extends Fragment {
         refreshCommentsStatus();
         setupFeedDesign();
         refreshEntry();
+
+        mRefreshDatesHandler = new Handler();
+        refreshDelayed();
     }
 
     @Override
@@ -227,6 +234,8 @@ public class ShowCommentsFragment extends Fragment {
         mTlogDesignSubscription.unsubscribe();
         mPostCommentSubscription.unsubscribe();
         mListView = null;
+        mRefreshDatesHandler.removeCallbacks(mRefreshDatesRunnable);
+        mRefreshDatesHandler = null;
     }
 
     @Override
@@ -628,6 +637,20 @@ public class ShowCommentsFragment extends Fragment {
         }
     }
 
+    private void refreshDelayed() {
+        if (mRefreshDatesHandler == null) return;
+        mRefreshDatesHandler.postDelayed(mRefreshDatesRunnable, REFRESH_DATES_DELAY_MILLIS);
+    }
+
+    private final Runnable mRefreshDatesRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mListView == null || mCommentsAdapter == null) return;
+            if (DBG) Log.v(TAG, "refreshRelativeDates");
+            mCommentsAdapter.refreshRelativeDates(mListView);
+            refreshDelayed();
+        }
+    };
 
     private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
         private boolean mEdgeReachedCalled = true;

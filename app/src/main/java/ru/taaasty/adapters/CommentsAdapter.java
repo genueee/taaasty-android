@@ -191,6 +191,19 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         return mComments.size();
     }
 
+    public void refreshRelativeDates(RecyclerView recyclerView) {
+        int childCount = recyclerView.getChildCount();
+        for (int i =0; i < childCount; ++i) {
+            RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+            if (holder != null && holder instanceof ViewHolder) {
+                ViewHolder commentHolder = (ViewHolder) holder;
+                String newDate = mCommentViewBinder.getRelativeDate(recyclerView.getContext(),
+                        commentHolder.updatedAtValue);
+                if (!newDate.equals(commentHolder.relativeDateValue)) notifyItemChanged(holder.getPosition());
+            }
+        }
+    }
+
     private int getAdapterPosition(int commentsLocation) {
         return commentsLocation + (mShowHeader ? 1 : 0);
     }
@@ -288,6 +301,10 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
         @Nullable
         public final TextView date;
+
+        long updatedAtValue;
+
+        String relativeDateValue;
 
         @Nullable
         public ViewStub actionViewStub;
