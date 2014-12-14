@@ -394,7 +394,9 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     void setupActionbar(Userpic userpic, String username, TlogDesign design) {
         ActionBar ab = getActionBar();
         if (ab == null) return;
-        SpannableString title = new SpannableString(getText(R.string.title_activity_show_post));
+
+        SpannableString title = new SpannableString(getText(
+                mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
 
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setIcon(new ColorDrawable(Color.TRANSPARENT));

@@ -74,6 +74,7 @@
     <string name="you_have_no_private_records">У вас нет скрытых записей</string>
     <string name="you_have_no_favorite_records">У вас нет избранных записей</string>
     <string name="title_activity_show_post">Запись</string>
+    <string name="title_activity_comments">Прокомментируйте</string>
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
     <string name="my_subscriptions">Мои подписки</string>
