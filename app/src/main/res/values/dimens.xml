@@ -24,6 +24,9 @@
     <dimen name="feed_item_padding_right_plus">20dp</dimen>
     <dimen name="feed_item_padding_top">12dp</dimen>
     <dimen name="feed_item_padding_bottom">4dp</dimen>
+    <dimen name="feed_item_likes_padding_left">8dp</dimen>
+    <dimen name="feed_item_likes_padding_right">8dp</dimen>
+
     <!-- Расстояние между постами в ленте, если посты показываются с аватаркой в заголовке -->
     <dimen name="feed_list_inter_post_distance_with_avatar">20dp</dimen>
     <!-- Расстояние между постами в ленте, если посты показываются без аватарки в заголовке. Чуть больше, чем с аватаркой -->

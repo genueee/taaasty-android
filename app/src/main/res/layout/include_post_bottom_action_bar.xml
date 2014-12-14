@@ -14,8 +14,8 @@
     android:baselineAligned="false"
     android:layout_marginTop="4dp"
     android:layout_marginBottom="4dp"
-    android:layout_marginLeft="@dimen/feed_item_padding_left"
-    android:layout_marginRight="@dimen/feed_item_padding_right">
+    android:layout_marginLeft="@dimen/feed_item_likes_padding_left"
+    android:layout_marginRight="@dimen/feed_item_likes_padding_right">
 
     <TextView
         android:id="@+id/likes"
