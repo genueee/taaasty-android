@@ -20,10 +20,6 @@
     <!-- padding слева и справа у текста в ленте -->
     <dimen name="feed_item_padding_left">16dp</dimen>
     <dimen name="feed_item_padding_right">16dp</dimen>
-    <dimen name="feed_item_padding_left_plus">20dp</dimen>
-    <dimen name="feed_item_padding_right_plus">20dp</dimen>
-    <dimen name="feed_item_padding_top">12dp</dimen>
-    <dimen name="feed_item_padding_bottom">4dp</dimen>
     <dimen name="feed_item_likes_padding_left">8dp</dimen>
     <dimen name="feed_item_likes_padding_right">8dp</dimen>
 
@@ -37,16 +33,8 @@
     <dimen name="feed_grid_item_padding_left">7dp</dimen>
     <dimen name="feed_grid_item_padding_right">7dp</dimen>
 
-    <dimen name="post_item_padding_left">22dp</dimen>
-    <dimen name="post_item_padding_right">22dp</dimen>
-
-    <dimen name="post_item_likes_padding_left">12dp</dimen>
-    <dimen name="post_item_likes_padding_right">12dp</dimen>
-
     <dimen name="post_item_comments_padding_left">10dp</dimen>
     <dimen name="post_item_comments_padding_right">10dp</dimen>
-
-    <dimen name="post_item_web_view_default_height">400dp</dimen>
 
     <!-- Высота заголовка над лентой -->
     <dimen name="header_title_subtitle_height">195dp</dimen>
@@ -61,7 +49,5 @@
     <dimen name="image_loading_placeholder_default_size">64dp</dimen>
     <dimen name="grid_feed_item_margin">2.5dp</dimen>
     <dimen name="user_name_text_size">32sp</dimen>
-
-    <dimen name="date_indicator_margin_bottom">84dp</dimen>
 
 </resources>

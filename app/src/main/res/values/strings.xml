@@ -12,7 +12,6 @@
     <string name="title_live_feed">Прямой эфир</string>
     <string name="title_best_feed">Лучшее</string>
     <string name="title_anonymous_feed">Анонимки</string>
-    <string name="title_my_feed">Мой дневник</string>
     <string name="title_news">Новости</string>
     <string name="title_activity_following_followers">Подписки</string>
     <string name="title_followings">Вы подписаны</string>
@@ -40,21 +39,13 @@
         <item quantity="many">%d анонимок за последние 24 часа</item>
         <item quantity="other">%d анонимок за последние 24 часа</item>
     </plurals>
-    <plurals name="news_last_day">
-        <item quantity="one">%d новость за день</item>
-        <item quantity="few">%d новости за день</item>
-        <item quantity="many">%d новостей за день</item>
-        <item quantity="other">%d новостей за день</item>
-    </plurals>
 
     <string name="user_avatar_content_description">Информация о пользователе</string>
     <string name="additional_menu">Дополнительное меню</string>
-    <string name="action_close_content_description">Закрыть</string>
     <string name="friends">Друзья</string>
     <string name="settings">Настройки</string>
     <string name="title_hidden_entries">Скрытые записи</string>
     <string name="title_favorites">Избранное</string>
-    <string name="title_activity_additional_menu">Дополнительное меню</string>
     <string name="server_error">Ошибка связи с сервером</string>
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
     <string name="error_report_to_comment">Ошибка отправки жалобы</string>
@@ -65,7 +56,6 @@
     <string name="error_follow">Ошибка подписки</string>
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
-    <string name="error_youtube_init">Ошибка YouTube (%1$s)</string>
     <string name="error_tlog_access_denied">Извините, но\u00A0доступ к\u00A0данному тлогу и\u00A0его\u00A0записям ограничен его владельцем.</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
@@ -130,7 +120,7 @@
     <string name="load_all_comments">Загрузить все комментарии…</string>
     <string name="add_comment_hint">Добавить комментарий</string>
     <string name="send_button_short">Отпр</string>
-    <string name="please_write_somethig">Напишите что-нибудь</string>
+    <string name="please_write_something">Напишите что-нибудь</string>
 
     <plurals name="load_n_comments">
         <item quantity="one">Загрузить ещё %d комментарий…</item>
@@ -187,11 +177,9 @@
     <string name="edit_post">Редактировать</string>
     <string name="delete_post">Удалить</string>
     <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
-    <string name="title_activity_share">ShareActivity</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_conversations">Сообщения</string>
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
-    <string name="no_notifications">Уведомлений нет</string>
     <string name="no_conversations">Здесь будут отображаться ваши переписки</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
@@ -208,8 +196,6 @@
     <string name="menu_favorites">Избранное</string>
     <string name="menu_hidden">Скрытые записи</string>
     <string name="menu_quit">Выйти</string>
-    <string name="reply_to_post">Ответить…</string>
-    <string name="add_comment">Добавить комментарий…</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>
@@ -218,24 +204,16 @@
         <item quantity="other">Пришло %d уведомлений…</item>
     </plurals>
 
-    <string name="title_activity_fast_reply_dialog">Быстрый ответ</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
-    <string name="title_activity_edit_post">EditPostActivity</string>
     <string name="post_can_only_be_edited_on_website">Этот пост можно отредактировать только на сайте</string>
     <string name="post_has_not_been_changed">В статье ничего не поменялось</string>
     <string name="title_activity_conversation">ConversationActivity</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="your_message">Ваше сообщение</string>
     <string name="initiate_conversation">Создать переписку</string>
     <string name="start_typing_friend_name">Начните вводить имя друга, которому хотите написать сообщение</string>
     <string name="we_cannot_find_this_user">К сожалению, мы не можем найти данного пользователя</string>
     <string name="error_create_conversation">Ошибка создания переписки</string>
     <string name="users_load_error">Ошибка загрузки пользователей</string>
-    <string name="title_activity_additional_feed">AdditionalFeedActivity</string>
     <string name="no_comments_hint">Здесь будут комментарии</string>
-    <string name="error_loading_conversations">Ошибка загрузки переписок</string>
-    <string name="load_messages">Загрузить сообщения…</string>
     <string name="open_user_tlog">Открыть тлог автора</string>
     <string name="open_comments_content_description">Перейти к комментариям</string>
 

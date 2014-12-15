@@ -179,7 +179,7 @@ public class FastReplyDialogActivity extends Activity {
         String comment = mReplyText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
-            Toast t = Toast.makeText(this, R.string.please_write_somethig, Toast.LENGTH_SHORT);
+            Toast t = Toast.makeText(this, R.string.please_write_something, Toast.LENGTH_SHORT);
             t.setGravity(Gravity.CENTER, 0, 0);
             t.show();
             return;

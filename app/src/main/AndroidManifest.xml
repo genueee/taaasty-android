@@ -78,16 +78,6 @@
             android:screenOrientation="portrait">
         </activity>
         <activity
-            android:name="ru.taaasty.ui.AdditionalMenuActivity"
-            android:label="@string/title_activity_additional_menu"
-            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/AdditionMenuActivityTheme" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
-        </activity>
-        <activity
             android:name="ru.taaasty.ui.post.ShowPostActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/title_activity_show_post"
@@ -106,7 +96,7 @@
             android:theme="@style/UserInfoActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.ShowPostActivity" />
+                android:value="ru.taaasty.ui.post.ShowPostActivity" />
         </activity>
         <activity
             android:name="ru.taaasty.ui.relationships.FollowingFollowersActivity"

@@ -2,9 +2,9 @@ package ru.taaasty.ui.post;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -22,53 +21,36 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewTreeObserver;
-
-import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.FragmentActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryRemoved;
-import ru.taaasty.events.YoutubeRecoveryActionPerformed;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class ShowPostActivity extends FragmentActivityBase implements ShowPostFragment.OnFragmentInteractionListener, ShowCommentsFragment.OnFragmentInteractionListener {
+public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
     private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
     private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
-    private static final String ARG_SHOW_FULL_POST = "ru.taaasty.ui.feeds.ShowPostActivity.show_full_post";
     private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
-    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
-    private static final String FRAGMENT_TAG_DELETE_REPORT_COMMENT = "FRAGMENT_TAG_DELETE_REPORT_COMMENT";
-
-    public static final int YOUTUBE_RECOVERY_DIALOG_REQUEST = Activity.RESULT_FIRST_USER;
 
     private ActionbarUserIconLoader mAbIconLoader;
 
     private Handler mHideActionBarHandler;
-
-    private boolean mImeVisible;
-
-    private boolean mYoutubeFullscreen = false;
-
-    private boolean mShowFullPost;
 
     private long mPostId;
 
@@ -85,12 +67,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         private TlogDesign mTlogDesign;
 
         private Long mCommentId;
-
-        private Bitmap mThumbnailBitmap;
-
-        private String mThumbnailBitmapCacheKey;
-
-        private boolean mShowFullPost;
 
         public Builder(Context context) {
             mContext = context;
@@ -121,17 +97,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             return this;
         }
 
-        public Builder setThumbnailBitmap(Bitmap bitmap, @Nullable String cacheKey) {
-            mThumbnailBitmap = bitmap;
-            mThumbnailBitmapCacheKey = cacheKey;
-            return this;
-        }
-
-        public Builder setShowFullPost(boolean enable) {
-            mShowFullPost = enable;
-            return this;
-        }
-
         public Intent buildIntent() {
             if (mPostId == null && mEntry == null) {
                 throw new IllegalStateException("post not defined");
@@ -142,13 +107,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
             if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
             if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
-            if (mShowFullPost) intent.putExtra(ShowPostActivity.ARG_SHOW_FULL_POST, mShowFullPost);
-
-            if (mThumbnailBitmap != null) {
-                String key = mThumbnailBitmapCacheKey != null ? mThumbnailBitmapCacheKey : "thumbnail";
-                ImageUtils.getInstance().putBitmapToCache(key, mThumbnailBitmap);
-                intent.putExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY, key);
-            }
 
             return intent;
         }
@@ -159,7 +117,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                         mSrcView, 0, 0, mSrcView.getWidth(), mSrcView.getHeight());
                 if (mContext instanceof  Activity) {
-                    ActivityCompat.startActivity((Activity)mContext, intent, options.toBundle());
+                    ActivityCompat.startActivity((Activity) mContext, intent, options.toBundle());
                 } else {
                     mContext.startActivity(intent);
                 }
@@ -183,45 +141,24 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
 
         mHideActionBarHandler = new Handler();
 
-        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
-
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
             mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
             if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
             Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
-            String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
 
             Fragment fragment;
-            if (mShowFullPost) {
-                fragment = ShowPostFragment.newInstance(mPostId, entry, design, thumbnailKey);
-            } else {
-                fragment = ShowCommentsFragment.newInstance(mPostId, entry, design, thumbnailKey);
-            }
+            fragment = ShowCommentsFragment.newInstance(mPostId, entry, design);
 
-            getSupportFragmentManager().beginTransaction()
+            getFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
         }
-
-        final View activityRootView = findViewById(R.id.activity_root);
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
-                    mImeVisible = true;
-                } else {
-                    mImeVisible = false;
-                }
-                // if (DBG) Log.v(TAG, "ime visible: " + mImeVisible);
-            }
-        });
 
         EventBus.getDefault().register(this);
     }
@@ -230,13 +167,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == YOUTUBE_RECOVERY_DIALOG_REQUEST) {
-            EventBus.getDefault().post(new YoutubeRecoveryActionPerformed());
-        }
     }
 
     @Override
@@ -298,7 +228,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         }
 
         ErrorLoadingPostFragment newFragment = ErrorLoadingPostFragment.newInstance(text, iconId);
-        getSupportFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
+        getFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
         ActionBar ab = getActionBar();
         if (ab != null) ab.show();
     }
@@ -314,16 +244,10 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     }
 
     @Override
-    public void onShowImageClicked(User author, List<String> images, String title, String previewUrl) {
-        ShowPhotoActivity.startShowPhotoActivity(this, author, title, images, previewUrl, null);
-    }
-
-    @Override
     public void onEdgeReached(boolean atTop) {
         if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
         if (!atTop) return;
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        if (mYoutubeFullscreen) return;
         ActionBar ab = getActionBar();
         if (ab != null) ab.show();
     }
@@ -332,7 +256,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     public void onEdgeUnreached() {
         if (DBG) Log.v(TAG, "onEdgeUnreached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        if (mYoutubeFullscreen) return;
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
     }
 
@@ -352,16 +275,6 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
     }
 
-    @Override
-    public void onYoutubeFullscreen(boolean isFullscreen) {
-        mYoutubeFullscreen = isFullscreen;
-    }
-
-    @Override
-    public boolean isImeVisible() {
-        return mImeVisible;
-    }
-
     private Runnable mHideActionBarRunnable = new Runnable() {
         @Override
         public void run() {
@@ -371,11 +284,9 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
     };
 
     private Entry getCurrentEntry() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
         if (fragment == null) return null;
-        if (fragment instanceof  ShowPostFragment) {
-            return ((ShowPostFragment) fragment).getCurrentEntry();
-        } else if (fragment instanceof  ShowCommentsFragment) {
+        if (fragment instanceof  ShowCommentsFragment) {
             return ((ShowCommentsFragment) fragment).getCurrentEntry();
         }
         return null;
@@ -394,8 +305,7 @@ public class ShowPostActivity extends FragmentActivityBase implements ShowPostFr
         ActionBar ab = getActionBar();
         if (ab == null) return;
 
-        SpannableString title = new SpannableString(getText(
-                mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
+        SpannableString title = new SpannableString(getText(R.string.title_activity_comments));
 
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setIcon(new ColorDrawable(Color.TRANSPARENT));

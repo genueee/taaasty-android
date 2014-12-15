@@ -39,7 +39,8 @@
             android:drawableRight="@drawable/ic_done_all_grey600_18dp"
             android:textColor="#c9c9c9"
             android:textSize="10sp"
-            tools:text="24 ноября 15:55 X" />
+            tools:text="24 ноября 15:55 X"
+            tools:ignore="SmallSp" />
 
     </LinearLayout>
 

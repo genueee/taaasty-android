@@ -2,14 +2,12 @@ package ru.taaasty.utils;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
-import android.widget.ArrayAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

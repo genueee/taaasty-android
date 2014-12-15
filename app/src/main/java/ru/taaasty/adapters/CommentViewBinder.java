@@ -61,9 +61,7 @@ public class CommentViewBinder {
     public void bindNotSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
         if (vh.actionView != null) vh.actionView.setVisibility(View.GONE);
         bindAuthor(vh, comment);
-        if (vh.date != null) bindDate(vh, comment);
         vh.avatar.setVisibility(View.VISIBLE);
-        if (vh.date != null) vh.date.setVisibility(View.VISIBLE);
 
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
         lp.rightMargin = 0;
@@ -78,7 +76,6 @@ public class CommentViewBinder {
 
         vh.actionView.setVisibility(View.VISIBLE);
         vh.avatar.setVisibility(View.GONE);
-        if (vh.date != null) vh.date.setVisibility(View.GONE);
         updateCommentRightPadding(vh, true);
     }
 
@@ -102,7 +99,6 @@ public class CommentViewBinder {
                 Float alhaButtons = (Float) animation.getAnimatedValue("dAlphaButtons");
                 vh.avatarCommentRoot.setTranslationX(dxTextLeft);
                 vh.actionView.setAlpha(alhaButtons);
-                if (vh.date != null) vh.date.setAlpha(1 - alhaButtons);
             }
         });
         va.addListener(new Animator.AnimatorListener() {
@@ -118,8 +114,6 @@ public class CommentViewBinder {
                 assert vh.actionView != null;
                 vh.avatarCommentRoot.setTranslationX(0);
                 vh.avatar.setVisibility(View.GONE);
-                if (vh.date != null) vh.date.setVisibility(View.GONE);
-                if (vh.date != null) vh.date.setAlpha(1f);
                 vh.avatar.setTranslationX(0f);
                 vh.comment.setTranslationX(0f);
                 vh.actionView.setAlpha(1f);
@@ -155,7 +149,6 @@ public class CommentViewBinder {
                 Float dalpha = (Float) animation.getAnimatedValue("dalpha");
                 Float dxTextLeft = (Float) animation.getAnimatedValue("dxTextLeft");
                 vh.avatarCommentRoot.setTranslationX(dxTextLeft);
-                if (vh.date != null) vh.date.setAlpha(1f - dalpha);
                 vh.actionView.setAlpha(dalpha);
             }
         });
@@ -165,10 +158,6 @@ public class CommentViewBinder {
             public void onAnimationStart(Animator animation) {
                 vh.avatarCommentRoot.setTranslationX(-textLeft);
                 vh.avatar.setVisibility(View.VISIBLE);
-                if (vh.date != null) {
-                    vh.date.setVisibility(View.VISIBLE);
-                    vh.date.setMinWidth(0);
-                }
 
                 ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
                 lp.rightMargin = 0;
@@ -178,7 +167,6 @@ public class CommentViewBinder {
             @Override
             public void onAnimationEnd(Animator animation) {
                 vh.actionView.setAlpha(1);
-                if (vh.date != null) vh.date.setAlpha(1f);
                 vh.actionView.setVisibility(View.GONE);
             }
 
@@ -254,24 +242,18 @@ public class CommentViewBinder {
         ssb.append(' ');
         ssb.append(item.getTextSpanned());
 
-        if (vh.date == null) {
-            // Добавляем дату в текст
-            vh.updatedAtValue = item.getUpdatedAt().getTime();
-            vh.relativeDateValue = getRelativeDate(context, vh.updatedAtValue);
-            int start = ssb.length();
-            ssb.append(" —\u00A0");
-            ssb.append(vh.relativeDateValue.replace(" ", "\u00A0"));
-            int textAppearance = design.isLightTheme() ? R.style.TextAppearanceDateCommentInlineWhite : R.style.TextAppearanceDateCommentInlineBlack;
-            TextAppearanceSpan span = new TextAppearanceSpan(context, textAppearance);
-            ssb.setSpan(span, start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+        // Добавляем дату в текст
+        vh.updatedAtValue = item.getUpdatedAt().getTime();
+        vh.relativeDateValue = getRelativeDate(context, vh.updatedAtValue);
+        int start = ssb.length();
+        ssb.append(" —\u00A0");
+        ssb.append(vh.relativeDateValue.replace(" ", "\u00A0"));
+        int textAppearance = design.isLightTheme() ? R.style.TextAppearanceDateCommentInlineWhite : R.style.TextAppearanceDateCommentInlineBlack;
+        TextAppearanceSpan span = new TextAppearanceSpan(context, textAppearance);
+        ssb.setSpan(span, start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         vh.comment.setText(ssb);
         vh.comment.setTextColor( design.getFeedTextColor(context.getResources()) );
-    }
-
-    private void bindDate(CommentsAdapter.ViewHolder vh, Comment item) {
-        if (vh.date != null) vh.date.setText(getDate(item.getUpdatedAt().getTime(), false));
     }
 
     public String getRelativeDate(Context context, long updatedAt) {

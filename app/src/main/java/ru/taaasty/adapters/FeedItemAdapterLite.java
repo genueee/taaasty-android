@@ -31,6 +31,14 @@ import ru.taaasty.model.TlogDesign;
  */
 public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
 
+    public static final int VIEW_TYPE_HEADER = R.id.feed_view_type_header;
+    public static final int VIEW_TYPE_IMAGE = R.id.feed_view_type_image;
+    public static final int VIEW_TYPE_EMBEDD = R.id.feed_view_type_embedd;
+    public static final int VIEW_TYPE_QUOTE = R.id.feed_view_type_quote;
+    public static final int VIEW_TYPE_COMMENT = R.id.feed_view_type_comment;
+    public static final int VIEW_TYPE_REPLY_FORM = R.id.feed_view_type_reply_form;
+    public static final int VIEW_TYPE_OTHER = R.id.feed_view_type_other;
+    public static final int VIEW_TYPE_PENDING = R.id.feed_view_type_pending_indicator;
     private static final int HEADERS_COUNT = 1;
 
     private static final String TAG = "FeedItemAdapterLite";
@@ -45,7 +53,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
 
     private AtomicBoolean mLoading = new AtomicBoolean(false);
 
-    private FeedItemAdapter.InteractionListener mInteractionListener;
+    private InteractionListener mInteractionListener;
 
     protected TlogDesign mFeedDesign;
 
@@ -79,25 +87,25 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
         final RecyclerView.ViewHolder holder;
         View child;
         switch (viewType) {
-            case FeedItemAdapter.VIEW_TYPE_HEADER:
+            case VIEW_TYPE_HEADER:
                 return onCreateHeaderViewHolder(parent);
-            case FeedItemAdapter.VIEW_TYPE_PENDING:
+            case VIEW_TYPE_PENDING:
                 child = mInflater.inflate(mPendingResource, parent, false);
                 holder = new RecyclerView.ViewHolder(child) {};
                 break;
-            case FeedItemAdapter.VIEW_TYPE_IMAGE:
+            case VIEW_TYPE_IMAGE:
                 child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
                 holder = new ListImageEntry(mContext, child, mShowUserAvatar);
                 break;
-            case FeedItemAdapter.VIEW_TYPE_EMBEDD:
+            case VIEW_TYPE_EMBEDD:
                 child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
                 holder = new ListEmbeddEntry(mContext, child, mShowUserAvatar);
                 break;
-            case FeedItemAdapter.VIEW_TYPE_QUOTE:
+            case VIEW_TYPE_QUOTE:
                 child = mInflater.inflate(R.layout.list_feed_item_quote, parent, false);
                 holder = new ListQuoteEntry(mContext, child, mShowUserAvatar);
                 break;
-            case FeedItemAdapter.VIEW_TYPE_OTHER:
+            case VIEW_TYPE_OTHER:
                 child = mInflater.inflate(R.layout.list_feed_item_text, parent, false);
                 holder = new ListTextEntry(mContext, child, mShowUserAvatar);
                 break;
@@ -143,20 +151,20 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
     @Override
     public int getItemViewType(int position) {
         if (isHeaderPosition(position)) {
-            return FeedItemAdapter.VIEW_TYPE_HEADER;
+            return VIEW_TYPE_HEADER;
         } else if (isPendingIndicatorPosition(position)) {
-            return FeedItemAdapter.VIEW_TYPE_PENDING;
+            return VIEW_TYPE_PENDING;
         }
 
         Entry entry = mEntries.get(getFeedLocation(position));
         if (entry.isImage()) {
-            return FeedItemAdapter.VIEW_TYPE_IMAGE;
+            return VIEW_TYPE_IMAGE;
         } else if (entry.isEmbedd()) {
-            return FeedItemAdapter.VIEW_TYPE_EMBEDD;
+            return VIEW_TYPE_EMBEDD;
         } else if (entry.isQuote()) {
-            return FeedItemAdapter.VIEW_TYPE_QUOTE;
+            return VIEW_TYPE_QUOTE;
         } else {
-            return FeedItemAdapter.VIEW_TYPE_OTHER;
+            return VIEW_TYPE_OTHER;
         }
     }
 
@@ -230,7 +238,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
         return mUpdateRatingEntrySet.contains(entryId);
     }
 
-    public void setInteractionListener(FeedItemAdapter.InteractionListener listener) {
+    public void setInteractionListener(InteractionListener listener) {
         mInteractionListener = listener;
     }
 
@@ -276,6 +284,10 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
         return position != RecyclerView.NO_POSITION
                 && !isHeaderPosition(position)
                 && !isPendingIndicatorPosition(position);
+    }
+
+    public interface InteractionListener {
+        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
     }
 
     public final class EntryList extends SortedList<Entry> implements SortedList.OnListChangedListener {

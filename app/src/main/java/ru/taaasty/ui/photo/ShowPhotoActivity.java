@@ -1,5 +1,6 @@
 package ru.taaasty.ui.photo;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -149,6 +150,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     /**
      * Detects and toggles actionbarOverlay mode (also known as "hidey bar" mode).
      */
+    @SuppressLint("InlinedApi")
     public void toggleShowOrHideHideyBarMode() {
 
         int newUiOptions;

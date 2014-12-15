@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.model.Feed;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -53,7 +52,7 @@ public abstract class FeedLoaderLite {
         mKeepOnAppending = new AtomicBoolean(true);
         mFeedAppendSubscription = SubscriptionHelper.empty();
         mFeedRefreshSubscription = SubscriptionHelper.empty();
-        mAdapter.setInteractionListener(new FeedItemAdapter.InteractionListener() {
+        mAdapter.setInteractionListener(new FeedItemAdapterLite.InteractionListener() {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
                 FeedLoaderLite.this.onBindViewHolder(viewHolder, position, feedSize);

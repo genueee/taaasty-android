@@ -14,7 +14,6 @@ import com.google.android.youtube.player.YouTubeIntents;
 import java.util.Date;
 import java.util.List;
 
-import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -52,21 +51,6 @@ public class FeedsHelper {
         }
 
         return child == null ? RecyclerView.NO_POSITION : listView.getChildPosition(child);
-    }
-
-    public static void updateDateIndicator(RecyclerView listView,
-                                           DateIndicatorWidget dateIndicator,
-                                           FeedItemAdapter adapter,
-                                           boolean animScrollUp) {
-        Date newDate = null;
-        if (listView == null || dateIndicator == null) return;
-
-        int position = getAdapterPositionAtWidgetHeight(listView, dateIndicator);
-        if (position != RecyclerView.NO_POSITION) {
-            Entry entry = adapter.getAnyEntryAtPosition(position);
-            if (entry != null) newDate = entry.getCreatedAt();
-        }
-        dateIndicator.setDate(newDate, animScrollUp);
     }
 
     public static void updateDateIndicator(RecyclerView listView,

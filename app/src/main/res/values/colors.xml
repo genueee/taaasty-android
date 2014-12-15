@@ -19,7 +19,6 @@
     <color name="additional_menu_background">#b0000000</color>
     <color name="feed_white_text">@android:color/white</color>
     <color name="feed_black_text">@android:color/black</color>
-    <color name="semi_transparent_yellow_background">#e6f8c700</color>
     <color name="black_overlay">#66000000</color>
 
     <color name="feed_title_overlay">#b3000000</color>

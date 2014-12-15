@@ -16,7 +16,8 @@
         android:paddingTop="?android:actionBarSize"
         android:paddingBottom="8dp"
         android:layout_above="@+id/reply_to_comment_container"
-        tools:listitem="@layout/comments_item2" />
+        tools:listitem="@layout/comments_item2"
+        tools:ignore="UnknownIdInLayout" />
 
     <TextView
         android:visibility="gone"

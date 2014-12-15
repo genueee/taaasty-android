@@ -11,7 +11,8 @@
     android:baselineAligned="false"
     tools:background="@color/date_indicator_background"
     android:gravity="center"
-    android:minWidth="100dp">
+    android:minWidth="100dp"
+    tools:ignore="Overdraw">
 
     <TextView
         android:id="@+id/date_indicator_day"
@@ -40,6 +41,7 @@
         android:typeface="monospace"
         android:includeFontPadding="false"
         android:lines="3"
-        android:linksClickable="false" />
+        android:linksClickable="false"
+        tools:ignore="RtlSymmetry,SmallSp" />
 
 </LinearLayout>

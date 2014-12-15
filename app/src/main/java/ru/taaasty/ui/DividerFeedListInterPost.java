@@ -7,7 +7,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import ru.taaasty.R;
-import ru.taaasty.adapters.FeedItemAdapter;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListQuoteEntry;
 import ru.taaasty.adapters.list.ListTextEntry;
@@ -67,16 +66,6 @@ public class DividerFeedListInterPost extends RecyclerView.ItemDecoration {
                 // У всех постов, кроме первого, делаем отступ сверху
                 outRect.set(0, mDividerSize, 0, 0);
                 initialized = true;
-            } else if (parent.getAdapter() instanceof  FeedItemAdapter) {
-                RecyclerView.Adapter adaper = parent.getAdapter();
-                int position = holder.getPosition();
-                if (!(position + 1 >= adaper.getItemCount())
-                        && adaper.getItemViewType(position) == FeedItemAdapter.VIEW_TYPE_COMMENT
-                        && adaper.getItemViewType(position + 1) != FeedItemAdapter.VIEW_TYPE_COMMENT) {
-                    // Под последним комментарием поста добавляем отступ
-                    outRect.set(0, 0, 0, mCommentListPaddingBottom);
-                    initialized = true;
-                }
             }
         }
 

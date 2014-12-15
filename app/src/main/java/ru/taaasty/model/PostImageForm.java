@@ -3,8 +3,6 @@ package ru.taaasty.model;
 import android.net.Uri;
 import android.os.Parcel;
 import android.support.annotation.Nullable;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
 public class PostImageForm extends PostForm implements android.os.Parcelable {

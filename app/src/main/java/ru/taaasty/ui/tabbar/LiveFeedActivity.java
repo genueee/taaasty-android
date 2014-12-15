@@ -29,7 +29,6 @@ import ru.taaasty.model.Stats;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiApp;
-import ru.taaasty.ui.feeds.GridFeedFragment;
 import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
@@ -171,9 +170,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     void refreshData() {
         if (mSectionsPagerAdapter == null || mViewPager == null) return;
         Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
-        if (page != null && page instanceof GridFeedFragment) {
-            GridFeedFragment gff = (GridFeedFragment) page;
-            gff.refreshData();
+        if (page != null && page instanceof ListFeedFragment) {
+            ListFeedFragment listFragment = (ListFeedFragment) page;
+            listFragment.refreshData();
             startRefreshStats();
         }
     }

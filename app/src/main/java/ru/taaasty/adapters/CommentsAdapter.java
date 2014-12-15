@@ -299,9 +299,6 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         public final ImageView avatar;
         public final TextView comment;
 
-        @Nullable
-        public final TextView date;
-
         long updatedAtValue;
 
         String relativeDateValue;
@@ -328,7 +325,6 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
             avatarCommentRoot = v.findViewById(R.id.avatar_comment_root);
             avatar = (ImageView) v.findViewById(R.id.avatar);
             comment = (TextView) v.findViewById(R.id.comment);
-            date = (TextView) v.findViewById(R.id.date_relative);
             actionViewStub = (ViewStub) v.findViewById(R.id.stub);
         }
 

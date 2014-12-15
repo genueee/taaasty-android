@@ -3,13 +3,13 @@ package ru.taaasty.ui.post;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -65,7 +65,6 @@ public class ShowCommentsFragment extends Fragment {
     private static final String ARG_POST_ID = "post_id";
     private static final String ARG_TLOG_DESIGN = "tlog_design";
     private static final String ARG_ENTRY = "entry";
-    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "thumbnail_bitmap_cache_key";
 
     private static final String KEY_CURRENT_ENTRY = "current_entry";
     private static final String KEY_TLOG_DESIGN = "tlog_design";
@@ -111,14 +110,12 @@ public class ShowCommentsFragment extends Fragment {
      * @return A new instance of fragment LiveFeedFragment.
      */
     public static ShowCommentsFragment newInstance(long postId, @Nullable Entry entry,
-                                               @Nullable TlogDesign design,
-                                               @Nullable String thumbnailBitmapCacheKey) {
+                                               @Nullable TlogDesign design) {
         ShowCommentsFragment f = new  ShowCommentsFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
         if (entry != null) b.putParcelable(ARG_ENTRY, entry);
         if (design != null) b.putParcelable(ARG_TLOG_DESIGN, design);
-        if (thumbnailBitmapCacheKey != null) b.putString(ARG_THUMBNAIL_BITMAP_CACHE_KEY, thumbnailBitmapCacheKey);
         f.setArguments(b);
         return f;
     }
@@ -376,7 +373,7 @@ public class ShowCommentsFragment extends Fragment {
         String comment = mReplyToCommentText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
-            Toast t = Toast.makeText(getActivity(), R.string.please_write_somethig, Toast.LENGTH_SHORT);
+            Toast t = Toast.makeText(getActivity(), R.string.please_write_something, Toast.LENGTH_SHORT);
             t.setGravity(Gravity.CENTER, 0, 0);
             t.show();
             return;
