@@ -18,21 +18,51 @@
         android:layout_above="@id/tabbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" >
+        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
-        <android.support.v4.view.PagerTabStrip
-            android:id="@+id/pager_tab_strip"
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="8dp"
+        android:paddingBottom="1dp"
+        android:background="#e0ffffff">
+
+        <LinearLayout
+            android:id="@+id/notifications_conversations_title"
             android:layout_width="match_parent"
-            android:layout_height="?android:actionBarSize"
-            android:layout_gravity="top"
-            android:gravity="bottom"
-            android:paddingBottom="4dp"
-            android:paddingTop="4dp"
-            android:background="@android:color/black"
-            android:textAppearance="@style/NotificationsTitleTextAppearance" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:background="@drawable/following_followers_indicator_stroke"
+            android:baselineAligned="true"
+            android:minHeight="32dp"
+            android:orientation="horizontal">
 
+            <TextView
+                android:id="@+id/notifications_title"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_left"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="@string/title_notifications"
+                android:textAllCaps="true"
+                tools:textColor="#24b166" />
 
-    </android.support.v4.view.ViewPager>
+            <TextView
+                android:id="@+id/conversations_title"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_right"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="@string/title_conversations"
+                android:textAllCaps="true"
+                tools:textColor="#24b166" />
+
+        </LinearLayout>
+    </FrameLayout>
 
     <FrameLayout
         android:id="@+id/initiate_conversation_container"
