@@ -457,7 +457,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
                 mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
             }
         }
 

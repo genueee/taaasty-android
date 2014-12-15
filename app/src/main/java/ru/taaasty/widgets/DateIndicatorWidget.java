@@ -1,5 +1,7 @@
 package ru.taaasty.widgets;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.support.annotation.Nullable;
@@ -16,6 +18,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import ru.taaasty.R;
+import ru.taaasty.utils.Objects;
 
 /**
  * Created by alexey on 03.11.14.
@@ -100,7 +103,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
         CharSequence newDay;
         CharSequence newDatetime;
 
-        if (date != null && date.equals(mDate)) return;
+        if (Objects.equals(date, mDate)) return;
 
         if (date == null) {
             newDay = null;
@@ -129,5 +132,33 @@ public class DateIndicatorWidget extends ViewSwitcher {
         showNext();
 
         mDate = date;
+
+        if (getVisibility() != View.VISIBLE) showIndicatorSmoothly();
+    }
+
+    private void showIndicatorSmoothly() {
+        ObjectAnimator animator = ObjectAnimator.ofFloat(this, "alpha", 0f, 1f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime));
+        animator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                setVisibility(View.VISIBLE);
+                setAlpha(0f);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                setAlpha(1f);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+        animator.start();
     }
 }

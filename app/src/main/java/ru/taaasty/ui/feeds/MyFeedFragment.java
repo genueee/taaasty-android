@@ -111,7 +111,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mDateIndicatorView.setVisibility(View.VISIBLE);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -375,6 +374,15 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         @Override
         public void onChanged() {
+            updateIndicatorDelayed();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            updateIndicatorDelayed();
+        }
+
+        private void updateIndicatorDelayed() {
             if (mListView != null) {
                 mListView.removeCallbacks(mUpdateIndicatorRunnable);
                 mListView.postDelayed(mUpdateIndicatorRunnable, 64);
@@ -463,7 +471,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
                 mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
             }
         }
 

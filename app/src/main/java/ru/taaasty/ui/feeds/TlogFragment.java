@@ -393,6 +393,15 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         @Override
         public void onChanged() {
+            updateIndicatorDelayed();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            updateIndicatorDelayed();
+        }
+
+        private void updateIndicatorDelayed() {
             if (mListView != null) {
                 mListView.removeCallbacks(mUpdateIndicatorRunnable);
                 mListView.postDelayed(mUpdateIndicatorRunnable, 64);
@@ -506,7 +515,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
                 mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
             }
         }
 

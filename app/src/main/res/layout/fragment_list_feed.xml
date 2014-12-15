@@ -39,6 +39,7 @@
 
     <ru.taaasty.widgets.DateIndicatorWidget
         android:id="@+id/date_indicator"
+        android:visibility="invisible"
         android:layout_gravity="bottom|left"
         android:layout_marginLeft="4dp"
         android:layout_marginBottom="8dp"

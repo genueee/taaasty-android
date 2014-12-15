@@ -151,7 +151,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         setupEmptyView(v);
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mDateIndicatorView.setVisibility(View.VISIBLE);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -492,6 +491,17 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         @Override
         public void onChanged() {
+            if (DBG) Log.v(TAG, "onChanged");
+            updateIndicatorDelayed();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            if (DBG) Log.v(TAG, "onItemRangeInserted");
+            updateIndicatorDelayed();
+        }
+
+        private void updateIndicatorDelayed() {
             if (mListView != null) {
                 mListView.removeCallbacks(mUpdateIndicatorRunnable);
                 mListView.postDelayed(mUpdateIndicatorRunnable, 64);
@@ -578,7 +588,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             if (DBG) Log.v(TAG, "onCompleted()");
             if (isRefresh) {
                 mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
+                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
             }
         }
 
