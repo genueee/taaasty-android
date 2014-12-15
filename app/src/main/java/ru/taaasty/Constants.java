@@ -57,4 +57,5 @@ public interface Constants {
 
     float DEFAULT_PARALLAX_FACTOR = 1.9f;
     String TLOG_NEWS = "news";
+    String MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY = "MyFeedHeaderBackground";
 }

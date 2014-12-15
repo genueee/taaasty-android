@@ -9,6 +9,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.model.Entry;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.SmartTextSwitcher;
 
 /**
@@ -23,6 +24,10 @@ public class GridEntryHeader extends GridEntryBase implements IParallaxedHeaderH
 
     private int mTitle;
     private CharSequence mSubtitle;
+
+    public TargetSetHeaderBackground feedDesignTarget;
+
+    public String backgroundUrl;
 
     public GridEntryHeader(Context context, View v) {
         super(context, v, 0);

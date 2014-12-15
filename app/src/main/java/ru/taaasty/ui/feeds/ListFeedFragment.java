@@ -3,16 +3,20 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +39,14 @@ import ru.taaasty.model.Stats;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiFeeds;
-import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -74,7 +79,6 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private View mEmptyView;
     private DateIndicatorWidget mDateIndicatorView;
 
-    private ApiMyFeeds mFeedsService;
     private Adapter mAdapter;
     private FeedLoader mFeedLoader;
 
@@ -289,7 +293,6 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         if (DBG) Log.e(TAG, "Setup feed design " + mTlogDesign);
 
         if (mTlogDesign == null) return;
-        mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
         mAdapter.setFeedDesign(mTlogDesign);
     }
 
@@ -356,6 +359,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 }
             }
 
+            bindDesign((GridEntryHeader) viewHolder);
             ((GridEntryHeader) viewHolder).setTitleSubtitle(title, subtitle);
             ((GridEntryHeader)viewHolder).bindEntry(null);
         }
@@ -408,6 +412,29 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
             // Клики на картинках
             FeedsHelper.setupListEntryClickListener(this, pHolder);
+        }
+
+        private void bindDesign(GridEntryHeader holder) {
+            if (mFeedDesign == null) return;
+            TlogDesign design = mFeedDesign;
+            String backgroudUrl = design.getBackgroundUrl();
+            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
+            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
+                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
+                }
+            };
+            holder.backgroundUrl = backgroudUrl;
+            RequestCreator rq = Picasso.with(holder.itemView.getContext())
+                    .load(backgroudUrl);
+            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
+                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
+                        .centerCrop();
+            }
+            rq.into(holder.feedDesignTarget);
         }
 
         public class Header2 extends GridEntryHeader {
@@ -610,6 +637,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onNext(CurrentUser currentUser) {
             mTlogDesign = new TlogDesign(currentUser.getDesign());
+            mTlogDesign.setIsLightTheme(true); // Прямой эфир всегда светлый
             setupFeedDesign();
         }
     };

@@ -3,6 +3,7 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -229,8 +230,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
     void setupFeedDesign(TlogDesign design) {
         if (DBG) Log.e(TAG, "Setup feed design " + design);
-        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
         mAdapter.setFeedDesign(design);
+        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
     }
 
     void updateDateIndicator(boolean animScrollUp) {
@@ -287,7 +288,13 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             String backgroudUrl = mFeedDesign.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS);
+                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
+                }
+            };
             holder.backgroundUrl = backgroudUrl;
             RequestCreator rq =  Picasso.with(holder.itemView.getContext())
                     .load(backgroudUrl);

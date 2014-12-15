@@ -20,6 +20,7 @@ import android.view.ViewConfiguration;
 import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -54,6 +55,8 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_my_feed);
+
+        getWindow().getDecorView().setBackgroundDrawable(null); // Используем background у RecyclerView
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -158,6 +161,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         new UserInfoActivity.Builder(this)
                 .set(user, view, design)
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setBackgroundThumbnailKey(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY)
                 .startActivity();
     }
 

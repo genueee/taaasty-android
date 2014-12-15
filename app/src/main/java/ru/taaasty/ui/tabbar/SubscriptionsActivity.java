@@ -5,16 +5,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewConfiguration;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.SubscriptionsFeedFragment;
-import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 
 /**
@@ -29,6 +25,8 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_subscriptions);
+
+        getWindow().getDecorView().setBackgroundDrawable(null); // Используем background у RecyclerView
 
         if (savedInstanceState == null) {
             SubscriptionsFeedFragment feedFragment;
@@ -73,11 +71,6 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
     @Override
     void onCurrentTabButtonClicked() {
         refreshData();
-    }
-
-    @Override
-    public void onAvatarClicked(View view, User user, TlogDesign design) {
-        TlogActivity.startTlogActivity(this, user.getId(), view);
     }
 
     @Override

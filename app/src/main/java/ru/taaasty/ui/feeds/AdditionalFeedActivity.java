@@ -17,6 +17,7 @@ import android.view.ViewConfiguration;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -142,6 +143,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
         new UserInfoActivity.Builder(this)
                 .set(user, view, design)
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setBackgroundThumbnailKey(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY)
                 .startActivity();
     }
 

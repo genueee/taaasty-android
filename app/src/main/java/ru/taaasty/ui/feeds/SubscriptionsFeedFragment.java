@@ -3,15 +3,19 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,13 +32,15 @@ import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
+import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
@@ -221,7 +227,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         if (DBG) Log.e(TAG, "Setup feed design " + mTlogDesign);
 
         if (mTlogDesign == null) return;
-        mListView.setBackgroundDrawable(new ColorDrawable(mTlogDesign.getFeedBackgroundColor(getResources())));
         mAdapter.setFeedDesign(mTlogDesign);
     }
 
@@ -259,6 +264,8 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+            if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
+            bindDesign((GridEntryHeader) viewHolder);
         }
 
         private void setPostClickListener(final ListEntryBase pHolder) {
@@ -271,12 +278,38 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                     @Override
                     public void onClick(View v) {
                         Entry entry = getAnyEntryAtHolderPosition(pHolder);
-                        if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                        new UserInfoActivity.Builder(getActivity())
+                                .set(entry.getAuthor(), v, entry.getAuthor().getDesign())
+                                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                                .startActivity();
                     }
                 });
             }
             // Клики на картинках
             FeedsHelper.setupListEntryClickListener(this, pHolder);
+        }
+
+        private void bindDesign(GridEntryHeader holder) {
+            if (mFeedDesign == null) return;
+            TlogDesign design = mFeedDesign;
+            String backgroudUrl = design.getBackgroundUrl();
+            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
+            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
+                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
+                }
+            };
+            holder.backgroundUrl = backgroudUrl;
+            RequestCreator rq = Picasso.with(holder.itemView.getContext())
+                    .load(backgroudUrl);
+            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
+                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
+                        .centerCrop();
+            }
+            rq.into(holder.feedDesignTarget);
         }
     }
 
@@ -468,11 +501,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public interface OnFragmentInteractionListener extends CustomErrorView {
         /**
          * Юзер ткнул на аватарку в заголовке записи списка
-         * @param view
-         * @param user
-         * @param design
          */
-        public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
 
     }
