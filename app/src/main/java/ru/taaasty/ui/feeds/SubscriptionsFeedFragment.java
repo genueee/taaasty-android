@@ -35,7 +35,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
-import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -278,10 +277,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                     @Override
                     public void onClick(View v) {
                         Entry entry = getAnyEntryAtHolderPosition(pHolder);
-                        new UserInfoActivity.Builder(getActivity())
-                                .set(entry.getAuthor(), v, entry.getAuthor().getDesign())
-                                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                                .startActivity();
+                        TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), v);
                     }
                 });
             }
