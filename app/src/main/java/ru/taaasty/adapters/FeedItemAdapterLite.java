@@ -234,6 +234,14 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
         if (entryLocation != null) notifyItemChanged(getAdapterPosition(entryLocation));
     }
 
+    public void removeEntry(long entryId) {
+        mEntries.deleteItem(entryId);
+    }
+
+    public void addEntry(Entry entry) {
+        mEntries.insertItem(entry);
+    }
+
     public boolean isRatingInUpdate(long entryId) {
         return mUpdateRatingEntrySet.contains(entryId);
     }

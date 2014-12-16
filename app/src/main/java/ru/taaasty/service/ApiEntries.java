@@ -95,5 +95,10 @@ public interface ApiEntries {
     @DELETE("/entries/{entry_id}/votes.json")
     Observable<Rating> unvote(@Path("entry_id") long entryId);
 
+    @FormUrlEncoded
+    @POST("/favorites.json")
+    Observable<Object> addToFavorites(@Field("entry_id") long entryId);
 
+    @DELETE("/favorites.json")
+    Observable<Object> removeFromFavorites(@Query("entry_id") long entryId);
 }

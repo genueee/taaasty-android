@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import ru.taaasty.R;
@@ -28,10 +29,13 @@ public class SharePostActivity extends Activity {
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
 
         boolean isMyEntry = mEntry.isMyEntry();
+
         findViewById(R.id.ic_add_post_to_favorites).setVisibility(isMyEntry ? View.GONE : View.VISIBLE);
         findViewById(R.id.ic_report_post).setVisibility(mEntry.canReport() ? View.VISIBLE : View.GONE);
         findViewById(R.id.ic_delete_post).setVisibility(mEntry.canDelete() ? View.VISIBLE : View.GONE);
         findViewById(R.id.ic_edit_post).setVisibility(mEntry.canEdit() ? View.VISIBLE : View.GONE);
+
+        setFavoriteIcon();
     }
 
     @Override
@@ -54,7 +58,8 @@ public class SharePostActivity extends Activity {
     }
 
     public void addToFavorites(View view) {
-        notReadyYet();
+        runPostActionActivity(PostActionActivity.ACTION_ADD_TO_FAVORITES);
+        finish();
     }
 
     public void reportPost(View view) {
@@ -97,5 +102,16 @@ public class SharePostActivity extends Activity {
         finish();
     }
 
-
+    public void setFavoriteIcon() {
+        if(mEntry.isFavorited()) {
+            TextView action_icon = ((TextView)findViewById(R.id.ic_add_post_to_favorites));
+            action_icon.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_post_in_favorites, 0, 0);
+            action_icon.setText(R.string.post_in_favorites);
+        }
+        else {
+            TextView action_icon = ((TextView)findViewById(R.id.ic_add_post_to_favorites));
+            action_icon.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_add_post_to_favorites, 0, 0);
+            action_icon.setText(R.string.add_post_to_favorites);
+        }
+    }
 }

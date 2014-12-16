@@ -19,19 +19,30 @@ import com.facebook.widget.WebDialog;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.Entry;
+import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.NetworkUtils;
+import rx.Observable;
+import rx.Observer;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class PostActionActivity extends ActivityBase implements CustomErrorView {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.PostActionActivity.entry";
 
     public static final String ACTION_SHARE_FACEBOOK = "ru.taaasty.ui.post.PostActionActivity.share_in_facebook";
+    public static final String ACTION_ADD_TO_FAVORITES = "ru.taaasty.ui.post.PostActionActivity.add_to_favorites";
+
 
     private Entry mEntry;
     private String mAction;
+    private Entry mNewEntry = null;
 
     private static final String TAG = "PostActionActivity";
 
@@ -72,6 +83,10 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
                 };
                 connectToFB();
             }
+        }
+        else if(ACTION_ADD_TO_FAVORITES.equals(mAction)) {
+            Observable<Object> observable = AndroidObservable.bindActivity(this, createAddToFavoritesObservable());
+            observable.observeOn(AndroidSchedulers.mainThread()).subscribe(mObserver);
         }
     }
 
@@ -184,4 +199,49 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
             .build();
         feedDialog.show();
     }
+
+    public Observable<Object> createAddToFavoritesObservable() {
+        ApiEntries entriesApi = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+
+        Observable<Object> addOrDelete = null;
+
+        if(!mEntry.isFavorited()) {
+            addOrDelete = entriesApi.addToFavorites(mEntry.getId());
+        }
+        else {
+            addOrDelete = entriesApi.removeFromFavorites(mEntry.getId());
+        }
+        Observable<Entry> updateEntry = entriesApi.getEntry(mEntry.getId(), false);
+
+        return addOrDelete.concatWith(updateEntry);
+    }
+
+
+    private final Observer<Object> mObserver = new Observer<Object>() {
+
+        @Override
+        public void onCompleted() {
+            if (mNewEntry != null) {
+                EventBus.getDefault().post(new EntryChanged(mNewEntry));
+                if (!mEntry.isFavorited())
+                    Toast.makeText(PostActionActivity.this, R.string.adding_to_favourites_ok, Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(PostActionActivity.this, R.string.remove_from_favourites_ok, Toast.LENGTH_LONG).show();
+            }
+            finish();
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            Toast.makeText(PostActionActivity.this, R.string.adding_to_favourites_fail, Toast.LENGTH_LONG).show();
+            finish();
+        }
+
+        @Override
+        public void onNext(Object o) {
+            if (o instanceof Entry) {
+                mNewEntry = (Entry) o;
+            }
+        }
+    };
 }

@@ -36,6 +36,7 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -468,6 +469,15 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 }
             }
         };
+
+        @Override
+        public void onEventMainThread(EntryChanged event) {
+            if(!event.postEntry.isFavorited() && (mFeedType == FEED_TYPE_FAVORITES)) {
+                mAdapter.removeEntry(event.postEntry.getId());
+            }
+            else
+                mAdapter.addEntry(event.postEntry);
+        }
     }
 
     static class HeaderHolder extends ParallaxedHeaderHolder {

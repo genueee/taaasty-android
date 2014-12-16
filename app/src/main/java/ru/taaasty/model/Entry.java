@@ -128,6 +128,9 @@ public class Entry implements Parcelable {
     @SerializedName("image_attachments")
     private List<ImageInfo> mImages;
 
+    @SerializedName("is_favorited")
+    private boolean mFavorited;
+
     private transient volatile Spanned mTextSpanned = null;
 
     private transient volatile Spanned mSourceSpanned = null;
@@ -322,6 +325,11 @@ public class Entry implements Parcelable {
         return isMyEntry(); // TODO: исправить, когда будет в API
     }
 
+    public boolean isFavorited() { return mFavorited;  }
+    public void setFavorited(boolean value) {
+        mFavorited = value;
+    }
+
     @Nullable
     public Uri getFirstImageUri() {
         if (mImages == null || mImages.isEmpty()) return null;
@@ -350,6 +358,7 @@ public class Entry implements Parcelable {
                 ", mPrivacy='" + mPrivacy + '\'' +
                 ", mVia='" + mVia + '\'' +
                 ", mImages=" + mImages +
+                ", mFavorited" + mFavorited +
                 '}';
     }
 
@@ -377,6 +386,7 @@ public class Entry implements Parcelable {
         dest.writeString(this.mVia);
         dest.writeString(this.mPrivacy);
         dest.writeTypedList(mImages);
+        dest.writeInt(mFavorited? 1:0);
     }
 
     private Entry(Parcel in) {
@@ -400,6 +410,7 @@ public class Entry implements Parcelable {
         //noinspection ResourceType
         this.mPrivacy = in.readString();
         this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
+        this.mFavorited = (in.readInt() == 1)? true : false;
     }
 
     public static final Creator<Entry> CREATOR = new Creator<Entry>() {

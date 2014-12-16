@@ -99,7 +99,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_post_action);
+        setContentView(R.layout.activity_delete_post_action);
         int actionId = getIntent().getIntExtra(ARG_ACTION_ID, -1);
         long commentId = getIntent().getLongExtra(ARG_COMMENT_ID, -1);
         long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
