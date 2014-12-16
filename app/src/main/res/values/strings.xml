@@ -204,6 +204,7 @@
         <item quantity="other">Пришло %d уведомлений…</item>
     </plurals>
 
+    <string name="load_messages">Загрузить сообщения…</string>
     <string name="post_can_only_be_edited_on_website">Этот пост можно отредактировать только на сайте</string>
     <string name="post_has_not_been_changed">В статье ничего не поменялось</string>
     <string name="title_activity_conversation">ConversationActivity</string>
