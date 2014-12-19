@@ -236,7 +236,7 @@ public class CommentViewBinder {
         Context context = vh.comment.getContext();
         if (context == null) return;
 
-        SpannableStringBuilder ssb = new SpannableStringBuilder(item.getAuthor().getSlug());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(item.getAuthor().getName());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), item.getAuthor().getId(), context, design.getAuthorTextAppearance());
         ssb.append(' ');
         ssb.append(item.getTextSpanned());

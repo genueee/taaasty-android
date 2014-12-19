@@ -91,7 +91,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     private void setAuthor(Entry item) {
         if (!mShowUserAvatar) return;
         User author = item.getAuthor();
-        mAuthor.setText(author.getSlug());
+        mAuthor.setText(author.getName());
         ImageUtils.getInstance().loadAvatar(author.getUserpic(), author.getName(), mAvatar, R.dimen.avatar_small_diameter);
     }
 

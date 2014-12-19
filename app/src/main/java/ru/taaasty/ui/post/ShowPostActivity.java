@@ -207,7 +207,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             setupActionbar(null, null, null);
         } else {
             if( entry.getAuthor() != User.DUMMY )
-                setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getSlug(), entry.getAuthor().getDesign());
+                setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getName(), entry.getAuthor().getDesign());
         }
     }
 

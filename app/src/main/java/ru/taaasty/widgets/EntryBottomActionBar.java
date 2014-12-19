@@ -191,10 +191,10 @@ public class EntryBottomActionBar {
             return;
         }
 
-        mUserInfo.setText(item.getAuthor().getSlug());
+        mUserInfo.setText(item.getAuthor().getName());
         mUserInfo.setVisibility(View.VISIBLE);
         ImageUtils.getInstance().loadAvatar(mCommentsCountView.getContext(),
-                item.getAuthor().getUserpic(), item.getAuthor().getSlug(), mAvatarTarget,
+                item.getAuthor().getUserpic(), item.getAuthor().getName(), mAvatarTarget,
                 AVATAR_EXTRA_SMALL_DIAMETER
                 );
     }

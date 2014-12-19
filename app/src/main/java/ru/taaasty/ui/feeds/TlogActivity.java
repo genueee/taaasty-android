@@ -172,7 +172,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
         mMyRelationship = tlogInfo.getMyRelationship();
         User author = tlogInfo.author;
-        mAbTitle = new SpannableString(author.getSlug());
+        mAbTitle = new SpannableString(author.getName());
         mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         refreshFollowUnfollowView();
     }

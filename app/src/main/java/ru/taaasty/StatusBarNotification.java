@@ -215,7 +215,7 @@ public class StatusBarNotification extends BroadcastReceiver {
     private Spanned getNotificationText(Notification notification) {
         User author = notification.sender;
         SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getSlug());
+        ssb.append(author.getName());
 
         CustomTypefaceSpan cts = new CustomTypefaceSpan(mContext, R.style.TextAppearanceSlugInlineGreen,
                 FontManager.getInstance().getFontSystemBold());
@@ -230,7 +230,7 @@ public class StatusBarNotification extends BroadcastReceiver {
     private Spanned getConversationText(Conversation conversation) {
         User author = conversation.recipient;
         SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getSlug());
+        ssb.append(author.getName());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext, R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');
         if (conversation.lastMessage != null && !TextUtils.isEmpty(conversation.lastMessage.contentHtml)) {

@@ -362,7 +362,7 @@ public class ShowCommentsFragment extends Fragment {
 
     void replyToComment(Comment comment) {
         unselectCurrentComment();
-        appendUserSlugToReplyComment(comment.getAuthor().getSlug());
+        appendUserSlugToReplyComment(comment.getAuthor().getName());
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT);
