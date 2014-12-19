@@ -236,8 +236,9 @@ public class Entry implements Parcelable {
             case "unlock":
                 return PRIVACY_PUBLIC;
             case PRIVACY_PUBLIC_WITH_VOTING:
-            case "live":
                 return PRIVACY_PUBLIC_WITH_VOTING;
+            case "live":
+                return mIsVoteable ? PRIVACY_PUBLIC_WITH_VOTING : PRIVACY_PUBLIC;
             default:
                 if (BuildConfig.DEBUG) Assert.fail("unknown privacy " + mPrivacy);
                 return PRIVACY_PUBLIC;

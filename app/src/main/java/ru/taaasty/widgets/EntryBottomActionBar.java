@@ -43,7 +43,8 @@ public class EntryBottomActionBar {
 
     private TlogDesign mTlogDesign;
 
-    private boolean mIsVotable = false;
+    private boolean mCanVote = false;
+    private boolean mIsVoteable = false;
     private boolean mIsVoted = false;
     private boolean mIsRatingInUpdate = false;
     private int mVotes;
@@ -142,7 +143,8 @@ public class EntryBottomActionBar {
     public void setRating(Entry item, boolean isRatingInUpdate) {
         Rating r = item.getRating();
 
-        mIsVotable = r.isVoteable;
+        mCanVote = item.canVote();
+        mIsVoteable = item.isVoteable();
         mIsVoted = r.isVoted;
         mIsRatingInUpdate = isRatingInUpdate;
         mVotes = r.votes;
@@ -150,7 +152,7 @@ public class EntryBottomActionBar {
     }
 
     private void refreshRating() {
-        if (!mIsVotable) {
+        if (!mIsVoteable && !mCanVote) {
             mLikesView.setVisibility(View.GONE);
             return;
         }
@@ -171,7 +173,7 @@ public class EntryBottomActionBar {
             TlogDesign design = mTlogDesign == null ? TlogDesign.DUMMY : mTlogDesign;
             mLikesView.setTextColor(design.getFeedActionsTextColor(resources));
             mLikesView.setCompoundDrawablesWithIntrinsicBounds(getNotVotedDrawable(), 0, 0, 0);
-            mLikesView.setClickable(true);
+            mLikesView.setClickable(mCanVote);
             mLikesView.setBackgroundResource(R.drawable.list_selector_holo_light);
         }
         mLikesView.setVisibility(View.VISIBLE);
@@ -254,7 +256,7 @@ public class EntryBottomActionBar {
                     mListener.onPostUserInfoClicked(v, mOnItemListenerEntry);
                     break;
                 case R.id.likes:
-                    mListener.onPostLikesClicked(v, mOnItemListenerEntry);
+                    if (mCanVote) mListener.onPostLikesClicked(v, mOnItemListenerEntry);
                     break;
                 default:
                     throw new IllegalArgumentException();
