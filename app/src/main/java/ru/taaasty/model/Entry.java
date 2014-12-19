@@ -131,6 +131,21 @@ public class Entry implements Parcelable {
     @SerializedName("is_favorited")
     private boolean mFavorited;
 
+    @SerializedName("is_voteable")
+    private boolean mIsVoteable;
+
+    @SerializedName("can_vote")
+    private boolean mCanVote;
+
+    @SerializedName("can_report")
+    private boolean mCanReport;
+
+    @SerializedName("can_edit")
+    private boolean mCanEdit;
+
+    @SerializedName("can_delete")
+    private boolean mCanDelete;
+
     private transient volatile Spanned mTextSpanned = null;
 
     private transient volatile Spanned mSourceSpanned = null;
@@ -314,18 +329,33 @@ public class Entry implements Parcelable {
     }
 
     public boolean canEdit() {
-        return isMyEntry(); // TODO: исправить, когда будет в API
+        return mCanEdit;
     }
 
     public boolean canReport() {
-        return !isMyEntry(); // TODO: исправить, когда будет в API
+        return mCanReport;
     }
 
     public boolean canDelete() {
-        return isMyEntry(); // TODO: исправить, когда будет в API
+        return mCanDelete;
+    }
+
+    /**
+     * @return Я могу голосовать за этот пост
+     */
+    public boolean canVote() {
+        return mCanVote;
+    }
+
+    /**
+     * @return Пост создавался как пост с голосованием
+     */
+    public boolean isVoteable() {
+        return mIsVoteable;
     }
 
     public boolean isFavorited() { return mFavorited;  }
+
     public void setFavorited(boolean value) {
         mFavorited = value;
     }
@@ -359,6 +389,11 @@ public class Entry implements Parcelable {
                 ", mVia='" + mVia + '\'' +
                 ", mImages=" + mImages +
                 ", mFavorited" + mFavorited +
+                ", mCanEdit" + mCanEdit +
+                ", mCanReport" + mCanReport +
+                ", mCanDelete" + mCanDelete +
+                ", mCanVote" + mCanVote +
+                ", mIsVoteable" + mIsVoteable +
                 '}';
     }
 
@@ -387,6 +422,11 @@ public class Entry implements Parcelable {
         dest.writeString(this.mPrivacy);
         dest.writeTypedList(mImages);
         dest.writeInt(mFavorited? 1:0);
+        dest.writeInt(mCanEdit? 1:0);
+        dest.writeInt(mCanReport? 1:0);
+        dest.writeInt(mCanDelete? 1:0);
+        dest.writeInt(mCanVote? 1:0);
+        dest.writeInt(mIsVoteable? 1:0);
     }
 
     private Entry(Parcel in) {
@@ -411,6 +451,11 @@ public class Entry implements Parcelable {
         this.mPrivacy = in.readString();
         this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
         this.mFavorited = (in.readInt() == 1)? true : false;
+        this.mCanEdit = (in.readInt() == 1)? true : false;
+        this.mCanReport = (in.readInt() == 1)? true : false;
+        this.mCanDelete = (in.readInt() == 1)? true : false;
+        this.mCanVote = (in.readInt() == 1)? true : false;
+        this.mIsVoteable = (in.readInt() == 1)? true : false;
     }
 
     public static final Creator<Entry> CREATOR = new Creator<Entry>() {
