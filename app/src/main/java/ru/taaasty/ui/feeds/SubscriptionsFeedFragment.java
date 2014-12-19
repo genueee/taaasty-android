@@ -172,7 +172,6 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     public void onDestroyView() {
         super.onDestroyView();
         mCurrentUserSubscribtion.unsubscribe();
-        mListView = null;
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -180,9 +179,10 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy();
+            mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mListView = null;
     }
 
     @Override

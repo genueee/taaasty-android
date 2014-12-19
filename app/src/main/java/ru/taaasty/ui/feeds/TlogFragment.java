@@ -203,7 +203,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public void onDestroyView() {
         super.onDestroyView();
         mUserSubscribtion.unsubscribe();
-        mListView = null;
+
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -211,9 +211,10 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy();
+            mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mListView = null;
     }
 
     @Override

@@ -168,7 +168,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public void onDestroyView() {
         super.onDestroyView();
         mCurrentUserSubscription.unsubscribe();
-        mListView = null;
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -176,9 +175,10 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy();
+            mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mListView = null;
     }
 
     @Override

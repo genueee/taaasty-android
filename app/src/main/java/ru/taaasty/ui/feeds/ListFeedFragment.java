@@ -217,17 +217,19 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
         mCurrentUserSubscribtion.unsubscribe();
-        mListView = null;
         mDateIndicatorView = null;
+        mEmptyView = null;
+        mRefreshLayout = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
             mFeedLoader = null;
         }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy();
+            mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mListView = null;
     }
 
     @Override
@@ -303,7 +305,6 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             super(context, feed, showUserAvatar);
         }
 
-
         @Override
         protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
             // Все посты
@@ -323,8 +324,10 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             return new HeaderTitleSubtitleViewHolder(child) {
                 @Override
                 public void onScrollChanged() {
-                    super.onScrollChanged();
-                    onHeaderMoved(true, itemView.getTop());
+                    if (ListFeedFragment.this.getUserVisibleHint()) {
+                        super.onScrollChanged();
+                        onHeaderMoved(true, itemView.getTop());
+                    }
                 }
             };
         }
@@ -366,6 +369,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
             super.onViewAttachedToWindow(holder);
             if (holder instanceof IParallaxedHeaderHolder) {
+                if (DBG) Log.v(TAG, "header attached to window ittemView: " + holder.itemView);
                 onHeaderMoved(true, holder.itemView.getTop());
             }
         }
@@ -374,6 +378,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
             super.onViewDetachedFromWindow(holder);
             if (holder instanceof IParallaxedHeaderHolder) {
+                if (DBG) Log.v(TAG, "header detached from window itemView: " + holder.itemView);
                 onHeaderMoved(false, 0);
             }
         }

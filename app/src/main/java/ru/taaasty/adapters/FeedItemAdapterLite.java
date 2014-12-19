@@ -48,11 +48,10 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
 
     private final int mPendingResource;
     private final Set<Long> mUpdateRatingEntrySet;
-    private final Context mContext;
-    private final LayoutInflater mInflater;
 
     private AtomicBoolean mLoading = new AtomicBoolean(false);
 
+    @Nullable
     private InteractionListener mInteractionListener;
 
     protected TlogDesign mFeedDesign;
@@ -71,8 +70,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
 
     private FeedItemAdapterLite(Context context, @Nullable List<Entry> feed, boolean showUserAvatar, int pendingResource) {
         super();
-        mContext = context;
-        mInflater = LayoutInflater.from(context);
         mEntries = new EntryList();
         mShowUserAvatar = showUserAvatar;
         mPendingResource = pendingResource;
@@ -86,28 +83,30 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final RecyclerView.ViewHolder holder;
         View child;
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         switch (viewType) {
             case VIEW_TYPE_HEADER:
                 return onCreateHeaderViewHolder(parent);
             case VIEW_TYPE_PENDING:
-                child = mInflater.inflate(mPendingResource, parent, false);
+                child = inflater.inflate(mPendingResource, parent, false);
                 holder = new RecyclerView.ViewHolder(child) {};
                 break;
             case VIEW_TYPE_IMAGE:
-                child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
-                holder = new ListImageEntry(mContext, child, mShowUserAvatar);
+                child = inflater.inflate(R.layout.list_feed_item_image, parent, false);
+                holder = new ListImageEntry(context, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_EMBEDD:
-                child = mInflater.inflate(R.layout.list_feed_item_image, parent, false);
-                holder = new ListEmbeddEntry(mContext, child, mShowUserAvatar);
+                child = inflater.inflate(R.layout.list_feed_item_image, parent, false);
+                holder = new ListEmbeddEntry(context, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_QUOTE:
-                child = mInflater.inflate(R.layout.list_feed_item_quote, parent, false);
-                holder = new ListQuoteEntry(mContext, child, mShowUserAvatar);
+                child = inflater.inflate(R.layout.list_feed_item_quote, parent, false);
+                holder = new ListQuoteEntry(context, child, mShowUserAvatar);
                 break;
             case VIEW_TYPE_OTHER:
-                child = mInflater.inflate(R.layout.list_feed_item_text, parent, false);
-                holder = new ListTextEntry(mContext, child, mShowUserAvatar);
+                child = inflater.inflate(R.layout.list_feed_item_text, parent, false);
+                holder = new ListTextEntry(context, child, mShowUserAvatar);
                 break;
             default:
                 throw new IllegalStateException();
@@ -180,7 +179,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
     @Override
     public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
-        if (holder instanceof IParallaxedHeaderHolder) {
+        if (holder instanceof IParallaxedHeaderHolder && holder.itemView.getViewTreeObserver().isAlive()) {
             holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }
         if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onDetachedFromWindow();
@@ -188,15 +187,26 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
 
     @Override
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
-        if (holder instanceof ListEntryBase) ((ListEntryBase)holder).recycle();
+        super.onViewRecycled(holder);
+        onViewDetachedFromWindow(holder);
     }
 
     public void onCreate() {
         EventBus.getDefault().register(this);
     }
 
-    public void onDestroy() {
+    public void onDestroy(RecyclerView parent) {
         EventBus.getDefault().unregister(this);
+        mInteractionListener = null;
+
+        // Особенности FragmentStatePagerAdapter.
+        // onViewDetachedFromWindow может не вызываться при удалении активности и адаптер и фрагмент висят в памяти
+        if (parent != null) {
+            for (int i = 0; i < parent.getChildCount(); ++i) {
+                RecyclerView.ViewHolder vh = parent.getChildViewHolder(parent.getChildAt(i));
+                onViewDetachedFromWindow(vh);
+            }
+        }
     }
 
     public void setFeedDesign(TlogDesign design) {

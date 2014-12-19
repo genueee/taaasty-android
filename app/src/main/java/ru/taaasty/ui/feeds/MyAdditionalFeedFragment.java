@@ -221,7 +221,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     public void onDestroyView() {
         super.onDestroyView();
         mUserSubscribtion.unsubscribe();
-        mListView = null;
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -229,9 +228,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy();
+            mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mListView = null;
     }
 
     @Override
