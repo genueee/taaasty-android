@@ -146,6 +146,9 @@ public class Entry implements Parcelable {
     @SerializedName("can_delete")
     private boolean mCanDelete;
 
+    @SerializedName("image_url")
+    private String mImageUrl;
+
     private transient volatile Spanned mTextSpanned = null;
 
     private transient volatile Spanned mSourceSpanned = null;
@@ -296,14 +299,29 @@ public class Entry implements Parcelable {
     }
 
     public ArrayList<String> getImageUrls(boolean includeAnimatedGifs) {
-        if (mImages == null) return new ArrayList<>(0);
-        final ArrayList<String> images = new ArrayList<>(mImages.size());
-        for (ImageInfo imageInfo: mImages) {
-            if (!includeAnimatedGifs && imageInfo.isAnimatedGif()) continue;
-            if (!TextUtils.isEmpty(imageInfo.image.path)) {
-                images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
+        boolean withImageUrl = !TextUtils.isEmpty(mImageUrl);
+
+        if (mImages == null) {
+            final ArrayList<String> images;
+            if (!withImageUrl) {
+                images = new ArrayList<>(0);
             } else {
-                images.add(imageInfo.image.url);
+                images = new ArrayList<>(1);
+                images.add(mImageUrl);
+            }
+            return images;
+        }
+
+        final ArrayList<String> images = new ArrayList<>(mImages.size() + (withImageUrl ? 1 : 0));
+        if (withImageUrl) images.add(mImageUrl);
+        if (mImages != null) {
+            for (ImageInfo imageInfo : mImages) {
+                if (!includeAnimatedGifs && imageInfo.isAnimatedGif()) continue;
+                if (!TextUtils.isEmpty(imageInfo.image.path)) {
+                    images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
+                } else {
+                    images.add(imageInfo.image.url);
+                }
             }
         }
         return images;
@@ -369,6 +387,11 @@ public class Entry implements Parcelable {
         return Uri.parse(url);
     }
 
+    @Nullable
+    public String getImageUrl() {
+        return mImageUrl;
+    }
+
     public Entry() {
     }
 
@@ -395,6 +418,7 @@ public class Entry implements Parcelable {
                 ", mCanDelete" + mCanDelete +
                 ", mCanVote" + mCanVote +
                 ", mIsVoteable" + mIsVoteable +
+                ", mImageUrl" + mImageUrl +
                 '}';
     }
 
@@ -421,6 +445,7 @@ public class Entry implements Parcelable {
         dest.writeString(this.mSource);
         dest.writeString(this.mVia);
         dest.writeString(this.mPrivacy);
+        dest.writeString(this.mImageUrl);
         dest.writeTypedList(mImages);
         dest.writeInt(mFavorited? 1:0);
         dest.writeInt(mCanEdit? 1:0);
@@ -450,6 +475,7 @@ public class Entry implements Parcelable {
         this.mVia = in.readString();
         //noinspection ResourceType
         this.mPrivacy = in.readString();
+        this.mImageUrl = in.readString();
         this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
         this.mFavorited = (in.readInt() == 1)? true : false;
         this.mCanEdit = (in.readInt() == 1)? true : false;

@@ -5,6 +5,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.text.Html;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -23,9 +24,11 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import pl.droidsonroids.gif.AnimationListener;
 import pl.droidsonroids.gif.GifDrawable;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.ImageInfo;
@@ -136,8 +139,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         mImageProgressBar.setVisibility(View.GONE);
 
         if (item.getImages().isEmpty()) {
-            mImageLayout.setVisibility(View.GONE);
-            mImageView.setImageDrawable(null);
+            if (!TextUtils.isEmpty(item.getImageUrl())) {
+                setupImageByUrl(item, parentWidth);
+            } else {
+                mImageLayout.setVisibility(View.GONE);
+                mImageView.setImageDrawable(null);
+            }
             return;
         }
 
@@ -191,6 +198,30 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)
+                    .into(mImageView, this);
+        }
+    }
+
+    private void setupImageByUrl(Entry item, int parentWidth) {
+        String imageUrl = item.getImageUrl();
+        assert imageUrl != null;
+        int height = (int)Math.ceil((float)parentWidth / Constants.DEFAULT_IMAGE_ASPECT_RATIO);
+
+        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, height);
+        mImageView.setAdjustViewBounds(true);
+        mImageLayout.setVisibility(View.VISIBLE);
+        mImageView.setImageDrawable(mImageLoadingDrawable);
+        mImageView.requestLayout();
+        mImageViewUrl = imageUrl;
+
+        if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
+            loadGif(mImageViewUrl, mImageView);
+        } else {
+            mPicasso
+                    .load(mImageViewUrl)
+                    .placeholder(mImageLoadingDrawable)
+                    .error(R.drawable.image_load_error)
+                    .resize(parentWidth, 0)
                     .into(mImageView, this);
         }
     }
