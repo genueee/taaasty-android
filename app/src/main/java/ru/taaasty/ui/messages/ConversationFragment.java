@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +43,6 @@ import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -58,14 +56,15 @@ public class ConversationFragment extends Fragment {
 
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.messages.ConversationFragment.conversation";
 
-    private static final String BACKGROUND_BITMAP_KEY = "ConversationFragment-header";
-
-    private static final String BUNDLE_KEY_CONVERSATION = "ru.taaasty.ui.feeds.ConversationFragment.conversation";
+    private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.messages.ConversationFragment.conversation_id";
 
     public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
 
     private OnFragmentInteractionListener mListener;
 
+    private long mConversationId;
+
+    @Nullable
     private Conversation mConversation;
 
     private RecyclerView mListView;
@@ -99,6 +98,14 @@ public class ConversationFragment extends Fragment {
         return fragment;
     }
 
+    public static ConversationFragment newInstance(long conversationId) {
+        ConversationFragment fragment = new ConversationFragment();
+        Bundle args = new Bundle();
+        args.putLong(ARG_CONVERSATION_ID, conversationId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     public ConversationFragment() {
         // Required empty public constructor
     }
@@ -107,6 +114,11 @@ public class ConversationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mConversation = getArguments().getParcelable(ARG_CONVERSATION);
+        if (mConversation != null) {
+            mConversationId = mConversation.id;
+        } else {
+            mConversationId = getArguments().getLong(ARG_CONVERSATION_ID);
+        }
         mListScrollController = new ListScrollController();
     }
 
@@ -130,8 +142,6 @@ public class ConversationFragment extends Fragment {
         mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
         mAdapter = new Adapter(getActivity());
-        mAdapter.setFeedDesign(mConversation.recipient.getDesign());
-
         mListView.setAdapter(mAdapter);
 
         initSendMessageForm();
@@ -142,6 +152,12 @@ public class ConversationFragment extends Fragment {
         refreshDelayed();
 
         return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (mConversation != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
     }
 
     @Override
@@ -199,13 +215,13 @@ public class ConversationFragment extends Fragment {
     }
 
     public void onEventMainThread(MessageChanged event) {
-        if ((mAdapter != null) && (event.message.conversationId == mConversation.id)) {
+        if ((mAdapter != null) && (event.message.conversationId == mConversationId)) {
             addMessageScrollToEnd(event.message);
         }
     }
 
     public void onEventMainThread(UpdateMessagesReceived event) {
-        if (mAdapter != null && event.updateMessages.conversationId == mConversation.id) {
+        if (mAdapter != null && event.updateMessages.conversationId == mConversationId) {
             mAdapter.markMessagesAsRead(event.updateMessages.messages);
         }
     }
@@ -213,6 +229,12 @@ public class ConversationFragment extends Fragment {
     public void onImeKeyboardShown() {
         if (DBG) Log.v(TAG, "onImeKeyboardShown");
         smoothScrollToEnd();
+    }
+
+    public void onConversationLoaded(Conversation conversation) {
+        if (conversation.id != mConversationId) throw new IllegalArgumentException();
+        mConversation = conversation;
+        if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
     }
 
     private void refreshDelayed() {
@@ -266,7 +288,7 @@ public class ConversationFragment extends Fragment {
         ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
 
         Observable<Conversation.Message> observablePost = AndroidObservable.bindFragment(this,
-                apiMessenger.postMessage(null, mConversation.id, comment,
+                apiMessenger.postMessage(null, mConversationId, comment,
                         UUID.randomUUID().toString(), null));
 
         //mSendMessageText.setEnabled(false);
@@ -394,21 +416,6 @@ public class ConversationFragment extends Fragment {
         }
     };
 
-    static class HeaderHolder extends RecyclerView.ViewHolder {
-        TextView titleView;
-        ImageView avatarView;
-        public String backgroundUrl = null;
-
-        // XXX: anti picasso weak ref
-        private TargetSetHeaderBackground feedDesignTarget;
-
-        public HeaderHolder(View itemView) {
-            super(itemView);
-            avatarView = (ImageView)itemView.findViewById(R.id.avatar);
-            titleView = (TextView)itemView.findViewById(R.id.user_name);
-        }
-    }
-
     static class LoadMoreButtonHeaderHolder extends RecyclerView.ViewHolder {
 
         View loadButton;
@@ -488,7 +495,7 @@ public class ConversationFragment extends Fragment {
             if (mUserManager.isMe(userUuid)) {
                 return mUserManager.getCachedCurrentUser();
             } else {
-                return mConversation.recipient;
+                return mConversation == null ? null : mConversation.recipient;
             }
         }
     }
@@ -547,7 +554,7 @@ public class ConversationFragment extends Fragment {
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
                 Observable<Status.MarkMessagesAsRead> observablePost = AndroidObservable.bindFragment(ConversationFragment.this,
-                        mApiMessenger.markMessagesAsRead(null, mConversation.id,
+                        mApiMessenger.markMessagesAsRead(null, mConversationId,
                                 TextUtils.join(",", postSet)));
                 mPostMessageSubscription = observablePost
                         .observeOn(AndroidSchedulers.mainThread())
@@ -620,7 +627,7 @@ public class ConversationFragment extends Fragment {
         }
 
         protected Observable<ConversationMessages> createObservable(Long sinceEntryId, Integer limit) {
-            return mApiMessenger.getMessages(null, mConversation.id, null, sinceEntryId, limit, null);
+            return mApiMessenger.getMessages(null, mConversationId, null, sinceEntryId, limit, null);
         }
 
         public void refreshFeed(Observable<ConversationMessages> observable, int entriesRequested) {

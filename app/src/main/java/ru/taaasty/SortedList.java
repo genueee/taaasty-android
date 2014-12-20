@@ -92,7 +92,7 @@ public abstract class SortedList<E> {
             // Удаляем элемент с заданным ID, если он у нас уже есть в списке
             if (oldLocation != null) {
                 mList.remove(oldLocation.intValue());
-                if (mListener != null) mListener.onItemInserted(oldLocation);
+                if (mListener != null) mListener.onItemRemoved(oldLocation);
                 if (newLocation > oldLocation) newLocation -= 1;
             }
 

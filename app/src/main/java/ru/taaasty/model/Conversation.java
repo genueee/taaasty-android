@@ -37,7 +37,7 @@ public class Conversation implements Parcelable {
     /**
      * Сортировка по убыванию даты создания (более новые - в начале списка)
      */
-    public static Comparator<Conversation> SORT_BY_CREATED_AT_DESC_COMPARATOR = new Comparator<Conversation>() {
+    public static Comparator<Conversation> SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR = new Comparator<Conversation>() {
         @Override
         public int compare(Conversation lhs, Conversation rhs) {
             if (lhs == null && rhs == null) {
@@ -47,7 +47,9 @@ public class Conversation implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
-                int compareDates = rhs.createdAt.compareTo(lhs.createdAt);
+                Date rhsDate = (rhs.lastMessage == null ? rhs.createdAt : rhs.lastMessage.createdAt);
+                Date lhsDate = (lhs.lastMessage == null ? lhs.createdAt : lhs.lastMessage.createdAt);
+                int compareDates = rhsDate.compareTo(lhsDate);
                 return compareDates != 0 ? compareDates : Objects.compare(rhs.id, lhs.id);
             }
         }

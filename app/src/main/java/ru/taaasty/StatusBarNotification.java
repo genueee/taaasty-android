@@ -7,21 +7,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.support.v4.util.LongSparseArray;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextUtils;
 
 import java.util.ArrayList;
 
+import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.CustomTypefaceSpan;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.UiUtils;
@@ -51,7 +55,14 @@ public class StatusBarNotification extends BroadcastReceiver {
 
     private volatile ArrayList<Notification> mNotifications = new ArrayList<>(MAX_NOTIFICATIONS);
 
-    private volatile ArrayList<Conversation> mConversations = new ArrayList<>(MAX_NOTIFICATIONS);
+    private boolean mSeveralConversations;
+
+    @Nullable
+    private Conversation.Message mLastMessage;
+
+    private int mConversationMessagesCount;
+
+    private LongSparseArray<Integer> mConversationVisibility = new LongSparseArray<>(1);
 
     public StatusBarNotification(Context context) {
         mContext = context;
@@ -85,15 +96,37 @@ public class StatusBarNotification extends BroadcastReceiver {
         if (mDisableStatusBarNotifications == 1) cancelNotifications();
     }
 
+    public synchronized void onConversationVisibilityChanged(ConversationVisibilityChanged event) {
+        cancelConversationNotification();
+        int val = mConversationVisibility.get(event.userId, 0);
+        if (event.isShown) {
+            val += 1;
+            mConversationVisibility.put(event.userId, val);
+        } else {
+            if (val > 0) val -= 1;
+            if (val == 0) {
+                mConversationVisibility.remove(event.userId);
+            } else {
+                mConversationVisibility.put(event.userId, val);
+            }
+        }
+    }
+
     public synchronized void append(Notification notification) {
         if (mDisableStatusBarNotifications > 0) return;
         mNotifications.add(notification);
         refreshStatusBarNotification();
     }
 
-    public synchronized void append(Conversation conversation) {
+    public synchronized void append(Conversation.Message message) {
         if (mDisableStatusBarNotifications > 0) return;
-        mConversations.add(conversation);
+        if (mConversationVisibility.get(message.recipientId, 0) != 0
+                || mConversationVisibility.get(message.userId, 0) != 0) return;
+        mConversationMessagesCount += 1;
+        if (mLastMessage != null && (mLastMessage.conversationId != message.conversationId)) {
+            mSeveralConversations = true;
+        }
+        mLastMessage = message;
         refreshStatusBarNotification();
     }
 
@@ -153,20 +186,37 @@ public class StatusBarNotification extends BroadcastReceiver {
     private void refreshStatusBarConversationNotification() {
         NotificationCompat.Builder notificationBuilder;
 
-        if (mConversations.isEmpty()) {
+        if (mConversationMessagesCount == 0) {
             mNotificationManager.cancel(CONVERSATION_NOTIFICATION_ID);
             return;
         }
 
-        if (mDisableStatusBarNotifications > 0) {
+        if (mDisableStatusBarNotifications > 0 || mLastMessage == null) {
             return;
         }
 
-        Intent resultIntent = new Intent(mContext, NotificationsActivity.class); // TODO
+        PendingIntent resultPendingIntent;
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
-        stackBuilder.addNextIntent(resultIntent);
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        // NotificationsActivity intent
+        Intent firstIntent = new Intent(mContext, NotificationsActivity.class);
+        firstIntent.putExtra(NotificationsActivity.ARG_KEY_SHOW_SECTION, NotificationsActivity.SECTION_CONVERSATIONS);
+        stackBuilder.addNextIntent(firstIntent);
+
+        // Conversation intent
+        if (!mSeveralConversations) {
+            long recipient;
+            if (UserManager.getInstance().isMe(mLastMessage.recipientId)) {
+                recipient = mLastMessage.userId;
+            } else {
+                recipient = mLastMessage.recipientId;
+            }
+            Intent conversationIntent = ConversationActivity.createIntent(mContext, mLastMessage.conversationId, recipient);
+            stackBuilder.addNextIntent(conversationIntent);
+        }
+
+        resultPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
 
         Intent deleteIntent = new Intent();
         deleteIntent.setAction(ACTION_CANCEL_STATUS_BAR_CONVERSATION_NOTIFICATION);
@@ -175,7 +225,7 @@ public class StatusBarNotification extends BroadcastReceiver {
                 deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         String title = mContext.getResources().getQuantityString(R.plurals.conversation_received_title,
-                mConversations.size(), mConversations.size());
+                mConversationMessagesCount, mConversationMessagesCount);
 
         Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_launcher);
 
@@ -183,22 +233,25 @@ public class StatusBarNotification extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(largeIcon)
                 .setContentTitle(title)
-                .setContentText(getConversationText(mConversations.get(0)))
-                        //.setNumber(mNotifications.size())
+                .setContentText(Html.fromHtml(mLastMessage.contentHtml))
+                .setWhen(mLastMessage.createdAt.getTime())
                 .setContentIntent(resultPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setWhen(mConversations.get(0).createdAt.getTime())
-                .setShowWhen(true)
-                .setSound(Uri.parse("android.resource://"
-                        + mContext.getPackageName() + "/" + R.raw.incoming_message))
+                .setColor(Color.YELLOW)
                 .setAutoCancel(true);
+
+        if (mConversationMessagesCount <= 3) {
+            notificationBuilder.setSound(Uri.parse("android.resource://"
+                    + mContext.getPackageName() + "/" + R.raw.incoming_message));
+        }
 
         mNotificationManager.notify(CONVERSATION_NOTIFICATION_ID, notificationBuilder.build());
     }
 
     private synchronized void cancelNotifications() {
         mNotifications.clear();
-        mConversations.clear();
+        mConversationMessagesCount = 0;
+        mSeveralConversations = false;
         mNotificationManager.cancelAll();
     }
 
@@ -208,7 +261,8 @@ public class StatusBarNotification extends BroadcastReceiver {
     }
 
     private synchronized void cancelConversationNotification() {
-        mConversations.clear(); // TODO: mark as read
+        mConversationMessagesCount = 0;
+        mSeveralConversations = false;
         mNotificationManager.cancel(CONVERSATION_NOTIFICATION_ID);
     }
 
@@ -224,18 +278,6 @@ public class StatusBarNotification extends BroadcastReceiver {
                 R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');
         ssb.append(notification.actionText);
-        return ssb;
-    }
-
-    private Spanned getConversationText(Conversation conversation) {
-        User author = conversation.recipient;
-        SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getName());
-        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext, R.style.TextAppearanceSlugInlineGreen);
-        ssb.append(' ');
-        if (conversation.lastMessage != null && !TextUtils.isEmpty(conversation.lastMessage.contentHtml)) {
-            ssb.append(Html.fromHtml(conversation.lastMessage.contentHtml));
-        }
         return ssb;
     }
 }

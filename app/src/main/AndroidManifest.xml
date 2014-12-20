@@ -169,7 +169,7 @@
             android:label="@string/title_activity_conversation"
             android:windowSoftInputMode="stateVisible|adjustResize"
             android:theme="@style/AppThemeOverlayingActionBar"
-            android:parentActivityName="ru.taaasty.ui.tabbar.NotificationsActivity" >
+            android:parentActivityName="ru.taaasty.ui.tabbar.NotificationsActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />

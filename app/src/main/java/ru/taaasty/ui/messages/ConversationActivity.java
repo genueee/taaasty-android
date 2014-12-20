@@ -18,23 +18,40 @@ import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.ErrorTextView;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.observables.AndroidObservable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class ConversationActivity extends Activity implements ConversationFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationActivity";
 
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.conversation";
+
+    private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.feeds.ConversationActivity.conversation_id";
+
+    private static final String ARG_RECIPIENT_ID = "ru.taaasty.ui.feeds.ConversationActivity.recipient_id";
+
+    private static final String BUNDLE_ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.BUNDLE_ARG_CONVERSATION";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
@@ -44,6 +61,13 @@ public class ConversationActivity extends Activity implements ConversationFragme
     private Handler mHideActionBarHandler;
 
     private boolean imeKeyboardShown;
+
+    private Subscription mConversationSubscription = SubscriptionHelper.empty();
+
+    private long mRecipientId;
+
+    @Nullable
+    private Conversation mConversation;
 
     public static void startConversationActivity(Context source, Conversation conversation, View animateFrom) {
         Intent intent = new Intent(source, ConversationActivity.class);
@@ -57,23 +81,51 @@ public class ConversationActivity extends Activity implements ConversationFragme
         }
     }
 
+    public static Intent createIntent(Context source, long conversationId, long recipientId) {
+        Intent intent = new Intent(source, ConversationActivity.class);
+        intent.putExtra(ARG_RECIPIENT_ID, recipientId);
+        intent.putExtra(ARG_CONVERSATION_ID, conversationId);
+        return intent;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        Conversation conversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
-        if (conversation == null) throw new IllegalArgumentException("no conversation");
+        long conversationId;
+
+        if (getIntent().hasExtra(ARG_CONVERSATION)) {
+            mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
+            mRecipientId = mConversation.recipientId;
+            conversationId = mConversation.id;
+        } else {
+            conversationId = getIntent().getLongExtra(ARG_CONVERSATION_ID, -1);
+            mRecipientId = getIntent().getLongExtra(ARG_RECIPIENT_ID, -1);
+            if (savedInstanceState != null) {
+                mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
+            }
+        }
 
         if (savedInstanceState == null) {
-            Fragment conversationFragment = ConversationFragment.newInstance(conversation);
+            Fragment conversationFragment;
+            if (mConversation != null) {
+                conversationFragment = ConversationFragment.newInstance(mConversation);
+            } else {
+                conversationFragment = ConversationFragment.newInstance(conversationId);
+            }
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, conversationFragment)
                     .commit();
         }
+
         mHideActionBarHandler = new Handler();
-        setupActionBar(conversation.recipient);
-        bindDesign(conversation.recipient.getDesign());
+
+        if (mConversation != null) {
+            onConversationLoaded(mConversation);
+        } else {
+            loadConversation(mRecipientId);
+        }
 
         final View activityRootView = findViewById(R.id.activityRoot);
         activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -96,8 +148,27 @@ public class ConversationActivity extends Activity implements ConversationFragme
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().post(new ConversationVisibilityChanged(mRecipientId, true));
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        EventBus.getDefault().post(new ConversationVisibilityChanged(mRecipientId, false));
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(BUNDLE_ARG_CONVERSATION, mConversation);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+        mConversationSubscription.unsubscribe();
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         mHideActionBarHandler = null;
     }
@@ -129,6 +200,13 @@ public class ConversationActivity extends Activity implements ConversationFragme
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
     }
 
+    public void onConversationLoaded(Conversation conversation) {
+        mConversation = conversation;
+        setupActionBar(conversation.recipient);
+        bindDesign(conversation.recipient.getDesign());
+        ConversationFragment fragment = (ConversationFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.onConversationLoaded(conversation);
+    }
 
     void onImeKeyboardShown() {
         ConversationFragment fragment = (ConversationFragment)getFragmentManager().findFragmentById(R.id.container);
@@ -150,6 +228,18 @@ public class ConversationActivity extends Activity implements ConversationFragme
         ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
         title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         ab.setTitle(title);
+    }
+
+    private void loadConversation(long recipientId) {
+        mConversationSubscription.unsubscribe();
+        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+
+        Observable<Conversation> observable = AndroidObservable.bindActivity(this,
+                apiMessenger.createConversation(null, recipientId));
+
+        mConversationSubscription = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mLoadConversationObservable);
     }
 
     private void bindDesign(final TlogDesign design) {
@@ -189,6 +279,25 @@ public class ConversationActivity extends Activity implements ConversationFragme
         public void run() {
             ActionBar ab = getActionBar();
             if (ab != null) ab.hide();
+        }
+    };
+
+    private final Observer<Conversation> mLoadConversationObservable = new Observer<Conversation>() {
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.v(TAG, getString(R.string.error_create_conversation), e);
+            Toast.makeText(ConversationActivity.this, R.string.error_create_conversation, Toast.LENGTH_LONG).show();
+            finish();
+        }
+
+        @Override
+        public void onNext(Conversation conversation) {
+            onConversationLoaded(conversation);
         }
     };
 }

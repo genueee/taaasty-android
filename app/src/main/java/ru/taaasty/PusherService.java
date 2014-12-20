@@ -33,6 +33,7 @@ import de.greenrobot.event.EventBus;
 import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.ConversationChanged;
+import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationReceived;
@@ -104,7 +105,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     /**
      * Новое сообщение
-     * Тип: {@linkplain ru.taaasty.model.ConversationMessage}
+     * Тип: {@linkplain ru.taaasty.model.Conversation.Message}
      */
     public static final String EVENT_PUSH_MESSAGE = "push_message";
 
@@ -318,11 +319,11 @@ public class PusherService extends Service implements PrivateChannelEventListene
             case EVENT_PUSH_MESSAGE:
                 Conversation.Message message =  mGson.fromJson(data, Conversation.Message.class);
                 mEventBus.post(new MessageChanged(message));
+                mStatusBarNotification.append(message);
                 break;
             case EVENT_UPDATE_CONVERSATION:
                 Conversation conversation =  mGson.fromJson(data, Conversation.class);
                 mEventBus.post(new ConversationChanged(conversation));
-                mStatusBarNotification.append(conversation); // TODO: тут далеко не всегда надо уведомлять
                 break;
             case EVENT_UPDATE_MESSAGES:
                 UpdateMessages updateMessages =  mGson.fromJson(data, UpdateMessages.class);
@@ -366,6 +367,10 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 }
             }
         }
+    }
+
+    public void onEventMainThread(ConversationVisibilityChanged event) {
+        if (mStatusBarNotification != null) mStatusBarNotification.onConversationVisibilityChanged(event);
     }
 
     @Override

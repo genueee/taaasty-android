@@ -264,7 +264,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             }
             text = ssb;
         } else {
-            // Автор неизвестен (не должно такого быть, но на всякий случай)
+            // Автор неизвестен, скорее всего, переписка ещё не загружена
             text = TextUtils.isEmpty(message.contentHtml) ? null : Html.fromHtml(message.contentHtml);
         }
 
