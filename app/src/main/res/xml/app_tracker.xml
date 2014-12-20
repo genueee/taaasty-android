@@ -17,11 +17,11 @@
     <screenName name="ru.taaasty.ui.tabbar.MyFeedActivity">
         Мой дневник
     </screenName>
+    <screenName name="ru.taaasty.ui.tabbar.NotificationsActivity">
+        Мои уведомления
+    </screenName>
     <screenName name="ru.taaasty.ui.login.LoginActivity">
         Вход
-    </screenName>
-    <screenName name="ru.taaasty.ui.AdditionalMenuActivity">
-        Дополнительное меню
     </screenName>
     <screenName name="ru.taaasty.ui.post.ShowPostActivity">
         Просмотр записи
@@ -44,6 +44,26 @@
     <screenName name="com.vk.sdk.VKOpenAuthActivity">
         Вход через вконтакте
     </screenName>
-
+    <screenName name="com.aviary.android.feather.sdk.FeatherActivity">
+        Редактирование фото в aviary
+    </screenName>
+    <screenName name="ru.taaasty.ui.messages.ConversationActivity">
+        Переписка
+    </screenName>
+    <screenName name="com.facebook.LoginActivity">
+        Вход facebook для шаринга
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.DeleteOrReportDialogActivity">
+        Диалог удаления/жалобы
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.SharePostActivity">
+        Добавление в избранное/шаринг facebook
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.EditPostActivity">
+        Редактирование поста
+    </screenName>
+    <screenName name="ru.taaasty.ui.feeds.AdditionalFeedActivity">
+        Избранное/скрытые записи
+    </screenName>
 
 </resources>
