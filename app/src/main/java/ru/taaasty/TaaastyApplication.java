@@ -6,6 +6,7 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 
 import java.util.Locale;
@@ -69,6 +70,13 @@ public class TaaastyApplication extends Application {
     public synchronized Tracker getTracker() {
         if (mAnalyticsTracker == null) {
             GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
+            if (!"release".equals(BuildConfig.BUILD_TYPE)) {
+                analytics.setDryRun(true);
+                analytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
+            } else {
+                analytics.getLogger().setLogLevel(Logger.LogLevel.ERROR);
+            }
+            analytics.setLocalDispatchPeriod(1000);
             mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
         }
         return mAnalyticsTracker;
