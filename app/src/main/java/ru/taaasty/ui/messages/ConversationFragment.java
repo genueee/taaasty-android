@@ -710,6 +710,7 @@ public class ConversationFragment extends Fragment {
                     mAdapter.addMessages(messages.messages);
                     scrollListToPosition(mAdapter.getLastPosition(), false);
                     mStartAppending = true;
+                    checkScrollStateOnPreDraw();
                 } else {
                     addMessagesDoNotScrollList(messages.messages);
                 }
@@ -763,23 +764,36 @@ public class ConversationFragment extends Fragment {
 
     }
 
+    private static final int LAST_SCROLLSTATE_AT_TOP_BOTTOM = 0;
+    private static final int LAST_SCROLLSTATE_AT_TOP = 1;
+    private static final int LAST_SCROLLSTATE_AT_BOTTOM = 2;
+    private static final int LAST_SCROLLSTATE_NOT_EDGE = 3;
+
     public class ListScrollController {
-        private boolean mEdgeReachedCalled = true;
+        private int mNewState = LAST_SCROLLSTATE_AT_TOP_BOTTOM;
 
         public void checkScroll() {
             if (mListView == null) return;
             boolean atTop = !mListView.canScrollVertically(-1);
-            boolean atEdge = atTop || !mListView.canScrollVertically(1);
+            boolean atBottom = !mListView.canScrollVertically(1);
 
-            if (atEdge) {
-                if (!mEdgeReachedCalled) {
-                    mEdgeReachedCalled = true;
-                    if (mListener != null) mListener.onEdgeReached(atTop);
-                }
+            int newState;
+            if (atTop && atBottom) {
+                newState = LAST_SCROLLSTATE_AT_TOP_BOTTOM;
+            } else if (atTop) {
+                newState = LAST_SCROLLSTATE_AT_TOP;
+            } else if (atBottom) {
+                newState = LAST_SCROLLSTATE_AT_BOTTOM;
             } else {
-                if (mEdgeReachedCalled) {
-                    mEdgeReachedCalled = false;
+                newState = LAST_SCROLLSTATE_NOT_EDGE;
+            }
+
+            if (newState != mNewState) {
+                mNewState = newState;
+                if (newState == LAST_SCROLLSTATE_NOT_EDGE) {
                     if (mListener != null) mListener.onEdgeUnreached();
+                } else {
+                    if (mListener != null) mListener.onEdgeReached(atTop);
                 }
             }
         }

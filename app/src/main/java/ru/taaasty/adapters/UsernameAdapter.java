@@ -145,7 +145,8 @@ public class UsernameAdapter extends RecyclerView.Adapter<UsernameAdapter.ViewHo
 
             @Override
             public void onDrawableReady(Drawable drawable) {
-                textView.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+                drawable.setBounds(0, 0, avatarSize, avatarSize);
+                textView.setCompoundDrawables(drawable, null, null, null);
             }
 
             @Override

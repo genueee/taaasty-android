@@ -187,10 +187,14 @@ public class ConversationActivity extends Activity implements ConversationFragme
     @Override
     public void onEdgeReached(boolean atTop) {
         if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
-        if (!atTop) return;
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        ActionBar ab = getActionBar();
-        if (ab != null) ab.show();
+        if (!atTop) {
+            mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
+        } else {
+            mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
+            ActionBar ab = getActionBar();
+            if (ab != null) ab.show();
+        }
     }
 
     @Override
