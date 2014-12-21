@@ -10,6 +10,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
@@ -37,6 +38,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         }
 
         PusherService.startPusher(this);
+        ((TaaastyApplication)getApplicationContext()).startIntercomSession();
     }
 
     abstract int getCurrentTabId();

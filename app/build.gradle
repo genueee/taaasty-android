@@ -28,6 +28,9 @@ def getRevision = { ->
 
 repositories {
     maven { url "http://maven.aviary.com/repo/release" }
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 android {
@@ -54,6 +57,14 @@ android {
                 project.ext.private.getProperty("default.ThumborKey", "\"golobog\"")
         buildConfigField "String", "PUSHER_KEY",
                 project.ext.private.getProperty("default.PusherKey", "\"40dbf1d864d4b366b5e6\"")
+        buildConfigField "String", "PUSHER_KEY",
+                project.ext.private.getProperty("default.PusherKey", "\"40dbf1d864d4b366b5e6\"")
+        buildConfigField "String", "INTERCOM_API_KEY",
+                project.ext.private.getProperty("default.IntercomApiKey", "\"android_sdk-fdc4087976c13ad0c63f2aa12c850b81a43f5184\"")
+        buildConfigField "String", "INTERCOM_APP_ID",
+                project.ext.private.getProperty("default.IntercomAppId", "\"ef4ce706c805fcdd3cb11255f0c3d8b41f46ba15\"")
+        buildConfigField "String", "GOOGLE_APP_ID",
+                project.ext.private.getProperty("default.GoogleAppId", "\"73588603634\"")
 
         resValue "string", "aviary_key", "fe37f3b5e87c67a2"
         resValue "string", "aviary_secret", "3ef989608e94cdc5"
@@ -100,6 +111,7 @@ android {
     lintOptions {
         warning 'InvalidPackage'
         disable 'RtlHardcoded'
+        disable 'AppCompatResource'
 
     }
 
@@ -156,6 +168,14 @@ dependencies {
         exclude(group: 'com.intellij', module: 'annotations')
         exclude(group: 'commons-io', module: 'commons-io')
     }
+
+    // intercom
+    compile(name:'intercomsdk-0.8.1', ext:'aar')
+    compile 'com.mcxiaoke.volley:library:1.0.9'
+    compile 'com.google.code.gson:gson:2.3'
+    compile 'com.android.support:appcompat-v7:21.0.3'
+
+
 }
 
 configurations.all {
@@ -182,6 +202,12 @@ configurations.all {
             project.ext.private.getProperty("${typeName}.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
     bt.buildConfigField "String", "PUSHER_KEY",
             project.ext.private.getProperty("${typeName}.PusherKey", "\"40dbf1d864d4b366b5e6\"")
+    bt.buildConfigField "String", "INTERCOM_API_KEY",
+            project.ext.private.getProperty("${typeName}.IntercomApiKey", "\"android_sdk-fdc4087976c13ad0c63f2aa12c850b81a43f5184\"")
+    bt.buildConfigField "String", "INTERCOM_APP_ID",
+            project.ext.private.getProperty("${typeName}.IntercomAppId", "\"ef4ce706c805fcdd3cb11255f0c3d8b41f46ba15\"")
+    bt.buildConfigField "String", "GOOGLE_APP_ID",
+            project.ext.private.getProperty("${typeName}.GoogleAppId", "\"73588603634\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

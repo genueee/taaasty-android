@@ -22,6 +22,7 @@ import android.widget.Toast;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
@@ -109,6 +110,9 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 break;
             case R.id.menu_favorites:
                 openFavorites();
+                break;
+            case R.id.menu_support:
+                openSupport();
                 break;
             case R.id.menu_hidden:
                 openHidden();
@@ -200,6 +204,9 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 if (DBG) Log.v(TAG, "onAdditionMenuItemClicked settings");
                 openSettings();
                 break;
+            case R.id.support:
+                openSupport();
+                break;
             case R.id.logout:
                 logout();
                 break;
@@ -222,6 +229,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 R.id.friends,
                 R.id.hidden,
                 R.id.favorites,
+                R.id.support,
                 R.id.logout
 
         }) {
@@ -247,6 +255,10 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     void openHidden() {
         AdditionalFeedActivity.startHiddenRecordsActivity(this, null);
+    }
+
+    void openSupport() {
+        ((TaaastyApplication)getApplicationContext()).getIntercom().presentMessageViewAsConversationsList(false, this);
     }
 
     void logout() {

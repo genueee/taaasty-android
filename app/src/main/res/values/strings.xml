@@ -46,6 +46,7 @@
     <string name="settings">Настройки</string>
     <string name="title_hidden_entries">Скрытые записи</string>
     <string name="title_favorites">Избранное</string>
+    <string name="title_support">Поддержка</string>
     <string name="server_error">Ошибка связи с сервером</string>
     <string name="error_loading_comments">Ошибка загрузки комментариев</string>
     <string name="error_report_to_comment">Ошибка отправки жалобы</string>
@@ -194,6 +195,7 @@
     <string name="menu_refresh">Обновить</string>
     <string name="menu_settings">Настройки</string>
     <string name="menu_friends">Друзья</string>
+    <string name="menu_support">Поддержка</string>
     <string name="menu_favorites">Избранное</string>
     <string name="menu_hidden">Скрытые записи</string>
     <string name="menu_quit">Выйти</string>

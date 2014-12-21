@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item android:id="@+id/menu_refresh"
         android:title="@string/menu_refresh"
-        android:showAsAction="never"/>
-
-    <item android:id="@+id/menu_settings"
-        android:title="@string/menu_settings"
         android:showAsAction="never"/>
 
     <item android:id="@+id/menu_favorites"
@@ -18,6 +15,14 @@
 
     <item android:id="@+id/menu_friends"
         android:title="@string/menu_friends"
+        android:showAsAction="never"/>
+
+    <item android:id="@+id/menu_support"
+        android:title="@string/menu_support"
+        android:showAsAction="never"/>
+
+    <item android:id="@+id/menu_settings"
+        android:title="@string/menu_settings"
         android:showAsAction="never"/>
 
     <item android:id="@+id/menu_quit"
