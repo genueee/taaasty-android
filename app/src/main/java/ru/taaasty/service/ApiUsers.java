@@ -40,6 +40,16 @@ public interface ApiUsers {
                                          @Field("slug") String slug);
 
     /**
+     * Регистрация пользователя vkontakte
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("/users/vkontakte.json")
+    Observable<CurrentUser> registerUserVkontakte(@Field("token") String token,
+                                         @Field("nickname") String nickname,
+                                         @Field("avatar_url") String avatar_url);
+
+    /**
      * Забыл пароль. Просьба выслать на емайл
      * @param slugOrEmail Емайл или ник
      * @return
@@ -81,5 +91,7 @@ public interface ApiUsers {
      */
     @GET("/users/predict.json")
     Observable<List<User>> predict(@Query("query") String query, @Query("limit") Integer limit);
+
+
 
 }

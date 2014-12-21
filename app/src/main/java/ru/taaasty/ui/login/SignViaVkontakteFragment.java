@@ -11,7 +11,18 @@ import android.view.ViewGroup;
 
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKSdk;
+import com.vk.sdk.api.VKApi;
+import com.vk.sdk.api.VKApiConst;
 import com.vk.sdk.api.VKError;
+import com.vk.sdk.api.VKParameters;
+import com.vk.sdk.api.VKRequest;
+import com.vk.sdk.api.VKResponse;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Random;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -21,6 +32,7 @@ import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.service.ApiSessions;
+import ru.taaasty.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -41,6 +53,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
     private OnFragmentInteractionListener mListener;
 
     private Subscription mAuthSubscription = SubscriptionHelper.empty();
+    private Subscription mSignupSubscription = SubscriptionHelper.empty();
 
     public static SignViaVkontakteFragment createInstance() {
         return new SignViaVkontakteFragment();
@@ -86,6 +99,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
     public void onDestroy() {
         super.onDestroy();
         mAuthSubscription.unsubscribe();
+        mSignupSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
     }
 
@@ -94,7 +108,6 @@ public class SignViaVkontakteFragment extends DialogFragment {
         super.onDetach();
         mListener = null;
     }
-
 
     public void onEventMainThread(VkGlobalEvent event) {
         switch (event.type) {
@@ -114,7 +127,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
                 break;
             case VkGlobalEvent.VK_ACCEPT_USER_TOKEN:
             case VkGlobalEvent.VK_RECEIVE_NEW_TOKEN:
-                if (DBG) Log.v(TAG, "vokntakte token:" + VkontakteHelper.vkTokenToString(event.token));
+                if (DBG) Log.v(TAG, "vkontakte token:" + VkontakteHelper.vkTokenToString(event.token));
                 // Токен добыт. Авторизуемся на сервере.
                 loginToTheServer(event.token);
                 break;
@@ -133,15 +146,72 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         mAuthSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mAuthObserver);
+                .subscribe(new AuthObserver(token));
     }
 
+    void signupVkontakte(VKAccessToken token, JSONObject data) {
+        mSignupSubscription.unsubscribe();
+        ApiUsers usersService = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+
+        String nickname = null;
+        String avatarUrl = null;
+
+        try {
+            JSONArray array = data.getJSONArray("response");
+            JSONObject object = (JSONObject) array.get(0);
+            try {
+                nickname = object.getString("domain");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no domain", ex);
+            }
+            try {
+                avatarUrl = object.getString("photo_max");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no photo_max", ex);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (TextUtils.isEmpty(nickname)) nickname = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
+
+        Observable<CurrentUser> observableUser = AndroidObservable.bindFragment(this,
+                usersService.registerUserVkontakte(token.accessToken, nickname, avatarUrl));
+        mSignupSubscription = observableUser
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SignupObserver());
+    }
+
+    void signUp(final VKAccessToken token) {
+        VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
+                "id,sex,photo_max,domain,nickname"));
+        request.executeWithListener(new VKRequest.VKRequestListener() {
+            @Override
+            public void onComplete(VKResponse response) {
+                if (DBG) Log.v(TAG, "response: " + response.responseString);
+                signupVkontakte(token, response.json);
+            }
+
+            @Override
+            public void onError(VKError error) {
+                String msg = getString(R.string.error_vkontakte_failed);
+                if (mListener != null) mListener.notifyError(msg, new Exception(error.toString()));
+                getDialog().dismiss();
+            }
+        });
+    }
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onSignViaVkontakteSuccess();
     }
 
-    private final Observer<CurrentUser> mAuthObserver = new Observer<CurrentUser>() {
+    final class AuthObserver implements Observer<CurrentUser> {
+
+        private final VKAccessToken mToken;
+
+        public AuthObserver(VKAccessToken token) {
+            mToken = token;
+        }
 
         @Override
         public void onCompleted() {
@@ -158,8 +228,8 @@ public class SignViaVkontakteFragment extends DialogFragment {
             if (TextUtils.isEmpty(error)) {
                 error = getText(R.string.error_vkontakte_failed);
             }
-            if (mListener != null) mListener.notifyError(error, e);
-            getDialog().dismiss();
+            // По коду ошибки хрен что разберешь. В любой непонятной ситуации - регимся
+            signUp(mToken);
         }
 
         @Override
@@ -171,7 +241,40 @@ public class SignViaVkontakteFragment extends DialogFragment {
                 if (mListener != null) mListener.onSignViaVkontakteSuccess();
             }
         }
-    };
+    }
 
+    final class SignupObserver implements Observer<CurrentUser> {
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            CharSequence error = "";
+            if (e instanceof NetworkUtils.ResponseErrorException) {
+                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
+            } else if (e instanceof NetworkUtils.UnauthorizedException) {
+                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+            }
+            if (TextUtils.isEmpty(error)) {
+                error = getText(R.string.error_vkontakte_failed);
+            }
+
+            if (mListener != null) mListener.notifyError(error, e);
+            getDialog().dismiss();
+        }
+
+        @Override
+        public void onNext(CurrentUser info) {
+            if (info == null) {
+                // XXX
+            } else {
+                // TODO: заливать аватарку на сервер?
+                UserManager.getInstance().setCurrentUser(info);
+                if (mListener != null) mListener.onSignViaVkontakteSuccess();
+            }
+        }
+    }
 
 }
