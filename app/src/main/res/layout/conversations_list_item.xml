@@ -44,7 +44,7 @@
             android:paddingBottom="4dp"
             tools:text="genue sf" />
 
-        <TextSwitcher
+        <ru.taaasty.widgets.SmartTextSwitcher
             android:id="@+id/notification_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -58,7 +58,16 @@
                 android:textSize="15sp"
                 tools:text="1 час назад" />
 
-        </TextSwitcher>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="#c9c9c9"
+                android:textSize="15sp"
+                tools:text="1 час назад" />
+
+        </ru.taaasty.widgets.SmartTextSwitcher>
 
     </LinearLayout>
 

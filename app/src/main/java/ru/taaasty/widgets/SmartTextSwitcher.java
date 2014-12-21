@@ -10,6 +10,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 
+import ru.taaasty.R;
+
 /**
  * Created by alexey on 09.12.14.
  */
@@ -32,6 +34,8 @@ public class SmartTextSwitcher extends TextSwitcher {
         initialized = true;
         Animation in = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_in);
         Animation out = AnimationUtils.loadAnimation(getContext(), android.R.anim.fade_out);
+        in.setDuration(getResources().getInteger(R.integer.longAnimTime));
+        out.setDuration(getResources().getInteger(R.integer.longAnimTime));
         setInAnimation(in);
         setOutAnimation(out);
     }
