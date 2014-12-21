@@ -18,7 +18,7 @@
         android:layout_height="wrap_content"
         android:inputType="textCapSentences|textShortMessage|textMultiLine"
         android:background="@null"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:layout_marginLeft="@dimen/post_item_comments_padding_left"
         android:imeOptions="actionSend"
         android:imeActionLabel="@string/send_button_short"
