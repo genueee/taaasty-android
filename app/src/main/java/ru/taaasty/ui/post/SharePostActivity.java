@@ -1,6 +1,5 @@
 package ru.taaasty.ui.post;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,19 +8,39 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.vk.sdk.VKSdk;
+import com.vk.sdk.api.VKApi;
+import com.vk.sdk.api.VKApiConst;
+import com.vk.sdk.api.VKError;
+import com.vk.sdk.api.VKParameters;
+import com.vk.sdk.api.VKRequest;
+import com.vk.sdk.api.VKResponse;
+import com.vk.sdk.api.model.VKAttachments;
+import com.vk.sdk.api.model.VKWallPostResult;
+
+import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.VkontakteHelper;
+import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.model.Entry;
 
-public class SharePostActivity extends Activity {
+public class SharePostActivity extends ActivityBase {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.entry";
 
+    private static final String KEY_DO_SHARE_VKONTAKTE = "ru.taaasty.ui.post.SharePostActivity.KEY_DO_SHARE_VKONTAKTE";
+
     private Entry mEntry;
+
+    private boolean mDoShareVkontakte;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +48,10 @@ public class SharePostActivity extends Activity {
         setContentView(R.layout.activity_share_post);
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
+
+        if (savedInstanceState != null) {
+            mDoShareVkontakte = savedInstanceState.getBoolean(KEY_DO_SHARE_VKONTAKTE);
+        }
 
         boolean isMyEntry = mEntry.isMyEntry();
 
@@ -38,6 +61,19 @@ public class SharePostActivity extends Activity {
         findViewById(R.id.ic_edit_post).setVisibility(mEntry.canEdit() ? View.VISIBLE : View.GONE);
 
         setFavoriteIcon();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_DO_SHARE_VKONTAKTE, mDoShareVkontakte);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -48,7 +84,13 @@ public class SharePostActivity extends Activity {
     }
 
     public void shareVkontakte(View view) {
-        notReadyYet();
+        if (!VKSdk.wakeUpSession()) {
+            mDoShareVkontakte = true;
+            VKSdk.authorize(VkontakteHelper.VK_SCOPE, true, false);
+        } else {
+            mDoShareVkontakte = true;
+            doSharePostVkontakte();
+        }
     }
 
     public void shareFacebook(View view) {
@@ -113,11 +155,6 @@ public class SharePostActivity extends Activity {
         finish();
     }
 
-    private void notReadyYet() {
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
-        finish();
-    }
-
     public void setFavoriteIcon() {
         if(mEntry.isFavorited()) {
             TextView action_icon = ((TextView)findViewById(R.id.ic_add_post_to_favorites));
@@ -129,5 +166,62 @@ public class SharePostActivity extends Activity {
             action_icon.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_add_post_to_favorites, 0, 0);
             action_icon.setText(R.string.add_post_to_favorites);
         }
+    }
+
+    public void onEventMainThread(VkGlobalEvent event) {
+        if (BuildConfig.DEBUG) Log.v("SharePostActivity", "VkGlobalEvent " + event);
+        if (!mDoShareVkontakte) return;
+
+        switch (event.type) {
+            case VkGlobalEvent.VK_ACCESS_DENIED:
+                // Доступ запрещен.
+                assert event.vkError != null;
+                if (event.vkError.errorCode != VKError.VK_CANCELED) {
+                    CharSequence errorText;
+                    if (TextUtils.isEmpty(event.vkError.errorMessage)) {
+                        errorText = getText(R.string.error_vkontakte_failed);
+                    } else {
+                        errorText = event.vkError.errorMessage;
+                    }
+                    Toast.makeText(this, errorText, Toast.LENGTH_LONG).show();
+                }
+                finish();
+                break;
+            case VkGlobalEvent.VK_ACCEPT_USER_TOKEN:
+            case VkGlobalEvent.VK_RECEIVE_NEW_TOKEN:
+                doSharePostVkontakte();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void doSharePostVkontakte() {
+        VKAttachments attachments = null; //TODO указывать аттачи и текст
+        String message = mEntry.getEntryUrl();
+
+        VKRequest post = VKApi.wall().post(VKParameters.from(VKApiConst.ATTACHMENTS, attachments,
+                VKApiConst.MESSAGE, message));
+        post.setModelClass(VKWallPostResult.class);
+        post.executeWithListener(new VKRequest.VKRequestListener() {
+            @Override
+            public void onComplete(VKResponse response) {
+                VKWallPostResult result = (VKWallPostResult)response.parsedModel;
+                Uri url = Uri.parse("https://vk.com/wall"
+                        + String.valueOf(VKSdk.getAccessToken().userId)
+                        + "_" + String.valueOf(result.post_id));
+                Toast.makeText(SharePostActivity.this, "Ссыка добавлена на стену", Toast.LENGTH_LONG).show();
+                Intent i = new Intent(Intent.ACTION_VIEW, url);
+                startActivity(i);
+                finish();
+            }
+
+            @Override
+            public void onError(VKError error) {
+                Toast.makeText(SharePostActivity.this, R.string.error_vkontakte_failed, Toast.LENGTH_LONG).show();
+                finish();
+            }
+        });
+
     }
 }
