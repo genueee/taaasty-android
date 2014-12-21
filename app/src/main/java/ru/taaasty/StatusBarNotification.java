@@ -45,15 +45,13 @@ public class StatusBarNotification extends BroadcastReceiver {
 
     private static final int CONVERSATION_NOTIFICATION_ID = 2;
 
-    private static final int MAX_NOTIFICATIONS = 3;
-
     private volatile int mDisableStatusBarNotifications;
 
     private final Context mContext;
 
     private final NotificationManagerCompat mNotificationManager;
 
-    private volatile ArrayList<Notification> mNotifications = new ArrayList<>(MAX_NOTIFICATIONS);
+    private volatile ArrayList<Notification> mNotifications = new ArrayList<>(3);
 
     private boolean mSeveralConversations;
 
@@ -79,8 +77,8 @@ public class StatusBarNotification extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        // TODO
         if (ACTION_CANCEL_STATUS_BAR_NOTIFICATION.equals(intent.getAction())) {
+            markNotificationsAsRead();
             cancelNotificationNotification();
         } else if (ACTION_CANCEL_STATUS_BAR_CONVERSATION_NOTIFICATION.equals(intent.getAction())) {
             cancelConversationNotification();
@@ -159,6 +157,8 @@ public class StatusBarNotification extends BroadcastReceiver {
         PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mContext, 0,
                 deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
+        Notification lastNotification = mNotifications.get(mNotifications.size() - 1);
+
         String title = mContext.getResources().getQuantityString(R.plurals.notifications_received_title,
                 mNotifications.size(), mNotifications.size());
 
@@ -168,11 +168,11 @@ public class StatusBarNotification extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(largeIcon)
                 .setContentTitle(title)
-                .setContentText(getNotificationText(mNotifications.get(0)))
+                .setContentText(getNotificationText(lastNotification))
                         //.setNumber(mNotifications.size())
                 .setContentIntent(resultPendingIntent)
                 .setDeleteIntent(deletePendingIntent)
-                .setWhen(mNotifications.get(0).createdAt.getTime())
+                .setWhen(lastNotification.createdAt.getTime())
                 .setShowWhen(true)
                 .setAutoCancel(true);
 
@@ -256,8 +256,16 @@ public class StatusBarNotification extends BroadcastReceiver {
     }
 
     private synchronized void cancelNotificationNotification() {
-        mNotifications.clear(); // TODO: mark as read
+        mNotifications.clear();
         mNotificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    private void markNotificationsAsRead() {
+        for (Notification notification: mNotifications) {
+            if (!notification.isMarkedAsRead()) {
+                PusherService.markNotificationAsRead(mContext, notification.id);
+            }
+        }
     }
 
     private synchronized void cancelConversationNotification() {
