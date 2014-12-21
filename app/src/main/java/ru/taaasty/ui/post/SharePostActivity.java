@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -53,8 +55,22 @@ public class SharePostActivity extends Activity {
         runPostActionActivity(PostActionActivity.ACTION_SHARE_FACEBOOK);
     }
 
+    /*
     public void shareTwitter(View view) {
         notReadyYet();
+    }
+    */
+
+    public void shareOther(View view) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        if (!TextUtils.isEmpty(mEntry.getTitle())) {
+            intent.putExtra(Intent.EXTRA_SUBJECT, Html.fromHtml(mEntry.getTitle()).toString());
+        }
+        intent.putExtra(Intent.EXTRA_TEXT, mEntry.getEntryUrl());
+        Intent chooser = Intent.createChooser(intent, getString(R.string.share_title));
+        startActivity(chooser);
+        finish();
     }
 
     public void addToFavorites(View view) {

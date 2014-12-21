@@ -173,6 +173,7 @@
     <string name="title_share_facebook">Facebook</string>
     <string name="title_share_vkontakte">Вконтакте</string>
     <string name="add_post_to_favorites">В избранное</string>
+    <string name="title_share_other">Ещё</string>
     <string name="post_in_favorites">Из избранного</string>
     <string name="copy_link_to_clipboard">Ссылка</string>
     <string name="report_post_to_moderator">Пожаловаться</string>
@@ -202,6 +203,7 @@
     <string name="adding_to_favourites_ok">Пост добавлен в избранное</string>
     <string name="adding_to_favourites_fail">Ошибка добавления</string>
     <string name="remove_from_favourites_ok">Пост убран из избранного</string>
+    <string name="share_title">Поделиться</string>
 
     <plurals name="notifications_received_title">
         <item quantity="one">Уведомление…</item>

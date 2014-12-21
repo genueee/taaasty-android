@@ -43,11 +43,19 @@
                     android:onClick="shareFacebook"
                     style="@style/ShareIconItem" />
 
+                <!--
                 <TextView
                     android:id="@+id/ic_share_twitter"
                     android:drawableTop="@drawable/ic_share_twitter"
                     android:text="@string/title_share_twitter"
                     android:onClick="shareTwitter"
+                    style="@style/ShareIconItem" --> />
+
+                <TextView
+                    android:id="@+id/ic_share_other"
+                    android:drawableTop="@drawable/ic_share_other"
+                    android:text="@string/title_share_other"
+                    android:onClick="shareOther"
                     style="@style/ShareIconItem" />
 
             </LinearLayout>
