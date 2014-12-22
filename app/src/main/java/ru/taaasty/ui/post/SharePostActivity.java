@@ -38,6 +38,8 @@ public class SharePostActivity extends ActivityBase {
 
     private static final String KEY_DO_SHARE_VKONTAKTE = "ru.taaasty.ui.post.SharePostActivity.KEY_DO_SHARE_VKONTAKTE";
 
+    private static final Uri TWITTER_SHARE_URL = Uri.parse("https://twitter.com/intent/tweet");
+
     private Entry mEntry;
 
     private boolean mDoShareVkontakte;
@@ -97,11 +99,16 @@ public class SharePostActivity extends ActivityBase {
         runPostActionActivity(PostActionActivity.ACTION_SHARE_FACEBOOK);
     }
 
-    /*
     public void shareTwitter(View view) {
-        notReadyYet();
+        final Uri.Builder builder;
+        builder = TWITTER_SHARE_URL.buildUpon();
+        builder.appendQueryParameter("url", mEntry.getEntryUrl());
+        // builder.appendQueryParameter("text", text.toString());
+        final Uri uri = builder.build();
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
+        finish();
     }
-    */
 
     public void shareOther(View view) {
         Intent intent = new Intent(Intent.ACTION_SEND);
