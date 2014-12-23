@@ -21,7 +21,8 @@ import ru.taaasty.utils.Objects;
 
 public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
-    public static final int VIEW_TYPE_HEADER = R.id.comments_header;
+    public static final int VIEW_TYPE_POST_HEADER = R.id.post_header;
+    public static final int VIEW_TYPE_LOAD_MORE_HEADER = R.id.comments_header;
     public static final int VIEW_TYPE_COMMENT = R.id.comment;
 
     private final LayoutInflater mInfater;
@@ -32,9 +33,11 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
     private final CommentViewBinder mCommentViewBinder;
 
-    private TlogDesign mFeedDesign;
+    protected TlogDesign mFeedDesign;
 
-    private boolean mShowHeader;
+    private boolean mShowLoadMoreHeader;
+
+    private boolean mShowPostHeader;
 
     public abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType);
     public abstract void onBindHeaderHolder(RecyclerView.ViewHolder holder, int position);
@@ -49,10 +52,32 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         setHasStableIds(true);
     }
 
+    public int getPostPosition() {
+        return mShowPostHeader ? 0 : -1;
+    }
+
+    public int getLoadMorePosition() {
+        if (!mShowLoadMoreHeader) return -1;
+        return mShowPostHeader ? 1 : 0;
+    }
+
+    public boolean isLoadMorePosition(int position) {
+        return getLoadMorePosition() == position;
+    }
+
+    public boolean isPostPosition(int position) {
+        return getPostPosition() == position;
+    }
+
     @Override
     public int getItemViewType(int position) {
-        if (mShowHeader && position == 0) return VIEW_TYPE_HEADER;
-        return VIEW_TYPE_COMMENT;
+        if (isPostPosition(position)) {
+            return VIEW_TYPE_POST_HEADER;
+        } else if (isLoadMorePosition(position)) {
+            return VIEW_TYPE_LOAD_MORE_HEADER;
+        } else {
+            return VIEW_TYPE_COMMENT;
+        }
     }
 
     @Override
@@ -60,8 +85,10 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         final RecyclerView.ViewHolder holder;
 
         switch (viewType) {
-            case VIEW_TYPE_HEADER:
+            case VIEW_TYPE_POST_HEADER:
+            case VIEW_TYPE_LOAD_MORE_HEADER:
                 holder =  onCreateHeaderViewHolder(parent, viewType);
+                holder.setIsRecyclable(false);
                 break;
             case VIEW_TYPE_COMMENT:
                 View res = mInfater.inflate(R.layout.comments_item2, parent, false);
@@ -78,7 +105,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (mShowHeader && position == 0) {
+        if (isLoadMorePosition(position) || isPostPosition(position)) {
             onBindHeaderHolder(holder, position);
             return;
         }
@@ -90,12 +117,11 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         } else {
             mCommentViewBinder.bindNotSelectedComment((ViewHolder)holder, comment, mFeedDesign);
         }
-
     }
 
     @Override
     public long getItemId(int position) {
-        if (mShowHeader && position == 0) {
+        if (isLoadMorePosition(position) || isPostPosition(position)) {
             return RecyclerView.NO_ID;
         } else {
             return mComments.get(getCommentsLocation(position)).getId();
@@ -104,7 +130,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return mComments.size() + (mShowHeader ? 1 : 0);
+        return mComments.size() + (mShowLoadMoreHeader ? 1 : 0) + (mShowPostHeader ? 1 : 0);
     }
 
     public void setComments(List<Comment> comments) {
@@ -117,7 +143,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
     public void setFeedDesign(TlogDesign design) {
         mFeedDesign = design;
-        if (!mComments.isEmpty()) notifyDataSetChanged();
+        if (!mComments.isEmpty() || mShowPostHeader) notifyDataSetChanged();
     }
 
     public void appendComments(List<Comment> comments) {
@@ -134,15 +160,26 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         return mComments.get(0).getId();
     }
 
-    public boolean isHeaderShown() {
-        return mShowHeader;
+    public boolean isLoadMoreHeaderShown() {
+        return mShowLoadMoreHeader;
     }
 
-    public void setShowHeader(boolean show) {
-        if (show != mShowHeader) {
-            mShowHeader = show;
+    public void setShowLoadMoreHeader(boolean show) {
+        if (show != mShowLoadMoreHeader) {
+            mShowLoadMoreHeader = show;
             if (show) {
-                notifyItemInserted(0);
+                notifyItemInserted(getLoadMorePosition());
+            } else {
+                notifyItemRemoved(mShowPostHeader ? 1 : 0);
+            }
+        }
+    }
+
+    public void setShowPost(boolean show) {
+        if (show != mShowPostHeader) {
+            mShowPostHeader = show;
+            if (show) {
+                notifyItemInserted(getPostPosition());
             } else {
                 notifyItemRemoved(0);
             }
@@ -205,11 +242,11 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
     }
 
     private int getAdapterPosition(int commentsLocation) {
-        return commentsLocation + (mShowHeader ? 1 : 0);
+        return commentsLocation + (mShowLoadMoreHeader ? 1 : 0) + (mShowPostHeader ? 1: 0);
     }
 
     private int getCommentsLocation(int adapterPosition) {
-        return adapterPosition - (mShowHeader ? 1 : 0);
+        return adapterPosition - (mShowLoadMoreHeader ? 1 : 0) - (mShowPostHeader ? 1 : 0);
     }
 
     @Nullable

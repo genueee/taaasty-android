@@ -41,6 +41,7 @@ import ru.taaasty.model.Status;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
@@ -119,7 +120,6 @@ public class ConversationFragment extends Fragment {
         } else {
             mConversationId = getArguments().getLong(ARG_CONVERSATION_ID);
         }
-        mListScrollController = new ListScrollController();
     }
 
     @Override
@@ -133,11 +133,17 @@ public class ConversationFragment extends Fragment {
         mEmptyView = v.findViewById(R.id.empty_view);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+        mListScrollController = new ListScrollController(mListView, mListener);
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.setOnScrollListener(mScrollListener);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView view, int dx, int dy) {
+                if (mListScrollController != null) mListScrollController.checkScroll();
+            }
+        });
 
         mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
@@ -326,21 +332,6 @@ public class ConversationFragment extends Fragment {
         scrollListToPosition(mAdapter.getLastPosition(), true);
     }
 
-    private void checkScrollStateOnPreDraw() {
-        if (mListView == null) return;
-        mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                if (mListView == null) return true;
-                if (mListView.getViewTreeObserver().isAlive()) {
-                    mListView.getViewTreeObserver().removeOnPreDrawListener(this);
-                    mListScrollController.checkScroll();
-                }
-                return true;
-            }
-        });
-    }
-
     private void scrollListToPosition(final int newPosition, final boolean smooth) {
         if (DBG) Log.v(TAG, "scrollListToPosition pos: " + newPosition + " smooth: " + smooth);
         if (mListView == null) return;
@@ -351,12 +342,13 @@ public class ConversationFragment extends Fragment {
                 if (mListView == null) return true;
                 if (mListView.getViewTreeObserver().isAlive()) {
                     mListView.getViewTreeObserver().removeOnPreDrawListener(this);
+
                     LinearLayoutManager layoutManager = (LinearLayoutManager)mListView.getLayoutManager();
                     if (smooth) {
                         mListView.smoothScrollToPosition(newPosition);
                     } else {
                         layoutManager.scrollToPositionWithOffset(newPosition, 0);
-                        checkScrollStateOnPreDraw();
+                        mListScrollController.checkScrollStateOnViewPreDraw();
                     }
                     return false;
                 }
@@ -364,7 +356,6 @@ public class ConversationFragment extends Fragment {
             }
         });
     }
-
 
     private void addMessagesDoNotScrollList(List<Conversation.Message> messages) {
         Long oldTopId = null;
@@ -383,7 +374,7 @@ public class ConversationFragment extends Fragment {
             if (newPosition != null) {
                 LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
                 lm.scrollToPositionWithOffset(newPosition, oldTopTop);
-                checkScrollStateOnPreDraw();
+                mListScrollController.checkScrollStateOnViewPreDraw();
             }
         }
     }
@@ -499,13 +490,6 @@ public class ConversationFragment extends Fragment {
             }
         }
     }
-
-    private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrolled(RecyclerView view, int dx, int dy) {
-            if (mListScrollController != null) mListScrollController.checkScroll();
-        }
-    };
 
     /**
      * сервис, отмечающий сообщения как прочитанные
@@ -710,7 +694,7 @@ public class ConversationFragment extends Fragment {
                     mAdapter.addMessages(messages.messages);
                     scrollListToPosition(mAdapter.getLastPosition(), false);
                     mStartAppending = true;
-                    checkScrollStateOnPreDraw();
+                    mListScrollController.checkScrollStateOnViewPreDraw();
                 } else {
                     addMessagesDoNotScrollList(messages.messages);
                 }
@@ -764,43 +748,6 @@ public class ConversationFragment extends Fragment {
 
     }
 
-    private static final int LAST_SCROLLSTATE_AT_TOP_BOTTOM = 0;
-    private static final int LAST_SCROLLSTATE_AT_TOP = 1;
-    private static final int LAST_SCROLLSTATE_AT_BOTTOM = 2;
-    private static final int LAST_SCROLLSTATE_NOT_EDGE = 3;
-
-    public class ListScrollController {
-        private int mNewState = LAST_SCROLLSTATE_AT_TOP_BOTTOM;
-
-        public void checkScroll() {
-            if (mListView == null) return;
-            boolean atTop = !mListView.canScrollVertically(-1);
-            boolean atBottom = !mListView.canScrollVertically(1);
-
-            int newState;
-            if (atTop && atBottom) {
-                newState = LAST_SCROLLSTATE_AT_TOP_BOTTOM;
-            } else if (atTop) {
-                newState = LAST_SCROLLSTATE_AT_TOP;
-            } else if (atBottom) {
-                newState = LAST_SCROLLSTATE_AT_BOTTOM;
-            } else {
-                newState = LAST_SCROLLSTATE_NOT_EDGE;
-            }
-
-            if (newState != mNewState) {
-                mNewState = newState;
-                if (newState == LAST_SCROLLSTATE_NOT_EDGE) {
-                    if (mListener != null) mListener.onEdgeUnreached();
-                } else {
-                    if (mListener != null) mListener.onEdgeReached(atTop);
-                }
-            }
-        }
-    }
-
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onEdgeReached(boolean atTop);
-        public void onEdgeUnreached();
+    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener  {
     }
 }

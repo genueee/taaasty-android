@@ -20,6 +20,7 @@
     <item type="id" name="conversation_view_my_message"/>
     <item type="id" name="conversation_view_their_message"/>
 
+    <item type="id" name="post_header"/>
     <item type="id" name="comments_header"/>
     <item type="id" name="comment"/>
 

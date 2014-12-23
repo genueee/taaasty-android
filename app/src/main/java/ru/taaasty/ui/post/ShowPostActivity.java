@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -34,23 +35,28 @@ import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener {
+public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener, ShowPostFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowPostActivity";
 
     private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
     private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
+    private static final String ARG_SHOW_FULL_POST = "ru.taaasty.ui.feeds.ShowPostActivity.show_full_post";
     private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
+    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
     private ActionbarUserIconLoader mAbIconLoader;
 
     private Handler mHideActionBarHandler;
+
+    private boolean mShowFullPost;
 
     private long mPostId;
 
@@ -67,6 +73,12 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         private TlogDesign mTlogDesign;
 
         private Long mCommentId;
+
+        private Bitmap mThumbnailBitmap;
+
+        private String mThumbnailBitmapCacheKey;
+
+        private boolean mShowFullPost;
 
         public Builder(Context context) {
             mContext = context;
@@ -97,6 +109,18 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             return this;
         }
 
+        public Builder setThumbnailBitmap(Bitmap bitmap, @Nullable String cacheKey) {
+            mThumbnailBitmap = bitmap;
+            mThumbnailBitmapCacheKey = cacheKey;
+            return this;
+        }
+
+        public Builder setShowFullPost(boolean enable) {
+            mShowFullPost = enable;
+            return this;
+        }
+
+
         public Intent buildIntent() {
             if (mPostId == null && mEntry == null) {
                 throw new IllegalStateException("post not defined");
@@ -107,6 +131,14 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
             if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
+
+            if (mShowFullPost) intent.putExtra(ShowPostActivity.ARG_SHOW_FULL_POST, mShowFullPost);
+
+            if (mThumbnailBitmap != null) {
+                String key = mThumbnailBitmapCacheKey != null ? mThumbnailBitmapCacheKey : "thumbnail";
+                ImageUtils.getInstance().putBitmapToCache(key, mThumbnailBitmap);
+                intent.putExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY, key);
+            }
 
             return intent;
         }
@@ -141,19 +173,26 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         mHideActionBarHandler = new Handler();
 
+        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
+
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
             mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
             if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
             Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+            String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
             if (design != null) {
                 getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
             }
 
             Fragment fragment;
-            fragment = ShowCommentsFragment.newInstance(mPostId, entry, design);
+            if (mShowFullPost) {
+                fragment = ShowPostFragment.newInstance(mPostId, entry, design);
+            } else {
+                fragment = ShowCommentsFragment.newInstance(mPostId, entry, design);
+            }
 
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
@@ -285,9 +324,12 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     private Entry getCurrentEntry() {
         Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+
         if (fragment == null) return null;
         if (fragment instanceof  ShowCommentsFragment) {
             return ((ShowCommentsFragment) fragment).getCurrentEntry();
+        } else if (fragment instanceof ShowPostFragment) {
+            return ((ShowPostFragment) fragment).getCurrentEntry();
         }
         return null;
     }
@@ -305,7 +347,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         ActionBar ab = getActionBar();
         if (ab == null) return;
 
-        SpannableString title = new SpannableString(getText(R.string.title_activity_comments));
+        SpannableString title = new SpannableString(getText(
+                mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
 
         ab.setDisplayHomeAsUpEnabled(true);
         ab.setIcon(new ColorDrawable(Color.TRANSPARENT));

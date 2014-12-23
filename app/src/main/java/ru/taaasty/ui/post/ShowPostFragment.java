@@ -7,7 +7,6 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,12 +18,11 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import junit.framework.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,6 +32,11 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.CommentsAdapter;
+import ru.taaasty.adapters.list.ListEmbeddEntry;
+import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.adapters.list.ListImageEntry;
+import ru.taaasty.adapters.list.ListQuoteEntry;
+import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.ReportCommentSent;
@@ -46,9 +49,13 @@ import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
+import ru.taaasty.widgets.DateIndicatorWidget;
+import ru.taaasty.widgets.EntryBottomActionBar;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -59,9 +66,9 @@ import rx.functions.Action0;
 /**
  * Пост с комментариями
  */
-public class ShowCommentsFragment extends Fragment {
+public class ShowPostFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ShowCommentsFragment";
+    private static final String TAG = "ShowPostFragment2";
     private static final String ARG_POST_ID = "post_id";
     private static final String ARG_TLOG_DESIGN = "tlog_design";
     private static final String ARG_ENTRY = "entry";
@@ -97,11 +104,14 @@ public class ShowCommentsFragment extends Fragment {
     private TlogDesign mDesign;
 
     private View mEmptyView;
+    private ListScrollController mListScrollController;
 
     private boolean mLoadComments;
     private int mTotalCommentsCount = -1;
 
     private Handler mRefreshDatesHandler;
+
+    private boolean mUpdateRating;
 
     /**
      * Use this factory method to create a new instance of
@@ -109,9 +119,9 @@ public class ShowCommentsFragment extends Fragment {
      *
      * @return A new instance of fragment LiveFeedFragment.
      */
-    public static ShowCommentsFragment newInstance(long postId, @Nullable Entry entry,
-                                               @Nullable TlogDesign design) {
-        ShowCommentsFragment f = new  ShowCommentsFragment();
+    public static ShowPostFragment newInstance(long postId, @Nullable Entry entry,
+                                                   @Nullable TlogDesign design) {
+        ShowPostFragment f = new ShowPostFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_POST_ID, postId);
         if (entry != null) b.putParcelable(ARG_ENTRY, entry);
@@ -120,7 +130,7 @@ public class ShowCommentsFragment extends Fragment {
         return f;
     }
 
-    public ShowCommentsFragment() {
+    public ShowPostFragment() {
         // Required empty public constructor
     }
 
@@ -142,10 +152,9 @@ public class ShowCommentsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         inflater = getActivity().getLayoutInflater(); // Calligraphy and support-21 bug
-        View v = inflater.inflate(R.layout.fragment_show_comments, container, false);
+        View v = inflater.inflate(R.layout.fragment_show_post, container, false);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_view);
-        mEmptyView = v.findViewById(R.id.empty_view);
 
         View replyToCommentContainer = v.findViewById(R.id.reply_to_comment_container);
         mReplyToCommentText = (EditText) replyToCommentContainer.findViewById(R.id.reply_to_comment_text);
@@ -182,11 +191,19 @@ public class ShowCommentsFragment extends Fragment {
     public void onViewCreated(View root, Bundle savedInstanceState) {
         super.onViewCreated(root, savedInstanceState);
 
+        mListScrollController = new ListScrollController(mListView, mListener);
         mCommentsAdapter = new Adapter(getActivity());
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
         mListView.setLayoutManager(lm);
-        mListView.setOnScrollListener(mScrollListener);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            private boolean mEdgeReachedCalled = true;
+
+            @Override
+            public void onScrolled(RecyclerView view, int dx, int dy) {
+                if (mListScrollController != null) mListScrollController.checkScroll();
+            }
+        });
         mListView.setHasFixedSize(false);
         mListView.setAdapter(mCommentsAdapter);
 
@@ -199,12 +216,19 @@ public class ShowCommentsFragment extends Fragment {
             mLoadComments = savedInstanceState.getBoolean(KEY_LOAD_COMMENTS);
         }
 
+        if (mCurrentEntry != null) setCurrentEntry(mCurrentEntry);
         refreshCommentsStatus();
         setupFeedDesign();
         refreshEntry();
 
         mRefreshDatesHandler = new Handler();
         refreshDelayed();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mListScrollController.checkScroll();
     }
 
     @Override
@@ -231,6 +255,7 @@ public class ShowCommentsFragment extends Fragment {
         mTlogDesignSubscription.unsubscribe();
         mPostCommentSubscription.unsubscribe();
         mListView = null;
+        mListScrollController = null;
         mRefreshDatesHandler.removeCallbacks(mRefreshDatesRunnable);
         mRefreshDatesHandler = null;
     }
@@ -248,12 +273,14 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     public void onEventMainThread(CommentRemoved event) {
+        if (DBG) Log.v(TAG, "CommentRemoved event. commentId: " + event.commentId);
         if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
         mCurrentEntry.setCommentsCount( mCurrentEntry.getCommentsCount() - 1 );
         EventBus.getDefault().post(new EntryChanged(mCurrentEntry));
     }
 
     public void onEventMainThread(ReportCommentSent event) {
+        if (DBG) Log.v(TAG, "ReportCommentSent. commentId: " + event.commentId);
         // Прячем кнопки после жалобы на комментарий
         if (mCommentsAdapter != null) {
             Long commentSelected = mCommentsAdapter.getCommentSelected();
@@ -264,8 +291,9 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     public void onEventMainThread(EntryChanged event) {
-        if (event.postEntry.getId() == mCurrentEntry.getId() && mCurrentEntry != event.postEntry) {
-            mCurrentEntry = event.postEntry;
+        if (DBG) Log.v(TAG, "EntryChanged. postId: " + event.postEntry.getId());
+        if (mCurrentEntry == null || (event.postEntry.getId() == mCurrentEntry.getId())) {
+            setCurrentEntry(event.postEntry);
         }
     }
 
@@ -298,7 +326,20 @@ public class ShowCommentsFragment extends Fragment {
         mCommentsAdapter.setFeedDesign(design);
     }
 
+    public Entry getCurrentEntry() {
+        return mCurrentEntry;
+    }
+
+    private void setCurrentEntry(Entry entry) {
+        if (DBG) Log.v(TAG, "setCurrentEntry entryId: " + entry.getId());
+        mCurrentEntry = entry;
+        mCommentsAdapter.setShowPost(true);
+        mCommentsAdapter.notifyItemChanged(mCommentsAdapter.getPostPosition());
+        setupPostDate();
+    }
+
     public void refreshEntry() {
+        if (DBG) Log.v(TAG, "refreshEntry()  postId: " + mPostId);
         mPostSubscription.unsubscribe();
 
         Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
@@ -309,11 +350,8 @@ public class ShowCommentsFragment extends Fragment {
                 .subscribe(mCurrentEntryObserver);
     }
 
-    public Entry getCurrentEntry() {
-        return mCurrentEntry;
-    }
-
     private void loadDesign(long userId) {
+        if (DBG) Log.v(TAG, "loadDesign()  userId: " + userId);
         mTlogDesignSubscription.unsubscribe();
         Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
                 mTlogDesignService.getDesignSettings(String.valueOf(userId)));
@@ -326,6 +364,7 @@ public class ShowCommentsFragment extends Fragment {
         mCommentsSubscription.unsubscribe();
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
+        if (DBG) Log.v(TAG, "loadComments()  topCommentId: " + topCommentId);
         Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
                 mCommentsService.getComments(mPostId,
                         null,
@@ -342,16 +381,7 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     void refreshCommentsStatus() {
-        updateEmptyView();
         mCommentsAdapter.refreshCommentsStatus();
-    }
-
-    private void updateEmptyView() {
-        if (mCommentsAdapter == null) return;
-        boolean shown = (mTotalCommentsCount >= 0)
-                && !mLoadComments
-                && !mCommentsAdapter.hasComments();
-        mEmptyView.setVisibility(shown ? View.VISIBLE : View.GONE);
     }
 
     private void appendUserSlugToReplyComment(String slug) {
@@ -370,6 +400,7 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     void sendRepyToComment() {
+        if (DBG) Log.v(TAG, "sendRepyToComment()");
         String comment = mReplyToCommentText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
@@ -443,6 +474,47 @@ public class ShowCommentsFragment extends Fragment {
         }
     }
 
+    private void setupPostDate() {
+        if (DBG) Log.v(TAG, "setupPostDate()");
+        final View fragmentView = getView();
+        if (fragmentView == null) return;
+        DateIndicatorWidget dateView = (DateIndicatorWidget)fragmentView.findViewById(R.id.date_indicator);
+        dateView.setDate(mCurrentEntry.getCreatedAt());
+        if (dateView.getVisibility() != View.VISIBLE) {
+            if (fragmentView.getHeight() != 0) {
+                setupDateViewTopMargin();
+            } else {
+                fragmentView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        ViewTreeObserver vo = fragmentView.getViewTreeObserver();
+                        if (vo.isAlive()) {
+                            fragmentView.getViewTreeObserver().removeOnPreDrawListener(this);
+                            setupDateViewTopMargin();
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
+                });
+            }
+        }
+        dateView.setVisibility(View.VISIBLE);
+    }
+
+    // Индикатор даты выравниваем по верхнему краю, чтобы он прятался при показеклавиатуре, а не выскакивал и мешал
+    private void setupDateViewTopMargin() {
+        if (getView() == null || getView().getRootView() == null) return;
+        if (DBG) Log.v(TAG, "setupDateViewTopMargin()");
+        DateIndicatorWidget dateView = (DateIndicatorWidget)getView().findViewById(R.id.date_indicator);
+        View rootView = getView().getRootView();
+        int marginTop = rootView.getHeight() - dateView.getHeight() - getResources().getDimensionPixelSize(R.dimen.date_indicator_margin_bottom);
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)dateView.getLayoutParams();
+        lp.topMargin = marginTop;
+        dateView.setLayoutParams(lp);
+        dateView.setVisibility(View.VISIBLE);
+    }
+
     private final class Adapter extends CommentsAdapter {
 
         private boolean mCommentsLoadInProgress;
@@ -454,26 +526,62 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comments_load_more, parent, false);
-            return new CommentsLoadMoreViewHolder(view);
+            switch (viewType) {
+                case Adapter.VIEW_TYPE_POST_HEADER:
+                    return onCreatePostViewHolder(parent);
+                case Adapter.VIEW_TYPE_LOAD_MORE_HEADER:
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comments_load_more, parent, false);
+                    return new CommentsLoadMoreViewHolder(view);
+                default:
+                    throw new IllegalStateException();
+            }
         }
 
         @Override
         public void onBindHeaderHolder(RecyclerView.ViewHolder pHolder, int position) {
-            CommentsLoadMoreViewHolder holder = (CommentsLoadMoreViewHolder)pHolder;
-            if (mCommentsLoadInProgress) {
-                holder.progress.setVisibility(View.VISIBLE);
-                holder.button.setVisibility(View.INVISIBLE);
+            if (isPostPosition(position)) {
+                onBindPostHolder(pHolder);
+            } else if (isLoadMorePosition(position)) {
+                CommentsLoadMoreViewHolder holder = (CommentsLoadMoreViewHolder)pHolder;
+                if (mCommentsLoadInProgress) {
+                    holder.progress.setVisibility(View.VISIBLE);
+                    holder.button.setVisibility(View.INVISIBLE);
+                } else {
+                    holder.button.setText(mCommentsLoadText);
+                    holder.progress.setVisibility(View.INVISIBLE);
+                    holder.button.setVisibility(View.VISIBLE);
+                }
             } else {
-                holder.button.setText(mCommentsLoadText);
-                holder.progress.setVisibility(View.INVISIBLE);
-                holder.button.setVisibility(View.VISIBLE);
+                throw new IllegalStateException();
             }
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
+            super.onViewDetachedFromWindow(holder);
+            if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onAttachedToWindow();
+        }
+
+        @Override
+        public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
+            super.onViewAttachedToWindow(holder);
+            if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onDetachedFromWindow();
         }
 
         @Override
         public void initClickListeners(final RecyclerView.ViewHolder holder, int viewType) {
             switch (viewType) {
+                case CommentsAdapter.VIEW_TYPE_POST_HEADER:
+                    // Клики по элементам панельки снизу
+                    ((ListEntryBase)holder).getEntryActionBar().setOnItemClickListener(mEntryActionBarListener);
+                    // Клики на картинках
+                    FeedsHelper.setupListEntryClickListener(new FeedsHelper.IFeedsHelper() {
+                        @Override
+                        public Entry getAnyEntryAtHolderPosition(RecyclerView.ViewHolder holder) {
+                            return mCurrentEntry;
+                        }
+                    }, (ListEntryBase)holder);
+                    break;
                 case CommentsAdapter.VIEW_TYPE_LOAD_MORE_HEADER:
                     ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -512,6 +620,7 @@ public class ShowCommentsFragment extends Fragment {
         }
 
         private void setCommentsLoadMoreStatus(boolean isVisible, boolean isInProgress, CharSequence buttonText) {
+            if (DBG) Log.v(TAG, "setCommentsLoadMoreStatus visible: " + isVisible + " inProgress: " + isInProgress);
             if (isVisible) {
                 boolean inProgressChanged =  (isInProgress != mCommentsLoadInProgress);
                 boolean textChanged = (!TextUtils.equals(buttonText, mCommentsLoadText));
@@ -521,7 +630,7 @@ public class ShowCommentsFragment extends Fragment {
                 if (!isLoadMoreHeaderShown()) {
                     setShowLoadMoreHeader(true);
                 } else {
-                    if (inProgressChanged || textChanged) notifyItemChanged(0);
+                    if (inProgressChanged || textChanged) notifyItemChanged(getLoadMorePosition());
                 }
             } else {
                 mCommentsLoadInProgress = isInProgress;
@@ -531,6 +640,7 @@ public class ShowCommentsFragment extends Fragment {
         }
 
         private void refreshCommentsStatus() {
+            if (DBG) Log.v(TAG, "refreshCommentsStatus() mTotalCommentsCount: " + mTotalCommentsCount);
             int commentsToLoad;
             // Пока не определились с количеством
             if (mTotalCommentsCount < 0) {
@@ -556,6 +666,37 @@ public class ShowCommentsFragment extends Fragment {
                     setCommentsLoadMoreShowText(desc);
                 }
             }
+        }
+
+        private RecyclerView.ViewHolder onCreatePostViewHolder(ViewGroup parent) {
+            if (DBG) Log.v(TAG, "onCreatePostViewHolder()");
+            Context context = parent.getContext();
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View child;
+            RecyclerView.ViewHolder holder;
+            if (mCurrentEntry.isImage()) {
+                child = inflater.inflate(R.layout.list_feed_item_image, parent, false);
+                holder = new ListImageEntry(context, child, false);
+            } else if (mCurrentEntry.isEmbedd()) {
+                child = inflater.inflate(R.layout.list_feed_item_image, parent, false);
+                holder = new ListEmbeddEntry(context, child, false);
+            } else if (mCurrentEntry.isQuote()) {
+                child = inflater.inflate(R.layout.list_feed_item_quote, parent, false);
+                holder = new ListQuoteEntry(context, child, false);
+            } else {
+                child = inflater.inflate(R.layout.list_feed_item_text, parent, false);
+                holder = new ListTextEntry(context, child, false);
+            }
+
+            ((ListEntryBase)holder).setParentWidth(parent.getWidth());
+            return holder;
+        }
+
+        private void onBindPostHolder(RecyclerView.ViewHolder pHolder) {
+            if (DBG) Log.v(TAG, "onBindPostHolder()");
+            ((ListEntryBase) pHolder).getEntryActionBar().setOnItemListenerEntry(mCurrentEntry);
+            ((ListEntryBase)pHolder).getEntryActionBar().setCommentsClickable(false);
+            ((ListEntryBase) pHolder).setupEntry(mCurrentEntry, mFeedDesign);
         }
 
         private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
@@ -620,6 +761,39 @@ public class ShowCommentsFragment extends Fragment {
                 }
             }
         };
+
+        private final EntryBottomActionBar.OnEntryActionBarListener mEntryActionBarListener = new EntryBottomActionBar.OnEntryActionBarListener() {
+
+            @Override
+            public void onPostLikesClicked(View view, Entry entry) {
+                if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
+                new LikesHelper().voteUnvote(entry);
+            }
+
+            @Override
+            public void onPostCommentsClicked(View view, Entry entry) {
+                if (DBG) Log.v(TAG, "Этот пункт не должен быть тыкабельным", new IllegalStateException());
+            }
+
+            @Override
+            public void onPostUserInfoClicked(View view, Entry entry) {
+                if (mListener == null) return;
+                // Если клавиатура на экране - значит, скорее всего, пользователь пишет пост. При тыке на авторе поста
+                // добавляем его в пост
+                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm.isActive()) {
+                    appendUserSlugToReplyComment(entry.getAuthor().getSlug());
+                } else {
+                    mListener.onAvatarClicked(view, mCurrentEntry.getAuthor(), mDesign);
+                }
+            }
+
+            @Override
+            public void onPostAdditionalMenuClicked(View view, Entry entry) {
+                if (mListener != null) mListener.onSharePostMenuClicked(entry);
+            }
+        };
+
     }
 
     private static class CommentsLoadMoreViewHolder extends RecyclerView.ViewHolder {
@@ -631,6 +805,37 @@ public class ShowCommentsFragment extends Fragment {
             super(itemView);
             button = (TextView)itemView.findViewById(R.id.comments_load_more);
             progress = itemView.findViewById(R.id.comments_load_more_progress);
+        }
+    }
+
+
+    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
+
+        public LikesHelper() {
+            super(ShowPostFragment.this);
+        }
+
+        @Override
+        public boolean isRatingInUpdate(long entryId) {
+            return mUpdateRating;
+        }
+
+        @Override
+        public void onRatingUpdateStart(long entryId) {
+            mUpdateRating = true;
+            // XXX: refresh item
+        }
+
+        @Override
+        public void onRatingUpdateCompleted(Entry entry) {
+            mUpdateRating = false;
+            EventBus.getDefault().post(new EntryChanged(entry));
+        }
+
+        @Override
+        public void onRatingUpdateError(Throwable e, Entry entry) {
+            mUpdateRating = false;
+            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
         }
     }
 
@@ -649,28 +854,6 @@ public class ShowCommentsFragment extends Fragment {
         }
     };
 
-    private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
-        private boolean mEdgeReachedCalled = true;
-
-        @Override
-        public void onScrolled(RecyclerView view, int dx, int dy) {
-            boolean atTop = !view.canScrollVertically(-1);
-            boolean atEdge = atTop || !view.canScrollVertically(1);
-
-            if (atEdge) {
-                if (!mEdgeReachedCalled) {
-                    mEdgeReachedCalled = true;
-                    if (mListener != null) mListener.onEdgeReached(atTop);
-                }
-            } else {
-                if (mEdgeReachedCalled) {
-                    mEdgeReachedCalled = false;
-                    if (mListener != null) mListener.onEdgeUnreached();
-                }
-            }
-        }
-    };
-
     private final Observer<Entry> mCurrentEntryObserver = new Observer<Entry>() {
 
         @Override
@@ -685,7 +868,8 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(Entry entry) {
-            mCurrentEntry = entry;
+            if (DBG) Log.v(TAG, "mCurrentEntryObserver onNext entryId: " + entry.getId());
+            setCurrentEntry(entry);
             mTotalCommentsCount = entry.getCommentsCount();
             if (mListener != null) mListener.onPostLoaded(mCurrentEntry);
             loadComments();
@@ -699,6 +883,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onCompleted() {
+            if (DBG) Log.v(TAG, "mCommentsObserver onCompleted");
             mLoadComments = false;
             refreshCommentsStatus();
         }
@@ -712,14 +897,17 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(Comments comments) {
+            if (DBG) Log.v(TAG, "mCommentsObserver onNext");
             mCommentsAdapter.appendComments(comments.comments);
             mTotalCommentsCount = comments.totalCount;
+            mListScrollController.checkScrollStateOnViewPreDraw();
         }
     };
 
     private final Observer<Comment> mPostCommentObserver = new Observer<Comment>() {
         @Override
         public void onCompleted() {
+            if (DBG) Log.v(TAG, "mPostCommentObserver onCompleted");
             if (mReplyToCommentText != null) mReplyToCommentText.setText("");
             mCurrentEntry.setCommentsCount(mCurrentEntry.getCommentsCount() + 1);
             EventBus.getDefault().post(new EntryChanged(mCurrentEntry));
@@ -732,6 +920,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(Comment comment) {
+            if (DBG) Log.v(TAG, "mPostCommentObserver onNext commentId: " + comment.getId());
             mCommentsAdapter.appendComments(Collections.singletonList(comment));
         }
     };
@@ -750,7 +939,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(TlogDesign design) {
-            Assert.assertEquals(Looper.getMainLooper().getThread(), Thread.currentThread());
+            if (DBG) Log.v(TAG, "mTlogDesignObserver onNext");
             mDesign = design;
             TlogDesign designLight = new TlogDesign();
             designLight.setFontTypeface(design.isFontTypefaceSerif());
@@ -769,14 +958,11 @@ public class ShowCommentsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener {
         public void onPostLoaded(Entry entry);
         public void onPostLoadError(Throwable e);
         public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
-
-        public void onEdgeReached(boolean atTop);
-        public void onEdgeUnreached();
         public void setPostBackgroundColor(int color);
     }
 }

@@ -50,4 +50,6 @@
     <dimen name="grid_feed_item_margin">2.5dp</dimen>
     <dimen name="user_name_text_size">32sp</dimen>
 
+    <dimen name="date_indicator_margin_bottom">84dp</dimen>
+
 </resources>

@@ -180,6 +180,7 @@ public class EntryBottomActionBar {
     }
 
     public void setCommentsClickable(boolean clickable) {
+        mCommentsCountView.setOnClickListener(null);
         mCommentsCountView.setClickable(clickable);
     }
 

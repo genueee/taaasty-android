@@ -25,11 +25,12 @@ import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
+import ru.taaasty.ui.feeds.FeedsHelper;
 
 /**
  * Лента постов. Упрощенная версия без комментариев, только посты.
  */
-public abstract class FeedItemAdapterLite extends RecyclerView.Adapter {
+public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implements FeedsHelper.IFeedsHelper {
 
     public static final int VIEW_TYPE_HEADER = R.id.feed_view_type_header;
     public static final int VIEW_TYPE_IMAGE = R.id.feed_view_type_image;

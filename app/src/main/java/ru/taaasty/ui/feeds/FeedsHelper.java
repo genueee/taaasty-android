@@ -33,6 +33,10 @@ public class FeedsHelper {
 
     }
 
+    public interface IFeedsHelper {
+        public Entry getAnyEntryAtHolderPosition(RecyclerView.ViewHolder holder);
+    }
+
     @Nullable
     public static int getAdapterPositionAtWidgetHeight(RecyclerView listView, View widget) {
         // Здесь считаем, что top listview и top parent'а dateindicator находятся на одной высоте
@@ -66,7 +70,7 @@ public class FeedsHelper {
         dateIndicator.setDate(newDate, animScrollUp);
     }
 
-    public static void setupListEntryClickListener(FeedItemAdapterLite adapter, final ListEntryBase pHolder) {
+    public static void setupListEntryClickListener(IFeedsHelper adapter, final ListEntryBase pHolder) {
         if (pHolder instanceof ListImageEntry) {
             ((ListImageEntry) pHolder).getImageView().setOnClickListener(
                     new FeedsHelper.OnImageEntryClickListener(pHolder, adapter));
@@ -78,9 +82,9 @@ public class FeedsHelper {
     public static class OnImageEntryClickListener implements View.OnClickListener {
 
         private final ListEntryBase mHolder;
-        private final FeedItemAdapterLite mAdapter;
+        private final IFeedsHelper mAdapter;
 
-        public OnImageEntryClickListener(ListEntryBase holder, FeedItemAdapterLite adapter) {
+        public OnImageEntryClickListener(ListEntryBase holder, IFeedsHelper adapter) {
             mHolder = holder;
             mAdapter = adapter;
         }
