@@ -250,7 +250,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
     }
 
     @Nullable
-    private Integer findCommentPosition(long commentId) {
+    public Integer findCommentPosition(long commentId) {
         Integer pos = mComments.findLocation(commentId);
         return pos == null ? null : getAdapterPosition(pos);
     }

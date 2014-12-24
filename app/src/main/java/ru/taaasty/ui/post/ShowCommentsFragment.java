@@ -28,6 +28,7 @@ import junit.framework.Assert;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -47,6 +48,7 @@ import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
@@ -86,6 +88,7 @@ public class ShowCommentsFragment extends Fragment {
 
     private RecyclerView mListView;
     private Adapter mCommentsAdapter;
+    private ListScrollController mListScrollController;
 
     private EditText mReplyToCommentText;
     private View mPostButton;
@@ -146,6 +149,7 @@ public class ShowCommentsFragment extends Fragment {
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_view);
         mEmptyView = v.findViewById(R.id.empty_view);
+        mListScrollController = new ListScrollController(mListView, mListener);
 
         View replyToCommentContainer = v.findViewById(R.id.reply_to_comment_container);
         mReplyToCommentText = (EditText) replyToCommentContainer.findViewById(R.id.reply_to_comment_text);
@@ -186,7 +190,12 @@ public class ShowCommentsFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
         mListView.setLayoutManager(lm);
-        mListView.setOnScrollListener(mScrollListener);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView view, int dx, int dy) {
+                if (mListScrollController != null) mListScrollController.checkScroll();
+            }
+        });
         mListView.setHasFixedSize(false);
         mListView.setAdapter(mCommentsAdapter);
 
@@ -205,6 +214,12 @@ public class ShowCommentsFragment extends Fragment {
 
         mRefreshDatesHandler = new Handler();
         refreshDelayed();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mListScrollController.checkScroll();
     }
 
     @Override
@@ -230,6 +245,7 @@ public class ShowCommentsFragment extends Fragment {
         mCommentsSubscription.unsubscribe();
         mTlogDesignSubscription.unsubscribe();
         mPostCommentSubscription.unsubscribe();
+        mListScrollController = null;
         mListView = null;
         mRefreshDatesHandler.removeCallbacks(mRefreshDatesRunnable);
         mRefreshDatesHandler = null;
@@ -272,6 +288,40 @@ public class ShowCommentsFragment extends Fragment {
     void onCommentsLoadMoreButtonClicked() {
         loadComments();
     }
+
+    private void addCommentsDoNotScrollList(List<Comment> comments) {
+        Long oldTopId = null;
+        int oldTopTop = 0;
+
+        CommentsAdapter.ViewHolder top = findTopVisibleCommentViewHolder();
+        if (top != null) {
+            oldTopId = mCommentsAdapter.getItemId(top.getPosition());
+            oldTopTop = top.itemView.getTop() - mListView.getPaddingTop();
+        }
+
+        mCommentsAdapter.appendComments(comments);
+
+        if (oldTopId != null) {
+            Integer newPosition = mCommentsAdapter.findCommentPosition(oldTopId);
+            if (newPosition != null) {
+                LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
+                lm.scrollToPositionWithOffset(newPosition, oldTopTop);
+                mListScrollController.checkScrollStateOnViewPreDraw();
+            }
+        }
+    }
+
+    @Nullable
+    private CommentsAdapter.ViewHolder findTopVisibleCommentViewHolder() {
+        if (mListView == null) return null;
+        int count = mListView.getChildCount();
+        for (int i = 0; i < count; ++i) {
+            RecyclerView.ViewHolder holder = mListView.getChildViewHolder(mListView.getChildAt(i));
+            if (holder instanceof CommentsAdapter.ViewHolder) return (CommentsAdapter.ViewHolder) holder;
+        }
+        return null;
+    }
+
 
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
@@ -649,28 +699,6 @@ public class ShowCommentsFragment extends Fragment {
         }
     };
 
-    private final RecyclerView.OnScrollListener mScrollListener = new RecyclerView.OnScrollListener() {
-        private boolean mEdgeReachedCalled = true;
-
-        @Override
-        public void onScrolled(RecyclerView view, int dx, int dy) {
-            boolean atTop = !view.canScrollVertically(-1);
-            boolean atEdge = atTop || !view.canScrollVertically(1);
-
-            if (atEdge) {
-                if (!mEdgeReachedCalled) {
-                    mEdgeReachedCalled = true;
-                    if (mListener != null) mListener.onEdgeReached(atTop);
-                }
-            } else {
-                if (mEdgeReachedCalled) {
-                    mEdgeReachedCalled = false;
-                    if (mListener != null) mListener.onEdgeUnreached();
-                }
-            }
-        }
-    };
-
     private final Observer<Entry> mCurrentEntryObserver = new Observer<Entry>() {
 
         @Override
@@ -712,8 +740,9 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(Comments comments) {
-            mCommentsAdapter.appendComments(comments.comments);
+            addCommentsDoNotScrollList(comments.comments);
             mTotalCommentsCount = comments.totalCount;
+            mListScrollController.checkScrollStateOnViewPreDraw();
         }
     };
 
@@ -733,6 +762,8 @@ public class ShowCommentsFragment extends Fragment {
         @Override
         public void onNext(Comment comment) {
             mCommentsAdapter.appendComments(Collections.singletonList(comment));
+            Integer position = mCommentsAdapter.findCommentPosition(comment.getId());
+            if (position != null) mListView.smoothScrollToPosition(position);
         }
     };
 
@@ -769,14 +800,12 @@ public class ShowCommentsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener {
         public void onPostLoaded(Entry entry);
         public void onPostLoadError(Throwable e);
         public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
 
-        public void onEdgeReached(boolean atTop);
-        public void onEdgeUnreached();
         public void setPostBackgroundColor(int color);
     }
 }
