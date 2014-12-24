@@ -169,15 +169,16 @@ public class UserInfoFragment extends Fragment {
         view.findViewById(R.id.entries_count).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.subscribe).setOnClickListener(mOnClickListener);
         view.findViewById(R.id.unsubscribe).setOnClickListener(mOnClickListener);
-        view.findViewById(R.id.initiate_conversation).setOnClickListener(mOnClickListener);
         mSelectBackgroundButtonView.setOnClickListener(mOnClickListener);
 
         mSelectBackgroundButtonView.setVisibility(isMyProfile() ? View.VISIBLE : View.GONE);
         if (isMyProfile()) {
             mSelectBackgroundButtonView.setVisibility(View.VISIBLE);
             mAvatarView.setOnClickListener(mOnClickListener);
+            view.findViewById(R.id.initiate_conversation).setVisibility(View.GONE);
         } else {
             mSelectBackgroundButtonView.setVisibility(View.GONE);
+            view.findViewById(R.id.initiate_conversation).setOnClickListener(mOnClickListener);
         }
         if (mUser != null) setupUserInfo();
 
