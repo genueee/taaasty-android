@@ -311,6 +311,7 @@
         <item name="android:textStyle">italic</item>
         <item name="android:textAppearance">@style/TextAppearance.PostSans</item>
         <item name="android:ellipsize">marquee</item>
+        <item name="android:textIsSelectable">true</item>
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
         <item name="android:paddingBottom">2dp</item>
         <item name="android:paddingTop">2dp</item>
