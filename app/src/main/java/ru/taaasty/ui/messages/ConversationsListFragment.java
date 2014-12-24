@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -194,7 +195,7 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     }
 
     public void onEventMainThread(ConversationChanged event) {
-        if (mAdapter != null) mAdapter.addConversation(event.conversation);
+        if (mAdapter != null && event.conversation.messagesCount > 0) mAdapter.addConversation(event.conversation);
     }
 
     private void setNewStatus(PusherService.NotificationsStatus status) {
@@ -279,7 +280,11 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         @Override
         public void onNext(List<Conversation> conversations) {
             if (DBG) Log.v(TAG, "onNext");
-            if (mAdapter != null) mAdapter.setConversations(conversations);
+            if (mAdapter != null) {
+                List<Conversation> ge0 = new ArrayList<>(conversations.size());
+                for (Conversation c: conversations) if (c.messagesCount > 0)  ge0.add(c);
+                mAdapter.setConversations(ge0);
+            }
         }
     };
 
