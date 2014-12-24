@@ -45,6 +45,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     private final FrameLayout mImageLayout;
     private final ProgressBar mImageProgressBar;
     private final ImageView mImageView;
+    private final TextView mMoreImagesWidget;
     private final TextView mTitle;
 
     private Context mContext;
@@ -65,13 +66,14 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
     private boolean mAttachedToWindow;
 
-    public ListImageEntry(Context context, View v, boolean showAuthorAvatar) {
+    public ListImageEntry(final Context context, View v, boolean showAuthorAvatar) {
         super(context, v, showAuthorAvatar);
 
         mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mImageProgressBar = (ProgressBar)mImageLayout.findViewById(R.id.image_progress);
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
+        mMoreImagesWidget = (TextView)v.findViewById(R.id.more_photos_indicator);
 
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -81,11 +83,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design) {
+    public void setupEntry(final Entry entry, TlogDesign design) {
         super.setupEntry(entry, design);
         mUser = entry.getAuthor();
         setupImage(entry, mParentWidth);
         setupTitle(entry, mParentWidth);
+        setupMoreImages(entry);
         applyFeedStyle(design);
     }
 
@@ -96,6 +99,8 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         Typeface tf = design.isFontTypefaceSerif() ? getFontManager().getPostSerifTypeface() : getFontManager().getPostSansSerifTypeface();
         mTitle.setTextColor(textColor);
         mTitle.setTypeface(tf);
+        mMoreImagesWidget.setTextColor(getResources().getColor(design.isDarkTheme() ?
+                R.color.text_color_feed_actions_dark_theme : R.color.text_color_feed_actions_light_theme));
     }
 
     @Override
@@ -249,6 +254,10 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         return mImageView;
     }
 
+    public View getMoreImagesWidget() {
+        return mMoreImagesWidget;
+    }
+
     public String getImageViewUrl() {
         return mImageViewUrl;
     }
@@ -269,6 +278,17 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         mTitle.setText(title, TextView.BufferType.NORMAL);
         mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
         mTitle.setVisibility(View.VISIBLE);
+    }
+
+    private void setupMoreImages(Entry item) {
+        int count_more = item.getImages().size() - 1;
+        if (count_more > 0) {
+            String text = mMoreImagesWidget.getResources().getQuantityString(R.plurals.more_images, count_more, count_more);
+            mMoreImagesWidget.setText(text);
+            mMoreImagesWidget.setVisibility(View.VISIBLE);
+        } else {
+            mMoreImagesWidget.setVisibility(View.GONE);
+        }
     }
 
     @Override

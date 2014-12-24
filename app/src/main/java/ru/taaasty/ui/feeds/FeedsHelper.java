@@ -72,8 +72,9 @@ public class FeedsHelper {
 
     public static void setupListEntryClickListener(IFeedsHelper adapter, final ListEntryBase pHolder) {
         if (pHolder instanceof ListImageEntry) {
-            ((ListImageEntry) pHolder).getImageView().setOnClickListener(
-                    new FeedsHelper.OnImageEntryClickListener(pHolder, adapter));
+            FeedsHelper.OnImageEntryClickListener listener = new FeedsHelper.OnImageEntryClickListener(pHolder, adapter);
+            ((ListImageEntry) pHolder).getImageView().setOnClickListener(listener);
+            ((ListImageEntry) pHolder).getMoreImagesWidget().setOnClickListener(listener);
         } else if (pHolder instanceof  ListEmbeddEntry) {
             ((ListEmbeddEntry) pHolder).getImageView().setOnClickListener(new FeedsHelper.OnImageEntryClickListener(pHolder, adapter));
         }

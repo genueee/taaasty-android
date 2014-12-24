@@ -255,4 +255,10 @@
     <string name="summary_available_notifications">Отправлять мне емейл уведомления обо всех новых комментариях, подписчиках и личных сообщениях?</string>
     <string name="user_error">Ошибка обновления пользователя</string>
 
+    <plurals name="more_images">
+        <item quantity="one">Eщё 1 фотография…</item>
+        <item quantity="few">Ещё %d фотографии…</item>
+        <item quantity="many">Ещё %d фотографий…</item>
+        <item quantity="other">Ещё %d фотографий…</item>
+    </plurals>
 </resources>
