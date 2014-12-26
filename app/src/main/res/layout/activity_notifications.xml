@@ -23,6 +23,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/notifications_conversations_container"
         android:paddingTop="8dp"
         android:paddingBottom="1dp"
         android:background="#e0ffffff">

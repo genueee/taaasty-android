@@ -81,6 +81,19 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
         mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                boolean atTop = !mListView.canScrollVertically(-1);
+                mListener.onListScrolled(dy, atTop);
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                mListener.onListScrollStateChanged(newState);
+            }
+        });
         return root;
     }
 
@@ -127,6 +140,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mListView.setOnScrollListener(null);
         mListView = null;
         mListener = null;
         mProgressView = null;
@@ -289,6 +303,8 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
+        public void onListScrolled(int dy, boolean atTop);
+        public void onListScrollStateChanged(int state);
     }
 
 }

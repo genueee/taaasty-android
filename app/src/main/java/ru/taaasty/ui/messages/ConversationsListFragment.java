@@ -110,6 +110,19 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
         mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                boolean atTop = !mListView.canScrollVertically(-1);
+                mListener.onListScrolled(dy, atTop);
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                mListener.onListScrollStateChanged(newState);
+            }
+        });
 
         mAdapter.onStart();
 
@@ -308,6 +321,8 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onInitiateConversationClicked(View view);
+        public void onListScrolled(int dy, boolean atTop);
+        public void onListScrollStateChanged(int state);
     }
 
 }
