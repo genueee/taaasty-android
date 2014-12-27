@@ -3,7 +3,6 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,6 +10,7 @@ import ru.taaasty.R;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.UiUtils;
 
 public class ListQuoteEntry extends  ListEntryBase {
@@ -24,8 +24,8 @@ public class ListQuoteEntry extends  ListEntryBase {
         mText = (TextView) v.findViewById(R.id.feed_item_text);
         mSource = (TextView) v.findViewById(R.id.source);
 
-        mText.setMovementMethod(LinkMovementMethod.getInstance());
-        mSource.setMovementMethod(LinkMovementMethod.getInstance());
+        mText.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
+        mSource.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
     }
 
     @Override

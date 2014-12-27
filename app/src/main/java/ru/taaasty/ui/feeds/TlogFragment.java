@@ -10,7 +10,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -133,12 +135,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 updateDateIndicator(dy > 0);
                 if (mListener == null) return;
                 if (child == null) {
-                    mListener.onListScroll(0, 0, 0, 0);
+                    mListener.onListScroll(dy, 0, 0, 0, 0);
                 } else {
                     firstVisibleFract = -1f * (float) child.getTop() / (float) child.getHeight();
                     int visibleItemCount = recyclerView.getChildCount();
                     int totalItemCount = mAdapter.getItemCount();
-                    mListener.onListScroll(recyclerView.getChildPosition(child),
+                    mListener.onListScroll(dy, recyclerView.getChildPosition(child),
                             UiUtils.clamp(firstVisibleFract, 0f, 0.99f), visibleItemCount, totalItemCount);
 
                 }
@@ -152,6 +154,42 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+
+        final GestureDetector gd = new GestureDetector(getActivity(), new GestureDetector.OnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent e) { return false; }
+
+            @Override
+            public void onShowPress(MotionEvent e) { }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                if (mListener != null) mListener.onListClicked();
+                return true;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) { return false; }
+
+            @Override
+            public void onLongPress(MotionEvent e) { }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) { return false; }
+        });
+
+        mListView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                gd.onTouchEvent(e);
+                return false;
+            }
+
+            @Override
+            public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+            }
+        });
 
         return v;
     }
@@ -571,8 +609,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void setFeedBackgroundColor(int color);
-        public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
+        public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         public void onTlogInfoLoaded(TlogInfo info);
         public void onSharePostMenuClicked(Entry entry);
+        public void onListClicked();
     }
 }

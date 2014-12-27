@@ -6,7 +6,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -25,6 +24,7 @@ import ru.taaasty.model.iframely.Link;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 
@@ -52,7 +52,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
 
-        mTitle.setMovementMethod(LinkMovementMethod.getInstance());
+        mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
 
         mContext = context;
         mPicasso = Picasso.with(context);

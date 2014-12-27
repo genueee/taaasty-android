@@ -3,7 +3,6 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.text.Html;
-import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
 
@@ -18,6 +17,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
+import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 
@@ -39,8 +39,8 @@ public class ListTextEntry extends ListEntryBase {
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mText = (TextView) v.findViewById(R.id.feed_item_text);
 
-        mTitle.setMovementMethod(LinkMovementMethod.getInstance());
-        mText.setMovementMethod(LinkMovementMethod.getInstance());
+        mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
+        mText.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
     }
 
     @Override

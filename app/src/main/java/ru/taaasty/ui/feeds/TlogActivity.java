@@ -1,5 +1,6 @@
 package ru.taaasty.ui.feeds;
 
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -9,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -48,6 +50,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
 
+    private static final int HIDE_ACTION_BAR_DELAY = 5000;
+
     private long mUserId;
 
     private Drawable mAbBackgroundDrawable;
@@ -63,6 +67,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private View mFollowUnfollowProgressView;
 
     boolean mPerformSubscription;
+
+    private boolean isNavigationHidden = false;
+    private final Handler mHideActionBarHandler = new Handler();
+    private volatile boolean userForcedToChangeOverlayMode = false;
+
 
     @Nullable
     private String mMyRelationship;
@@ -147,6 +156,12 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        runHideActionBarTimer();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mFollowSubscribtion.unsubscribe();
@@ -185,9 +200,24 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void onListScroll(int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
+    public void onListClicked() {
+        if (isNavigationHidden) {
+            userForcedToChangeOverlayMode = true;
+            toggleShowOrHideHideyBarMode();
+        }
+    }
+
+    @Override
+    public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
         float abAlpha;
         int intAlpha;
+
+        if (totalCount == 0 || firstVisibleItem == 0) {
+            if (isNavigationHidden) {
+                userForcedToChangeOverlayMode = true;
+                toggleShowOrHideHideyBarMode();
+            }
+        }
 
         // XXX: неверно работает, когда у юзера мало постов
         if (totalCount == 0 || visibleCount >= totalCount) {
@@ -262,11 +292,36 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 .subscribe(mFollowObserver);
     }
 
+    @SuppressLint("InlinedApi")
+    public void toggleShowOrHideHideyBarMode() {
+        if (!isNavigationHidden) {
+            getActionBar().hide();
+            isNavigationHidden = true;
+        } else {
+            getActionBar().show();
+            isNavigationHidden = false;
+            userForcedToChangeOverlayMode = false;
+            runHideActionBarTimer();
+        }
+    }
+
+    private void runHideActionBarTimer() {
+        mHideActionBarHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!userForcedToChangeOverlayMode && !isNavigationHidden) {
+                    toggleShowOrHideHideyBarMode();
+                }
+            }
+        }, HIDE_ACTION_BAR_DELAY);
+    }
+
     private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
         @Override
         public void onCompleted() {
             mPerformSubscription = false;
             refreshFollowUnfollowView();
+            runHideActionBarTimer();
         }
 
         @Override
