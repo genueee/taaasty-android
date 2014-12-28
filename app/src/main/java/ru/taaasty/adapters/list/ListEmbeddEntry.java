@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.Html;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -150,9 +149,8 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
                 mContext);
 
-        CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), null, null));
-
-        mTitle.setText(Html.fromHtml(title.toString(), mImageGetter, null), TextView.BufferType.NORMAL);
+        CharSequence title = UiUtils.formatEntryText(item.getTitle(), mImageGetter);
+        mTitle.setText(title, TextView.BufferType.NORMAL);
         mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
         mTitle.setVisibility(View.VISIBLE);
     }

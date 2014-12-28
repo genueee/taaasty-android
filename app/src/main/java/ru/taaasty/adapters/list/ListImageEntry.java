@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.text.Html;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
@@ -246,9 +245,8 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
                 mContext);
 
-        CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getTitle(), null, null));
-
-        mTitle.setText(Html.fromHtml(title.toString(), mImageGetter, null), TextView.BufferType.NORMAL);
+        CharSequence title = UiUtils.formatEntryText(item.getTitle(), mImageGetter);
+        mTitle.setText(title, TextView.BufferType.NORMAL);
         mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
         mTitle.setVisibility(View.VISIBLE);
     }

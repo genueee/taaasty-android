@@ -9,7 +9,7 @@ import ru.taaasty.ui.feeds.TlogActivity;
 
 public class ClickableNicknameSpan extends ClickableSpan {
 
-    private long mUserId;
+    private final long mUserId;
 
     public ClickableNicknameSpan(long userId) {
         super();

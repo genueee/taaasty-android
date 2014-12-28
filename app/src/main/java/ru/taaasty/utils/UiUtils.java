@@ -11,6 +11,7 @@ import android.text.SpannedString;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.ImageSpan;
+import android.text.style.URLSpan;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 import ru.taaasty.model.Entry;
 import ru.taaasty.ui.ClickableNicknameSpan;
 import ru.taaasty.ui.CustomTypefaceSpan;
+import ru.taaasty.ui.TaaastyUrlSpan;
 
 /**
  * Created by alexey on 13.08.14.
@@ -60,6 +62,12 @@ public class UiUtils {
         }
 
         return new SpannableString(text);
+    }
+
+    public static CharSequence formatEntryText(@Nullable String text, @Nullable Html.ImageGetter imageGetter) {
+        if (TextUtils.isEmpty(text)) return "";
+        CharSequence seq = UiUtils.removeTrailingWhitespaces(Html.fromHtml(text, imageGetter, null));
+        return replaceUrlSpans(seq);
     }
 
     @Nullable
@@ -137,6 +145,42 @@ public class UiUtils {
         ClickableNicknameSpan acs = new ClickableNicknameSpan(userId);
         stringBuilder.setSpan(acs, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         stringBuilder.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+
+    /**
+     * Заменяет все UrlSpan'ы с ссылками на taasty.ru (слаги, тэги) на {linkto  android.text.TaaastyUrlSpan}
+     * ведущими на страницы внутри приложения
+     * По возможности, замена происходит в исходном тексте
+     */
+    public static CharSequence replaceUrlSpans(CharSequence text) {
+        Spanned spanned;
+        Spannable spannable;
+        URLSpan urlSpans[];
+
+        if (TextUtils.isEmpty(text) || !(text instanceof Spanned)) return text;
+
+        spanned = (Spanned) text;
+        urlSpans = spanned.getSpans(0, text.length(), URLSpan.class);
+        if (urlSpans == null || urlSpans.length == 0) {
+            return text;
+        }
+
+        if (text instanceof Spannable) {
+            spannable = (Spannable)text;
+        } else {
+            spannable = Spannable.Factory.getInstance().newSpannable(text);
+        }
+
+        for (URLSpan urlSpan: urlSpans) {
+            if (TaaastyUrlSpan.isInternalUrl(urlSpan.getURL())) {
+                int start = spannable.getSpanStart(urlSpan);
+                int end = spannable.getSpanEnd(urlSpan);
+                int flags = spannable.getSpanFlags(urlSpan);
+                spannable.removeSpan(urlSpan);
+                spannable.setSpan(new TaaastyUrlSpan(urlSpan.getURL()), start, end, flags);
+            }
+        }
+        return spannable;
     }
 
     public static int getEntriesLastDay(List<Entry> entries) {

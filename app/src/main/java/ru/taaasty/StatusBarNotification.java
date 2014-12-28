@@ -279,9 +279,6 @@ public class StatusBarNotification extends BroadcastReceiver {
         SpannableStringBuilder ssb = new SpannableStringBuilder("@");
         ssb.append(author.getName());
 
-        CustomTypefaceSpan cts = new CustomTypefaceSpan(mContext, R.style.TextAppearanceSlugInlineGreen,
-                FontManager.getInstance().getFontSystemBold());
-
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext,
                 R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');

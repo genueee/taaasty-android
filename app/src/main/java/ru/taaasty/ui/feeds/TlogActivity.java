@@ -49,10 +49,9 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String TAG = "TlogActivity";
 
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
+    private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
 
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
-
-    private long mUserId;
 
     private Drawable mAbBackgroundDrawable;
     int mLastAlpha = 0;
@@ -88,13 +87,22 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
     }
 
+    public static void startTlogActivity(Context source, String userSlug, View animateFrom) {
+        Intent intent = new Intent(source, TlogActivity.class);
+        intent.putExtra(ARG_USER_SLUG, userSlug);
+        if (animateFrom != null && source instanceof Activity) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            ActivityCompat.startActivity((Activity)source, intent, options.toBundle());
+        } else {
+            source.startActivity(intent);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tlog);
-
-        mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
-        if (mUserId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
 
         mAbTitle = new SpannableString("");
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
@@ -120,7 +128,16 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
 
         if (savedInstanceState == null) {
-            Fragment tlogFragment = TlogFragment.newInstance(mUserId);
+            Fragment tlogFragment;
+
+            if (getIntent().hasExtra(ARG_USER_ID)) {
+                long userId = getIntent().getLongExtra(ARG_USER_ID, -1);
+                tlogFragment = TlogFragment.newInstance(userId);
+            } else {
+                String userIdOrSlug = getIntent().getStringExtra(ARG_USER_SLUG);
+                tlogFragment = TlogFragment.newInstance(userIdOrSlug);
+            }
+
             getFragmentManager().beginTransaction()
                     .replace(R.id.container, tlogFragment)
                     .commit();
@@ -268,11 +285,21 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         mFollowUnfollowProgressView.setVisibility(View.GONE);
     }
 
+    @Nullable
+    private Long getUserId() {
+        TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) {
+            return ((TlogFragment)fragment).getUserId();
+        }
+        return null;
+    }
+
     void doFollow() {
+        if (getUserId() == null) return;
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindActivity(this,
-                relApi.follow(String.valueOf(mUserId)));
+                relApi.follow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();
         mFollowSubscribtion = observable
@@ -281,10 +308,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     void doUnfollow() {
+        if (getUserId() == null) return;
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindActivity(this,
-                relApi.unfollow(String.valueOf(mUserId)));
+                relApi.unfollow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();
         mFollowSubscribtion = observable

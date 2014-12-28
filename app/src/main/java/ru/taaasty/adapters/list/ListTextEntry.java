@@ -2,7 +2,6 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.text.Html;
 import android.view.View;
 import android.widget.TextView;
 
@@ -90,7 +89,7 @@ public class ListTextEntry extends ListEntryBase {
 
     private void setupTitle(Entry entry) {
         if (entry.hasTitle()) {
-            CharSequence title = UiUtils.removeTrailingWhitespaces(Html.fromHtml(entry.getTitle(), mImageGetter, null));
+            CharSequence title = UiUtils.formatEntryText(entry.getTitle(), mImageGetter);
             mTitle.setText(title, TextView.BufferType.NORMAL);
             mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
             mTitle.setVisibility(View.VISIBLE);
@@ -101,7 +100,7 @@ public class ListTextEntry extends ListEntryBase {
 
     private void setupText(Entry item) {
         if (item.hasText()) {
-            CharSequence text = UiUtils.removeTrailingWhitespaces(Html.fromHtml(item.getText(), mImageGetter, null));
+            CharSequence text = UiUtils.formatEntryText(item.getText(), mImageGetter);
             mText.setText(text, TextView.BufferType.NORMAL);
             mTextImgLoader = TextViewImgLoader.bindAndLoadImages(mText, onImgClickListener);
             mText.setVisibility(View.VISIBLE);

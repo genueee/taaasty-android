@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -60,6 +61,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogFragment";
     private static final String ARG_USER_ID = "user_id";
+    private static final String ARG_USER_SLUG = "user_slug";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.TlogFragment.feed_items";
     private static final String BUNDLE_KEY_TLOG_INFO = "ru.taaasty.ui.feeds.TlogFragment.tlog_info";
@@ -77,23 +79,31 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private Subscription mUserSubscribtion = SubscriptionHelper.empty();
 
-    private long mUserId;
+    @Nullable
+    private Long mUserId;
+
+    @Nullable
+    private String mUserSlug;
+
+    @Nullable
     private TlogInfo mTlogInfo;
 
     private int mRefreshCounter;
 
     private String mBackgroundBitmapKey;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment LiveFeedFragment.
-     */
     public static TlogFragment newInstance(long userId) {
         TlogFragment f = new  TlogFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_USER_ID, userId);
+        f.setArguments(b);
+        return f;
+    }
+
+    public static TlogFragment newInstance(String userSlug) {
+        TlogFragment f = new  TlogFragment();
+        Bundle b = new Bundle();
+        b.putString(ARG_USER_SLUG, userSlug);
         f.setArguments(b);
         return f;
     }
@@ -106,7 +116,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
-        mUserId = args.getLong(ARG_USER_ID);
+        if (args.containsKey(ARG_USER_ID)) {
+            mUserId = args.getLong(ARG_USER_ID);
+            mUserSlug = null;
+        } else {
+            mUserId = null;
+            mUserSlug = args.getString(ARG_USER_SLUG);
+        }
+
         mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
         if (savedInstanceState != null) {
             mTlogInfo = savedInstanceState.getParcelable(BUNDLE_KEY_TLOG_INFO);
@@ -282,7 +299,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public void refreshData() {
         if (DBG) Log.v(TAG, "refreshData()");
         refreshUser();
-        refreshFeed();
+        if (mUserId != null) refreshFeed();
     }
 
     void onAvatarClicked(View v) {
@@ -292,6 +309,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
                 .setBackgroundThumbnailKey(mBackgroundBitmapKey)
                 .startActivity();
+    }
+
+    @Nullable
+    public Long getUserId() {
+        return mUserId;
     }
 
     void setupUser(User user) {
@@ -512,7 +534,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
         setRefreshing(true);
         Observable<TlogInfo> observableCurrentUser = AndroidObservable.bindFragment(this,
-                mTlogService.getUserInfo(String.valueOf(mUserId)));
+                mTlogService.getUserInfo(mUserId == null ? mUserSlug : mUserId.toString()));
 
         mUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -591,6 +613,10 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         public void onNext(TlogInfo info) {
             mTlogInfo = info;
+            if (mUserId == null) {
+                mUserId = info.author.getId();
+                refreshFeed();
+            }
             setupFeedDesign();
             setupUser(info.author);
             if (mListener != null) mListener.onTlogInfoLoaded(info);
