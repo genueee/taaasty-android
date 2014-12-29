@@ -26,6 +26,7 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
@@ -153,6 +154,23 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 updateDateIndicator(dy > 0);
+            }
+
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int childCount = mListView.getChildCount();
+                    for (int i = 0; i < childCount; ++i) {
+                        RecyclerView.ViewHolder vh = mListView.getChildViewHolder(mListView.getChildAt(i));
+                        if (vh instanceof ListImageEntry) ((ListImageEntry) vh).onStopScroll();
+                    }
+                } else {
+                    int childCount = mListView.getChildCount();
+                    for (int i = 0; i < childCount; ++i) {
+                        RecyclerView.ViewHolder vh = mListView.getChildViewHolder(mListView.getChildAt(i));
+                        if (vh instanceof ListImageEntry) ((ListImageEntry) vh).onStartScroll();
+                    }
+                }
             }
         });
 

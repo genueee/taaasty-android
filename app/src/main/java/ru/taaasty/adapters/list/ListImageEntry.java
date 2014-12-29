@@ -63,6 +63,8 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
     private Object mGitLoadTag = this;
 
+    private boolean mAttachedToWindow;
+
     public ListImageEntry(Context context, View v, boolean showAuthorAvatar) {
         super(context, v, showAuthorAvatar);
 
@@ -115,13 +117,31 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     }
 
     public void onAttachedToWindow() {
+        mAttachedToWindow = true;
+        startGifDrawable();
+    }
+
+    public void onDetachedFromWindow() {
+        mAttachedToWindow = false;
+        stopGifDrawable();
+    }
+
+    public void onStartScroll() {
+        if (mAttachedToWindow) stopGifDrawable();
+    }
+
+    public void onStopScroll() {
+        if (mAttachedToWindow) startGifDrawable();
+    }
+
+    private void startGifDrawable() {
         Drawable drawable = mImageView.getDrawable();
         if (drawable != null && drawable instanceof GifDrawable){
             ((GifDrawable) drawable).start();
         }
     }
 
-    public void onDetachedFromWindow() {
+    private void stopGifDrawable() {
         Drawable drawable = mImageView.getDrawable();
         if (drawable != null && drawable instanceof GifDrawable){
             ((GifDrawable) drawable).stop();
