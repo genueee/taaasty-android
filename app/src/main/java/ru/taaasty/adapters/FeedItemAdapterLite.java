@@ -190,6 +190,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
         onViewDetachedFromWindow(holder);
+        if (holder instanceof  ListEntryBase) ((ListEntryBase) holder).recycle();
     }
 
     public void onCreate() {
