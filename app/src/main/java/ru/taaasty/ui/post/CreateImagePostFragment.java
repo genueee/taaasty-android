@@ -53,6 +53,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private EditText mTitleView;
     private View mMakeImageButtonLayout;
     private ImageView mImageView;
+    private View mProgressView;
 
     @Nullable
     private Uri mMakePhotoDstUri;
@@ -107,6 +108,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mTitleView = (EditText)root.findViewById(R.id.title);
         mMakeImageButtonLayout = root.findViewById(R.id.make_photo_layout);
         mImageView = (ImageView)root.findViewById(R.id.image);
+        mProgressView = root.findViewById(R.id.progress);
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.GONE);
         final OnChoosePhotoClickListener onChoosePhotoClickListener = new OnChoosePhotoClickListener();
@@ -118,7 +120,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         if (mEditPost && savedInstanceState == null) {
             mTitleView.setText(mOriginal.title);
             mImageUri = mOriginal.imageUri;
-            refreshImageView();
         }
 
         return root;
@@ -280,9 +281,11 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         if (mImageUri == null) {
             mMakeImageButtonLayout.setVisibility(View.VISIBLE);
             mImageView.setVisibility(View.GONE);
+            mProgressView.setVisibility(View.GONE);
         } else {
             mMakeImageButtonLayout.setVisibility(View.GONE);
             mImageView.setVisibility(View.VISIBLE);
+            mProgressView.setVisibility(View.VISIBLE);
 
             Picasso picasso = Picasso.with(getActivity());
 
@@ -317,15 +320,16 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private Callback mPicassoCallback = new Callback() {
         @Override
         public void onSuccess() {
+            mProgressView.setVisibility(View.GONE);
         }
 
         @Override
         public void onError() {
             if (getActivity() == null) return;
+            mProgressView.setVisibility(View.GONE);
             mImageUri = null;
             validateFormIfVisible();
             if (!mEditPost) saveInputValues();
-            refreshImageView();
             Toast.makeText(getActivity(), R.string.error_loading_image, Toast.LENGTH_LONG).show();
 
         }
