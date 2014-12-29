@@ -22,6 +22,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.widget.Toast;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -222,6 +223,12 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             userForcedToChangeOverlayMode = true;
             toggleShowOrHideHideyBarMode();
         }
+    }
+
+    @Override
+    public void onNoSuchUser() {
+        Toast.makeText(this, getString(R.string.error_user_with_this_name_not_found), Toast.LENGTH_LONG).show();
+        finish();
     }
 
     @Override

@@ -605,8 +605,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "refresh author error", e);
             // XXX
-            if (e instanceof NoSuchElementException) {
-                setupUser(null);
+            if (e instanceof NoSuchElementException) { //TODO Исправить, когда сервер будет отдавать нормальную ошибку
+                if (mListener != null) mListener.onNoSuchUser();
             }
         }
 
@@ -639,5 +639,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onTlogInfoLoaded(TlogInfo info);
         public void onSharePostMenuClicked(Entry entry);
         public void onListClicked();
+        public void onNoSuchUser();
     }
 }

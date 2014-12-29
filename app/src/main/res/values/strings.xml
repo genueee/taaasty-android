@@ -236,5 +236,6 @@
     <string name="open_comments_content_description">Перейти к комментариям</string>
     <string name="messages_will_be_displayed_here">Здесь будут отображаться сообщения</string>
     <string name="partner">Собеседник</string>
+    <string name="error_user_with_this_name_not_found">Пользователь с таким именем не найден</string>
 
 </resources>
