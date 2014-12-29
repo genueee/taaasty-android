@@ -337,7 +337,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         private TargetSetHeaderBackground feedDesignTarget;
 
         public HeaderHolder(View itemView) {
-            super(itemView);
+            super(itemView, itemView.findViewById(R.id.avatar_user_name));
             avatarView = (ImageView)itemView.findViewById(R.id.avatar);
             titleView = (TextView)itemView.findViewById(R.id.user_name);
         }

@@ -14,9 +14,21 @@ public class ParallaxedHeaderHolder extends RecyclerView.ViewHolder implements I
 
     ParallaxedView parallaxedView;
 
-    public ParallaxedHeaderHolder(View itemView) {
+    public ParallaxedHeaderHolder(final View itemView, final View parallaxedContainer) {
         super(itemView);
-        parallaxedView = new ParallaxedView(itemView);
+        parallaxedView = new ParallaxedView(parallaxedContainer) {
+            // Ставим для parallaxedContainer прозрачность в зависимости от видимой части всего заголовка
+            protected void setOpacity(View view, float offset) {
+                float viewHeight = itemView.getHeight();
+                float visibleHeight = itemView.getBottom() - offset; // XXX: wrong
+                if (visibleHeight < viewHeight) {
+                    float opacity = getParallaxOpacity(visibleHeight / viewHeight);
+                    parallaxedContainer.setAlpha(opacity);
+                } else {
+                    parallaxedContainer.setAlpha(1);
+                }
+            }
+        };
     }
 
     @Override

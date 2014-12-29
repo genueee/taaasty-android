@@ -491,7 +491,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         private TargetSetHeaderBackground feedDesignTarget;
 
         public HeaderHolder(View itemView) {
-            super(itemView);
+            super(itemView, itemView.findViewById(R.id.header_user_feed_main));
             headerUserFeedMain = itemView.findViewById(R.id.header_user_feed_main);
             avatarView = (ImageView)itemView.findViewById(R.id.avatar);
             usernameView = (TextView)itemView.findViewById(R.id.user_name);
