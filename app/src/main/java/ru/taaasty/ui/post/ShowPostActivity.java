@@ -214,8 +214,10 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             case android.R.id.home:
                 finish();
                 break;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
+        return true;
     }
 
     @Override
