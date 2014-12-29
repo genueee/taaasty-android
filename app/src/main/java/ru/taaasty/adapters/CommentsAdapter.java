@@ -146,6 +146,10 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         if (!mComments.isEmpty() || mShowPostHeader) notifyDataSetChanged();
     }
 
+    public void appendComment(Comment comments) {
+        mComments.insertItem(comments);
+    }
+
     public void appendComments(List<Comment> comments) {
         mComments.insertItems(comments);
     }

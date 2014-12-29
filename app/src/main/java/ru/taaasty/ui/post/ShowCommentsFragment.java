@@ -27,7 +27,6 @@ import android.widget.Toast;
 import junit.framework.Assert;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -761,7 +760,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onNext(Comment comment) {
-            mCommentsAdapter.appendComments(Collections.singletonList(comment));
+            mCommentsAdapter.appendComment(comment);
             Integer position = mCommentsAdapter.findCommentPosition(comment.getId());
             if (position != null) mListView.smoothScrollToPosition(position);
         }

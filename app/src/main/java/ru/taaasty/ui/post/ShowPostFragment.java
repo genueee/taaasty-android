@@ -25,7 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -335,6 +335,8 @@ public class ShowPostFragment extends Fragment {
         mCurrentEntry = entry;
         mCommentsAdapter.setShowPost(true);
         mCommentsAdapter.notifyItemChanged(mCommentsAdapter.getPostPosition());
+        LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
+        lm.scrollToPositionWithOffset(0, 0);
         setupPostDate();
     }
 
@@ -399,6 +401,38 @@ public class ShowPostFragment extends Fragment {
         }
     }
 
+    @Nullable
+    private CommentsAdapter.ViewHolder findTopVisibleCommentViewHolder() {
+        if (mListView == null) return null;
+        int count = mListView.getChildCount();
+        for (int i = 0; i < count; ++i) {
+            RecyclerView.ViewHolder holder = mListView.getChildViewHolder(mListView.getChildAt(i));
+            if (holder instanceof CommentsAdapter.ViewHolder) return (CommentsAdapter.ViewHolder) holder;
+        }
+        return null;
+    }
+
+    private void addCommentsDoNotScrollList(List<Comment> comments) {
+        Long oldTopId = null;
+        int oldTopTop = 0;
+
+        CommentsAdapter.ViewHolder top = findTopVisibleCommentViewHolder();
+        if (top != null) {
+            oldTopId = mCommentsAdapter.getItemId(top.getPosition());
+            oldTopTop = top.itemView.getTop() - mListView.getPaddingTop();
+        }
+
+        mCommentsAdapter.appendComments(comments);
+
+        if (oldTopId != null) {
+            Integer newPosition = mCommentsAdapter.findCommentPosition(oldTopId);
+            if (newPosition != null) {
+                LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
+                lm.scrollToPositionWithOffset(newPosition, oldTopTop);
+                mListScrollController.checkScrollStateOnViewPreDraw();
+            }
+        }
+    }
     void sendRepyToComment() {
         if (DBG) Log.v(TAG, "sendRepyToComment()");
         String comment = mReplyToCommentText.getText().toString();
@@ -898,7 +932,7 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(Comments comments) {
             if (DBG) Log.v(TAG, "mCommentsObserver onNext");
-            mCommentsAdapter.appendComments(comments.comments);
+            addCommentsDoNotScrollList(comments.comments);
             mTotalCommentsCount = comments.totalCount;
             mListScrollController.checkScrollStateOnViewPreDraw();
         }
@@ -921,7 +955,9 @@ public class ShowPostFragment extends Fragment {
         @Override
         public void onNext(Comment comment) {
             if (DBG) Log.v(TAG, "mPostCommentObserver onNext commentId: " + comment.getId());
-            mCommentsAdapter.appendComments(Collections.singletonList(comment));
+            mCommentsAdapter.appendComment(comment);
+            Integer position = mCommentsAdapter.findCommentPosition(comment.getId());
+            if (position != null) mListView.smoothScrollToPosition(position);
         }
     };
 
