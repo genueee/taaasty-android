@@ -53,6 +53,4 @@
 
     <include layout="@layout/include_post_bottom_action_bar"/>
 
-    <include layout="@layout/comments_load_more2" />
-
 </LinearLayout>
