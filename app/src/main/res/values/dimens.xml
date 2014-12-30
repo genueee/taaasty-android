@@ -6,6 +6,8 @@
     <!-- Диаметр окружности с аватаркой автора в панели лайков под постом -->
     <dimen name="avatar_extra_small_diameter">30dp</dimen>
 
+    <dimen name="avatar_extra_small_diameter_34dp">34dp</dimen>
+
     <!-- Диаметр окружности с аватаркой автора в ленте -->
     <dimen name="avatar_small_diameter">48dp</dimen>
 
