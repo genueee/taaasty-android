@@ -175,7 +175,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
         if (page != null && page instanceof ListFeedFragment) {
             ListFeedFragment listFragment = (ListFeedFragment) page;
-            listFragment.refreshData();
+            listFragment.refreshData(true);
             startRefreshStats();
         }
     }

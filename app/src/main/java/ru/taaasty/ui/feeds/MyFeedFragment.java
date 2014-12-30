@@ -71,6 +71,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
     private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
 
+    private boolean mForceShowRefreshingIndicator;
+
     private CurrentUser mCurrentUser;
 
     private DateIndicatorWidget mDateIndicatorView;
@@ -118,6 +120,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                 updateDateIndicator(dy > 0);
             }
         });
+        mForceShowRefreshingIndicator = false;
 
         return v;
     }
@@ -136,7 +139,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     @Override
     public void onResume() {
         super.onResume();
-        if (!mRefreshLayout.isRefreshing()) refreshData();
+        if (!isLoading()) refreshData(false);
         updateDateIndicator(true);
     }
 
@@ -192,21 +195,27 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         refreshData();
     }
 
-    void setRefreshing(boolean refresh) {
-        if (refresh) {
-            mRefreshCounter += 1;
-            if (mRefreshCounter == 1) mRefreshLayout.setRefreshing(true);
-        } else {
-            if (mRefreshCounter > 0) {
-                mRefreshCounter -= 1;
-                if (mRefreshCounter == 0) mRefreshLayout.setRefreshing(false);
-            }
-        }
-        if (DBG) Log.v(TAG, "setRefreshing " + refresh + " counter: " + mRefreshCounter);
+
+    boolean isLoading() {
+        return mFeedLoader.isLoading() || !mCurrentUserSubscription.isUnsubscribed();
     }
 
+    void setupRefreshingIndicator() {
+        if (mAdapter == null) return;
+        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
+        mRefreshLayout.setRefreshing(showIndicator && isLoading());
+
+        if (!isLoading()) mForceShowRefreshingIndicator = false;
+    }
+
+
     public void refreshData() {
+        refreshData(true);
+    }
+
+    public void refreshData(boolean showIndicator) {
         if (DBG) Log.v(TAG, "refreshData()");
+        if (showIndicator) mForceShowRefreshingIndicator = true;
         refreshUser();
         refreshFeed();
     }
@@ -431,7 +440,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             mCurrentUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
@@ -439,6 +447,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
+        setupRefreshingIndicator();
     }
 
     private void refreshFeed() {
@@ -447,14 +456,14 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setRefreshing(true);
+        setupRefreshingIndicator();
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
         @Override
         public void call() {
             if (DBG) Log.v(TAG, "doOnTerminate()");
-            setRefreshing(false);
+            setupRefreshingIndicator();
         }
     };
 
@@ -495,7 +504,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             }
         }
     }
-
 
     private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
 

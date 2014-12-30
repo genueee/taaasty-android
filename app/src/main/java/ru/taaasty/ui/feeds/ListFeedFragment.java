@@ -76,9 +76,9 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private Adapter mAdapter;
     private FeedLoader mFeedLoader;
 
-    private Subscription mCurrentUserSubscribtion = SubscriptionHelper.empty();
+    private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
 
-    private int mRefreshCounter;
+    private boolean mForceShowRefreshingIndicator;
 
     private TlogDesign mTlogDesign;
 
@@ -132,6 +132,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mFeedType = getArguments().getInt(ARG_FEED_TYPE);
+        mForceShowRefreshingIndicator = false;
     }
 
     @Override
@@ -208,7 +209,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             }
         }
 
-        if (!mRefreshLayout.isRefreshing()) refreshData();
+        if (!isLoading()) refreshData(false);
         EventBus.getDefault().register(this);
     }
 
@@ -234,7 +235,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     public void onDestroyView() {
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
-        mCurrentUserSubscribtion.unsubscribe();
+        mCurrentUserSubscription.unsubscribe();
         mDateIndicatorView = null;
         mEmptyView = null;
         mRefreshLayout = null;
@@ -258,7 +259,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
     @Override
     public void onRefresh() {
-        refreshData();
+        refreshData(true);
     }
 
     public boolean isHeaderVisisble() {
@@ -283,21 +284,21 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         return mFeedType != FEED_ANONYMOUS;
     }
 
-    void setRefreshing(boolean refresh) {
-        if (refresh) {
-            mRefreshCounter += 1;
-            if (mRefreshCounter == 1) mRefreshLayout.setRefreshing(true);
-        } else {
-            if (mRefreshCounter > 0) {
-                mRefreshCounter -= 1;
-                if (mRefreshCounter == 0) mRefreshLayout.setRefreshing(false);
-            }
-        }
-        if (DBG) Log.v(TAG, "setRefreshing " + refresh + " counter: " + mRefreshCounter);
+    boolean isLoading() {
+        return mFeedLoader.isLoading() || !mCurrentUserSubscription.isUnsubscribed();
     }
 
-    public void refreshData() {
+    void setupRefreshingIndicator() {
+        if (mAdapter == null) return;
+        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
+        mRefreshLayout.setRefreshing(showIndicator && isLoading());
+
+        if (!isLoading()) mForceShowRefreshingIndicator = false;
+    }
+
+    public void refreshData(boolean showIndicator) {
         if (DBG) Log.v(TAG, "refreshData()");
+        if (showIndicator) mForceShowRefreshingIndicator = true;
         refreshUser();
         refreshFeed();
     }
@@ -573,19 +574,19 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     };
 
     public void refreshUser() {
-        if (!mCurrentUserSubscribtion.isUnsubscribed()) {
-            if (DBG) Log.v(TAG, "current user subscription is not unsubscribed " + mCurrentUserSubscribtion);
-            mCurrentUserSubscribtion.unsubscribe();
+        if (!mCurrentUserSubscription.isUnsubscribed()) {
+            if (DBG) Log.v(TAG, "current user subscription is not unsubscribed " + mCurrentUserSubscription);
+            mCurrentUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
-        mCurrentUserSubscribtion = observableCurrentUser
+        mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
+        setupRefreshingIndicator();
     }
 
     private void refreshFeed() {
@@ -594,14 +595,14 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setRefreshing(true);
+        setupRefreshingIndicator();
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
         @Override
         public void call() {
             if (DBG) Log.v(TAG, "doOnTerminate()");
-            setRefreshing(false);
+            setupRefreshingIndicator();
         }
     };
 

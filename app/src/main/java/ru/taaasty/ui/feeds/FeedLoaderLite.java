@@ -71,6 +71,10 @@ public abstract class FeedLoaderLite {
                 .subscribe(new FeedLoadObserver(true, entriesRequested));
     }
 
+    public boolean isLoading() {
+        return !mFeedAppendSubscription.isUnsubscribed() && !mFeedRefreshSubscription.isUnsubscribed();
+    }
+
     public void onCreate() {
 
     }

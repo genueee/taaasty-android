@@ -93,7 +93,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     private int mFeedType = FEED_TYPE_FAVORITES;
 
-    private int mRefreshCounter;
+    private boolean mForceShowRefreshingIndicator;
 
     private User mCurrentUser;
 
@@ -122,6 +122,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         if (savedInstanceState != null) {
             mCurrentUser = savedInstanceState.getParcelable(BUNDLE_KEY_CURRENT_USER);
         }
+        mForceShowRefreshingIndicator = false;
     }
 
     @Override
@@ -180,7 +181,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     @Override
     public void onResume() {
         super.onResume();
-        if (!mRefreshLayout.isRefreshing()) refreshData();
+        if (!isLoading()) refreshData(false);
         updateDateIndicator(true);
     }
 
@@ -245,20 +246,25 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         refreshData();
     }
 
-    void setRefreshing(boolean refresh) {
-        if (refresh) {
-            mRefreshCounter += 1;
-            if (mRefreshCounter == 1) mRefreshLayout.setRefreshing(true);
-        } else {
-            if (mRefreshCounter > 0) {
-                mRefreshCounter -= 1;
-                if (mRefreshCounter == 0) mRefreshLayout.setRefreshing(false);
-            }
-        }
-        if (DBG) Log.v(TAG, "setRefreshing " + refresh + " counter: " + mRefreshCounter);
+    boolean isLoading() {
+        return mFeedLoader.isLoading() || !mUserSubscribtion.isUnsubscribed();
     }
 
+    void setupRefreshingIndicator() {
+        if (mAdapter == null) return;
+        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
+        mRefreshLayout.setRefreshing(showIndicator && isLoading());
+
+        if (!isLoading()) mForceShowRefreshingIndicator = false;
+    }
+
+
     public void refreshData() {
+        refreshData(true);
+    }
+
+    public void refreshData(boolean showIndicator) {
+        if (showIndicator) mForceShowRefreshingIndicator = true;
         refreshUser();
         refreshFeed();
     }
@@ -279,7 +285,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
-        setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
@@ -287,6 +292,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
+        setupRefreshingIndicator();
     }
 
     private void refreshFeed() {
@@ -295,7 +301,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setRefreshing(true);
+        setupRefreshingIndicator();
     }
 
     public Observable<Feed> getFeedObservable(@Nullable Long sinceEntryId, @Nullable Integer limit) {
@@ -321,7 +327,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         public void call() {
             if (DBG) Log.v(TAG, "doOnTerminate()");
-            setRefreshing(false);
+            setupRefreshingIndicator();
         }
     };
 

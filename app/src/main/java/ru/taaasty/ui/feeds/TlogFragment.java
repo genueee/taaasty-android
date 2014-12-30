@@ -88,9 +88,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Nullable
     private TlogInfo mTlogInfo;
 
-    private int mRefreshCounter;
-
     private String mBackgroundBitmapKey;
+
+    private boolean mForceShowRefreshingIndicator;
 
     public static TlogFragment newInstance(long userId) {
         TlogFragment f = new  TlogFragment();
@@ -128,6 +128,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         if (savedInstanceState != null) {
             mTlogInfo = savedInstanceState.getParcelable(BUNDLE_KEY_TLOG_INFO);
         }
+        mForceShowRefreshingIndicator = false;
     }
 
     @Override
@@ -250,7 +251,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onResume() {
         super.onResume();
-        if (!mRefreshLayout.isRefreshing()) refreshData();
+        if (!isLoading()) refreshData(mAdapter.getFeed().isEmpty());
         updateDateIndicator(true);
     }
 
@@ -280,24 +281,24 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     @Override
     public void onRefresh() {
-        refreshData();
+        refreshData(true);
     }
 
-    void setRefreshing(boolean refresh) {
-        if (refresh) {
-            mRefreshCounter += 1;
-            if (mRefreshCounter == 1) mRefreshLayout.setRefreshing(true);
-        } else {
-            if (mRefreshCounter > 0) {
-                mRefreshCounter -= 1;
-                if (mRefreshCounter == 0) mRefreshLayout.setRefreshing(false);
-            }
-        }
-        if (DBG) Log.v(TAG, "setRefreshing " + refresh + " counter: " + mRefreshCounter);
+    boolean isLoading() {
+        return mFeedLoader.isLoading() || !mUserSubscribtion.isUnsubscribed();
     }
 
-    public void refreshData() {
+    void setupRefreshingIndicator() {
+        if (mAdapter == null) return;
+        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
+        mRefreshLayout.setRefreshing(showIndicator && isLoading());
+
+        if (!isLoading()) mForceShowRefreshingIndicator = false;
+    }
+
+    public void refreshData(boolean showIndicator) {
         if (DBG) Log.v(TAG, "refreshData()");
+        if (showIndicator) mForceShowRefreshingIndicator = true;
         refreshUser();
         if (mUserId != null) refreshFeed();
     }
@@ -532,7 +533,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
-        setRefreshing(true);
         Observable<TlogInfo> observableCurrentUser = AndroidObservable.bindFragment(this,
                 mTlogService.getUserInfo(mUserId == null ? mUserSlug : mUserId.toString()));
 
@@ -540,6 +540,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
+        setupRefreshingIndicator();
     }
 
     private void refreshFeed() {
@@ -548,14 +549,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnTerminate(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setRefreshing(true);
+        setupRefreshingIndicator();
     }
 
     private Action0 mStopRefreshingAction = new Action0() {
         @Override
         public void call() {
             if (DBG) Log.v(TAG, "doOnTerminate()");
-            setRefreshing(false);
+            setupRefreshingIndicator();
         }
     };
 
