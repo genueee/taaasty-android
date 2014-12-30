@@ -584,7 +584,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
+                .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
     }
@@ -593,7 +593,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
         Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction);
+                .finallyDo(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
         setupRefreshingIndicator();
     }

@@ -136,7 +136,6 @@ public class SettingsFragment extends PreferenceFragment {
 
         mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
@@ -212,7 +211,6 @@ public class SettingsFragment extends PreferenceFragment {
 
         mPutSubscription = AndroidObservable.bindFragment(this, observable)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mUpdateUserObserver);
         setupRefreshingIndicator();

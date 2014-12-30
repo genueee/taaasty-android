@@ -445,7 +445,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
+                .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
     }
@@ -454,7 +454,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
         Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction);
+                .finallyDo(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
         setupRefreshingIndicator();
     }

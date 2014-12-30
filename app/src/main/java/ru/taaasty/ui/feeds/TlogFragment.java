@@ -538,7 +538,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         mUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
+                .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
     }
@@ -547,7 +547,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
         Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction);
+                .finallyDo(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
         setupRefreshingIndicator();
     }

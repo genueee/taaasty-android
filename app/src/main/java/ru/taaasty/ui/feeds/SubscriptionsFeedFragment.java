@@ -410,7 +410,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         mCurrentUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
+                .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
     }
 
@@ -418,7 +418,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
         Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction);
+                .finallyDo(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
         setRefreshing(true);
     }

@@ -290,7 +290,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         mUserSubscribtion = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction)
+                .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
     }
@@ -299,7 +299,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
         Observable<Feed> observableFeed = getFeedObservable(null, requestEntries)
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnTerminate(mStopRefreshingAction);
+                .finallyDo(mStopRefreshingAction);
         mFeedLoader.refreshFeed(observableFeed, requestEntries);
         setupRefreshingIndicator();
     }
