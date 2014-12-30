@@ -7,6 +7,8 @@ public class ResponseError {
 
     public int responseCode;
 
+    public String longMessage;
+
     public String errorCode;
 
     public String error;
@@ -14,7 +16,8 @@ public class ResponseError {
     @Override
     public String toString() {
         return "ResponseError{" +
-                "responseCode=" + responseCode +
+                "longMessage=" + longMessage +
+                ", responseCode=" + responseCode +
                 ", errorCode='" + errorCode + '\'' +
                 ", error='" + error + '\'' +
                 '}';

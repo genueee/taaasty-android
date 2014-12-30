@@ -1,6 +1,7 @@
 package ru.taaasty.model;
 
 import android.os.Parcel;
+import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
@@ -41,6 +42,9 @@ public class CurrentUser extends User implements android.os.Parcelable {
 
     @SerializedName("is_confirmed")
     boolean mIsConfirmed;
+
+    @SerializedName("confirmation_email")
+    String mConfirmationEmail;
 
     @SerializedName("available_notifications")
     boolean mAvailableNotifications;
@@ -135,12 +139,20 @@ public class CurrentUser extends User implements android.os.Parcelable {
         return mEmail;
     }
 
-    public boolean isPrivacy() {
-        return mIsPrivacy;
+    public boolean isEmailConfirmed() {
+        return mIsConfirmed;
     }
 
-    public boolean isConfirmed() {
-        return mIsConfirmed;
+    public String getConfirmationEmail() {
+        return mConfirmationEmail;
+    }
+
+    public String getLastEmail() {
+        return mIsConfirmed || TextUtils.isEmpty(mConfirmationEmail) ? mEmail : mConfirmationEmail;
+    }
+
+    public boolean isPrivacy() {
+        return mIsPrivacy;
     }
 
     public boolean areNotificationsAvailable() {
@@ -162,6 +174,7 @@ public class CurrentUser extends User implements android.os.Parcelable {
 
         dest.writeByte(mIsConfirmed ? (byte) 1 : (byte) 0);
         dest.writeByte(mAvailableNotifications ? (byte) 1 : (byte) 0);
+        dest.writeString(mConfirmationEmail);
         dest.writeParcelable(this.mApiKey, flags);
     }
 
@@ -172,6 +185,7 @@ public class CurrentUser extends User implements android.os.Parcelable {
         super(in);
         this.mIsConfirmed = in.readByte() != 0;
         this.mAvailableNotifications = in.readByte() != 0;
+        this.mConfirmationEmail = in.readString();
         this.mApiKey = in.readParcelable(ApiKey.class.getClassLoader());
     }
 

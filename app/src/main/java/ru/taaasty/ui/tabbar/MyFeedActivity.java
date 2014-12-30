@@ -17,7 +17,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -26,6 +25,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
+import ru.taaasty.ui.SettingsActivity;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.feeds.IRereshable;
@@ -238,7 +238,8 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openSettings() {
-        Toast.makeText(this, R.string.not_ready_yet, Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     void openFriends() {

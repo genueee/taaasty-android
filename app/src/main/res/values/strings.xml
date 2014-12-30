@@ -20,6 +20,7 @@
     <string name="title_text_post">Текстовый пост</string>
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
+    <string name="activity_settings">Настройки</string>
 
     <plurals name="public_records_last_day">
         <item quantity="one">%d публикация за сутки</item>
@@ -211,7 +212,6 @@
         <item quantity="many">Пришло %d уведомлений…</item>
         <item quantity="other">Пришло %d уведомлений…</item>
     </plurals>
-
     <plurals name="conversation_received_title">
         <item quantity="one">Получено сообщение…</item>
         <item quantity="few">Получено %d сообщения…</item>
@@ -237,5 +237,22 @@
     <string name="messages_will_be_displayed_here">Здесь будут отображаться сообщения</string>
     <string name="partner">Собеседник</string>
     <string name="error_user_with_this_name_not_found">Пользователь с таким именем не найден</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="profile_category_title">Профиль</string>
+    <string name="title_user_name">Имя</string>
+    <string name="title_tlog_title">Описание тлога</string>
+    <string name="title_tlog_summary">Введите небольшое описание вашего тлога</string>
+    <string name="title_is_privacy">Закрытый дневник?</string>
+    <string name="title_is_female">Вы — девушка?</string>
+    <string name="title_email">Емейл</string>
+    <string name="summary_email">Укажите емейл для того, чтобы получать уведомления</string>
+    <string name="is_privacy_summary">Тлог виден только подписчикам, стать которым можно после одобрения. Ну и вам конечно.</string>
+    <string name="is_female_summary">На Тейсти сложилось так, что 7 из 10 пользователей — это девушки. Поэтому по-умолчанию для всех именно такая настройка.</string>
+    <string name="dialog_title_name">Выберите имя</string>
+    <string name="dialog_tlog_title">Описание тлога</string>
+    <string name="dialog_email_title">Емейл</string>
+    <string name="title_available_notifications">Уведомления</string>
+    <string name="summary_available_notifications">Отправлять мне емейл уведомления обо всех новых комментариях, подписчиках и личных сообщениях?</string>
+    <string name="user_error">Ошибка обновления пользователя</string>
 
 </resources>

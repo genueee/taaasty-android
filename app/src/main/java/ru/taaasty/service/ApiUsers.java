@@ -8,6 +8,7 @@ import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.Multipart;
 import retrofit.http.POST;
+import retrofit.http.PUT;
 import retrofit.http.Part;
 import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
@@ -48,6 +49,38 @@ public interface ApiUsers {
     Observable<CurrentUser> registerUserVkontakte(@Field("token") String token,
                                          @Field("nickname") String nickname,
                                          @Field("avatar_url") String avatar_url);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMySlug(@Field("slug") String slug);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyTitle(@Field("title") String title);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyEmail(@Field("email") String email);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyPassword(@Field("password") String password);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyIsPrivacy(@Field("is_privacy") boolean isPrivacy);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyIsDaylog(@Field("is_daylog") boolean isDaylog);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyAvailableNotifications(@Field("available_notifications") boolean availableNotifications);
+
+    @FormUrlEncoded
+    @PUT("/users.json")
+    Observable<CurrentUser> setMyIsFemale(@Field("is_female") boolean is_female);
 
     /**
      * Забыл пароль. Просьба выслать на емайл
@@ -91,7 +124,5 @@ public interface ApiUsers {
      */
     @GET("/users/predict.json")
     Observable<List<User>> predict(@Query("query") String query, @Query("limit") Integer limit);
-
-
 
 }

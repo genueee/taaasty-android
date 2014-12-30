@@ -146,6 +146,16 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.SettingsActivity"
+            android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
+            android:screenOrientation="portrait"
+            android:label="@string/activity_settings"
+            android:theme="@style/AppThemeGreenActionBar" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
+        </activity>
+        <activity
             android:name="ru.taaasty.ui.post.CreatePostActivity"
             android:launchMode="singleTop"
             android:screenOrientation="portrait"

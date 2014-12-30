@@ -45,6 +45,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
     private PhotoAdapter mAdapter;
     private PhotoScrollPositionIndicator mIndicator;
+    private ActionbarUserIconLoader mAbIconLoader; // Anti picasso weak ref
     private boolean mIndicatorVisible = false;
 
     public static void startShowPhotoActivity(Context context,
@@ -116,13 +117,13 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
             Drawable dummyAvatar = getResources().getDrawable(R.drawable.ic_user_stub);
             ab.setIcon(dummyAvatar);
 
-            ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
+            mAbIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
                 @Override
                 public void onBitmapFailed(Drawable errorDrawable) {
                     Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_SHORT).show();
                 }
             };
-            abIconLoader.loadIcon(author.getUserpic(), author.getName());
+            mAbIconLoader.loadIcon(author.getUserpic(), author.getName());
         }
     }
 

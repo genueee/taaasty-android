@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/profile_category_title">
+
+        <EditTextPreference
+            android:key="preference_user_name"
+            android:persistent="false"
+            android:title="@string/title_user_name"
+            android:singleLine="true"
+            android:inputType="textEmailAddress"
+            android:dialogTitle="@string/dialog_title_name" />
+
+        <EditTextPreference
+            android:key="preference_tlog_title"
+            android:persistent="false"
+            android:title="@string/title_tlog_title"
+            android:singleLine="true"
+            android:inputType="textCapSentences"
+            android:summary="@string/title_tlog_summary"
+            android:dialogTitle="@string/dialog_tlog_title" />
+
+        <SwitchPreference
+            android:key="preference_is_privacy"
+            android:persistent="false"
+            android:title="@string/title_is_privacy"
+            android:summary="@string/is_privacy_summary" />
+
+        <SwitchPreference
+            android:key="preference_is_female"
+            android:persistent="false"
+            android:title="@string/title_is_female"
+            android:summary="@string/is_female_summary" />
+
+        <EditTextPreference
+            android:key="preference_email"
+            android:persistent="false"
+            android:title="@string/title_email"
+            android:inputType="textEmailAddress"
+            android:singleLine="true"
+            android:summary="@string/summary_email"
+            android:dialogTitle="@string/dialog_email_title" />
+
+        <SwitchPreference
+            android:key="preference_available_notifications"
+            android:persistent="false"
+            android:title="@string/title_available_notifications"
+            android:summary="@string/summary_available_notifications" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
