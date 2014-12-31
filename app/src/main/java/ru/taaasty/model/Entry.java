@@ -344,7 +344,7 @@ public class Entry implements Parcelable {
 
     public boolean isMyEntry() {
         Long me = UserManager.getInstance().getCurrentUserId();
-        return me != null && (me == mAuthor.getId());
+        return me != null && (mAuthor != null) && (me == mAuthor.getId());
     }
 
     public boolean canEdit() {
