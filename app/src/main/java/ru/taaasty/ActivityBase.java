@@ -4,6 +4,7 @@ package ru.taaasty;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -35,6 +36,19 @@ public abstract class ActivityBase extends Activity {
     protected void onStart() {
         super.onStart();
         GoogleAnalytics.getInstance(this).reportActivityStart(this);
+    }
+
+    @Override
+    public final boolean onMenuItemSelected(int featureId, android.view.MenuItem item) {
+        // http://stackoverflow.com/a/25674354/2971719/
+        // IAE Возникает в TlogActivity на LG 4.1, так как там span'ы в экшнбаре
+        // fix android formatted title bug
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2
+                && item.getTitleCondensed() != null) {
+            item.setTitleCondensed(item.getTitleCondensed().toString());
+        }
+
+        return super.onMenuItemSelected(featureId, item);
     }
 
     @Override
