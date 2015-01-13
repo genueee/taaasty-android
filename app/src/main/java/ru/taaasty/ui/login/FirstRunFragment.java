@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -33,10 +35,13 @@ public class FirstRunFragment extends Fragment {
     public final static float DIFF_SCALE = BIG_SCALE - SMALL_SCALE;
 
     public MyPagerAdapter mAdapter;
+
+    @Nullable
     public ViewPager mPager;
 
     private int mNextItem = FIRST_PAGE;
     private boolean mChangePages = true;
+    private Handler mHandler;
 
     private List<Bitmap> mBitmaps = new ArrayList<Bitmap>();
 
@@ -83,16 +88,7 @@ public class FirstRunFragment extends Fragment {
         // previous pages will be showed
         mPager.setPageMargin(-200);
 
-        new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        if(mChangePages) {
-                            mPager.setCurrentItem(mNextItem, true);
-                            mNextItem++;
-                        }
-                        new android.os.Handler().postDelayed(this, 2000);
-                    }
-                }, 1500);
+        mHandler = new Handler();
 
         return root;
     }
@@ -106,6 +102,38 @@ public class FirstRunFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mHandler.postDelayed(mChangePageRunnable, 1500);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mHandler.removeCallbacks(mChangePageRunnable);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mPager = null;
+        mHandler.removeCallbacks(mChangePageRunnable);
+        mHandler = null;
+    }
+
+    private final Runnable mChangePageRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (mPager == null) return;
+            if(mChangePages) {
+                mPager.setCurrentItem(mNextItem, true);
+                mNextItem++;
+            }
+            mHandler.postDelayed(this, 2000);
+        }
+    };
 
     private ViewPager.OnPageChangeListener mListener = new ViewPager.OnPageChangeListener() {
 
