@@ -268,6 +268,10 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
             if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing() + " bound: " + mBound);
             return;
         }
+        if (mApiMessenger == null || mPusherService == null || mConversationsSubscription == null) {
+            // Бывает при вызове из onServiceConnected, непонятно как
+            return;
+        }
         if (DBG) Log.v(TAG, "refreshConversationList");
 
         mConversationsSubscription.unsubscribe();
