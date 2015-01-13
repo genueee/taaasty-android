@@ -48,7 +48,12 @@ public interface ApiUsers {
     @POST("/users/vkontakte.json")
     Observable<CurrentUser> registerUserVkontakte(@Field("token") String token,
                                          @Field("nickname") String nickname,
-                                         @Field("avatar_url") String avatar_url);
+                                         @Field("avatar_url") String avatar_url,
+                                         @Field("name") String name,
+                                         @Field("first_name") String firstName,
+                                         @Field("second_name") String secondName,
+                                         @Field("sex") Integer sex
+                                         );
 
     @FormUrlEncoded
     @PUT("/users.json")

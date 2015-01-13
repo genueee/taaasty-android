@@ -155,6 +155,10 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         String nickname = null;
         String avatarUrl = null;
+        String name = null;
+        String firstName = null;
+        String secondName = null;
+        Integer sex = null;
 
         try {
             JSONArray array = data.getJSONArray("response");
@@ -169,6 +173,27 @@ public class SignViaVkontakteFragment extends DialogFragment {
             } catch (JSONException ex) {
                 Log.e(TAG, "no photo_max", ex);
             }
+            try {
+                firstName =   object.getString("first_name");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no nickname", ex);
+            }
+            try {
+                secondName =   object.getString("last_name");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no nickname", ex);
+            }
+            try {
+                name =   object.getString("nickname");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no nickname", ex);
+            }
+            try {
+                sex =   object.getInt("sex");
+            } catch (JSONException ex) {
+                Log.e(TAG, "no nickname", ex);
+            }
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -176,7 +201,14 @@ public class SignViaVkontakteFragment extends DialogFragment {
         if (TextUtils.isEmpty(nickname)) nickname = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 
         Observable<CurrentUser> observableUser = AndroidObservable.bindFragment(this,
-                usersService.registerUserVkontakte(token.accessToken, nickname, avatarUrl));
+                usersService.registerUserVkontakte(token.accessToken,
+                        nickname,
+                        avatarUrl,
+                        name,
+                        firstName,
+                        secondName,
+                        sex
+                ));
         mSignupSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SignupObserver());
@@ -184,7 +216,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
     void signUp(final VKAccessToken token) {
         VKRequest request = VKApi.users().get(VKParameters.from(VKApiConst.FIELDS,
-                "id,sex,photo_max,domain,nickname"));
+                "id,sex,photo_max,domain,nickname,first_name,last_name"));
         request.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
