@@ -219,8 +219,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-
         boolean isMyProfile = UserManager.getInstance().isMe(mUserId);
+        if (!ViewConfiguration.get(this).hasPermanentMenuKey()) return false; // Бывает и такое
         menu.findItem(R.id.menu_change_avatar).setVisible(isMyProfile);
         menu.findItem(R.id.menu_change_background).setVisible(isMyProfile);
 
@@ -229,7 +229,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         menu.findItem(R.id.menu_follow).setVisible(myRelationship != null && !meSubscribed && !isMyProfile);
         menu.findItem(R.id.menu_unfollow).setVisible(myRelationship != null && meSubscribed && !isMyProfile);
 
-        return true;
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
