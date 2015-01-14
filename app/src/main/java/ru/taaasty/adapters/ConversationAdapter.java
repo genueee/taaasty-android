@@ -14,9 +14,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -316,6 +321,55 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         @Override
         public void onItemChanged(int location) {
             notifyItemChanged(getAdapterPosition(location));
+        }
+
+        /**
+         * Удаляем сообщения, uuid которых уже есть в списке. Используем последнее пришедшее
+         * В основном, нужно, чтобы отфильтровать сообщения при диалоге самим с собой.
+         */
+        private void removeUuids(Set<String> uuids) {
+            Set<Long> toDelete = new HashSet<>();
+
+            for (Conversation.Message message: getItems()) {
+                if (uuids.contains(message.uuid)) {
+                    toDelete.add(message.id);
+                }
+            }
+            for (Long id: toDelete) deleteItem(id);
+        }
+
+        @Override
+        public void insertItem(Conversation.Message item) {
+            if (!TextUtils.isEmpty(item.uuid)) {
+                removeUuids(Collections.singleton(item.uuid));
+            }
+            super.insertItem(item);
+        }
+
+        @Override
+        public void insertItems(List<Conversation.Message> items) {
+            Set<String> uuids = new HashSet<>();
+            for (Conversation.Message item: items) if (!TextUtils.isEmpty(item.uuid)) uuids.add(item.uuid);
+
+            // Удаляем сообщения с одинаковым uuid в списке. Используем всегда последнее.
+            List<Conversation.Message> itemsFiltered = new ArrayList<>(items.size());
+            Set<String> itemUuids = new HashSet<>();
+            ListIterator<Conversation.Message> li = items.listIterator(items.size());
+            while (li.hasPrevious()) {
+                Conversation.Message item = li.previous();
+                if (TextUtils.isEmpty(item.uuid) || !itemUuids.contains(item.uuid)) {
+                    itemsFiltered.add(item);
+                    if (!TextUtils.isEmpty(item.uuid)) itemUuids.add(item.uuid);
+                }
+            }
+
+            if (!uuids.isEmpty()) removeUuids(uuids);
+            super.insertItems(itemsFiltered);
+        }
+
+        @Override
+        public void resetItems(@Nullable Collection<Conversation.Message> newItems) {
+            super.resetItems(newItems);
         }
 
         @Override
