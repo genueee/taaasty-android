@@ -1,4 +1,4 @@
-release.ApServerAddress="http://api.taaasty.ru/v1"
+release.ApServerAddress="http://api.taaasty.com/v1"
 
 #release.StoreFile=../taaasty.keystore
 #release.StorePassword=

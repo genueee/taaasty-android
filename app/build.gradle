@@ -46,7 +46,7 @@ android {
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
-                        "\"http://api.taaasty.ru\"")
+                        "\"http://api.taaasty.com\"")
         buildConfigField "String", "VKONTAKTE_APP_ID",
                 project.ext.private.getProperty("default.VkontakteAppId", "\"4553661\"")
         buildConfigField "String", "YOUTUBE_APP_ID",
@@ -191,13 +191,13 @@ configurations.all {
 ['beta', 'release'].each { typeName ->
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
-            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.ru\"")
+            project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.com\"")
     bt.buildConfigField "String", "VKONTAKTE_APP_ID",
             project.ext.private.getProperty("${typeName}.VkontakteAppId", "\"4553661\"")
     bt.buildConfigField "String", "THUMBOR_KEY",
             project.ext.private.getProperty("${typeName}.ThumborKey", "\"golobog\"")
     bt.buildConfigField "String", "THUMBOR_SERVER",
-            project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
+            project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor0.tasty0.ru\"")
     bt.buildConfigField "String", "YOUTUBE_APP_ID",
             project.ext.private.getProperty("${typeName}.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
     bt.buildConfigField "String", "PUSHER_KEY",

@@ -43,7 +43,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http"
-                    android:host="taaasty.ru"
+                    android:host="taaasty.com"
                     android:path="" />
             </intent-filter>
         </activity>
@@ -141,7 +141,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="http"
-                    android:host="taaasty.ru"
+                    android:host="taaasty.com"
                     android:pathPrefix="/~" />
             </intent-filter>
         </activity>

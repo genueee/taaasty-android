@@ -192,7 +192,7 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
     private void canOnlyBeEditedOnWebsite() {
         Toast.makeText(this, R.string.post_can_only_be_edited_on_website, Toast.LENGTH_LONG).show();
         Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-                Uri.parse("http://taaasty.ru/@" + mEntry.getAuthor().getSlug() + "/edit/" + mEntry.getId()));
+                Uri.parse("http://taaasty.com/~" + mEntry.getAuthor().getSlug() + "/edit/" + mEntry.getId()));
         startActivity(browserIntent);
         finish();
     }

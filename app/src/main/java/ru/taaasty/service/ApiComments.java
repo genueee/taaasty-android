@@ -11,7 +11,7 @@ import retrofit.http.Query;
 import rx.Observable;
 
 /**
- * http://api.taaasty.ru:80/v1/comments.json?entry_id=19221688
+ * http://api.taaasty.com:80/v1/comments.json?entry_id=19221688
  *
  */
 public interface ApiComments {

@@ -23,7 +23,7 @@ public class TaaastyUrlSpan extends ClickableSpan {
 
     private static final int URL_TYPE_POST = 3;
 
-    private static final String sWwwTaaastyRuPatern = "https?://(?:www\\.)?taaasty.ru";
+    private static final String sWwwTaaastyRuPatern = "https?://(?:www\\.)?taaasty.com";
 
     private static final Pattern sHomeUrlPattern = Pattern.compile(sWwwTaaastyRuPatern + "/?");
 
