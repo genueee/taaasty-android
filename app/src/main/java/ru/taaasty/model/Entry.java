@@ -184,7 +184,7 @@ public class Entry implements Parcelable {
     }
 
     public User getAuthor() {
-        return mAuthor == null ? User.DUMMY : mAuthor;
+        return mAuthor == null ? User.ANONYMOUS : mAuthor;
     }
 
     public int getCommentsCount() {

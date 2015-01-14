@@ -18,7 +18,25 @@ public class User implements Parcelable {
 
     public static User DUMMY = new User();
 
+    public static User ANONYMOUS = new User();
+
     public static Comparator<User> SORT_BY_NAME_COMPARATOR = new SortByNameComparator();
+
+    static {
+        // TODO: переделать
+        ANONYMOUS.mId = 4409;
+        ANONYMOUS.mTitle = "";
+        ANONYMOUS.mName = "anonymous";
+        ANONYMOUS.mSlug = "anonymous";
+        ANONYMOUS.mTlogUrl = "http://taaasty.ru/~anonymous";
+        ANONYMOUS.mCreateAt = new Date(1202843744);
+        ANONYMOUS.mUpdatedAt = new Date(1406204110);
+        ANONYMOUS.mUserpic.originalUrl = "http://taaasty.ru/assets/userpic/72/29/4409_original.png";
+        ANONYMOUS.mUserpic.largeUrl = "http://taaasty.ru/assets/userpic/72/29/4409_large.png";
+        ANONYMOUS.mUserpic.thumb64Url = "http://taaasty.ru/assets/userpic/72/29/4409_thumb64.png";
+        ANONYMOUS.mUserpic.defaultColors.background = "#00000000";
+        ANONYMOUS.mUserpic.defaultColors.name = "#ffffff";
+    }
 
     private static class SortByNameComparator implements Comparator<User> {
 
