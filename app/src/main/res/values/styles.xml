@@ -457,6 +457,8 @@
     <style name="EmptyTextStyle">
         <item name="android:textColor">@color/text_color_feed_item_gray</item>
         <item name="android:textSize">20sp</item>
+        <item name="android:paddingLeft">@dimen/activity_horizontal_margin</item>
+        <item name="android:paddingRight">@dimen/activity_horizontal_margin</item>
         <item name="android:visibility">invisible</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:gravity">center</item>

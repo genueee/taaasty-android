@@ -15,15 +15,9 @@
 
     <TextView
         android:id="@+id/empty_text"
-        android:text="@string/no_conversations"
-        android:textColor="@color/text_color_feed_item_gray"
-        android:textSize="24sp"
-        android:visibility="invisible"
-        tools:visibility="visible"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:text="@string/no_notifications"
+        style="@style/EmptyTextStyle"
+        tools:visibility="visible" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"

@@ -185,6 +185,7 @@
     <string name="title_conversations">Сообщения</string>
     <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_conversations">Здесь будут отображаться ваши переписки</string>
+    <string name="no_notifications">Здесь будут отображаться ваши уведомления</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
     <string name="facebook_sharing_description">Интересное на тейсти</string>
