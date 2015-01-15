@@ -229,6 +229,14 @@ public class Entry implements Parcelable {
         return mIframely;
     }
 
+    /**
+     * @return Дизайн. Пока тлога автора, но в будущем, возможно, будет дизайн у каждого поста.
+     */
+    @Nullable
+    public TlogDesign getDesign() {
+        return mAuthor == null ? null : mAuthor.getDesign();
+    }
+
     @EntryPrivacy
     public String getPrivacy() {
         switch (mPrivacy) {

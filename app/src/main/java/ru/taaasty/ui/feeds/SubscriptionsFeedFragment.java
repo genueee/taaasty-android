@@ -385,10 +385,11 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            TlogDesign design = entry.getDesign() != null ? entry.getDesign() : mTlogDesign;
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
-                    .setDesign(mTlogDesign)
+                    .setDesign(design)
                     .startActivity();
         }
 

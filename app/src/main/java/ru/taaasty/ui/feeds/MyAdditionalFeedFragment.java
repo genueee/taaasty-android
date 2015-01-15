@@ -582,10 +582,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            TlogDesign design = entry.getDesign();
+            if (design == null && mCurrentUser != null) design = mCurrentUser.getDesign();
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
-                    .setDesign(mCurrentUser == null ? null : mCurrentUser.getDesign())
+                    .setDesign(design)
                     .startActivity();
         }
 

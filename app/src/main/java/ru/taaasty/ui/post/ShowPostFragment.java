@@ -322,7 +322,7 @@ public class ShowPostFragment extends Fragment {
         TlogDesign design = mDesign != null ? mDesign : TlogDesign.DUMMY;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
-        if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()));
+        if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()), !isResumed());
         mCommentsAdapter.setFeedDesign(design);
     }
 
@@ -999,6 +999,6 @@ public class ShowPostFragment extends Fragment {
         public void onPostLoadError(Throwable e);
         public void onAvatarClicked(View view, User user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
-        public void setPostBackgroundColor(int color);
+        public void setPostBackgroundColor(int color, boolean animate);
     }
 }

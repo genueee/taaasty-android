@@ -181,6 +181,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
             Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
             TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+            if (entry != null && entry.getAuthor() != null && design == null) design = entry.getAuthor().getDesign();
+
             String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
             if (design != null) {
@@ -301,19 +303,23 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     @Override
-    public void setPostBackgroundColor(int color) {
+    public void setPostBackgroundColor(int color, boolean animate) {
         Drawable from, to;
-        TransitionDrawable trasition;
 
         from = getWindow().getDecorView().getBackground();
-        if (from == null) {
-            getWindow().getDecorView().setBackgroundColor(color);
+        if ((from != null) && (from instanceof  ColorDrawable) && ((ColorDrawable) from).getColor() == color) {
             return;
         }
+
         to = new ColorDrawable(color);
-        trasition = new TransitionDrawable(new Drawable[]{from, to});
-        getWindow().setBackgroundDrawable(trasition);
-        trasition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
+        if (animate) {
+            TransitionDrawable transition;
+            transition = new TransitionDrawable(new Drawable[]{from, to});
+            getWindow().setBackgroundDrawable(transition);
+            transition.startTransition(Constants.IMAGE_FADE_IN_DURATION);
+        } else {
+            getWindow().setBackgroundDrawable(to);
+        }
     }
 
     private Runnable mHideActionBarRunnable = new Runnable() {

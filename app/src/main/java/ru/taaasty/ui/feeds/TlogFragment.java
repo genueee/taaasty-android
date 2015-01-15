@@ -515,9 +515,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            TlogDesign design = entry.getDesign();
+            if (design == null && mTlogInfo != null) design = mTlogInfo.design;
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
-                    .setDesign(mTlogInfo == null ? null : mTlogInfo.design)
+                    .setDesign(design)
                     .setSrcView(view)
                     .startActivity();
         }

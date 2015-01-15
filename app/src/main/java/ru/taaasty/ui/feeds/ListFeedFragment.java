@@ -563,7 +563,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
-                    .setDesign(mTlogDesign)
+                    .setDesign(entry.getDesign() != null ? entry.getDesign() : mTlogDesign)
                     .startActivity();
         }
 
