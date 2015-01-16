@@ -10,7 +10,6 @@ import android.os.Parcelable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -53,6 +52,7 @@ import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -145,7 +145,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setHasFixedSize(true);
-        mListView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), showUserAvatar));
         mListView.setAdapter(mAdapter);

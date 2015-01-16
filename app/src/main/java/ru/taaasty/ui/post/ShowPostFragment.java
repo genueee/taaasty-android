@@ -56,6 +56,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -193,7 +194,7 @@ public class ShowPostFragment extends Fragment {
 
         mListScrollController = new ListScrollController(mListView, mListener);
         mCommentsAdapter = new Adapter(getActivity());
-        LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+        LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
 
         mListView.setLayoutManager(lm);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {

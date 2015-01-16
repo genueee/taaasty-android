@@ -1,5 +1,7 @@
 package ru.taaasty.ui.feeds;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -50,6 +52,7 @@ import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -165,13 +168,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             }
         });
 
-        LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+        LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mDateIndicatorView.setAuthoShow(false);
 
         final GestureDetector gd = new GestureDetector(getActivity(), new GestureDetector.OnGestureListener() {
             @Override
@@ -288,6 +292,10 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         refreshData(true);
     }
 
+    public void onOverlayVisibilityChanged(boolean visible) {
+        updateDateIndicatorVisibility(visible);
+    }
+
     boolean isLoading() {
         return mFeedLoader.isLoading() || !mUserSubscribtion.isUnsubscribed();
     }
@@ -333,6 +341,65 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     void updateDateIndicator(boolean animScrollUp) {
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
+        updateDateIndicatorVisibility();
+    }
+
+    void updateDateIndicatorVisibility() {
+        updateDateIndicatorVisibility(mListener.isOverlayVisible());
+    }
+
+    private void updateDateIndicatorVisibility(boolean overlayVisible) {
+        boolean dayIndicatorVisible = overlayVisible && !mAdapter.getFeed().isEmpty();
+        if (dayIndicatorVisible  && mDateIndicatorView.getVisibility() != View.VISIBLE) {
+            // Show
+            ObjectAnimator animator = ObjectAnimator.ofFloat(mDateIndicatorView, "alpha", 0f, 1f)
+                    .setDuration(getResources().getInteger(R.integer.longAnimTime));
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    mDateIndicatorView.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mDateIndicatorView.setAlpha(1f);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    mDateIndicatorView.setAlpha(1f);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {}
+            });
+            animator.start();
+        } else if (!dayIndicatorVisible && mDateIndicatorView.getVisibility() == View.VISIBLE) {
+            // Hide
+            ObjectAnimator animator = ObjectAnimator.ofFloat(mDateIndicatorView, "alpha", 1f, 0f)
+                    .setDuration(getResources().getInteger(R.integer.longAnimTime));
+            animator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mDateIndicatorView.setAlpha(1f);
+                    mDateIndicatorView.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    mDateIndicatorView.setAlpha(1f);
+                    mDateIndicatorView.setVisibility(View.INVISIBLE);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {}
+            });
+            animator.start();
+        }
     }
 
     public class Adapter extends FeedItemAdapterLite {
@@ -641,5 +708,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onSharePostMenuClicked(Entry entry);
         public void onListClicked();
         public void onNoSuchUser();
+        public boolean isOverlayVisible();
     }
 }

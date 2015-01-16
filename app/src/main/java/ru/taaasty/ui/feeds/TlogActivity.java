@@ -248,6 +248,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
+    public boolean isOverlayVisible() {
+        return !mInterfaceVisibilityController.isNavigationHidden();
+    }
+
+    @Override
     public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
         float abAlpha;
         int intAlpha;
@@ -338,14 +343,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 .subscribe(mFollowObserver);
     }
 
-
-
-
-
     private final class InterfaceVisibilityController {
 
         private final Handler mHideActionBarHandler;
         private volatile boolean userForcedToShowInterface = false;
+        private boolean mNavigationHidden;
 
         public InterfaceVisibilityController() {
             mHideActionBarHandler = new Handler();
@@ -353,6 +355,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
 
         public void onResume() {
+            mNavigationHidden = !getActionBar().isShowing();
             runHideActionBarTimer();
         }
 
@@ -361,14 +364,18 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
 
         public void onListClicked() {
-            if (isNavigationHidden()) {
+            if (mNavigationHidden) {
                 userForcedToShowInterface = true;
             }
             toggleShowOrHideHideyBarMode();
         }
 
+        public boolean isNavigationHidden() {
+            return mNavigationHidden;
+        }
+
         public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
-            if (dy < -100
+            if (dy < -50
                     || totalCount == 0
                     || (firstVisibleItem == 0 && firstVisibleFract < 0.1)
                     ) {
@@ -376,24 +383,28 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             }
         }
 
+        void onVisibilityChanged(boolean shown) {
+            mNavigationHidden = !shown;
+            TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
+            if (fragment != null) fragment.onOverlayVisibilityChanged(shown);
+        }
+
         private void userForcedToShowInterface() {
-            if (isNavigationHidden()) {
+            if (mNavigationHidden) {
                 userForcedToShowInterface = true;
                 toggleShowOrHideHideyBarMode();
             }
         }
 
-        private boolean isNavigationHidden() {
-            return getActionBar() != null && !getActionBar().isShowing();
-        }
-
         @SuppressLint("InlinedApi")
         private void toggleShowOrHideHideyBarMode() {
-            if (!isNavigationHidden()) {
+            if (!mNavigationHidden) {
                 getActionBar().hide();
+                onVisibilityChanged(false);
             } else {
                 getActionBar().show();
                 userForcedToShowInterface = false;
+                onVisibilityChanged(true);
                 runHideActionBarTimer();
             }
         }
@@ -406,7 +417,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         private final Runnable mHideAbRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!userForcedToShowInterface && !isNavigationHidden()) {
+                if (!userForcedToShowInterface && !mNavigationHidden) {
                     toggleShowOrHideHideyBarMode();
                 }
             }

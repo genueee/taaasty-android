@@ -44,6 +44,8 @@ public class DateIndicatorWidget extends ViewSwitcher {
     private Animation mScrollUpInAnim;
     private Animation mScrollUpOutAnim;
 
+    private boolean mAuthoShow = true;
+
     public DateIndicatorWidget(Context context) {
         super(context, null);
         initDateIndicator(getContext());
@@ -95,6 +97,10 @@ public class DateIndicatorWidget extends ViewSwitcher {
     }
 
 
+    public void setAuthoShow(boolean show) {
+        mAuthoShow = show;
+    }
+
     public void setDate(@Nullable Date date) {
         setDate(date, true);
     }
@@ -133,7 +139,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
 
         mDate = date;
 
-        if (getVisibility() != View.VISIBLE) showIndicatorSmoothly();
+        if (mAuthoShow && (getVisibility() != View.VISIBLE)) showIndicatorSmoothly();
     }
 
     private void showIndicatorSmoothly() {
