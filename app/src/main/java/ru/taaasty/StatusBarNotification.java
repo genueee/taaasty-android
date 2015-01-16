@@ -24,10 +24,8 @@ import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.User;
-import ru.taaasty.ui.CustomTypefaceSpan;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
-import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.UiUtils;
 
 /**
@@ -162,7 +160,7 @@ public class StatusBarNotification extends BroadcastReceiver {
         String title = mContext.getResources().getQuantityString(R.plurals.notifications_received_title,
                 mNotifications.size(), mNotifications.size());
 
-        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_launcher);
+        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.ic_launcher);
 
         notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.ic_notification)
@@ -227,7 +225,7 @@ public class StatusBarNotification extends BroadcastReceiver {
         String title = mContext.getResources().getQuantityString(R.plurals.conversation_received_title,
                 mConversationMessagesCount, mConversationMessagesCount);
 
-        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.ic_launcher);
+        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.ic_launcher);
 
         notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.ic_notification)

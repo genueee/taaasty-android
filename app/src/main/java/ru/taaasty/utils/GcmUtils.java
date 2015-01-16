@@ -101,7 +101,7 @@ public class GcmUtils {
     }
 
     private void sendRegistrationIdToBackend() {
-        mContext.getIntercom().enablePush(mRegId, mContext.getPackageName(), R.drawable.ic_launcher);
+        mContext.getIntercom().enablePush(mRegId, mContext.getPackageName(), R.mipmap.ic_launcher);
     }
 
 
