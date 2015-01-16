@@ -232,7 +232,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         mAdapter = new Adapter(getActivity(), feed);
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-        if (mTlogInfo != null && mTlogInfo.design != null) mAdapter.setFeedDesign(mTlogInfo.design);
+        if (mTlogInfo != null) {
+            mAdapter.setUser(mTlogInfo.author);
+            setupFeedDesign();
+        }
+        if (savedInstanceState != null) mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
 
         mListView.setAdapter(mAdapter);
         mFeedLoader = new MyFeedLoader(mAdapter);
@@ -317,19 +321,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         return mUserId;
     }
 
-    void setupUser(User user) {
-        if (user == null) {
-            // XXX
-        } else {
-            String name = user.getName();
-            if (name == null) name = "";
-            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
-            if (mAdapter != null) {
-                mAdapter.setTitleUser(name, user);
-            }
-        }
-    }
-
     void setupFeedDesign() {
         if (mTlogInfo == null) return;
         TlogDesign design = mTlogInfo.design;
@@ -380,7 +371,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             bindUser(holder);
         }
 
-        public void setTitleUser(String title, User user) {
+        public void setUser(User user) {
+            String name = user.getName();
+            if (name == null) name = "";
+            name = name.substring(0, 1).toUpperCase(Locale.getDefault()) + name.substring(1);
+            setTitleUser(name, user);
+        }
+
+        private void setTitleUser(String title, User user) {
             mTitle = title;
             mUser = user;
             notifyItemChanged(0);
@@ -621,7 +619,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
                 refreshFeed();
             }
             setupFeedDesign();
-            setupUser(info.author);
+            if (mAdapter != null) mAdapter.setUser(info.author);
             if (mListener != null) mListener.onTlogInfoLoaded(info);
         }
     };

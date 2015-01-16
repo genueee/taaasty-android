@@ -52,6 +52,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
     private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
 
+    private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
+    private static final String BUNDLE_KEY_AB_TITLE = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_AB_TITLE";
+    private static final String BUNDLE_KEY_IS_NAVIGATION_HIDDEN = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_IS_NAVIGATION_HIDDEN";
+
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
 
     private Drawable mAbBackgroundDrawable;
@@ -105,19 +109,30 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tlog);
 
-        mAbTitle = new SpannableString("");
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
-
         mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
-        mAbBackgroundDrawable.setAlpha(0);
+
+        if (savedInstanceState != null) {
+            mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
+            mLastAlpha = savedInstanceState.getInt(BUNDLE_KEY_LAST_ALPHA);
+            isNavigationHidden = savedInstanceState.getBoolean(BUNDLE_KEY_IS_NAVIGATION_HIDDEN);
+            mAbBackgroundDrawable.setAlpha(mLastAlpha);
+        } else {
+            mAbTitle = new SpannableString("");
+            mAbBackgroundDrawable.setAlpha(0);
+        }
 
         ActionBar ab = getActionBar();
         if (ab != null) {
-            ab.setBackgroundDrawable(mAbBackgroundDrawable);
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_tlog);
-            ab.setTitle(null);
-            ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
+            ab.setBackgroundDrawable(mAbBackgroundDrawable);
+            ab.setTitle(mAbTitle);
+
+            if (savedInstanceState == null) {
+                ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
+            }
+
             mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
             mSubscribeView.setOnClickListener(mOnSubscribtionClickListener);
 
@@ -143,6 +158,14 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                     .replace(R.id.container, tlogFragment)
                     .commit();
         }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(BUNDLE_KEY_LAST_ALPHA, mLastAlpha);
+        outState.putString(BUNDLE_KEY_AB_TITLE, mAbTitle.toString());
+        outState.putBoolean(BUNDLE_KEY_IS_NAVIGATION_HIDDEN, isNavigationHidden);
     }
 
     @Override
