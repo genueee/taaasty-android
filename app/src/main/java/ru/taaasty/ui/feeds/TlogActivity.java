@@ -72,13 +72,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     boolean mPerformSubscription;
 
-    private boolean isNavigationHidden = false;
-    private final Handler mHideActionBarHandler = new Handler();
-    private volatile boolean userForcedToChangeOverlayMode = false;
-
-
     @Nullable
     private String mMyRelationship;
+
+    private InterfaceVisibilityController mInterfaceVisibilityController;
 
     public static void startTlogActivity(Context source, long userId, View animateFrom) {
         Intent intent = new Intent(source, TlogActivity.class);
@@ -112,10 +109,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
         mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
 
+        mInterfaceVisibilityController = new InterfaceVisibilityController();
         if (savedInstanceState != null) {
             mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
             mLastAlpha = savedInstanceState.getInt(BUNDLE_KEY_LAST_ALPHA);
-            isNavigationHidden = savedInstanceState.getBoolean(BUNDLE_KEY_IS_NAVIGATION_HIDDEN);
             mAbBackgroundDrawable.setAlpha(mLastAlpha);
         } else {
             mAbTitle = new SpannableString("");
@@ -165,7 +162,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         super.onSaveInstanceState(outState);
         outState.putInt(BUNDLE_KEY_LAST_ALPHA, mLastAlpha);
         outState.putString(BUNDLE_KEY_AB_TITLE, mAbTitle.toString());
-        outState.putBoolean(BUNDLE_KEY_IS_NAVIGATION_HIDDEN, isNavigationHidden);
     }
 
     @Override
@@ -199,7 +195,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     @Override
     protected void onResume() {
         super.onResume();
-        runHideActionBarTimer();
+        mInterfaceVisibilityController.onResume();
     }
 
     @Override
@@ -242,10 +238,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void onListClicked() {
-        if (isNavigationHidden) {
-            userForcedToChangeOverlayMode = true;
-            toggleShowOrHideHideyBarMode();
-        }
+        mInterfaceVisibilityController.onListClicked();
     }
 
     @Override
@@ -259,12 +252,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         float abAlpha;
         int intAlpha;
 
-        if (totalCount == 0 || firstVisibleItem == 0) {
-            if (isNavigationHidden) {
-                userForcedToChangeOverlayMode = true;
-                toggleShowOrHideHideyBarMode();
-            }
-        }
+        mInterfaceVisibilityController.onListScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
 
         // XXX: неверно работает, когда у юзера мало постов
         if (totalCount == 0 || visibleCount >= totalCount) {
@@ -350,28 +338,79 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 .subscribe(mFollowObserver);
     }
 
-    @SuppressLint("InlinedApi")
-    public void toggleShowOrHideHideyBarMode() {
-        if (!isNavigationHidden) {
-            getActionBar().hide();
-            isNavigationHidden = true;
-        } else {
-            getActionBar().show();
-            isNavigationHidden = false;
-            userForcedToChangeOverlayMode = false;
+
+
+
+
+    private final class InterfaceVisibilityController {
+
+        private final Handler mHideActionBarHandler;
+        private volatile boolean userForcedToShowInterface = false;
+
+        public InterfaceVisibilityController() {
+            mHideActionBarHandler = new Handler();
+            userForcedToShowInterface = false;
+        }
+
+        public void onResume() {
             runHideActionBarTimer();
         }
-    }
 
-    private void runHideActionBarTimer() {
-        mHideActionBarHandler.postDelayed(new Runnable() {
+        public void onDestroy() {
+            mHideActionBarHandler.removeCallbacks(mHideAbRunnable);
+        }
+
+        public void onListClicked() {
+            if (isNavigationHidden()) {
+                userForcedToShowInterface = true;
+            }
+            toggleShowOrHideHideyBarMode();
+        }
+
+        public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
+            if (dy < -100
+                    || totalCount == 0
+                    || (firstVisibleItem == 0 && firstVisibleFract < 0.1)
+                    ) {
+                userForcedToShowInterface();
+            }
+        }
+
+        private void userForcedToShowInterface() {
+            if (isNavigationHidden()) {
+                userForcedToShowInterface = true;
+                toggleShowOrHideHideyBarMode();
+            }
+        }
+
+        private boolean isNavigationHidden() {
+            return getActionBar() != null && !getActionBar().isShowing();
+        }
+
+        @SuppressLint("InlinedApi")
+        private void toggleShowOrHideHideyBarMode() {
+            if (!isNavigationHidden()) {
+                getActionBar().hide();
+            } else {
+                getActionBar().show();
+                userForcedToShowInterface = false;
+                runHideActionBarTimer();
+            }
+        }
+
+        private void runHideActionBarTimer() {
+            mHideActionBarHandler.removeCallbacks(mHideAbRunnable);
+            mHideActionBarHandler.postDelayed(mHideAbRunnable, HIDE_ACTION_BAR_DELAY);
+        }
+
+        private final Runnable mHideAbRunnable = new Runnable() {
             @Override
             public void run() {
-                if (!userForcedToChangeOverlayMode && !isNavigationHidden) {
+                if (!userForcedToShowInterface && !isNavigationHidden()) {
                     toggleShowOrHideHideyBarMode();
                 }
             }
-        }, HIDE_ACTION_BAR_DELAY);
+        };
     }
 
     private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
@@ -379,7 +418,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         public void onCompleted() {
             mPerformSubscription = false;
             refreshFollowUnfollowView();
-            runHideActionBarTimer();
         }
 
         @Override
