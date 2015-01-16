@@ -64,7 +64,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
     private SpannableString mAbTitle;
 
-    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
+    private Subscription mFollowSubscription = SubscriptionHelper.empty();
 
     private View mSubscribeView;
     private View mUnsubscribeView;
@@ -205,7 +205,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
     }
 
     @Override
@@ -326,26 +326,26 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     void doFollow() {
         if (getUserId() == null) return;
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindActivity(this,
                 relApi.follow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mFollowObserver);
     }
 
     void doUnfollow() {
         if (getUserId() == null) return;
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AndroidObservable.bindActivity(this,
                 relApi.unfollow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mFollowObserver);
     }
