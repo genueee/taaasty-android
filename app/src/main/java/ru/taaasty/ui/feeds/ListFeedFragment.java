@@ -285,7 +285,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     }
 
     boolean isLoading() {
-        return mFeedLoader.isLoading() || !mCurrentUserSubscription.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mCurrentUserSubscription.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {

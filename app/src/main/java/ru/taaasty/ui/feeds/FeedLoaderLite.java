@@ -15,6 +15,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 
 /**
  * подгрузчик записей
@@ -68,11 +69,21 @@ public abstract class FeedLoaderLite {
         }
         mFeedRefreshSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .finallyDo(new Action0() {
+                    @Override
+                    public void call() {
+                        onFeedIsUnsubscribed(true);
+                    }
+                })
                 .subscribe(new FeedLoadObserver(true, entriesRequested));
     }
 
     public boolean isLoading() {
-        return !mFeedAppendSubscription.isUnsubscribed() && !mFeedRefreshSubscription.isUnsubscribed();
+        return !mFeedAppendSubscription.isUnsubscribed() || !mFeedRefreshSubscription.isUnsubscribed();
+    }
+
+    public boolean isRefreshing() {
+        return !mFeedRefreshSubscription.isUnsubscribed();
     }
 
     public void onCreate() {
@@ -107,6 +118,12 @@ public abstract class FeedLoaderLite {
                 int requestEntries = Constants.LIST_FEED_APPEND_LENGTH;
                 mFeedAppendSubscription = createObservable(lastEntryId, requestEntries)
                         .observeOn(AndroidSchedulers.mainThread())
+                        .finallyDo(new Action0() {
+                            @Override
+                            public void call() {
+                                onFeedIsUnsubscribed(false);
+                            }
+                        })
                         .subscribe(new FeedLoadObserver(false, requestEntries));
             }
         });

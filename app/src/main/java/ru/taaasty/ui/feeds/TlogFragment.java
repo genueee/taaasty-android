@@ -297,7 +297,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     boolean isLoading() {
-        return mFeedLoader.isLoading() || !mUserSubscribtion.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mUserSubscribtion.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {

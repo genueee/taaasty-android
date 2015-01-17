@@ -197,7 +197,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
 
     boolean isLoading() {
-        return mFeedLoader.isLoading() || !mCurrentUserSubscription.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mCurrentUserSubscription.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {

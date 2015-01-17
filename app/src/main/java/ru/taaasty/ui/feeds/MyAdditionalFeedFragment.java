@@ -247,7 +247,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     boolean isLoading() {
-        return mFeedLoader.isLoading() || !mUserSubscribtion.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mUserSubscribtion.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {
