@@ -41,6 +41,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -352,34 +353,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
     }
 
-    class LikesHelper extends ru.taaasty.utils.LikesHelper {
-
-        public LikesHelper() {
-            super(MyFeedFragment.this);
-        }
-
-        @Override
-        public boolean isRatingInUpdate(long entryId) {
-            return mAdapter.isRatingInUpdate(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateStart(long entryId) {
-            mAdapter.onUpdateRatingStart(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateCompleted(Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-        }
-
-        @Override
-        public void onRatingUpdateError(Throwable e, Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
-        }
-    }
-
     final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
         private Runnable mUpdateIndicatorRunnable = new Runnable() {
             @Override
@@ -416,7 +389,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
-            new LikesHelper().voteUnvote(entry);
+            LikesHelper.getInstance().voteUnvote(entry);
         }
 
         @Override

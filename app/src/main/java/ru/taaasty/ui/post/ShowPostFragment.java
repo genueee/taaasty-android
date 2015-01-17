@@ -51,6 +51,7 @@ import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
@@ -802,7 +803,7 @@ public class ShowPostFragment extends Fragment {
             @Override
             public void onPostLikesClicked(View view, Entry entry) {
                 if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
-                new LikesHelper().voteUnvote(entry);
+                LikesHelper.getInstance().voteUnvote(entry);
             }
 
             @Override
@@ -843,36 +844,6 @@ public class ShowPostFragment extends Fragment {
         }
     }
 
-
-    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
-
-        public LikesHelper() {
-            super(ShowPostFragment.this);
-        }
-
-        @Override
-        public boolean isRatingInUpdate(long entryId) {
-            return mUpdateRating;
-        }
-
-        @Override
-        public void onRatingUpdateStart(long entryId) {
-            mUpdateRating = true;
-            // XXX: refresh item
-        }
-
-        @Override
-        public void onRatingUpdateCompleted(Entry entry) {
-            mUpdateRating = false;
-            EventBus.getDefault().post(new EntryChanged(entry));
-        }
-
-        @Override
-        public void onRatingUpdateError(Throwable e, Entry entry) {
-            mUpdateRating = false;
-            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
-        }
-    }
 
     private void refreshDelayed() {
         if (mRefreshDatesHandler == null) return;

@@ -1,45 +1,63 @@
 package ru.taaasty.utils;
 
+import android.support.v4.util.LongSparseArray;
 import android.util.Log;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.R;
+import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.service.ApiEntries;
 import rx.Observable;
 import rx.Observer;
-import rx.android.observables.AndroidObservable;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
 
-public abstract class LikesHelper {
+public class LikesHelper {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LikesHelper";
 
-    private final Object mFragment;
     private final ApiEntries mApiEntriesService;
+    private final LongSparseArray<Subscription> mSubscriptions;
 
-    public LikesHelper(Object fragment) {
-        mFragment = fragment;
+    private static volatile LikesHelper sInstance;
+
+    public static LikesHelper getInstance() {
+        if (sInstance == null) {
+            synchronized (LikesHelper.class) {
+                if (sInstance == null) sInstance = new LikesHelper();
+            }
+        }
+        return sInstance;
+    }
+
+    private LikesHelper() {
+        mSubscriptions = new LongSparseArray<>(2);
         mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
     }
 
-    public abstract boolean isRatingInUpdate(long entryId);
-    public abstract void onRatingUpdateStart(long entryId);
-    public abstract void onRatingUpdateCompleted(Entry entry);
-    public abstract void onRatingUpdateError(Throwable e, Entry entry);
+    public boolean isRatingInUpdate(long entryId) {
+        return mSubscriptions.get(entryId) != null;
+    }
 
     /**
      * Лайкаем, либо снимаем лайк, в зависимости от статуса entry.rating
      * @param entry
      */
     public void voteUnvote(Entry entry) {
+        final long entryId = entry.getId();
+
         Rating rating = entry.getRating();
         if (!rating.isVoteable) {
             if (DBG) Log.e(TAG, "vot on non-votable");
             return;
         }
 
-        if (isRatingInUpdate(entry.getId())) {
+        if (isRatingInUpdate(entryId)) {
             if (DBG) Log.e(TAG, "entry is in process of upgrade");
             return;
         }
@@ -51,13 +69,18 @@ public abstract class LikesHelper {
             observable = mApiEntriesService.vote(entry.getId());
         }
 
-        onRatingUpdateStart(entry.getId());
-        AndroidObservable.bindFragment(mFragment,
-                observable.observeOn(AndroidSchedulers.mainThread())
-        ).subscribe(new UpdateRatingObserver(entry));
+        Subscription s = observable.observeOn(AndroidSchedulers.mainThread())
+                .doOnUnsubscribe(new Action0() {
+                    @Override
+                    public void call() {
+                        mSubscriptions.delete(entryId);
+                    }})
+                .subscribe(new UpdateRatingObserver(entry));
+        mSubscriptions.append(entryId, s);
+        EventBus.getDefault().post(EntryRatingStatusChanged.updateStarted(entry.getId()));
     }
 
-    public class UpdateRatingObserver implements Observer<Rating> {
+    private class UpdateRatingObserver implements Observer<Rating> {
 
         public final Entry mEntry;
 
@@ -68,14 +91,16 @@ public abstract class LikesHelper {
         @Override
         public void onCompleted() {
             if (DBG) Log.v(TAG, "onCompleted()");
-            onRatingUpdateCompleted(mEntry);
+            mSubscriptions.delete(mEntry.getId());
+            EventBus.getDefault().post(EntryRatingStatusChanged.updateDone(mEntry.getId()));
+            EventBus.getDefault().post(new EntryChanged(mEntry));
         }
 
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            onRatingUpdateCompleted(mEntry);
-            onRatingUpdateError(e, mEntry);
+            mSubscriptions.delete(mEntry.getId());
+            EventBus.getDefault().post(EntryRatingStatusChanged.updateError(mEntry.getId(), R.string.error_vote, e));
         }
 
         @Override
@@ -83,5 +108,4 @@ public abstract class LikesHelper {
             mEntry.setRating(rating);
         }
     }
-
 }

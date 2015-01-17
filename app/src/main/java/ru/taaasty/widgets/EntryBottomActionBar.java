@@ -20,8 +20,8 @@ import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
-import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 
 /**
  * Created by alexey on 20.08.14.
@@ -39,7 +39,8 @@ public class EntryBottomActionBar {
     private final boolean mHideUserInfo;
     private OnEntryActionBarListener mListener;
     private Entry mOnItemListenerEntry;
-    private FontManager mFontManager;
+    private final LikesHelper mLikesHelper;
+
 
     private TlogDesign mTlogDesign;
 
@@ -53,7 +54,7 @@ public class EntryBottomActionBar {
     public EntryBottomActionBar(View root, boolean hideUserInfo) {
         mHideUserInfo = hideUserInfo;
         mTlogDesign = TlogDesign.DUMMY;
-        mFontManager = FontManager.getInstance();
+        mLikesHelper = LikesHelper.getInstance();
         setRoot(root);
     }
 
@@ -127,7 +128,7 @@ public class EntryBottomActionBar {
 
     public void setupEntry(Entry item) {
         setComments(item);
-        setRating(item, false);
+        setRating(item);
         setUserAvatar(item);
     }
 
@@ -140,14 +141,13 @@ public class EntryBottomActionBar {
         return mTlogDesign.isDarkTheme() ? R.drawable.ic_like_not_voted_dark : R.drawable.ic_like_not_voted_light;
     }
 
-    public void setRating(Entry item, boolean isRatingInUpdate) {
+    public void setRating(Entry item) {
         Rating r = item.getRating();
-
         mCanVote = item.canVote();
         mIsVoteable = item.isVoteable();
         mIsVoted = r.isVoted;
-        mIsRatingInUpdate = isRatingInUpdate;
         mVotes = r.votes;
+        mIsRatingInUpdate = mLikesHelper.isRatingInUpdate(item.getId());
         refreshRating();
     }
 

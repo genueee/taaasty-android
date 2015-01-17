@@ -46,6 +46,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -532,35 +533,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
     };
 
-
-    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
-
-        public LikesHelper() {
-            super(MyAdditionalFeedFragment.this);
-        }
-
-        @Override
-        public boolean isRatingInUpdate(long entryId) {
-            return mAdapter.isRatingInUpdate(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateStart(long entryId) {
-            mAdapter.onUpdateRatingStart(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateCompleted(Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-        }
-
-        @Override
-        public void onRatingUpdateError(Throwable e, Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
-        }
-    }
-
     public void onFeedItemClicked(View view, Entry entry) {
 
     }
@@ -576,7 +548,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
-            new LikesHelper().voteUnvote(entry);
+            LikesHelper.getInstance().voteUnvote(entry);
         }
 
         @Override

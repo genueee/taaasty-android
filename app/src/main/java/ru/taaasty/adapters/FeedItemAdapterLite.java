@@ -7,9 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.greenrobot.event.EventBus;
@@ -22,6 +20,7 @@ import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.adapters.list.ListQuoteEntry;
 import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -48,7 +47,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     private final EntryList mEntries;
 
     private final int mPendingResource;
-    private final Set<Long> mUpdateRatingEntrySet;
 
     private AtomicBoolean mLoading = new AtomicBoolean(false);
 
@@ -74,7 +72,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         mEntries = new EntryList();
         mShowUserAvatar = showUserAvatar;
         mPendingResource = pendingResource;
-        mUpdateRatingEntrySet = new HashSet<>();
         mFeedDesign = TlogDesign.DUMMY;
         setHasStableIds(true);
         if (feed != null) mEntries.resetItems(feed);
@@ -226,36 +223,12 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return mEntries.get(getFeedLocation(position));
     }
 
-    public void onUpdateRatingStart(long entryId) {
-        if (mUpdateRatingEntrySet.contains(entryId)) {
-            if (DBG) {
-                throw new IllegalStateException();
-            } else {
-                return;
-            }
-        }
-        mUpdateRatingEntrySet.add(entryId);
-
-        Integer entryLocation = mEntries.findLocation(entryId);
-        if (entryLocation != null) notifyItemChanged(getAdapterPosition(entryLocation));
-    }
-
-    public void onUpdateRatingEnd(long entryId) {
-        mUpdateRatingEntrySet.remove(entryId);
-        Integer entryLocation = mEntries.findLocation(entryId);
-        if (entryLocation != null) notifyItemChanged(getAdapterPosition(entryLocation));
-    }
-
     public void removeEntry(long entryId) {
         mEntries.deleteItem(entryId);
     }
 
     public void addEntry(Entry entry) {
         mEntries.insertItem(entry);
-    }
-
-    public boolean isRatingInUpdate(long entryId) {
-        return mUpdateRatingEntrySet.contains(entryId);
     }
 
     public void setInteractionListener(InteractionListener listener) {
@@ -278,6 +251,13 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
     public void onEventMainThread(EntryRemoved event) {
         mEntries.deleteItem(event.postId);
+    }
+
+    public void onEventMainThread(EntryRatingStatusChanged event) {
+        if (event.newStatus == EntryRatingStatusChanged.STATUS_START_UPDATE) {
+            Integer location = mEntries.findLocation(event.entryId);
+            if (location != null) notifyItemChanged(getAdapterPosition(location));
+        }
     }
 
     public EntryList getFeed() {

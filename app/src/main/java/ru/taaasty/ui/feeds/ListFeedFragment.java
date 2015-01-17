@@ -38,6 +38,7 @@ import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -516,34 +517,6 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         }
     };
 
-    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
-
-        public LikesHelper() {
-            super(ListFeedFragment.this);
-        }
-
-        @Override
-        public boolean isRatingInUpdate(long entryId) {
-            return mAdapter.isRatingInUpdate(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateStart(long entryId) {
-            mAdapter.onUpdateRatingStart(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateCompleted(Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-        }
-
-        @Override
-        public void onRatingUpdateError(Throwable e, Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
-        }
-    }
-
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
@@ -554,7 +527,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
-            new LikesHelper().voteUnvote(entry);
+            LikesHelper.getInstance().voteUnvote(entry);
         }
 
         @Override

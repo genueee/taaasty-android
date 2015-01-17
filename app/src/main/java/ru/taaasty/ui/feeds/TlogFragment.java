@@ -46,6 +46,7 @@ import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -536,34 +537,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     };
 
-    public class LikesHelper extends ru.taaasty.utils.LikesHelper {
-
-        public LikesHelper() {
-            super(TlogFragment.this);
-        }
-
-        @Override
-        public boolean isRatingInUpdate(long entryId) {
-            return mAdapter.isRatingInUpdate(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateStart(long entryId) {
-            mAdapter.onUpdateRatingStart(entryId);
-        }
-
-        @Override
-        public void onRatingUpdateCompleted(Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-        }
-
-        @Override
-        public void onRatingUpdateError(Throwable e, Entry entry) {
-            mAdapter.onUpdateRatingEnd(entry.getId());
-            if (mListener != null) mListener.notifyError(getText(R.string.error_vote), e);
-        }
-    }
-
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
@@ -574,7 +547,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
-            new LikesHelper().voteUnvote(entry);
+            LikesHelper.getInstance().voteUnvote(entry);
         }
 
         @Override
