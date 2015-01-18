@@ -50,6 +50,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String TAG = "TlogActivity";
 
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
+    private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.feeds.TlogActivity.avatar_thumbnail_res";
     private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
 
     private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
@@ -77,9 +78,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private InterfaceVisibilityController mInterfaceVisibilityController;
 
-    public static void startTlogActivity(Context source, long userId, View animateFrom) {
+    public static void startTlogActivity(Context source, long userId, View animateFrom, int avatarThumbnailSizeRes) {
         Intent intent = new Intent(source, TlogActivity.class);
         intent.putExtra(ARG_USER_ID, userId);
+        intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailSizeRes);
         if (animateFrom != null && source instanceof Activity) {
             ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                     animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
@@ -87,6 +89,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         } else {
             source.startActivity(intent);
         }
+    }
+
+    public static void startTlogActivity(Context source, long userId, View animateFrom) {
+        startTlogActivity(source, userId, animateFrom, R.dimen.avatar_extra_small_diameter_34dp);
     }
 
     public static void startTlogActivity(Context source, String userSlug, View animateFrom) {
@@ -145,7 +151,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
             if (getIntent().hasExtra(ARG_USER_ID)) {
                 long userId = getIntent().getLongExtra(ARG_USER_ID, -1);
-                tlogFragment = TlogFragment.newInstance(userId);
+                tlogFragment = TlogFragment.newInstance(userId, getIntent().getIntExtra(ARG_AVATAR_THUMBNAIL_RES, 0));
             } else {
                 String userIdOrSlug = getIntent().getStringExtra(ARG_USER_SLUG);
                 tlogFragment = TlogFragment.newInstance(userIdOrSlug);

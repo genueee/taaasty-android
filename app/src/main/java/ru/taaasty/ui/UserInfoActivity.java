@@ -328,7 +328,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
-        TlogActivity.startTlogActivity(this, mUserId, view);
+        TlogActivity.startTlogActivity(this, mUserId, view, R.dimen.avatar_normal_diameter);
     }
 
     @Override

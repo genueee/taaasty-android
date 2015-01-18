@@ -195,7 +195,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     @Override
     public void onAvatarClicked(View view, User user, TlogDesign design) {
-        TlogActivity.startTlogActivity(this, user.getId(), view);
+        TlogActivity.startTlogActivity(this, user.getId(), view, R.dimen.avatar_extra_small_diameter_34dp);
     }
 
     @Override

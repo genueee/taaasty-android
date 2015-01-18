@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -66,6 +67,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private static final String TAG = "TlogFragment";
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_USER_SLUG = "user_slug";
+    private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.TlogFragment.feed_items";
     private static final String BUNDLE_KEY_TLOG_INFO = "ru.taaasty.ui.feeds.TlogFragment.tlog_info";
@@ -96,10 +98,17 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     private boolean mForceShowRefreshingIndicator;
 
+    private int mAvatarThumbnailRes;
+
     public static TlogFragment newInstance(long userId) {
+        return newInstance(userId, 0);
+    }
+
+    public static TlogFragment newInstance(long userId, int avatarThumbnailRes) {
         TlogFragment f = new  TlogFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_USER_ID, userId);
+        if (avatarThumbnailRes > 0) b.putInt(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailRes);
         f.setArguments(b);
         return f;
     }
@@ -127,6 +136,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mUserId = null;
             mUserSlug = args.getString(ARG_USER_SLUG);
         }
+        mAvatarThumbnailRes = args.getInt(ARG_AVATAR_THUMBNAIL_RES, 0);
 
         mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
         if (savedInstanceState != null) {
@@ -358,17 +368,17 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             animator.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
-                    mDateIndicatorView.setVisibility(View.VISIBLE);
+                    if (mDateIndicatorView != null) mDateIndicatorView.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mDateIndicatorView.setAlpha(1f);
+                    if (mDateIndicatorView != null) mDateIndicatorView.setAlpha(1f);
                 }
 
                 @Override
                 public void onAnimationCancel(Animator animation) {
-                    mDateIndicatorView.setAlpha(1f);
+                    if (mDateIndicatorView != null) mDateIndicatorView.setAlpha(1f);
                 }
 
                 @Override
@@ -386,12 +396,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
+                    if (mDateIndicatorView == null) return;
                     mDateIndicatorView.setAlpha(1f);
                     mDateIndicatorView.setVisibility(View.INVISIBLE);
                 }
 
                 @Override
                 public void onAnimationCancel(Animator animation) {
+                    if (mDateIndicatorView == null) return;
                     mDateIndicatorView.setAlpha(1f);
                     mDateIndicatorView.setVisibility(View.INVISIBLE);
                 }
@@ -406,6 +418,8 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     public class Adapter extends FeedItemAdapterLite {
         private String mTitle;
         private User mUser = User.DUMMY;
+        private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
+        private ImageUtils.DrawableTarget mAvatarLoadTarget;
 
         public Adapter(Context context, List<Entry> feed) {
             super(context, feed, false);
@@ -476,9 +490,62 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             rq.into(holder.feedDesignTarget);
         }
 
-        private void bindUser(HeaderHolder holder) {
-            ImageUtils.getInstance().loadAvatar(mUser.getUserpic(), mUser.getName(),
-                    holder.avatarView,
+        private void bindUser(final HeaderHolder holder) {
+            if (mAvatarThumbnailRes > 0) {
+                mAvatarThumbnailLoadTarget = new ImageUtils.ImageViewTarget(holder.avatarView, false);
+                ImageUtils.getInstance().loadAvatar(
+                        holder.itemView.getContext(),
+                        mUser.getUserpic(),
+                        mUser.getName(),
+                        mAvatarThumbnailLoadTarget,
+                        mAvatarThumbnailRes
+                );
+            } else {
+                mAvatarThumbnailLoadTarget = null;
+            }
+
+            mAvatarLoadTarget = new ImageUtils.ImageViewTarget(holder.avatarView, false) {
+
+                final Picasso picasso = Picasso.with(holder.itemView.getContext());
+
+                @Override
+                public void onDrawableReady(Drawable drawable) {
+                    super.onDrawableReady(drawable);
+                    cancelLoadAvatar();
+                }
+
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    cancelLoadAvatar();
+                }
+
+                @Override
+                public void onBitmapFailed(Drawable errorDrawable) {
+                    super.onBitmapFailed(errorDrawable);
+                    cancelLoadAvatar();
+                }
+
+                @Override
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                    // Не ставим placeholoder, если загружаем аватарку меньшего размера
+                    if (mAvatarThumbnailRes <= 0) super.onPrepareLoad(placeHolderDrawable);
+
+                }
+
+                void cancelLoadAvatar() {
+                    if (mAvatarThumbnailLoadTarget != null) {
+                        picasso.cancelRequest(mAvatarThumbnailLoadTarget);
+                        mAvatarThumbnailLoadTarget = null;
+                    }
+                }
+            };
+
+            ImageUtils.getInstance().loadAvatar(
+                    holder.itemView.getContext(),
+                    mUser.getUserpic(),
+                    mUser.getName(),
+                    mAvatarLoadTarget,
                     R.dimen.avatar_normal_diameter
             );
         }

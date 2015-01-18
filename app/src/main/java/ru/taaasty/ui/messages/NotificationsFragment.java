@@ -278,7 +278,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
         @Override
         public void onAvatarClicked(View v, Notification notification) {
-            TlogActivity.startTlogActivity(getActivity(), notification.sender.getId(), v);
+            TlogActivity.startTlogActivity(getActivity(), notification.sender.getId(), v, R.dimen.avatar_small_diameter);
         }
 
         @Override

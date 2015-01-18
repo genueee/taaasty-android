@@ -270,7 +270,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
                     @Override
                     public void onClick(View v) {
                         Entry entry = getAnyEntryAtHolderPosition(pHolder);
-                        TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), v);
+                        TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), v, R.dimen.avatar_extra_small_diameter_34dp);
                     }
                 });
             }
@@ -346,7 +346,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view);
+            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view, R.dimen.avatar_extra_small_diameter_34dp);
         }
 
         @Override

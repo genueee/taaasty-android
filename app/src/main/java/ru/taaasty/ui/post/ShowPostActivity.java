@@ -278,7 +278,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     @Override
     public void onAvatarClicked(View view, User user, TlogDesign design) {
-        TlogActivity.startTlogActivity(this, user.getId(), view);
+        TlogActivity.startTlogActivity(this, user.getId(), view, R.dimen.avatar_normal_diameter);
     }
 
     @Override

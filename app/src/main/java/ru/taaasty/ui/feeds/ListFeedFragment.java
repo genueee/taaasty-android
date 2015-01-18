@@ -521,7 +521,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         @Override
         public void onPostUserInfoClicked(View view, Entry entry) {
-            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view);
+            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view, R.dimen.avatar_extra_small_diameter_34dp);
         }
 
         @Override
