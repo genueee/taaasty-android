@@ -52,7 +52,7 @@ android {
         buildConfigField "String", "YOUTUBE_APP_ID",
                 project.ext.private.getProperty("default.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
         buildConfigField "String", "THUMBOR_SERVER",
-                project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tcdn.ru\"")
+                project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tasty0.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
                 project.ext.private.getProperty("default.ThumborKey", "\"golobog\"")
         buildConfigField "String", "PUSHER_KEY",
