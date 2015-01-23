@@ -127,7 +127,6 @@
         <activity
             android:name="ru.taaasty.ui.feeds.TlogActivity"
             android:parentActivityName="ru.taaasty.ui.tabbar.MyFeedActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/TlogActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
