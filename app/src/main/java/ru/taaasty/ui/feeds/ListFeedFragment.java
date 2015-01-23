@@ -160,6 +160,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (mListView == null) return;
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                     int childCount = mListView.getChildCount();
                     for (int i = 0; i < childCount; ++i) {

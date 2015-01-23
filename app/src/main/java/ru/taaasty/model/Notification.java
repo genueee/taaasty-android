@@ -197,8 +197,7 @@ public class Notification implements Parcelable {
                     .setEntryId(entityId)
                     .setShowFullPost(true)
                     .startActivity();
-        } else if (isTypeComment()) {
-            //Комментарий
+        } else if (isTypeComment() && parentId != null) {
             new ShowPostActivity.Builder(source)
                     .setEntryId(parentId)
                     .setCommentId(entityId)
