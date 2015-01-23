@@ -92,6 +92,8 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
             resValue "string", "app_name", "Тейсти dbg" + getRevision()
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-aviary.pro'
         }
         release {
             minifyEnabled true

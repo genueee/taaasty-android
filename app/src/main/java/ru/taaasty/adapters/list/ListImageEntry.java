@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -338,6 +339,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                             imageView.post(new Runnable() {
                                 @Override
                                 public void run() {
+                                    imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
                                     imageView.setImageDrawable(drawable);
                                 }
                             });
@@ -407,10 +409,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                     }
 
                     private void reportError(final Throwable exception) {
+                        Log.i("ListImageEntry", "load gif error", exception);
                         imageView.post(new Runnable() {
                             @Override
                             public void run() {
                                 imageView.setImageResource(R.drawable.image_load_error);
+                                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
                             }
                         });
                     }
