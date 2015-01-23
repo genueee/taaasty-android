@@ -53,7 +53,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -351,7 +351,7 @@ public class ShowCommentsFragment extends Fragment {
     public void refreshEntry() {
         mPostSubscription.unsubscribe();
 
-        Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
+        Observable<Entry> observablePost = AppObservable.bindFragment(this,
                 mEntriesService.getEntry(mPostId, false));
 
         mPostSubscription = observablePost
@@ -365,7 +365,7 @@ public class ShowCommentsFragment extends Fragment {
 
     private void loadDesign(long userId) {
         mTlogDesignSubscription.unsubscribe();
-        Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
+        Observable<TlogDesign> observable = AppObservable.bindFragment(this,
                 mTlogDesignService.getDesignSettings(String.valueOf(userId)));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -376,7 +376,7 @@ public class ShowCommentsFragment extends Fragment {
         mCommentsSubscription.unsubscribe();
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
-        Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
+        Observable<Comments> observableComments = AppObservable.bindFragment(this,
                 mCommentsService.getComments(mPostId,
                         null,
                         topCommentId,
@@ -431,7 +431,7 @@ public class ShowCommentsFragment extends Fragment {
 
         mPostCommentSubscription.unsubscribe();
 
-        Observable<Comment> observablePost = AndroidObservable.bindFragment(this,
+        Observable<Comment> observablePost = AppObservable.bindFragment(this,
                 mCommentsService.postComment(mPostId, comment));
 
         mReplyToCommentText.setEnabled(false);

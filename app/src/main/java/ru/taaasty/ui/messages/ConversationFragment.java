@@ -47,7 +47,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -293,7 +293,7 @@ public class ConversationFragment extends Fragment {
 
         ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
 
-        Observable<Conversation.Message> observablePost = AndroidObservable.bindFragment(this,
+        Observable<Conversation.Message> observablePost = AppObservable.bindFragment(this,
                 apiMessenger.postMessage(null, mConversationId, comment,
                         UUID.randomUUID().toString(), null));
 
@@ -537,7 +537,7 @@ public class ConversationFragment extends Fragment {
 
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
-                Observable<Status.MarkMessagesAsRead> observablePost = AndroidObservable.bindFragment(ConversationFragment.this,
+                Observable<Status.MarkMessagesAsRead> observablePost = AppObservable.bindFragment(ConversationFragment.this,
                         mApiMessenger.markMessagesAsRead(null, mConversationId,
                                 TextUtils.join(",", postSet)));
                 mPostMessageSubscription = observablePost

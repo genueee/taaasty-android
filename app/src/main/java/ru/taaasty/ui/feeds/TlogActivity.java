@@ -41,7 +41,7 @@ import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 
@@ -327,7 +327,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         if (getUserId() == null) return;
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
-        Observable<Relationship> observable = AndroidObservable.bindActivity(this,
+        Observable<Relationship> observable = AppObservable.bindActivity(this,
                 relApi.follow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();
@@ -340,7 +340,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         if (getUserId() == null) return;
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
-        Observable<Relationship> observable = AndroidObservable.bindActivity(this,
+        Observable<Relationship> observable = AppObservable.bindActivity(this,
                 relApi.unfollow(getUserId().toString()));
         mPerformSubscription = true;
         refreshFollowUnfollowView();

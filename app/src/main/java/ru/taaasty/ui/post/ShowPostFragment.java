@@ -61,7 +61,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -346,7 +346,7 @@ public class ShowPostFragment extends Fragment {
         if (DBG) Log.v(TAG, "refreshEntry()  postId: " + mPostId);
         mPostSubscription.unsubscribe();
 
-        Observable<Entry> observablePost = AndroidObservable.bindFragment(this,
+        Observable<Entry> observablePost = AppObservable.bindFragment(this,
                 mEntriesService.getEntry(mPostId, false));
 
         mPostSubscription = observablePost
@@ -357,7 +357,7 @@ public class ShowPostFragment extends Fragment {
     private void loadDesign(long userId) {
         if (DBG) Log.v(TAG, "loadDesign()  userId: " + userId);
         mTlogDesignSubscription.unsubscribe();
-        Observable<TlogDesign> observable = AndroidObservable.bindFragment(this,
+        Observable<TlogDesign> observable = AppObservable.bindFragment(this,
                 mTlogDesignService.getDesignSettings(String.valueOf(userId)));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -369,7 +369,7 @@ public class ShowPostFragment extends Fragment {
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
         if (DBG) Log.v(TAG, "loadComments()  topCommentId: " + topCommentId);
-        Observable<Comments> observableComments = AndroidObservable.bindFragment(this,
+        Observable<Comments> observableComments = AppObservable.bindFragment(this,
                 mCommentsService.getComments(mPostId,
                         null,
                         topCommentId,
@@ -448,7 +448,7 @@ public class ShowPostFragment extends Fragment {
 
         mPostCommentSubscription.unsubscribe();
 
-        Observable<Comment> observablePost = AndroidObservable.bindFragment(this,
+        Observable<Comment> observablePost = AppObservable.bindFragment(this,
                 mCommentsService.postComment(mPostId, comment));
 
         mReplyToCommentText.setEnabled(false);

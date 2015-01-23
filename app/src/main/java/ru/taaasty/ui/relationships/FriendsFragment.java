@@ -10,7 +10,7 @@ import ru.taaasty.model.Relationships;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 
 public class FriendsFragment extends FollowingsFragment {
 
@@ -38,8 +38,8 @@ public class FriendsFragment extends FollowingsFragment {
     Observable<Relationships> createRelationshipsObservable() {
         ApiRelationships api = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
 
-        return AndroidObservable.bindFragment(this,
-                api.getRelationshipsTo(Relationship.RELATIONSHIP_FRIEND, null,200));
+        return AppObservable.bindFragment(this,
+                api.getRelationshipsTo(Relationship.RELATIONSHIP_FRIEND, null, 200));
     }
 
 }

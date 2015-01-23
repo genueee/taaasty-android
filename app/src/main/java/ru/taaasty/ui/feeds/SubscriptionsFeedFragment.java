@@ -39,7 +39,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -287,7 +287,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
 
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return AndroidObservable.bindFragment(SubscriptionsFeedFragment.this,
+            return AppObservable.bindFragment(SubscriptionsFeedFragment.this,
                     mFeedsService.getMyFriendsFeed(sinceEntryId, limit));
         }
 
@@ -379,7 +379,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
             mStopRefreshingAction.call();
         }
         setRefreshing(true);
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
         mCurrentUserSubscribtion = observableCurrentUser

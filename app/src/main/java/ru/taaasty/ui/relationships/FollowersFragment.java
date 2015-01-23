@@ -8,7 +8,7 @@ import ru.taaasty.model.Relationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 
 public class FollowersFragment extends FollowingsFragment {
 
@@ -33,7 +33,7 @@ public class FollowersFragment extends FollowingsFragment {
 
     Observable<Relationships> createRelationshipsObservable() {
         ApiTlog tlogApi = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
-        return AndroidObservable.bindFragment(this,
+        return AppObservable.bindFragment(this,
                 tlogApi.getFollowers(String.valueOf(mUserId), null, 200));
     }
 

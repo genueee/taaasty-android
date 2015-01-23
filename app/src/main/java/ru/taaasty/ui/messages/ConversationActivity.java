@@ -38,7 +38,7 @@ import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class ConversationActivity extends Activity implements ConversationFragment.OnFragmentInteractionListener {
@@ -238,7 +238,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
         mConversationSubscription.unsubscribe();
         ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
 
-        Observable<Conversation> observable = AndroidObservable.bindActivity(this,
+        Observable<Conversation> observable = AppObservable.bindActivity(this,
                 apiMessenger.createConversation(null, recipientId));
 
         mConversationSubscription = observable

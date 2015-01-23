@@ -37,7 +37,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener {
@@ -149,7 +149,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     public void startRefreshStats() {
         if (mStatsSubscription.isUnsubscribed()) {
             if (DBG) Log.v(TAG, "startRefreshStats");
-            mStatsSubscription = AndroidObservable.bindActivity(this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
+            mStatsSubscription = AppObservable.bindActivity(this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
                     .subscribe(mStatsObserver);
         }
     }

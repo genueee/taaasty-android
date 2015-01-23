@@ -197,7 +197,8 @@ public class Notification implements Parcelable {
                     .setEntryId(entityId)
                     .setShowFullPost(true)
                     .startActivity();
-        } else if (isTypeComment() && parentId != null) {
+        } else if (isTypeComment()) {
+            if (parentId == null) return; // TODO договорились, что API в будущем возвращать null не будет, но пока возвращает
             new ShowPostActivity.Builder(source)
                     .setEntryId(parentId)
                     .setCommentId(entityId)

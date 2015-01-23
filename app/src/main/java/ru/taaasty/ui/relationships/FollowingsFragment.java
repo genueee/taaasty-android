@@ -23,7 +23,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class FollowingsFragment extends ListFragment {
@@ -139,7 +139,7 @@ public class FollowingsFragment extends ListFragment {
 
     Observable<Relationships> createRelationshipsObservable() {
         ApiTlog tlogApi = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
-        return AndroidObservable.bindFragment(this,
+        return AppObservable.bindFragment(this,
                 tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
     }
 

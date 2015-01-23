@@ -34,7 +34,7 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class ConversationsListFragment extends Fragment implements ServiceConnection {
@@ -275,7 +275,7 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         if (DBG) Log.v(TAG, "refreshConversationList");
 
         mConversationsSubscription.unsubscribe();
-        mConversationsSubscription = AndroidObservable.bindFragment(this, mApiMessenger.getConversations(mPusherService.getSocketId()))
+        mConversationsSubscription = AppObservable.bindFragment(this, mApiMessenger.getConversations(mPusherService.getSocketId()))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mConversationListObserver);
         setStatusLoading();

@@ -47,7 +47,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -553,7 +553,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             mCurrentUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
         mCurrentUserSubscription = observableCurrentUser

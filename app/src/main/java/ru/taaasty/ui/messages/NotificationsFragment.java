@@ -33,7 +33,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class NotificationsFragment extends Fragment implements ServiceConnection {
@@ -211,7 +211,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     void follow(Notification notification) {
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
-        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.follow(String.valueOf(notification.sender.getId())));
         mFollowSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -221,7 +221,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     void unfollow(Notification notification) {
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
-        Observable<Relationship> observable = AndroidObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.unfollow(String.valueOf(notification.sender.getId())));
         mFollowSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())

@@ -57,7 +57,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -286,7 +286,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
         mUserSubscribtion = observableCurrentUser
@@ -321,7 +321,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 ob = mMyFeedsService.getMyPrivateFeed(sinceEntryId, limit);
                 break;
         }
-        return AndroidObservable.bindFragment(this, ob);
+        return AppObservable.bindFragment(this, ob);
     }
 
     private Action0 mStopRefreshingAction = new Action0() {

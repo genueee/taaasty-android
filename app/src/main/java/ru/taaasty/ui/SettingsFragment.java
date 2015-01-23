@@ -22,7 +22,7 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -131,7 +131,7 @@ public class SettingsFragment extends PreferenceFragment {
             mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = AndroidObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 mApiUsers.getMyInfo());
 
         mUserSubscription = observableCurrentUser
@@ -209,7 +209,7 @@ public class SettingsFragment extends PreferenceFragment {
             mStopRefreshingAction.call();
         }
 
-        mPutSubscription = AndroidObservable.bindFragment(this, observable)
+        mPutSubscription = AppObservable.bindFragment(this, observable)
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mUpdateUserObserver);

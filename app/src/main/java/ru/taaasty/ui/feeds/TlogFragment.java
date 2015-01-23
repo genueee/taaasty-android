@@ -58,7 +58,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.observables.AndroidObservable;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -640,7 +640,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             mUserSubscribtion.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<TlogInfo> observableCurrentUser = AndroidObservable.bindFragment(this,
+        Observable<TlogInfo> observableCurrentUser = AppObservable.bindFragment(this,
                 mTlogService.getUserInfo(mUserId == null ? mUserSlug : mUserId.toString()));
 
         mUserSubscribtion = observableCurrentUser
@@ -675,7 +675,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return AndroidObservable.bindFragment(TlogFragment.this,
+            return AppObservable.bindFragment(TlogFragment.this,
                     mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit));
         }
 
