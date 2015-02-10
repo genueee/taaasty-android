@@ -53,6 +53,8 @@ public class TaaastyApplication extends Application {
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
         resetLanguage();
+        Intercom.initialize(getApplicationContext());
+        Intercom.setApiKey(BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
     }
 
     @Override
@@ -103,22 +105,13 @@ public class TaaastyApplication extends Application {
         }
     }
 
-    public synchronized Intercom getIntercom() {
-        if (mIntercom == null) {
-            mIntercom = new Intercom();
-            mIntercom.setApiKey(BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID, this);
-        }
-        return mIntercom;
-    }
-
     public synchronized void startIntercomSession() {
         if (mInterSessionStarted) return;
         Long userId = UserManager.getInstance().getCurrentUserId();
         if (userId == null) return;
         mInterSessionStarted = true;
-        Intercom intercom = getIntercom();
-        intercom.setPresentationMode(IntercomPresentationMode.BOTTOM_RIGHT, this);
-        intercom.beginSessionWithUserId(String.valueOf(userId), this, new Intercom.IntercomEventListener() {
+        Intercom.setPresentationMode(IntercomPresentationMode.BOTTOM_RIGHT);
+        Intercom.beginSessionWithUserId(String.valueOf(userId), this, new Intercom.IntercomEventListener() {
             @Override
             public void onComplete(String error) {
                 if (error != null) {
@@ -133,6 +126,8 @@ public class TaaastyApplication extends Application {
     }
 
     public synchronized void endIntercomSession() {
-        getIntercom().endSession(this);
+        Intercom.endSession();
+        mInterSessionStarted = false;
     }
+
 }

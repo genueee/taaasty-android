@@ -20,9 +20,9 @@ import com.viewpagerindicator.CirclePageIndicator;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
+import intercom.intercomsdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.model.Entry;
@@ -63,7 +63,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
 
-        ((TaaastyApplication)getApplicationContext()).getIntercom().handleIntercomPush(getIntent().getData());
+        Intercom.handleIntercomPush(getIntent().getData());
 
         mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
 

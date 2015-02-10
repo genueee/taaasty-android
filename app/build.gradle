@@ -170,8 +170,8 @@ dependencies {
     }
 
     // intercom
-    compile(name:'intercomsdk-0.8.1', ext:'aar')
-    compile 'com.mcxiaoke.volley:library:1.0.9'
+    compile(name:'intercomsdk-0.8.5', ext:'aar')
+    //compile 'com.mcxiaoke.volley:library:1.0.9'
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.android.support:appcompat-v7:21.0.3'
 

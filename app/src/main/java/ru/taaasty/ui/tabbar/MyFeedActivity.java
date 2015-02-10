@@ -18,10 +18,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import intercom.intercomsdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
@@ -259,7 +259,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openSupport() {
-        ((TaaastyApplication)getApplicationContext()).getIntercom().presentMessageViewAsConversationsList(false, this);
+        Intercom.presentMessageViewAsConversationsList(false);
     }
 
     void logout() {

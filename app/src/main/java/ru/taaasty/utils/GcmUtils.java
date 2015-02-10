@@ -13,6 +13,7 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 import java.io.IOException;
 
+import intercom.intercomsdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
@@ -101,7 +102,7 @@ public class GcmUtils {
     }
 
     private void sendRegistrationIdToBackend() {
-        mContext.getIntercom().enablePush(mRegId, mContext.getPackageName(), R.mipmap.ic_launcher);
+        Intercom.enablePush(mRegId, mContext.getPackageName(), R.mipmap.ic_launcher);
     }
 
 
