@@ -41,7 +41,7 @@ android {
         applicationId "ru.taaasty"
         minSdkVersion 15
         targetSdkVersion 20
-        versionCode 11
+        versionCode 12
         versionName "1.0.1"
 
         buildConfigField "String", "API_SERVER_ADDRESS",
