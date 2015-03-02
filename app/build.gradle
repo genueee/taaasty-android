@@ -42,7 +42,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 20
         versionCode 12
-        versionName "1.0.1"
+        versionName "1.0.2"
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
