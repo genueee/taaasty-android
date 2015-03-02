@@ -49,7 +49,7 @@ import rx.functions.Action0;
  */
 public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "SubscriptionsFeedFragment";
+    private static final String TAG = "SubscrtnsFeedFgmt";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "feed_items";
     private static final String BUNDLE_KEY_FEED_DESIGN = "feed_design";

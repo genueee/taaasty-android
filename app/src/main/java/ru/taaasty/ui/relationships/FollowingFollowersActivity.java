@@ -24,7 +24,7 @@ import ru.taaasty.widgets.ErrorTextView;
 
 public class FollowingFollowersActivity extends ActivityBase implements  FollowingsFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "FollowingFollowersActivity";
+    private static final String TAG = "FollowingFollowersAct";
     public static final String ARG_USER = "ru.taaasty.ui.relationships.FollowingFollowersActivity.user";
 
     public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.relationships.FollowingFollowersActivity.ARG_KEY_SHOW_SECTION";

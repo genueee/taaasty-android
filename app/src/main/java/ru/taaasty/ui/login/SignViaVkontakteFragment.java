@@ -48,7 +48,7 @@ import rx.android.schedulers.AndroidSchedulers;
 public class SignViaVkontakteFragment extends DialogFragment {
 
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "SignViaVkontakteFragment";
+    private static final String TAG = "SignVkontakteFrag";
 
     private OnFragmentInteractionListener mListener;
 

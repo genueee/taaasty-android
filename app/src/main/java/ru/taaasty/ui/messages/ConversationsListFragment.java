@@ -39,7 +39,7 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class ConversationsListFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ConversationsListFragment";
+    private static final String TAG = "ConversationsListFrag";
 
     private OnFragmentInteractionListener mListener;
 

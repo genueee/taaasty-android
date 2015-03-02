@@ -22,7 +22,7 @@ import ru.taaasty.widgets.BackgroundBitmapDrawable;
 * Created by alexey on 18.07.14.
 */
 public class TargetSetHeaderBackground implements Target {
-    private static final String TAG = "TargetSetHeaderBackground";
+    private static final String TAG = "TargSetHeaderBckgnd";
     private static final boolean DBG = BuildConfig.DEBUG;
     private final View mTarget;
     private final TlogDesign mDesign;
