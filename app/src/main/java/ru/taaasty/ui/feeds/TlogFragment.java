@@ -36,6 +36,7 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.model.TlogDesign;
@@ -451,6 +452,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             holder.titleView.setText(mTitle);
             bindDesign(holder);
             bindUser(holder);
+        }
+
+        @Override
+        public void onEventMainThread(EntryChanged update) {
+            addEntry(update.postEntry);
         }
 
         public void setUser(User user) {

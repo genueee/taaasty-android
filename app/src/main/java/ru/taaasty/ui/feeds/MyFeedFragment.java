@@ -31,6 +31,7 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -285,6 +286,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
             holder.titleView.setText(mTitle);
             bindDesign(holder);
             bindUser(holder);
+        }
+
+        @Override
+        public void onEventMainThread(EntryChanged update) {
+            addEntry(update.postEntry);
         }
 
         public void setTitleUser(String title, User user) {

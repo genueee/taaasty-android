@@ -12,6 +12,7 @@ import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.PostAnonymousTextForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostImageForm;
 import ru.taaasty.model.PostQuoteForm;
@@ -131,8 +132,13 @@ public class UploadService extends IntentService {
         Entry response = null;
 
         try {
-            if (form instanceof PostTextForm) {
-                PostTextForm postText = (PostTextForm)form;
+            if (form instanceof  PostAnonymousTextForm) {
+                PostAnonymousTextForm postText = (PostAnonymousTextForm) form;
+                response = mApiEntriesService.createAnonymousPostSync(
+                        UiUtils.safeToHtml(postText.title),
+                        UiUtils.safeToHtml(postText.text));
+            } else if (form instanceof PostTextForm) {
+                PostTextForm postText = (PostTextForm) form;
                 response = mApiEntriesService.createTextPostSync(
                         UiUtils.safeToHtml(postText.title),
                         UiUtils.safeToHtml(postText.text), form.privacy);
@@ -169,7 +175,12 @@ public class UploadService extends IntentService {
         Entry response = null;
 
         try {
-            if (form instanceof PostTextForm) {
+            if (form instanceof PostAnonymousTextForm) {
+                PostAnonymousTextForm postText = (PostAnonymousTextForm)form;
+                response = mApiEntriesService.updateAnonymousPostSync(String.valueOf(entryId),
+                        postText.title == null ? null : UiUtils.safeToHtml(postText.title),
+                        postText.text == null ? null : UiUtils.safeToHtml(postText.text));
+            } else if (form instanceof PostTextForm) {
                 PostTextForm postText = (PostTextForm)form;
                 response = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
                         postText.title == null ? null : UiUtils.safeToHtml(postText.title),
@@ -203,7 +214,7 @@ public class UploadService extends IntentService {
     }
 
     private void handleUploadUserpic(long userId, Uri imageUri) {
-        UserpicUploadStatus status = null;
+        UserpicUploadStatus status;
         try {
             Userpic response = mApiUsersService.uploadUserpicSync(new ContentTypedOutput(this, imageUri, null));
             status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
@@ -218,7 +229,7 @@ public class UploadService extends IntentService {
     }
 
     public void handleUploadUserBackground(long userId, Uri imageUri) {
-        TlogBackgroundUploadStatus status = null;
+        TlogBackgroundUploadStatus status;
         try {
             TlogDesign response = mApiDesignService.uploadBackgroundSync(
                     String.valueOf(UserManager.getInstance().getCurrentUserId()),

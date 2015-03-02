@@ -26,6 +26,7 @@ import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
@@ -37,6 +38,7 @@ import ru.taaasty.service.ApiFeeds;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
+import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
@@ -342,6 +344,18 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
             ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)child.getLayoutParams();
             params.bottomMargin = 0;
             child.setLayoutParams(params);
+
+            if (mFeedType == FEED_ANONYMOUS) {
+                View anonymousButton = child.findViewById(R.id.create_anonymous_post);
+                anonymousButton.setVisibility(View.VISIBLE);
+                anonymousButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CreateAnonymousPostActivity.startActivity(v.getContext(), v);
+                    }
+                });
+            }
+
             return new HeaderTitleSubtitleViewHolder(child) {
                 @Override
                 public void onScrollChanged() {
@@ -402,6 +416,29 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 if (DBG) Log.v(TAG, "header detached from window itemView: " + holder.itemView);
                 onHeaderMoved(false, 0);
             }
+        }
+
+        @Override
+        public void onEventMainThread(EntryChanged update) {
+            boolean skip = false;
+            switch (mFeedType) {
+                case FEED_LIVE:
+                case FEED_BEST:
+                    skip = update.postEntry.isAnonymousPost();
+                    break;
+                case FEED_ANONYMOUS:
+                    skip = !update.postEntry.isAnonymousPost();
+                    break;
+                case FEED_NEWS:
+                    // В принципе, посты сюда никогда не добавляются. но на всякий случай
+                    skip = update.postEntry.isAnonymousPost()
+                            || update.postEntry.getAuthor() == null
+                            || !Constants.TLOG_NEWS.equals(update.postEntry.getAuthor().getSlug());
+                    break;
+                default:
+                    break;
+            }
+            if (!skip) addEntry(update.postEntry);
         }
 
         private int getTitle() {

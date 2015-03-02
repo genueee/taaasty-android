@@ -20,6 +20,7 @@
     <string name="title_text_post">Текстовый пост</string>
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
+    <string name="title_anonymous_post">Анонимка</string>
     <string name="activity_settings">Настройки</string>
 
     <plurals name="public_records_last_day">
@@ -104,6 +105,7 @@
 
     <string name="edit_text_title">Заголовок</string>
     <string name="edit_text_post_text">Текст поста</string>
+    <string name="edit_text_anonymous_text">Текст анонимки</string>
     <string name="edit_text_image_caption_text">Подпись</string>
     <string name="text_post_content_description">Текстовый пост</string>
     <string name="image_post_content_description">Пост — изображение</string>
@@ -115,6 +117,8 @@
     <string name="create_post_button_content_description">Опубликовать пост</string>
     <string name="post_created">Пост добавлен</string>
     <string name="post_edited">Пост изменен</string>
+    <string name="anonymous_post_created">Анонимка добавлена</string>
+    <string name="anonymous_post_edited">Анонимка изменена</string>
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
     <string name="subscribe_content_description">Подписаться</string>
@@ -256,10 +260,13 @@
     <string name="summary_available_notifications">Отправлять мне емейл уведомления обо всех новых комментариях, подписчиках и личных сообщениях?</string>
     <string name="user_error">Ошибка обновления пользователя</string>
 
+    <string name="write_an_anonymous_post">Написать анонимку</string>
+
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>
         <item quantity="few">Ещё %d фотографии…</item>
         <item quantity="many">Ещё %d фотографий…</item>
         <item quantity="other">Ещё %d фотографий…</item>
     </plurals>
+
 </resources>

@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -13,6 +14,7 @@ import android.widget.EditText;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.PostAnonymousTextForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostTextForm;
 
@@ -21,15 +23,20 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
     private EditText mTextView;
 
     private static final String ARG_EDIT_POST = "edit_post";
+    private static final String ARG_IS_ANONYMOUS = "is_anonymous";
     private static final String ARG_ORIGINAL_TEXT = "original_text";
 
     private static final String SHARED_PREFS_NAME = "CreateTextPostFragment";
+    private static final String SHARED_PREFS_ANONYMOUS_NAME = "CreateAnonymousPostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
     private static final String SHARED_PREFS_KEY_TEXT = "text";
 
     private boolean mEditPost;
 
-    private PostTextForm mOriginal;
+    private boolean mIsAnonymous;
+
+    @Nullable
+    private PostForm mOriginal;
 
     public static CreateTextPostFragment newCreatePostInstance() {
         return new CreateTextPostFragment();
@@ -38,6 +45,24 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
     public static CreateTextPostFragment newEditPostInstance(PostTextForm originalText) {
         CreateTextPostFragment fragment = new CreateTextPostFragment();
         Bundle bundle = new Bundle(2);
+        bundle.putBoolean(ARG_EDIT_POST, true);
+        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    public static CreateTextPostFragment newCreateAnonymousInstance() {
+        CreateTextPostFragment fragment = new CreateTextPostFragment();
+        Bundle bundle = new Bundle(2);
+        bundle.putBoolean(ARG_IS_ANONYMOUS, true);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    public static CreateTextPostFragment newCreateEditAnonymousInstance(PostAnonymousTextForm originalText) {
+        CreateTextPostFragment fragment = new CreateTextPostFragment();
+        Bundle bundle = new Bundle(2);
+        bundle.putBoolean(ARG_IS_ANONYMOUS, true);
         bundle.putBoolean(ARG_EDIT_POST, true);
         bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
         fragment.setArguments(bundle);
@@ -54,8 +79,13 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         EventBus.getDefault().register(this);
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
+            mIsAnonymous = getArguments().getBoolean(ARG_IS_ANONYMOUS);
             mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
             if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
+        } else {
+            mEditPost = false;
+            mIsAnonymous = false;
+            mOriginal = null;
         }
     }
 
@@ -66,9 +96,17 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         mTitleView = (EditText)root.findViewById(R.id.title);
         mTextView = (EditText)root.findViewById(R.id.text);
 
-        if (mEditPost) {
-            mTitleView.setText(mOriginal.title);
-            mTextView.setText(mOriginal.text);
+        if (mIsAnonymous) {
+            mTextView.setHint(R.string.edit_text_anonymous_text);
+            if (mEditPost) {
+                mTitleView.setText(((PostAnonymousTextForm)mOriginal).title);
+                mTextView.setText(((PostAnonymousTextForm)mOriginal).text);
+            }
+        } else {
+            if (mEditPost) {
+                mTitleView.setText(((PostTextForm)mOriginal).title);
+                mTextView.setText(((PostTextForm)mOriginal).text);
+            }
         }
 
         mTitleView.addTextChangedListener(mTextWatcher);
@@ -86,9 +124,18 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
 
     @Override
     public PostForm getForm() {
-        PostTextForm form = new PostTextForm();
-        form.title = mTitleView.getText();
-        form.text = mTextView.getText();
+        PostForm form;
+        if (mIsAnonymous) {
+            PostAnonymousTextForm anonForm = new PostAnonymousTextForm();
+            anonForm.title = mTitleView.getText();
+            anonForm.text = mTextView.getText();
+            form = anonForm;
+        } else {
+            PostTextForm textForm = new PostTextForm();
+            textForm.title = mTitleView.getText();
+            textForm.text = mTextView.getText();
+            form = textForm;
+        }
         return form;
     }
 
@@ -149,16 +196,20 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         saveInputValues(mTitleView.getText().toString(), mTextView.getText().toString());
     }
 
+    private SharedPreferences getSharedPreferences() {
+        return getActivity().getSharedPreferences(mIsAnonymous ? SHARED_PREFS_ANONYMOUS_NAME : SHARED_PREFS_NAME, 0);
+    }
+
     private void clearSharedPrefs() {
         if (mEditPost) return;
-        getActivity().getSharedPreferences(SHARED_PREFS_NAME,0).edit().clear().commit();
+        getSharedPreferences().edit().clear().commit();
     }
 
     private void saveInputValues(String title, String text) {
         if (getActivity() == null) return;
         if (mEditPost) return;
 
-        getActivity().getSharedPreferences(SHARED_PREFS_NAME,0)
+        getSharedPreferences()
                 .edit()
                 .putString(SHARED_PREFS_KEY_TITLE,  title)
                 .putString(SHARED_PREFS_KEY_TEXT, text)
@@ -170,7 +221,7 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
                 || mTextView == null
                 || getActivity() == null
                 || mEditPost) return;
-        SharedPreferences prefs = getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0);
+        SharedPreferences prefs = getSharedPreferences();
         String title = prefs.getString(SHARED_PREFS_KEY_TITLE, null);
         String text = prefs.getString(SHARED_PREFS_KEY_TEXT, null);
         if (title != null) mTitleView.setText(title);

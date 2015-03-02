@@ -172,6 +172,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.post.ShowPostActivity" />
         </activity>
+        <activity
+            android:name="ru.taaasty.ui.post.CreateAnonymousPostActivity"
+            android:label="@string/title_anonymous_post"
+            android:theme="@style/CreatePostTheme"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
         <activity
             android:name="ru.taaasty.ui.post.SharePostActivity"

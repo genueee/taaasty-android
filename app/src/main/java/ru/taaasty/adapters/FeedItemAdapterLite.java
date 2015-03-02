@@ -245,9 +245,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return mLoading.get();
     }
 
-    public void onEventMainThread(EntryChanged update) {
-        mEntries.insertItem(update.postEntry);
-    }
+    public abstract void onEventMainThread(EntryChanged update);
 
     public void onEventMainThread(EntryRemoved event) {
         mEntries.deleteItem(event.postId);

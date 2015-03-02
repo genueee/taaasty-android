@@ -62,6 +62,18 @@ public interface ApiEntries {
             @Field("source") String source,
             @Field("privacy") String privacy);
 
+    @FormUrlEncoded
+    @POST("/entries/anonymous.json")
+    Entry createAnonymousPostSync(@Field("title") String title,
+                             @Field("text") String text);
+
+    @FormUrlEncoded
+    @PUT("/entries/anonymous/{id}.json")
+    Entry updateAnonymousPostSync(
+            @Path("id") String id,
+            @Field("title") String title,
+            @Field("text") String text);
+
     /**
      * Получение статьи
      * @param id

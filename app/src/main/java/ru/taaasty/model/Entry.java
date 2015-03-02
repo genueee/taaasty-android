@@ -47,6 +47,8 @@ public class Entry implements Parcelable {
 
     public static final String ENTRY_TYPE_QUOTE = "quote";
 
+    public static final String ENTRY_TYPE_ANONYMOUS = "anonymous";
+
     // Устаревший тип song
     public static final String ENTRY_TYPE_SONG = "song";
 
@@ -182,6 +184,8 @@ public class Entry implements Parcelable {
     public boolean isEntryTypeText() {
         return ENTRY_TYPE_TEXT.equals(mType);
     }
+
+    public boolean isAnonymousPost() { return ENTRY_TYPE_ANONYMOUS.equals(mType); }
 
     public User getAuthor() {
         return mAuthor == null ? User.ANONYMOUS : mAuthor;
@@ -378,6 +382,8 @@ public class Entry implements Parcelable {
      * @return Пост создавался как пост с голосованием
      */
     public boolean isVoteable() {
+        // Убрать,когда сервер будет правильно возвращать правильное значение после создания анонимки
+        if (isAnonymousPost()) return false;
         return mIsVoteable;
     }
 

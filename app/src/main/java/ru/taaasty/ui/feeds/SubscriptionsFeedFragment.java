@@ -22,6 +22,7 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
+import ru.taaasty.events.EntryChanged;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
@@ -258,6 +259,11 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
             if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
             ((HeaderTitleSubtitleViewHolder) viewHolder).bindDesign(mFeedDesign);
+        }
+
+        @Override
+        public void onEventMainThread(EntryChanged update) {
+            addEntry(update.postEntry);
         }
 
         private void setPostClickListener(final ListEntryBase pHolder) {

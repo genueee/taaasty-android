@@ -10,6 +10,20 @@
     android:background="@android:color/black"
     tools:ignore="Overdraw">
 
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/create_anonymous_post"
+        android:src="@drawable/ic_ab_subscribe_normal"
+        android:contentDescription="@string/write_an_anonymous_post"
+        android:scaleType="centerInside"
+        tools:visibility="visible"
+        android:visibility="gone"
+        android:clickable="true"
+        android:layout_width="?android:actionBarSize"
+        android:background="?android:selectableItemBackground"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|right|top"
+        android:padding="4dp" />
+
     <LinearLayout
         android:orientation="vertical"
         android:id="@+id/title_subtitle_container"

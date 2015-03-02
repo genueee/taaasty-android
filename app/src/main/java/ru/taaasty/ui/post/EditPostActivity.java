@@ -16,6 +16,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import junit.framework.Assert;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -23,6 +25,7 @@ import ru.taaasty.R;
 import ru.taaasty.UploadService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.PostAnonymousTextForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostImageForm;
 import ru.taaasty.model.PostQuoteForm;
@@ -57,27 +60,27 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("no entry");
 
-        Page currentItem = getEntryPageType();
-        if (currentItem == null) {
+        if (!mEntry.isImage()
+                && !mEntry.isQuote()
+                && !mEntry.isEntryTypeText()
+                && !mEntry.isAnonymousPost()) {
             canOnlyBeEditedOnWebsite();
             return;
         }
 
         if (savedInstanceState == null) {
-            Fragment fragment = null;
-            switch (currentItem) {
-                case TEXT_POST:
-                    fragment = CreateTextPostFragment.newEditPostInstance((PostTextForm)getOriginalPost());
-                    break;
-                case QUOTE_POST:
-                    fragment = CreateQuotePostFragment.newEditPostInstance((PostQuoteForm) getOriginalPost());
-                    break;
-                case IMAGE_POST:
-                    fragment = CreateImagePostFragment.newEditPostInstance((PostImageForm)getOriginalPost());
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+            Fragment fragment;
+            if (mEntry.isEntryTypeText()) {
+                fragment = CreateTextPostFragment.newEditPostInstance((PostTextForm)getOriginalPost());
+            } else if (mEntry.isQuote()) {
+                fragment = CreateQuotePostFragment.newEditPostInstance((PostQuoteForm) getOriginalPost());
+            } else if (mEntry.isImage()) {
+                fragment = CreateImagePostFragment.newEditPostInstance((PostImageForm) getOriginalPost());
+            } else {
+                Assert.assertTrue(mEntry.isAnonymousPost());
+                fragment = CreateTextPostFragment.newCreateEditAnonymousInstance((PostAnonymousTextForm)getOriginalPost());
             }
+
             fragment.setUserVisibleHint(true);
             getFragmentManager()
                     .beginTransaction()
@@ -160,13 +163,17 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
 
     private void setupCreatePostButtons() {
         Page currentItem = getEntryPageType();
-        mCreatePostButtons = (CreatePostButtons)findViewById(R.id.buttons);
-        for (Page page: Page.values()) {
-            View v = mCreatePostButtons.findViewById(page.buttonViewId);
-            if (v != null) v.setVisibility(currentItem == page ? View.VISIBLE : View.INVISIBLE);
+        mCreatePostButtons = (CreatePostButtons) findViewById(R.id.buttons);
+        if (currentItem == null) {
+            mCreatePostButtons.setVisibility(View.GONE);
+        } else {
+            for (Page page : Page.values()) {
+                View v = mCreatePostButtons.findViewById(page.buttonViewId);
+                if (v != null) v.setVisibility(currentItem == page ? View.VISIBLE : View.INVISIBLE);
+            }
+            mCreatePostButtons.setActivated(currentItem.buttonViewId);
+            mCreatePostButtons.setPrivacy(mEntry.getPrivacy());
         }
-        mCreatePostButtons.setActivated(currentItem.buttonViewId);
-        mCreatePostButtons.setPrivacy(mEntry.getPrivacy());
     }
 
     private void setupActionBar() {
@@ -176,7 +183,11 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_create_post);
-            ab.setTitle(currentItem.titleViewId);
+            if (mEntry.isAnonymousPost()) {
+                ab.setTitle(R.string.title_anonymous_post);
+            } else if (currentItem != null) {
+                ab.setTitle(currentItem.titleViewId);
+            }
 
             mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
             mCreatePostButton.setOnClickListener(new View.OnClickListener() {
@@ -218,6 +229,7 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         }
     }
 
+    @Nullable
     private Page getEntryPageType() {
         if (mEntry.isImage()) {
             return Page.IMAGE_POST;
@@ -232,28 +244,29 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
 
     private PostForm getOriginalPost() {
         PostForm entry;
-        // XXX: заменить switch наследованием откуда-нибудь?
-        switch (getEntryPageType()) {
-            case IMAGE_POST:
-                PostImageForm imageEntry = new PostImageForm();
-                imageEntry.title = Html.fromHtml(mEntry.getTitle());
-                imageEntry.imageUri = mEntry.getFirstImageUri();
-                entry = imageEntry;
-                break;
-            case QUOTE_POST:
-                PostQuoteForm quoteEntry = new PostQuoteForm();
-                quoteEntry.text = Html.fromHtml(mEntry.getText()); // TODO: проверить
-                quoteEntry.source = Html.fromHtml(mEntry.getSource());
-                entry = quoteEntry;
-                break;
-            case TEXT_POST:
-                PostTextForm textEntry = new PostTextForm();
-                textEntry.title = Html.fromHtml(mEntry.getTitle());
-                textEntry.text = Html.fromHtml(mEntry.getText());
-                entry = textEntry;
-                break;
-            default:
-                entry = null;
+        // XXX: заменить наследованием откуда-нибудь?
+        if (mEntry.isImage()) {
+            PostImageForm imageEntry = new PostImageForm();
+            imageEntry.title = Html.fromHtml(mEntry.getTitle());
+            imageEntry.imageUri = mEntry.getFirstImageUri();
+            entry = imageEntry;
+        } else if (mEntry.isQuote()) {
+            PostQuoteForm quoteEntry = new PostQuoteForm();
+            quoteEntry.text = Html.fromHtml(mEntry.getText()); // TODO: проверить
+            quoteEntry.source = Html.fromHtml(mEntry.getSource());
+            entry = quoteEntry;
+        } else if (mEntry.isEntryTypeText()) {
+            PostTextForm textEntry = new PostTextForm();
+            textEntry.title = Html.fromHtml(mEntry.getTitle());
+            textEntry.text = Html.fromHtml(mEntry.getText());
+            entry = textEntry;
+        } else if (mEntry.isAnonymousPost()) {
+            PostAnonymousTextForm textEntry = new PostAnonymousTextForm();
+            textEntry.title = Html.fromHtml(mEntry.getTitle());
+            textEntry.text = Html.fromHtml(mEntry.getText());
+            entry = textEntry;
+        } else {
+            throw new IllegalStateException();
         }
 
         entry.privacy = mEntry.getPrivacy();
@@ -263,18 +276,18 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
 
     private PostForm getChangedPost(PostForm newForm) {
         PostForm res;
-        // XXX: заменить switch наследованием откуда-нибудь?
-        switch (getEntryPageType()) {
-            case IMAGE_POST:
-                return getChangedImageForm((PostImageForm)newForm);
-            case QUOTE_POST:
-                return getChangedQuotePost((PostQuoteForm)newForm);
-            case TEXT_POST:
-                return getChangedTextPost((PostTextForm)newForm);
-            default:
-                res = null;
+        // XXX: заменить наследованием откуда-нибудь?
+        if (mEntry.isImage()) {
+            return getChangedImageForm((PostImageForm)newForm);
+        } else if (mEntry.isQuote()) {
+            return getChangedQuotePost((PostQuoteForm)newForm);
+        } else if (mEntry.isEntryTypeText()) {
+            return getChangedTextPost((PostTextForm)newForm);
+        } else if (mEntry.isAnonymousPost()) {
+            return getChangedAnonymousPost((PostAnonymousTextForm)newForm);
+        } else {
+            return null;
         }
-        return res;
     }
 
     private PostImageForm getChangedImageForm(PostImageForm newForm) {
@@ -305,6 +318,15 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         res.text = TextUtils.equals(original.text, newForm.text) ? null : newForm.text;
         res.source = TextUtils.equals(original.source, newForm.source) ? null : newForm.source;
         res.privacy = TextUtils.equals(original.privacy, newForm.privacy) ? null : newForm.privacy;
+        return res;
+    }
+
+    private PostAnonymousTextForm getChangedAnonymousPost(PostAnonymousTextForm newForm) {
+        PostAnonymousTextForm res = new PostAnonymousTextForm();
+        PostAnonymousTextForm original = (PostAnonymousTextForm)getOriginalPost();
+        res.text = TextUtils.equals(original.text, newForm.text) ? null : newForm.text;
+        res.title = TextUtils.equals(original.title, newForm.title) ? null : newForm.title;
+        res.privacy = null;
         return res;
     }
 
