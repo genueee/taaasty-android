@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import com.aviary.android.feather.headless.utils.MegaPixels;
 import com.aviary.android.feather.library.Constants;
 import com.aviary.android.feather.sdk.FeatherActivity;
+import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -39,7 +40,6 @@ import java.util.Date;
 import java.util.Locale;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.NativeLruCache;
 import ru.taaasty.R;
 import ru.taaasty.model.User;
 import ru.taaasty.model.Userpic;
@@ -62,7 +62,7 @@ public class ImageUtils {
 
     private static ImageUtils sInstance;
 
-    private NativeLruCache mCache;
+    private LruCache mCache;
 
     private ImageUtils() {
         mCircleTransformation = new CircleTransformation();
@@ -84,7 +84,11 @@ public class ImageUtils {
     }
 
     public Bitmap removeBitmapFromCache(String key) {
-        return mCache.remove(IMAGE_CACHE_PREFIX + key);
+        Bitmap bitmap = mCache.get(key);
+        if (bitmap != null) {
+            mCache.clearKeyUri(IMAGE_CACHE_PREFIX + key);
+        }
+        return bitmap;
     }
 
     public static int calculateInSampleSize(

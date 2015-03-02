@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.picasso.LruCache;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
@@ -20,7 +21,6 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -34,7 +34,6 @@ import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.NativeLruCache;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.ResponseError;
@@ -56,7 +55,7 @@ public final class NetworkUtils {
 
     private OkClient mRetrofitClient;
 
-    private NativeLruCache mPicassoCache;
+    private LruCache mPicassoCache;
 
     private NetworkUtils() {
         mGson = new GsonBuilder()
@@ -79,7 +78,7 @@ public final class NetworkUtils {
         initPicasso(context);
     }
 
-    public NativeLruCache getImageCache() {
+    public LruCache getImageCache() {
         return mPicassoCache;
     }
 
@@ -107,7 +106,7 @@ public final class NetworkUtils {
         double memoryClass = am.getMemoryClass();
         int cacheSize = (int)(memoryClass * 1024.0 * 1024.0 * Constants.LRU_MEMORY_CACHE_PCT / 100.0);
         if (DBG) Log.v(TAG, "LRU memory cache size: " + cacheSize);
-        mPicassoCache = new NativeLruCache(cacheSize);
+        mPicassoCache = new LruCache(cacheSize);
     }
 
     private void initPicasso(Context context) {
@@ -115,9 +114,10 @@ public final class NetworkUtils {
                 .memoryCache(mPicassoCache)
                 .downloader(new OkHttpDownloader(mOkHttpClient) {
                                 @Override
-                                protected HttpURLConnection openConnection(Uri uri) throws IOException {
-                                    if (DBG) Log.v(TAG, "Load uri: " + uri);
-                                    return super.openConnection(uri);
+                                public Response load(Uri uri, int networkPolicy) throws IOException {
+                                    if (DBG)
+                                        Log.v(TAG, "Load uri: " + uri + " net policy: " + networkPolicy);
+                                    return super.load(uri, networkPolicy);
                                 }
                             }
                 )
