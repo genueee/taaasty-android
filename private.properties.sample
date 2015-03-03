@@ -1,9 +1,12 @@
 release.ApServerAddress="http://api.taaasty.com/v1"
-
 #release.StoreFile=../taaasty.keystore
 #release.StorePassword=
 #release.KeyAlias=release
 #release.KeyPassword=
+
+default.ApiServerAddress="http://brandydev.ru/api"
+default.ApiServerLogin="tasty"
+default.ApiServerPassword="tasty"
 
 beta.StoreFile=../taaasty.keystore
 beta.StorePassword=fjrn9rm

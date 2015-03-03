@@ -6,6 +6,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.StatFs;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
@@ -206,6 +208,18 @@ public final class NetworkUtils {
     }
 
     private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {
+
+        final String mBasicAuth;
+
+        {
+            if (!TextUtils.isEmpty(BuildConfig.API_SERVER_LOGIN) && !TextUtils.isEmpty(BuildConfig.API_SERVER_PASSWORD)) {
+                final String credentials = BuildConfig.API_SERVER_LOGIN + ":" + BuildConfig.API_SERVER_PASSWORD;
+                mBasicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
+            } else {
+                mBasicAuth = null;
+            }
+        }
+
         @Override
         public void intercept(RequestFacade request) {
             request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
@@ -213,6 +227,9 @@ public final class NetworkUtils {
             String token = mUserManager.getCurrentUserToken();
             if (token != null) {
                 request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
+            }
+            if (mBasicAuth != null) {
+                request.addHeader("Authorization", mBasicAuth);
             }
         }
     };

@@ -48,6 +48,12 @@ android {
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
                         "\"http://api.taaasty.com\"")
+        buildConfigField "String", "API_SERVER_LOGIN",
+                project.ext.private.getProperty("default.ApiServerLogin",
+                        "\"\"")
+        buildConfigField "String", "API_SERVER_PASSWORD",
+                project.ext.private.getProperty("default.ApiServePassword",
+                        "\"\"")
         buildConfigField "String", "VKONTAKTE_APP_ID",
                 project.ext.private.getProperty("default.VkontakteAppId", "\"4553661\"")
         buildConfigField "String", "YOUTUBE_APP_ID",
@@ -191,6 +197,10 @@ configurations.all {
     def bt = android.buildTypes[typeName]
     bt.buildConfigField "String", "API_SERVER_ADDRESS",
             project.ext.private.getProperty("${typeName}.ApiServerAddress", "\"http://api.taaasty.com\"")
+    bt.buildConfigField "String", "API_SERVER_LOGIN",
+            project.ext.private.getProperty("${typeName}.ApiServerLogin", "\"\"")
+    bt.buildConfigField "String", "API_SERVER_PASSWORD",
+            project.ext.private.getProperty("${typeName}.ApiServerPassword", "\"\"")
     bt.buildConfigField "String", "VKONTAKTE_APP_ID",
             project.ext.private.getProperty("${typeName}.VkontakteAppId", "\"4553661\"")
     bt.buildConfigField "String", "THUMBOR_KEY",
