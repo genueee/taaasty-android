@@ -370,26 +370,28 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
             int title;
-            String subtitle;
+            String subtitle = null;
 
             title = getTitle();
             Stats stats = mListener == null ? null : mListener.getStats();
-            if (stats == null) {
-                subtitle = null;
-            } else {
-                switch(mFeedType)
-                {
+            if (stats != null) {
+                switch (mFeedType) {
                     case FEED_LIVE:
-                        subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, stats.publicEntriesInDayCount, stats.publicEntriesInDayCount);
+                        if (stats.getPublicEntriesInDayCount() != null) {
+                            subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, stats.getPublicEntriesInDayCount(), stats.getPublicEntriesInDayCount());
+                        }
                         break;
                     case FEED_BEST:
-                        subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, stats.bestEntriesInDayCount, stats.bestEntriesInDayCount);
+                        if (stats.getBestEntriesInDayCount() != null) {
+                            subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, stats.getBestEntriesInDayCount(), stats.getBestEntriesInDayCount());
+                        }
                         break;
                     case FEED_ANONYMOUS:
-                        subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, stats.anonymousEntriesInDayCount, stats.anonymousEntriesInDayCount);
+                        if (stats.getAnonymousEntriesInDayCount() != null) {
+                            subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, stats.getAnonymousEntriesInDayCount(), stats.getAnonymousEntriesInDayCount());
+                        }
                         break;
                     case FEED_NEWS:
-                        subtitle = null;
                         break;
                     default:
                         throw new IllegalStateException();
