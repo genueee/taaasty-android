@@ -101,7 +101,10 @@ public class UiUtils {
             spanned = new SpannedString(cs);
         }
 
-        return Html.toHtml(spanned);
+        String res =  Html.toHtml(spanned);
+        res = res.replace("\n", "");
+        // if (BuildConfig.DEBUG) Log.v("UiUtils", "safToHtml: " + res);
+        return res;
     }
 
     public static CharSequence removeTrailingWhitespaces(CharSequence source) {
