@@ -71,14 +71,14 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         if (savedInstanceState == null) {
             Fragment fragment;
             if (mEntry.isEntryTypeText()) {
-                fragment = CreateTextPostFragment.newEditPostInstance((PostTextForm)getOriginalPost());
+                fragment = CreateTextPostFragment.newEditPostInstance(mEntry);
             } else if (mEntry.isQuote()) {
-                fragment = CreateQuotePostFragment.newEditPostInstance((PostQuoteForm) getOriginalPost());
+                fragment = CreateQuotePostFragment.newEditPostInstance(mEntry);
             } else if (mEntry.isImage()) {
-                fragment = CreateImagePostFragment.newEditPostInstance((PostImageForm) getOriginalPost());
+                fragment = CreateImagePostFragment.newEditPostInstance(mEntry);
             } else {
                 Assert.assertTrue(mEntry.isAnonymousPost());
-                fragment = CreateTextPostFragment.newCreateEditAnonymousInstance((PostAnonymousTextForm)getOriginalPost());
+                fragment = CreateTextPostFragment.newCreateEditAnonymousInstance(mEntry);
             }
 
             fragment.setUserVisibleHint(true);

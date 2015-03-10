@@ -28,16 +28,18 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostImageForm;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.UiUtils;
 
 public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreateImagePostFragment";
 
-    private static final String ARG_EDIT_POST = "edit_post";
-    private static final String ARG_ORIGINAL_TEXT = "original_text";
+    private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateImagePostFragment.edit_post";
+    private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateImagePostFragment.original_text";
 
     private static final String SHARED_PREFS_NAME = "CreateImagePostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
@@ -63,17 +65,15 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
     private boolean mEditPost;
 
-    private PostImageForm mOriginal;
-
     public static CreateImagePostFragment newInstance() {
         return new CreateImagePostFragment();
     }
 
-    public static CreateImagePostFragment newEditPostInstance(PostImageForm originalText) {
+    public static CreateImagePostFragment newEditPostInstance(Entry original) {
         CreateImagePostFragment fragment = new CreateImagePostFragment();
         Bundle bundle = new Bundle(2);
         bundle.putBoolean(ARG_EDIT_POST, true);
-        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        bundle.putParcelable(ARG_ORIGINAL_ENTRY, original);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -94,8 +94,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
-            mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
-            if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
         }
 
         EventBus.getDefault().register(this);
@@ -118,8 +116,10 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mImageView.setOnLongClickListener(onChoosePhotoClickListener);
 
         if (mEditPost && savedInstanceState == null) {
-            mTitleView.setText(mOriginal.title);
-            mImageUri = mOriginal.imageUri;
+            Entry original = getArguments().getParcelable(ARG_ORIGINAL_ENTRY);
+            if (original == null) throw new IllegalArgumentException();
+            mTitleView.setText(UiUtils.safeFromHtml(original.getTitle()));
+            mImageUri = original.getFirstImageUri();
         }
 
         return root;
@@ -173,7 +173,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
-        if (status.successfully && status.entry instanceof PostImageForm && !mEditPost) {
+        if (status.successfully && status.entry instanceof PostImageForm.AsHtml && !mEditPost) {
             // Скорее всего наша форма. Очищаем все и вся
             if (mTitleView != null) mTitleView.setText("");
             mImageUri = null;

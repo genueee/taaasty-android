@@ -1,8 +1,9 @@
 package ru.taaasty.model;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
+
+import ru.taaasty.utils.UiUtils;
 
 public class PostAnonymousTextForm extends PostForm {
 
@@ -15,30 +16,9 @@ public class PostAnonymousTextForm extends PostForm {
         super();
     }
 
-    private PostAnonymousTextForm(Parcel in) {
-        this.title = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
-        this.text = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
-    }
-
-    public static final Parcelable.Creator<PostAnonymousTextForm> CREATOR = new Parcelable.Creator<PostAnonymousTextForm>() {
-        public PostAnonymousTextForm createFromParcel(Parcel source) {
-            return new PostAnonymousTextForm(source);
-        }
-
-        public PostAnonymousTextForm[] newArray(int size) {
-            return new PostAnonymousTextForm[size];
-        }
-    };
-
     @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        TextUtils.writeToParcel(title, dest, flags);
-        TextUtils.writeToParcel(text, dest, flags);
+    public AsHtml asHtmlForm() {
+        return new AsHtml(this);
     }
 
     @Override
@@ -59,5 +39,48 @@ public class PostAnonymousTextForm extends PostForm {
         int result = title != null ? title.hashCode() : 0;
         result = 31 * result + (text != null ? text.hashCode() : 0);
         return result;
+    }
+
+    public static class AsHtml implements PostForm.PostFormHtml {
+
+        public final String title;
+
+        public final String text;
+
+        private AsHtml(PostAnonymousTextForm source) {
+            this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
+            this.text = source.text == null ? null : UiUtils.safeToHtml(source.text);
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.title);
+            dest.writeString(this.text);
+        }
+
+        private AsHtml(Parcel in) {
+            this.title = in.readString();
+            this.text = in.readString();
+        }
+
+        public static final Creator<AsHtml> CREATOR = new Creator<AsHtml>() {
+            public AsHtml createFromParcel(Parcel source) {
+                return new AsHtml(source);
+            }
+
+            public AsHtml[] newArray(int size) {
+                return new AsHtml[size];
+            }
+        };
+
+        @Override
+        public boolean isPrivatePost() {
+            return false;
+        }
     }
 }

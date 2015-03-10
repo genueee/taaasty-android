@@ -152,6 +152,7 @@ dependencies {
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.pusher:pusher-java-client:0.3.3'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0' // aviary
     compile 'com.squareup:pollexor:2.0.2'
     compile 'com.squareup.picasso:picasso:2.5.0'
     compile 'com.squareup.retrofit:retrofit:1.9.0'

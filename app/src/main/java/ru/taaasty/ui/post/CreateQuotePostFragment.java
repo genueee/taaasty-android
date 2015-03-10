@@ -13,7 +13,10 @@ import android.widget.EditText;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.Entry;
+import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostQuoteForm;
+import ru.taaasty.utils.UiUtils;
 
 public class CreateQuotePostFragment extends CreatePostFragmentBase {
 
@@ -21,15 +24,13 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     private static final String SHARED_PREFS_KEY_TEXT = "text";
     private static final String SHARED_PREFS_KEY_SOURCE = "source";
 
-    private static final String ARG_EDIT_POST = "edit_post";
-    private static final String ARG_ORIGINAL_TEXT = "original_text";
+    private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateQuotePostFragment.edit_post";
+    private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateQuotePostFragment.original_entry";
 
     private EditText mTextView;
     private EditText mSourceView;
 
     private boolean mEditPost;
-
-    private PostQuoteForm mOriginal;
 
     private OnCreatePostInteractionListener mListener;
 
@@ -43,11 +44,11 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         return new CreateQuotePostFragment();
     }
 
-    public static CreateQuotePostFragment newEditPostInstance(PostQuoteForm originalText) {
+    public static CreateQuotePostFragment newEditPostInstance(Entry originalEntry) {
         CreateQuotePostFragment fragment = new CreateQuotePostFragment();
         Bundle bundle = new Bundle(2);
         bundle.putBoolean(ARG_EDIT_POST, true);
-        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        bundle.putParcelable(ARG_ORIGINAL_ENTRY, originalEntry);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -63,8 +64,6 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         EventBus.getDefault().register(this);
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
-            mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
-            if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
         }
     }
 
@@ -77,8 +76,8 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
     @Override
     public PostQuoteForm getForm() {
         PostQuoteForm form= new PostQuoteForm();
-        form.text = mTextView.getText();
-        form.source = mSourceView.getText();
+        form.text = PostForm.getTextVievVal(mTextView);
+        form.source = PostForm.getTextVievVal(mSourceView);
         return form;
     }
 
@@ -90,8 +89,10 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         mSourceView = (EditText)root.findViewById(R.id.edit_quote_source);
 
         if (mEditPost) {
-            mTextView.setText(mOriginal.text);
-            mSourceView.setText(mOriginal.source);
+            Entry original = getArguments().getParcelable(ARG_ORIGINAL_ENTRY);
+            if (original == null) throw new IllegalArgumentException();
+            mTextView.setText(UiUtils.safeFromHtml(original.getText()));
+            mSourceView.setText(UiUtils.safeFromHtml(original.getSource()));
         }
 
         mTextView.addTextChangedListener(mTextWatcher);
@@ -118,7 +119,7 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
 
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
-        if (status.successfully && status.entry instanceof PostQuoteForm && !mEditPost) {
+        if (status.successfully && status.entry instanceof PostQuoteForm.AsHtml && !mEditPost) {
             // Скорее всего наша форма. Очищаем все и вся
             if (mTextView != null) mTextView.setText("");
             if (mSourceView != null) mSourceView.setText("");

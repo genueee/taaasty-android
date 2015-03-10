@@ -24,7 +24,6 @@ import ru.taaasty.service.ApiEntries;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.UiUtils;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -65,7 +64,7 @@ public class UploadService extends IntentService {
     public static void startPostEntry(Context context, PostForm form) {
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_POST_ENTRY);
-        intent.putExtra(EXTRA_FORM, form);
+        intent.putExtra(EXTRA_FORM, form.asHtmlForm());
         context.startService(intent);
     }
 
@@ -73,7 +72,7 @@ public class UploadService extends IntentService {
         Intent intent = new Intent(context, UploadService.class);
         intent.setAction(ACTION_EDIT_ENTRY);
         intent.putExtra(EXTRA_ENTRY_ID, entryId);
-        intent.putExtra(EXTRA_FORM, form);
+        intent.putExtra(EXTRA_FORM, form.asHtmlForm());
         context.startService(intent);
     }
 
@@ -105,10 +104,10 @@ public class UploadService extends IntentService {
         if (intent != null) {
             final String action = intent.getAction();
             if (ACTION_POST_ENTRY.equals(action)) {
-                PostForm entry = intent.getParcelableExtra(EXTRA_FORM);
+                PostForm.PostFormHtml entry = intent.getParcelableExtra(EXTRA_FORM);
                 handlePostEntry(entry);
             } else if (ACTION_EDIT_ENTRY.equals(action)) {
-                PostForm entry = intent.getParcelableExtra(EXTRA_FORM);
+                PostForm.PostFormHtml entry = intent.getParcelableExtra(EXTRA_FORM);
                 long postId = intent.getLongExtra(EXTRA_ENTRY_ID, -1);
                 handleEditEntry(postId, entry);
             } else if (ACTION_UPLOAD_USERPIC.equals(action)) {
@@ -127,31 +126,28 @@ public class UploadService extends IntentService {
      * Handle action Foo in the provided background thread with the provided
      * parameters.
      */
-    private void handlePostEntry(PostForm form) {
+    private void handlePostEntry(PostForm.PostFormHtml form) {
         EntryUploadStatus status;
         Entry response = null;
 
         try {
-            if (form instanceof  PostAnonymousTextForm) {
-                PostAnonymousTextForm postText = (PostAnonymousTextForm) form;
+            if (form instanceof PostAnonymousTextForm.AsHtml) {
+                PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml) form;
                 response = mApiEntriesService.createAnonymousPostSync(
-                        UiUtils.safeToHtml(postText.title),
-                        UiUtils.safeToHtml(postText.text));
-            } else if (form instanceof PostTextForm) {
-                PostTextForm postText = (PostTextForm) form;
+                        postText.title, postText.text);
+            } else if (form instanceof PostTextForm.AsHtml) {
+                PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
                 response = mApiEntriesService.createTextPostSync(
-                        UiUtils.safeToHtml(postText.title),
-                        UiUtils.safeToHtml(postText.text), form.privacy);
-            } else if (form instanceof PostQuoteForm) {
-                PostQuoteForm postQuote = (PostQuoteForm)form;
+                        postText.title,  postText.text, postText.privacy);
+            } else if (form instanceof PostQuoteForm.AsHtml) {
+                PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
                 response = mApiEntriesService.createQuoteEntrySync(
-                        UiUtils.safeToHtml(postQuote.text),
-                        UiUtils.safeToHtml(postQuote.source), form.privacy);
-            } else if (form instanceof PostImageForm) {
-                PostImageForm postImage = (PostImageForm)form;
+                        postQuote.text, postQuote.source, postQuote.privacy);
+            } else if (form instanceof PostImageForm.AsHtml) {
+                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml)form;
                 response = mApiEntriesService.createImagePostSync(
-                        UiUtils.safeToHtml(postImage.title),
-                        form.privacy,
+                        postImage.title,
+                        postImage.privacy,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
             } else {
@@ -170,31 +166,33 @@ public class UploadService extends IntentService {
         if (response != null) EventBus.getDefault().post(new EntryChanged(response));
     }
 
-    private void handleEditEntry(long entryId, PostForm form) {
+    private void handleEditEntry(long entryId, PostForm.PostFormHtml form) {
         EntryUploadStatus status;
         Entry response = null;
 
         try {
-            if (form instanceof PostAnonymousTextForm) {
-                PostAnonymousTextForm postText = (PostAnonymousTextForm)form;
+            if (form instanceof PostAnonymousTextForm.AsHtml) {
+                PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml)form;
                 response = mApiEntriesService.updateAnonymousPostSync(String.valueOf(entryId),
-                        postText.title == null ? null : UiUtils.safeToHtml(postText.title),
-                        postText.text == null ? null : UiUtils.safeToHtml(postText.text));
-            } else if (form instanceof PostTextForm) {
-                PostTextForm postText = (PostTextForm)form;
+                        postText.title,
+                        postText.text);
+            } else if (form instanceof PostTextForm.AsHtml) {
+                PostTextForm.AsHtml postText = (PostTextForm.AsHtml)form;
                 response = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
-                        postText.title == null ? null : UiUtils.safeToHtml(postText.title),
-                        postText.text == null ? null : UiUtils.safeToHtml(postText.text), form.privacy);
-            } else if (form instanceof PostQuoteForm) {
-                PostQuoteForm postQuote = (PostQuoteForm)form;
+                        postText.title,
+                        postText.text,
+                        postText.privacy);
+            } else if (form instanceof PostQuoteForm.AsHtml) {
+                PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
                 response = mApiEntriesService.updateQuoteEntrySync(String.valueOf(entryId),
-                        postQuote.text == null ? null : UiUtils.safeToHtml(postQuote.text),
-                        postQuote.source == null ? null : UiUtils.safeToHtml(postQuote.source), form.privacy);
-            } else if (form instanceof PostImageForm) {
-                PostImageForm postImage = (PostImageForm)form;
+                        postQuote.text,
+                        postQuote.source,
+                        postQuote.privacy);
+            } else if (form instanceof PostImageForm.AsHtml) {
+                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml)form;
                 response = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
-                        postImage.title == null ? null : UiUtils.safeToHtml(postImage.title),
-                        form.privacy,
+                        postImage.title,
+                        postImage.privacy,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
             } else {

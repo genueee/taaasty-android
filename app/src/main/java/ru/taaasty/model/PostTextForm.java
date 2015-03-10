@@ -1,48 +1,26 @@
 package ru.taaasty.model;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 import android.text.TextUtils;
+
+import ru.taaasty.utils.UiUtils;
 
 /**
  * Created by alexey on 03.09.14.
  */
-public class PostTextForm extends PostForm implements Parcelable {
+public class PostTextForm extends PostForm {
 
     public CharSequence title = "";
 
     public CharSequence text = "";
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        TextUtils.writeToParcel(title, dest, flags);
-        TextUtils.writeToParcel(text, dest, flags);
-        dest.writeString(this.privacy);
-    }
-
     public PostTextForm() {
     }
 
-    private PostTextForm(Parcel in) {
-        this.title = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
-        this.text = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
-        this.privacy = in.readString();
+    @Override
+    public AsHtml asHtmlForm() {
+        return new AsHtml(this);
     }
-
-    public static final Parcelable.Creator<PostTextForm> CREATOR = new Parcelable.Creator<PostTextForm>() {
-        public PostTextForm createFromParcel(Parcel source) {
-            return new PostTextForm(source);
-        }
-
-        public PostTextForm[] newArray(int size) {
-            return new PostTextForm[size];
-        }
-    };
 
     @Override
     public boolean equals(Object o) {
@@ -64,5 +42,53 @@ public class PostTextForm extends PostForm implements Parcelable {
         result = 31 * result + (text != null ? text.hashCode() : 0);
         result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
         return result;
+    }
+
+    public static class AsHtml implements PostFormHtml {
+
+        public final String title;
+
+        public final String text;
+
+        public final String privacy;
+
+        private AsHtml(PostTextForm source) {
+            this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
+            this.text = source.text == null ? null : UiUtils.safeToHtml(source.text);
+            this.privacy = source.privacy;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.title);
+            dest.writeString(this.text);
+            dest.writeString(this.privacy);
+        }
+
+        private AsHtml(Parcel in) {
+            this.title = in.readString();
+            this.text = in.readString();
+            this.privacy = in.readString();
+        }
+
+        @Override
+        public boolean isPrivatePost() {
+            return Entry.PRIVACY_PRIVATE.equals(privacy);
+        }
+
+        public static final Creator<AsHtml> CREATOR = new Creator<AsHtml>() {
+            public AsHtml createFromParcel(Parcel source) {
+                return new AsHtml(source);
+            }
+
+            public AsHtml[] newArray(int size) {
+                return new AsHtml[size];
+            }
+        };
     }
 }

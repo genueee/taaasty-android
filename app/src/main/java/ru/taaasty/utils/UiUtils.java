@@ -107,6 +107,14 @@ public class UiUtils {
         return res;
     }
 
+    public static CharSequence safeFromHtml(@Nullable String source) {
+        return TextUtils.isEmpty(source) ? "" : Html.fromHtml(source);
+    }
+
+    public static CharSequence safeFromHtml(String source, Html.ImageGetter imageGetter, Html.TagHandler tagHandler) {
+        return TextUtils.isEmpty(source) ? "" : Html.fromHtml(source, imageGetter, tagHandler);
+    }
+
     public static CharSequence removeTrailingWhitespaces(CharSequence source) {
         int origLength, length;
         if (source == null) return null;

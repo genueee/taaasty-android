@@ -5,7 +5,9 @@ import android.os.Parcel;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-public class PostImageForm extends PostForm implements android.os.Parcelable {
+import ru.taaasty.utils.UiUtils;
+
+public class PostImageForm extends PostForm {
 
     // XXX: file, files
 
@@ -16,37 +18,13 @@ public class PostImageForm extends PostForm implements android.os.Parcelable {
     public Uri imageUri;
 
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        TextUtils.writeToParcel(title, dest, flags);
-        dest.writeParcelable(this.imageUri, flags);
-        dest.writeString(this.privacy);
-    }
-
     public PostImageForm() {
     }
 
-
-    private PostImageForm(Parcel in) {
-        this.title = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
-        this.imageUri = in.readParcelable(Uri.class.getClassLoader());
-        this.privacy = in.readString();
+    @Override
+    public AsHtml asHtmlForm() {
+        return new AsHtml(this);
     }
-
-    public static final Creator<PostImageForm> CREATOR = new Creator<PostImageForm>() {
-        public PostImageForm createFromParcel(Parcel source) {
-            return new PostImageForm(source);
-        }
-
-        public PostImageForm[] newArray(int size) {
-            return new PostImageForm[size];
-        }
-    };
 
     @Override
     public boolean equals(Object o) {
@@ -56,7 +34,8 @@ public class PostImageForm extends PostForm implements android.os.Parcelable {
         PostImageForm that = (PostImageForm) o;
 
         if (!TextUtils.equals(title, that.title)) return false;
-        if (imageUri != null ? !imageUri.equals(that.imageUri) : that.imageUri != null) return false;
+        if (imageUri != null ? !imageUri.equals(that.imageUri) : that.imageUri != null)
+            return false;
         if (!TextUtils.equals(privacy, that.privacy)) return false;
 
         return true;
@@ -69,4 +48,53 @@ public class PostImageForm extends PostForm implements android.os.Parcelable {
         result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
         return result;
     }
+
+    public static class AsHtml implements PostFormHtml {
+
+        public final String title;
+
+        public final Uri imageUri;
+
+        public final String privacy;
+
+        private AsHtml(PostImageForm source) {
+            this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
+            this.imageUri = source.imageUri;
+            this.privacy = source.privacy;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(this.title);
+            dest.writeParcelable(this.imageUri, 0);
+            dest.writeString(this.privacy);
+        }
+
+        private AsHtml(Parcel in) {
+            this.title = in.readString();
+            this.imageUri = in.readParcelable(Uri.class.getClassLoader());
+            this.privacy = in.readString();
+        }
+
+        @Override
+        public boolean isPrivatePost() {
+            return Entry.PRIVACY_PRIVATE.equals(privacy);
+        }
+
+        public static final Creator<AsHtml> CREATOR = new Creator<AsHtml>() {
+            public AsHtml createFromParcel(Parcel source) {
+                return new AsHtml(source);
+            }
+
+            public AsHtml[] newArray(int size) {
+                return new AsHtml[size];
+            }
+        };
+    }
+
 }

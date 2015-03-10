@@ -16,14 +16,14 @@ public class EntryUploadStatus {
 
     public Throwable exception;
 
-    public PostForm entry;
+    public PostForm.PostFormHtml entry;
 
     public String error = "";
 
     public EntryUploadStatus() {
     }
 
-    public static EntryUploadStatus createPostCompleted(PostForm entry) {
+    public static EntryUploadStatus createPostCompleted(PostForm.PostFormHtml entry) {
         EntryUploadStatus status = new EntryUploadStatus();
         status.entry = entry;
         status.status = STATUS_UPLOAD_FINISHED;
@@ -31,7 +31,7 @@ public class EntryUploadStatus {
         return status;
     }
 
-    public static EntryUploadStatus createPostFinishedWithError(PostForm entry, String error, Throwable ex) {
+    public static EntryUploadStatus createPostFinishedWithError(PostForm.PostFormHtml entry, String error, Throwable ex) {
         EntryUploadStatus status = new EntryUploadStatus();
         status.entry = entry;
         status.status = STATUS_UPLOAD_FINISHED;

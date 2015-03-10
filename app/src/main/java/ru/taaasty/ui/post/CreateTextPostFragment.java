@@ -2,7 +2,6 @@ package ru.taaasty.ui.post;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -14,9 +13,11 @@ import android.widget.EditText;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostAnonymousTextForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostTextForm;
+import ru.taaasty.utils.UiUtils;
 
 public class CreateTextPostFragment extends CreatePostFragmentBase {
     private EditText mTitleView;
@@ -24,7 +25,7 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
 
     private static final String ARG_EDIT_POST = "edit_post";
     private static final String ARG_IS_ANONYMOUS = "is_anonymous";
-    private static final String ARG_ORIGINAL_TEXT = "original_text";
+    private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.original_entry";
 
     private static final String SHARED_PREFS_NAME = "CreateTextPostFragment";
     private static final String SHARED_PREFS_ANONYMOUS_NAME = "CreateAnonymousPostFragment";
@@ -35,18 +36,15 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
 
     private boolean mIsAnonymous;
 
-    @Nullable
-    private PostForm mOriginal;
-
     public static CreateTextPostFragment newCreatePostInstance() {
         return new CreateTextPostFragment();
     }
 
-    public static CreateTextPostFragment newEditPostInstance(PostTextForm originalText) {
+    public static CreateTextPostFragment newEditPostInstance(Entry originalEntry) {
         CreateTextPostFragment fragment = new CreateTextPostFragment();
         Bundle bundle = new Bundle(2);
         bundle.putBoolean(ARG_EDIT_POST, true);
-        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        bundle.putParcelable(ARG_ORIGINAL_ENTRY, originalEntry);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -59,12 +57,12 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         return fragment;
     }
 
-    public static CreateTextPostFragment newCreateEditAnonymousInstance(PostAnonymousTextForm originalText) {
+    public static CreateTextPostFragment newCreateEditAnonymousInstance(Entry originalEntry) {
         CreateTextPostFragment fragment = new CreateTextPostFragment();
         Bundle bundle = new Bundle(2);
         bundle.putBoolean(ARG_IS_ANONYMOUS, true);
         bundle.putBoolean(ARG_EDIT_POST, true);
-        bundle.putParcelable(ARG_ORIGINAL_TEXT, originalText);
+        bundle.putParcelable(ARG_ORIGINAL_ENTRY, originalEntry);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -80,12 +78,10 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
             mIsAnonymous = getArguments().getBoolean(ARG_IS_ANONYMOUS);
-            mOriginal = getArguments().getParcelable(ARG_ORIGINAL_TEXT);
-            if (mOriginal == null && mEditPost) throw new IllegalArgumentException();
+
         } else {
             mEditPost = false;
             mIsAnonymous = false;
-            mOriginal = null;
         }
     }
 
@@ -96,16 +92,24 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         mTitleView = (EditText)root.findViewById(R.id.title);
         mTextView = (EditText)root.findViewById(R.id.text);
 
+        Entry original;
+        if (mEditPost) {
+            original = getArguments().getParcelable(ARG_ORIGINAL_ENTRY);
+            if (original == null) throw new IllegalArgumentException();
+        } else {
+            original = null;
+        }
+
         if (mIsAnonymous) {
             mTextView.setHint(R.string.edit_text_anonymous_text);
-            if (mEditPost) {
-                mTitleView.setText(((PostAnonymousTextForm)mOriginal).title);
-                mTextView.setText(((PostAnonymousTextForm)mOriginal).text);
+            if (original != null) {
+                mTitleView.setText(UiUtils.safeFromHtml(original.getTitle()));
+                mTextView.setText(UiUtils.safeFromHtml(original.getText()));
             }
         } else {
-            if (mEditPost) {
-                mTitleView.setText(((PostTextForm)mOriginal).title);
-                mTextView.setText(((PostTextForm)mOriginal).text);
+            if (original != null) {
+                mTitleView.setText(UiUtils.safeFromHtml(original.getTitle()));
+                mTextView.setText(UiUtils.safeFromHtml(original.getText()));
             }
         }
 
@@ -127,13 +131,13 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         PostForm form;
         if (mIsAnonymous) {
             PostAnonymousTextForm anonForm = new PostAnonymousTextForm();
-            anonForm.title = mTitleView.getText();
-            anonForm.text = mTextView.getText();
+            anonForm.title = PostForm.getTextVievVal(mTitleView);
+            anonForm.text = PostForm.getTextVievVal(mTextView);
             form = anonForm;
         } else {
             PostTextForm textForm = new PostTextForm();
-            textForm.title = mTitleView.getText();
-            textForm.text = mTextView.getText();
+            textForm.title = PostForm.getTextVievVal(mTitleView);
+            textForm.text = PostForm.getTextVievVal(mTextView);
             form = textForm;
         }
         return form;
@@ -160,7 +164,7 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
         if (mEditPost) return;
-        if (status.successfully && status.entry instanceof PostTextForm) {
+        if (status.successfully && status.entry instanceof PostTextForm.AsHtml) {
             // Скорее всего наша форма. Очищаем все и вся
             if (mTextView != null) mTextView.setText("");
             if (mTitleView != null) mTitleView.setText("");

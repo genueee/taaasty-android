@@ -140,7 +140,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         if (status.successfully) {
             // Переходим на страницу, в зависимости от статуса блокировки
             Toast.makeText(this, R.string.post_created, Toast.LENGTH_LONG).show();
-            if (Entry.PRIVACY_PRIVATE.equals(status.entry.privacy)) {
+            if (status.entry.isPrivatePost()) {
                 // Пост приватный. Переход к скрытым записям
                 setResult(CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN);
             } else {
