@@ -21,6 +21,7 @@
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
     <string name="title_anonymous_post">Анонимка</string>
+    <string name="title_embedd_post">Ссылка</string>
     <string name="activity_settings">Настройки</string>
 
     <plurals name="public_records_last_day">
@@ -56,6 +57,8 @@
     <string name="error_loading_user">Ошибка загрузки пользователя</string>
     <string name="error_loading_relationships">Ошибка загрузки подписок</string>
     <string name="error_loading_image">Ошибка загрузки изображения</string>
+    <string name="error_iframely_unsupported">Ссылка не поддерживается</string>
+    <string name="error_loading_iframely_info">Ошибка загрузки информации о ссылке</string>
     <string name="error_follow">Ошибка подписки</string>
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
@@ -110,6 +113,7 @@
     <string name="text_post_content_description">Текстовый пост</string>
     <string name="image_post_content_description">Пост — изображение</string>
     <string name="quote_post_content_description">Пост — цитата</string>
+    <string name="embedd_post_content_description">Пост по ссылке</string>
     <string name="is_private_post_content_description">Приватный пост</string>
     <string name="is_with_voting">С голосованием</string>
     <string name="quote_source_hint">Подпись</string>
@@ -145,6 +149,9 @@
         <item>Сфотографировать</item>
         <item>Убрать</item>
     </array>
+
+    <string name="embedd_post_menu_paste">Вставить из буфера обмена</string>
+    <string name="embedd_post_menu_remove">Убрать</string>
 
     <string name="delete_post_button">Удалить пост</string>
     <string name="delete_post_description">Вы действительно хотите удалить\u00A0пост?\nЕго\u00A0нельзя будет\u00A0восстановить.</string>
@@ -261,6 +268,7 @@
     <string name="user_error">Ошибка обновления пользователя</string>
 
     <string name="write_an_anonymous_post">Написать анонимку</string>
+    <string name="copy_link_to_clipboard_description">Скопируйте ссылку в буфер обмена</string>
 
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>

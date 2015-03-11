@@ -41,6 +41,12 @@
     <screenName name="ru.taaasty.ui.post.CreatePostActivity">
         Создание поста
     </screenName>
+    <screenName name="ru.taaasty.ui.post.CreateAnonymousPostActivity">
+        Создание анонимного поста
+    </screenName>
+    <screenName name="ru.taaasty.ui.post.CreateSharedPostActivity">
+        Создание поста по ссылке
+    </screenName>
     <screenName name="com.vk.sdk.VKOpenAuthActivity">
         Вход через вконтакте
     </screenName>

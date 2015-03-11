@@ -1,6 +1,8 @@
 package ru.taaasty.utils;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.Spannable;
@@ -28,6 +30,9 @@ import ru.taaasty.ui.TaaastyUrlSpan;
  * Created by alexey on 13.08.14.
  */
 public class UiUtils {
+
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "\\b(http(?:s)?:\\/\\/\\S+)", Pattern.CASE_INSENSITIVE);
 
     public static boolean isBlank(CharSequence text) {
         return text == null || TextUtils.isEmpty(removeTrailingWhitespaces(text));
@@ -242,4 +247,46 @@ public class UiUtils {
                 0).toString();
     }
 
+    public static Uri getSharedImageUri(@Nullable Intent intent) {
+        if ((intent != null)
+                && (intent.getType() != null)
+                && Intent.ACTION_SEND.equals(intent.getAction())) {
+            if (intent.getType().startsWith("image/")) {
+                return (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static String getLastUrl(CharSequence text) {
+        if (text == null || "".equals(text)) return null;
+        String url = null;
+        Matcher matcher = URL_PATTERN.matcher(text);
+        while (matcher.find()) url = matcher.group();
+        return url;
+    }
+
+    @Nullable
+    public static CharSequence trimLastUrl(CharSequence text) {
+        if (text == null || "".equals(text)) return null;
+        Matcher matcher = URL_PATTERN.matcher(text);
+        int cnt = 0;
+        while (matcher.find()) cnt += 1;
+        if (cnt == 0) return text;
+
+        StringBuffer sb = new StringBuffer();
+        matcher.reset();
+        while (matcher.find()) {
+            cnt -= 1;
+            if (cnt == 0) {
+                matcher.appendReplacement(sb, "");
+            } else {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
+            }
+        }
+        matcher.appendTail(sb);
+
+        return sb;
+    }
 }

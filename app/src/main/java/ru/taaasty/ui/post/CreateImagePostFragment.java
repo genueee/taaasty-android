@@ -40,6 +40,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
     private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateImagePostFragment.edit_post";
     private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateImagePostFragment.original_text";
+    private static final String ARG_SHARED_IMAGE_URI = "ru.taaasty.ui.post.CreateImagePostFragment.ARG_SHARED_IMAGE_URI";
 
     private static final String SHARED_PREFS_NAME = "CreateImagePostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
@@ -63,10 +64,16 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Nullable
     private Uri mImageUri;
 
+    private Uri mSharedImageUri;
+
     private boolean mEditPost;
 
-    public static CreateImagePostFragment newInstance() {
-        return new CreateImagePostFragment();
+    public static CreateImagePostFragment newInstance(@Nullable Uri sharedImageUri) {
+        CreateImagePostFragment fragment = new CreateImagePostFragment();
+        Bundle bundle = new Bundle(1);
+        bundle.putParcelable(ARG_SHARED_IMAGE_URI, sharedImageUri);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     public static CreateImagePostFragment newEditPostInstance(Entry original) {
@@ -77,7 +84,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         fragment.setArguments(bundle);
         return fragment;
     }
-
 
     public CreateImagePostFragment() {
         // Required empty public constructor
@@ -94,6 +100,10 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
+            mSharedImageUri = getArguments().getParcelable(ARG_SHARED_IMAGE_URI);
+        } else {
+            mEditPost = false;
+            mSharedImageUri = null;
         }
 
         EventBus.getDefault().register(this);
@@ -109,11 +119,13 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         mProgressView = root.findViewById(R.id.progress);
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.GONE);
-        final OnChoosePhotoClickListener onChoosePhotoClickListener = new OnChoosePhotoClickListener();
-        mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(onChoosePhotoClickListener);
-        mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnLongClickListener(onChoosePhotoClickListener);
-        mImageView.setOnClickListener(onChoosePhotoClickListener);
-        mImageView.setOnLongClickListener(onChoosePhotoClickListener);
+        if (mSharedImageUri == null) {
+            final OnChoosePhotoClickListener onChoosePhotoClickListener = new OnChoosePhotoClickListener();
+            mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnClickListener(onChoosePhotoClickListener);
+            mMakeImageButtonLayout.findViewById(R.id.make_photo_button).setOnLongClickListener(onChoosePhotoClickListener);
+            mImageView.setOnClickListener(onChoosePhotoClickListener);
+            mImageView.setOnLongClickListener(onChoosePhotoClickListener);
+        }
 
         if (mEditPost && savedInstanceState == null) {
             Entry original = getArguments().getParcelable(ARG_ORIGINAL_ENTRY);
@@ -361,8 +373,13 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         String title = prefs.getString(SHARED_PREFS_KEY_TITLE, null);
         String imageUri = prefs.getString(SHARED_PREFS_KEY_IMAGE_URI, null);
         if (title != null) mTitleView.setText(title);
-        if (!TextUtils.isEmpty(imageUri)) {
+        // Если мы шарим урл, игшнорируем сохраненные настройки и считаем, что расшаренный - наш урл
+        if (mSharedImageUri != null) {
+            mImageUri = mSharedImageUri;
+        } else if (!TextUtils.isEmpty(imageUri)) {
             mImageUri = Uri.parse(imageUri);
+        }
+        if (mImageUri != null) {
             refreshImageView();
         }
     }

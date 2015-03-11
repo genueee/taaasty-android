@@ -4,52 +4,69 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="4dp"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
-    <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/text_post"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:contentDescription="@string/text_post_content_description"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@drawable/ic_text_post"
-        tools:activated="true"/>
-
-    <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/image_post"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:contentDescription="@string/image_post_content_description"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@drawable/ic_image_post" />
-
-    <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/quote_post"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:contentDescription="@string/quote_post_content_description"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@drawable/ic_quote_post" />
-
-    <View
-        android:id="@+id/fill_gap"
+    <HorizontalScrollView
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:clickable="false"
-        android:enabled="false"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        android:layout_weight="1" />
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:requiresFadingEdge="none"
+        android:clipToPadding="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/buttons_list"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/text_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:contentDescription="@string/text_post_content_description"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_text_post"
+                tools:activated="true" />
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/image_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:contentDescription="@string/image_post_content_description"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_image_post" />
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/quote_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:contentDescription="@string/quote_post_content_description"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_quote_post" />
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/embedd_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:contentDescription="@string/embedd_post_content_description"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_embedd_post" />
+        </LinearLayout>
+
+    </HorizontalScrollView>
 
     <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/is_with_voting_indicator"

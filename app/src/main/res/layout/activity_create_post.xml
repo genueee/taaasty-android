@@ -11,19 +11,17 @@
         tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
     <ru.taaasty.widgets.CreatePostButtons
-        android:id="@id/buttons"
+        android:id="@+id/buttons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginTop="4dp"
         android:baselineAligned="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"/>
 
     <ProgressBar
-        android:id="@+id/progress"
+        android:id="@+id/create_post_progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"

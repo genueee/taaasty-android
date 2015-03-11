@@ -30,11 +30,11 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
     public SelectPhotoSourceDialogFragment() {
     }
 
-    public static interface SelectPhotoSourceDialogListener {
-        public void onPickPhotoSelected(Fragment fragment);
-        public void onMakePhotoSelected(Fragment fragment);
-        public void onDeletePhotoSelected(Fragment fragment);
-        public void onFeatherPhotoSelected(Fragment fragment);
+    public interface SelectPhotoSourceDialogListener {
+        void onPickPhotoSelected(Fragment fragment);
+        void onMakePhotoSelected(Fragment fragment);
+        void onDeletePhotoSelected(Fragment fragment);
+        void onFeatherPhotoSelected(Fragment fragment);
     }
 
     SelectPhotoSourceDialogListener mListener;

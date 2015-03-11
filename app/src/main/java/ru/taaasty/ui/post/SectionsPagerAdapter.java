@@ -25,9 +25,11 @@ public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
             case TEXT_POST:
                 return CreateTextPostFragment.newCreatePostInstance();
             case IMAGE_POST:
-                return CreateImagePostFragment.newInstance();
+                return CreateImagePostFragment.newInstance(null);
             case QUOTE_POST:
                 return CreateQuotePostFragment.newInstance();
+            case EMBEDD_POST:
+                return CreateEmbeddPostFragment.newInstance(null);
             default:
                 throw  new IllegalStateException();
         }

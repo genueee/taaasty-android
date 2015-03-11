@@ -11,7 +11,9 @@ public enum Page {
 
     IMAGE_POST("image_post", R.id.image_post, R.string.title_image_post),
 
-    QUOTE_POST("quote_post", R.id.quote_post, R.string.title_quote_post)
+    QUOTE_POST("quote_post", R.id.quote_post, R.string.title_quote_post),
+
+    EMBEDD_POST("embedd_post", R.id.embedd_post, R.string.title_embedd_post)
 
     ;
 

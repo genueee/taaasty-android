@@ -3,7 +3,8 @@ package ru.taaasty.ui.post;
 
 public interface OnCreatePostInteractionListener {
 
-    public void onValidationStatusChanged(boolean postValid);
+    void onValidationStatusChanged(boolean postValid);
 
-    public void onChoosePhotoButtonClicked(boolean hasPicture); // Отдельный интерфейс?
+    void onChoosePhotoButtonClicked(boolean hasPicture); // Отдельный интерфейс?
+
 }

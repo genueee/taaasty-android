@@ -13,6 +13,7 @@ import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
+import ru.taaasty.model.iframely.IFramely;
 import rx.Observable;
 
 public interface ApiEntries {
@@ -74,6 +75,20 @@ public interface ApiEntries {
             @Field("title") String title,
             @Field("text") String text);
 
+    @FormUrlEncoded
+    @POST("/entries/video.json")
+    Entry createVideoPostSync(@Field("title") String title,
+                             @Field("video_url") String url,
+                             @Field("privacy") String privacy);
+
+    @FormUrlEncoded
+    @PUT("/entries/video/{id}.json")
+    Entry updateVideoPostSync(
+            @Path("id") String id,
+            @Field("title") String title,
+            @Field("video_url") String url,
+            @Field("privacy") String privacy);
+
     /**
      * Получение статьи
      * @param id
@@ -113,4 +128,8 @@ public interface ApiEntries {
 
     @DELETE("/favorites.json")
     Observable<Object> removeFromFavorites(@Query("entry_id") long entryId);
+
+
+    @POST("/embeding/iframely.json")
+    Observable<IFramely> getIframely(@Query("url") String url);
 }

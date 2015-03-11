@@ -3,7 +3,10 @@ package ru.taaasty.ui.post;
 import android.app.ActionBar;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +29,7 @@ import ru.taaasty.UploadService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostAnonymousTextForm;
+import ru.taaasty.model.PostEmbeddForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostImageForm;
 import ru.taaasty.model.PostQuoteForm;
@@ -33,7 +37,11 @@ import ru.taaasty.model.PostTextForm;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class EditPostActivity extends ActivityBase implements OnCreatePostInteractionListener, SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
+public class EditPostActivity extends ActivityBase implements
+        OnCreatePostInteractionListener,
+        SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener,
+        CreateEmbeddPostFragment.InteractionListener,
+        EmbeddMenuDialogFragment.OnDialogInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "EditPostActivity";
 
@@ -63,7 +71,8 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         if (!mEntry.isImage()
                 && !mEntry.isQuote()
                 && !mEntry.isEntryTypeText()
-                && !mEntry.isAnonymousPost()) {
+                && !mEntry.isAnonymousPost()
+                && !mEntry.isEmbedd()) {
             canOnlyBeEditedOnWebsite();
             return;
         }
@@ -76,6 +85,8 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
                 fragment = CreateQuotePostFragment.newEditPostInstance(mEntry);
             } else if (mEntry.isImage()) {
                 fragment = CreateImagePostFragment.newEditPostInstance(mEntry);
+            } else if (mEntry.isEmbedd()) {
+                fragment = CreateEmbeddPostFragment.newEditPostInstance(mEntry);
             } else {
                 Assert.assertTrue(mEntry.isAnonymousPost());
                 fragment = CreateTextPostFragment.newCreateEditAnonymousInstance(mEntry);
@@ -120,7 +131,6 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
         dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
-
     }
 
     @Override
@@ -159,7 +169,6 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             notifyError(status.error, status.exception);
         }
     }
-
 
     private void setupCreatePostButtons() {
         Page currentItem = getEntryPageType();
@@ -237,6 +246,8 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             return Page.QUOTE_POST;
         } else if (mEntry.isEntryTypeText()) {
             return Page.TEXT_POST;
+        } else if (mEntry.isEmbedd()) {
+            return Page.EMBEDD_POST;
         } else {
             return null;
         }
@@ -265,6 +276,11 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
             textEntry.title = Html.fromHtml(mEntry.getTitle());
             textEntry.text = Html.fromHtml(mEntry.getText());
             entry = textEntry;
+        } else if (mEntry.isEmbedd()) {
+            PostEmbeddForm embeddEntry = new PostEmbeddForm();
+            embeddEntry.title = Html.fromHtml(mEntry.getTitle());
+            embeddEntry.url = mEntry.getIframely().url;
+            entry = embeddEntry;
         } else {
             throw new IllegalStateException();
         }
@@ -284,7 +300,9 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         } else if (mEntry.isEntryTypeText()) {
             return getChangedTextPost((PostTextForm)newForm);
         } else if (mEntry.isAnonymousPost()) {
-            return getChangedAnonymousPost((PostAnonymousTextForm)newForm);
+            return getChangedAnonymousPost((PostAnonymousTextForm) newForm);
+        } else if (mEntry.isEmbedd()) {
+            return getChangedEmbeddPost((PostEmbeddForm) newForm);
         } else {
             return null;
         }
@@ -321,6 +339,15 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         return res;
     }
 
+    private PostEmbeddForm getChangedEmbeddPost(PostEmbeddForm newForm) {
+        PostEmbeddForm res = new PostEmbeddForm();
+        PostEmbeddForm original = (PostEmbeddForm)getOriginalPost();
+        res.title = TextUtils.equals(newForm.title, original.title) ? null : newForm.title;
+        res.url = TextUtils.equals(newForm.url, original.url) ? null : newForm.url;
+        res.privacy = TextUtils.equals(newForm.privacy, original.privacy) ? null : newForm.privacy;
+        return res;
+    }
+
     private PostAnonymousTextForm getChangedAnonymousPost(PostAnonymousTextForm newForm) {
         PostAnonymousTextForm res = new PostAnonymousTextForm();
         PostAnonymousTextForm original = (PostAnonymousTextForm)getOriginalPost();
@@ -352,4 +379,25 @@ public class EditPostActivity extends ActivityBase implements OnCreatePostIntera
         return (CreateImagePostFragment)fragment;
     }
 
+    @Override
+    public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
+        FragmentManager fm = getFragmentManager();
+        Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
+        FragmentTransaction ft = fm.beginTransaction();
+        if (old != null) ft.remove(old);
+        fragment.show(ft, "EmbeddMenuDialogFragment");
+    }
+
+    @Override
+    public void onEmbeddMenuDialogItemSelected(DialogInterface dialog, int resId) {
+
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        if (fragment != null) fragment.onEmbeddMenuDialogItemSelected(dialog, resId);
+    }
+
+    @Override
+    public void onEmbeddMenuDialogDismissed(DialogInterface dialog) {
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
+    }
 }

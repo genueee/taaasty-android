@@ -4,6 +4,10 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,7 +29,10 @@ import ru.taaasty.model.PostForm;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class CreatePostActivity extends ActivityBase implements OnCreatePostInteractionListener, SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
+public class CreatePostActivity extends ActivityBase implements OnCreatePostInteractionListener,
+        SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener,
+        CreateEmbeddPostFragment.InteractionListener,
+        EmbeddMenuDialogFragment.OnDialogInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreatePostActivity";
 
@@ -113,6 +120,13 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (DBG) Log.v(TAG, "onNewIntent " + intent);
+        setIntent(intent);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         if (DBG) Log.v(TAG, "onDestroy()");
@@ -166,7 +180,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     private void setUploadingStatus(boolean uploading) {
-        View progress = findViewById(R.id.progress);
+        View progress = findViewById(R.id.create_post_progress);
         progress.setVisibility(uploading ? View.VISIBLE : View.GONE);
         mViewPager.setVisibility(uploading ? View.INVISIBLE : View.VISIBLE);
         mCreatePostButtons.setVisibility(uploading ? View.INVISIBLE : View.VISIBLE);
@@ -242,8 +256,21 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private CreateImagePostFragment getCurrentImagePostFragment() {
         if (mSectionsPagerAdapter != null) {
             Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
-            if (fragment instanceof  CreateImagePostFragment) {
+            if (fragment instanceof CreateImagePostFragment) {
                 return (CreateImagePostFragment)fragment;
+            } else {
+                if (DBG) throw new IllegalStateException();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private CreateEmbeddPostFragment getCurrentEmbeddPostFragment() {
+        if (mSectionsPagerAdapter != null) {
+            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+            if (fragment instanceof CreateEmbeddPostFragment) {
+                return (CreateEmbeddPostFragment)fragment;
             } else {
                 if (DBG) throw new IllegalStateException();
             }
@@ -258,5 +285,26 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                 .putString(SHARED_PREFS_KEY_INITIAL_SECTION,
                         Page.values()[mViewPager.getCurrentItem()].namePrefs)
                 .commit();
+    }
+
+    @Override
+    public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
+        FragmentManager fm = getFragmentManager();
+        Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
+        FragmentTransaction ft = fm.beginTransaction();
+        if (old != null) ft.remove(old);
+        fragment.show(ft, "EmbeddMenuDialogFragment");
+    }
+
+    @Override
+    public void onEmbeddMenuDialogItemSelected(DialogInterface dialog, int resId) {
+        CreateEmbeddPostFragment fragment = getCurrentEmbeddPostFragment();
+        if (fragment != null) fragment.onEmbeddMenuDialogItemSelected(dialog, resId);
+    }
+
+    @Override
+    public void onEmbeddMenuDialogDismissed(DialogInterface dialog) {
+        CreateEmbeddPostFragment fragment = getCurrentEmbeddPostFragment();
+        if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
     }
 }

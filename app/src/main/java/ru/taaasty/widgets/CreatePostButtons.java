@@ -3,7 +3,9 @@ package ru.taaasty.widgets;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Rect;
 import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -18,6 +20,8 @@ public class CreatePostButtons extends LinearLayout {
     private View mPrivatePostIndicator;
 
     private View mWithVotingIndicator;
+
+    private LinearLayout mButtonsList;
 
     @Entry.EntryPrivacy
     private String mPrivacy = Entry.PRIVACY_PUBLIC;
@@ -44,24 +48,40 @@ public class CreatePostButtons extends LinearLayout {
         if (mPrivatePostIndicator != null) return;
         mPrivatePostIndicator = findViewById(R.id.private_post_indicator);
         mWithVotingIndicator = findViewById(R.id.is_with_voting_indicator);
+        mButtonsList = (LinearLayout)findViewById(R.id.buttons_list);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        int childCount = getChildCount();
+        int childCount = mButtonsList.getChildCount();
         for (int i=0; i < childCount; ++i) {
-            View v = getChildAt(i);
-            if (v.getId() != R.id.fill_gap) v.setOnClickListener(mOnClickListener);
+            View v = mButtonsList.getChildAt(i);
+            v.setOnClickListener(mOnClickListener);
         }
+
+        mWithVotingIndicator.setOnClickListener(mOnClickListener);
+        mPrivatePostIndicator.setOnClickListener(mOnClickListener);
 
         refreshActivated();
     }
 
+    private final Rect visibleRect = new Rect();
+
     public void setActivated(@IdRes int activated) {
         mActivatedElement = activated;
         refreshActivated();
+
+        View activatedView = getActivatedView();
+        if (activatedView != null) {
+            MarginLayoutParams lp = (MarginLayoutParams)activatedView.getLayoutParams();
+            visibleRect.left = activatedView.getLeft() - lp.leftMargin * 2;
+            visibleRect.right = activatedView.getRight() + lp.rightMargin * 2;
+            visibleRect.top = activatedView.getTop();
+            visibleRect.bottom = activatedView.getBottom();
+            if (visibleRect.width() > 0) activatedView.requestRectangleOnScreen(visibleRect);
+        }
     }
 
     public int getActivatedViewId() {
@@ -73,14 +93,21 @@ public class CreatePostButtons extends LinearLayout {
     }
 
     public void refreshActivated() {
-        int childCount = getChildCount();
+        int childCount = mButtonsList.getChildCount();
         for (int i=0; i < childCount; ++i) {
-            View v = getChildAt(i);
-            if (v.getId() == R.id.private_post_indicator
-                    || v.getId() == R.id.is_with_voting_indicator
-                    ) continue; // XXX: не участвует
+            View v = mButtonsList.getChildAt(i);
             v.setActivated(mActivatedElement == v.getId());
         }
+    }
+
+    @Nullable
+    private View getActivatedView() {
+        int childCount = mButtonsList.getChildCount();
+        for (int i=0; i < childCount; ++i) {
+            View v = mButtonsList.getChildAt(i);
+            if (mActivatedElement == v.getId()) return v;
+        }
+        return null;
     }
 
     public void setPrivacy(@Entry.EntryPrivacy String privacy) {

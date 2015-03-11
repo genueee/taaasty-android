@@ -160,7 +160,23 @@
             android:launchMode="singleTop"
             android:screenOrientation="portrait"
             android:theme="@style/CreatePostTheme"
-            android:windowSoftInputMode="adjustResize|stateHidden" >
+            android:windowSoftInputMode="adjustResize|stateHidden">
+        </activity>
+        <activity
+            android:name=".ui.post.CreateSharedPostActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/CreatePostTheme"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
         </activity>
         <activity
             android:name="ru.taaasty.ui.post.EditPostActivity"

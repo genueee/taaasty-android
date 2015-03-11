@@ -13,6 +13,7 @@ import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostAnonymousTextForm;
+import ru.taaasty.model.PostEmbeddForm;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.model.PostImageForm;
 import ru.taaasty.model.PostQuoteForm;
@@ -138,26 +139,29 @@ public class UploadService extends IntentService {
             } else if (form instanceof PostTextForm.AsHtml) {
                 PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
                 response = mApiEntriesService.createTextPostSync(
-                        postText.title,  postText.text, postText.privacy);
+                        postText.title, postText.text, postText.privacy);
             } else if (form instanceof PostQuoteForm.AsHtml) {
                 PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
                 response = mApiEntriesService.createQuoteEntrySync(
                         postQuote.text, postQuote.source, postQuote.privacy);
             } else if (form instanceof PostImageForm.AsHtml) {
-                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml)form;
+                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
                 response = mApiEntriesService.createImagePostSync(
                         postImage.title,
                         postImage.privacy,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
+            } else if (form instanceof PostEmbeddForm.AsHtml) {
+                PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml)form;
+                response = mApiEntriesService.createVideoPostSync(postForm.title, postForm.url, postForm.privacy);
             } else {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
         } catch (NetworkUtils.ResponseErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
-        } catch (Exception ex) {
-            if (DBG) throw ex;
+        } catch (Throwable ex) {
+            if (DBG) throw new IllegalStateException(ex);
             status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
         }
 
@@ -189,20 +193,23 @@ public class UploadService extends IntentService {
                         postQuote.source,
                         postQuote.privacy);
             } else if (form instanceof PostImageForm.AsHtml) {
-                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml)form;
+                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
                 response = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
                         postImage.title,
                         postImage.privacy,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
+            } else if (form instanceof PostEmbeddForm.AsHtml) {
+                PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml) form;
+                response = mApiEntriesService.updateVideoPostSync(String.valueOf(entryId), postForm.title, postForm.url, postForm.privacy);
             } else {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
         } catch (NetworkUtils.ResponseErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
-        } catch (Exception ex) {
-            if (DBG) throw ex;
+        } catch (Throwable ex) {
+            if (DBG) throw new IllegalStateException(ex);
             status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
         }
 

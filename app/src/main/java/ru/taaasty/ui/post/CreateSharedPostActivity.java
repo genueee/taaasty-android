@@ -1,10 +1,16 @@
 package ru.taaasty.ui.post;
 
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -22,12 +28,17 @@ import ru.taaasty.R;
 import ru.taaasty.UploadService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.PostForm;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class CreateAnonymousPostActivity extends ActivityBase implements OnCreatePostInteractionListener {
+public class CreateSharedPostActivity extends ActivityBase implements
+        OnCreatePostInteractionListener,
+        SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener,
+        CreateEmbeddPostFragment.InteractionListener,
+        EmbeddMenuDialogFragment.OnDialogInteractionListener {
 
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "CreateAnonmusPostAct";
+    private static final String TAG = "CreateShrdPostAct";
 
     private ImageView mCreatePostButton;
 
@@ -42,12 +53,34 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create_anonyous_post);
+        setContentView(R.layout.activity_create_embedd_post);
+
+        boolean isImageShare = false;
+        boolean isTextShare = false;
+        Intent intent = getIntent();
+        if (intent.getType() != null && Intent.ACTION_SEND.equals(intent.getAction())) {
+            if ("text/plain".equals(intent.getType())) {
+                isTextShare = true;
+            } else if (intent.getType().startsWith("image/")) {
+                isImageShare = true;
+            }
+        }
+
         if (savedInstanceState == null) {
-            Fragment fragment = CreateTextPostFragment.newCreateAnonymousInstance();
+            Fragment fragment = null;
+
+            if (isTextShare) {
+                fragment = CreateEmbeddPostFragment.newInstance(intent);
+            } else if (isImageShare) {
+                fragment = CreateImagePostFragment.newInstance(UiUtils.getSharedImageUri(intent));
+            } else {
+                fragment = CreateEmbeddPostFragment.newInstance(null);
+            }
+
             getFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment)
@@ -61,6 +94,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_create_post);
+            ab.setTitle(isImageShare ? R.string.title_image_post : R.string.title_embedd_post);
 
             mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
             mCreatePostButton.setOnClickListener(new View.OnClickListener() {
@@ -83,7 +117,6 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -93,9 +126,9 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
 
     void onCreatePostClicked() {
         PostForm post;
-        CreateTextPostFragment fragment;
+        CreatePostFragmentBase fragment;
 
-        fragment = (CreateTextPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        fragment = (CreatePostFragmentBase)getFragmentManager().findFragmentById(R.id.container);
         post = fragment.getForm();
         UploadService.startPostEntry(this, post);
         setUploadingStatus(true);
@@ -104,7 +137,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
         if (status.successfully) {
-            Toast.makeText(this, R.string.anonymous_post_created, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.post_created, Toast.LENGTH_LONG).show();
             finish();
         } else {
             // Сообщаем об ошибке
@@ -124,10 +157,11 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     }
 
     private void setUploadingStatus(boolean uploading) {
-        View progress = findViewById(R.id.create_post_progress);
+        View progress = findViewById(R.id.progress);
         progress.setVisibility(uploading ? View.VISIBLE : View.GONE);
         mCreatePostButton.setEnabled(!uploading);
     }
+
 
     @Override
     public void onValidationStatusChanged(boolean postValid) {
@@ -135,7 +169,60 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     }
 
     @Override
+    public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
+        FragmentManager fm = getFragmentManager();
+        Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
+        FragmentTransaction ft = fm.beginTransaction();
+        if (old != null) ft.remove(old);
+        fragment.show(ft, "EmbeddMenuDialogFragment");
+    }
+
+    @Override
+    public void onEmbeddMenuDialogItemSelected(DialogInterface dialog, int resId) {
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.onEmbeddMenuDialogItemSelected(dialog, resId);
+    }
+
+    @Override
+    public void onEmbeddMenuDialogDismissed(DialogInterface dialog) {
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
+    }
+
+    @Override
+    public void onPickPhotoSelected(Fragment fragment) {
+        if (DBG) Log.v(TAG, "onPickPhotoSelected");
+        CreateImagePostFragment f = (CreateImagePostFragment)getFragmentManager().findFragmentById(R.id.container);
+        if (f != null) f.onPickPhotoSelected();
+    }
+
+    @Override
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
-        throw new IllegalStateException();
+        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
+        dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
+    }
+
+
+    @Override
+    public void onMakePhotoSelected(Fragment fragment) {
+        if (DBG) Log.v(TAG, "onMakePhotoSelected");
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onMakePhotoSelected();
+    }
+
+    @Override
+    public void onDeletePhotoSelected(Fragment fragment) {
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onDeleteImageClicked();
+    }
+
+    @Override
+    public void onFeatherPhotoSelected(Fragment fragment) {
+        CreateImagePostFragment f = getCurrentImagePostFragment();
+        if (f != null) f.onFeatherPhotoClicked();
+    }
+
+    CreateImagePostFragment getCurrentImagePostFragment() {
+        return (CreateImagePostFragment)getFragmentManager().findFragmentById(R.id.container);
     }
 }
