@@ -262,6 +262,10 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return mEntries;
     }
 
+    protected boolean hasEntry(long id) {
+        return mEntries.findItem(id) != null;
+    }
+
     private int getFeedLocation(int adapterPosition) {
         return adapterPosition - HEADERS_COUNT;
     }

@@ -422,25 +422,15 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
 
         @Override
         public void onEventMainThread(EntryChanged update) {
-            boolean skip = false;
-            switch (mFeedType) {
-                case FEED_LIVE:
-                case FEED_BEST:
-                    skip = update.postEntry.isAnonymousPost();
-                    break;
-                case FEED_ANONYMOUS:
-                    skip = !update.postEntry.isAnonymousPost();
-                    break;
-                case FEED_NEWS:
-                    // В принципе, посты сюда никогда не добавляются. но на всякий случай
-                    skip = update.postEntry.isAnonymousPost()
-                            || update.postEntry.getAuthor() == null
-                            || !Constants.TLOG_NEWS.equals(update.postEntry.getAuthor().getSlug());
-                    break;
-                default:
-                    break;
+            if (hasEntry(update.postEntry.getId())) {
+                // Запись уже есть в списке. Обновляем её
+                addEntry(update.postEntry);
+            } else {
+                // Новая запись. Не добавляем её в список, т.к. непонятно, должна быть она в этом фиде или нет.
+                // Просто обновляемся с индикатором
+                mForceShowRefreshingIndicator = true;
+                refreshFeed();
             }
-            if (!skip) addEntry(update.postEntry);
         }
 
         private int getTitle() {
