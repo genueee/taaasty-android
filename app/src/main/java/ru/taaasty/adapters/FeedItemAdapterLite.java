@@ -209,8 +209,10 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     public void setFeedDesign(TlogDesign design) {
-        mFeedDesign = design;
-        notifyItemRangeChanged(0, getItemCount());
+        if (!mFeedDesign.equals(design)) {
+            mFeedDesign = design;
+            notifyItemRangeChanged(0, getItemCount());
+        }
     }
 
     @Nullable

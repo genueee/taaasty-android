@@ -241,4 +241,35 @@ public class TlogDesign implements Parcelable {
         }
         return appearance;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TlogDesign that = (TlogDesign) o;
+
+        if (Float.compare(that.mFeedOpacity, mFeedOpacity) != 0) return false;
+        if (mBackgroundUrl != null ? !mBackgroundUrl.equals(that.mBackgroundUrl) : that.mBackgroundUrl != null)
+            return false;
+        if (mCoverAlign != null ? !mCoverAlign.equals(that.mCoverAlign) : that.mCoverAlign != null)
+            return false;
+        if (mFeedColor != null ? !mFeedColor.equals(that.mFeedColor) : that.mFeedColor != null)
+            return false;
+        if (mHeaderColor != null ? !mHeaderColor.equals(that.mHeaderColor) : that.mHeaderColor != null)
+            return false;
+        return !(mFontTypeface != null ? !mFontTypeface.equals(that.mFontTypeface) : that.mFontTypeface != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mBackgroundUrl != null ? mBackgroundUrl.hashCode() : 0;
+        result = 31 * result + (mCoverAlign != null ? mCoverAlign.hashCode() : 0);
+        result = 31 * result + (mFeedColor != null ? mFeedColor.hashCode() : 0);
+        result = 31 * result + (mHeaderColor != null ? mHeaderColor.hashCode() : 0);
+        result = 31 * result + (mFontTypeface != null ? mFontTypeface.hashCode() : 0);
+        result = 31 * result + (mFeedOpacity != +0.0f ? Float.floatToIntBits(mFeedOpacity) : 0);
+        return result;
+    }
 }

@@ -394,7 +394,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
         @Override
         public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
+            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
         }
 
         @Override

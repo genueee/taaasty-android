@@ -35,13 +35,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 22
+    buildToolsVersion "22"
 
     defaultConfig {
         applicationId "ru.taaasty"
         minSdkVersion 15
-        targetSdkVersion 20
+        targetSdkVersion 22
         versionCode 12
         versionName "1.0.2"
 
@@ -142,9 +142,9 @@ dependencies {
     compile project(':ViewPagerIndicator')
 
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:support-annotations:21.0.3'
-    compile 'com.android.support:support-v13:21.0.3'
-    compile 'com.android.support:support-v4:21.0.3'
+    compile 'com.android.support:support-annotations:22.0.0'
+    compile 'com.android.support:support-v13:22.0.0'
+    compile 'com.android.support:support-v4:22.0.0'
     compile 'com.android.support:recyclerview-v7:21.0.3'
     compile 'com.facebook.android:facebook-android-sdk:3.22.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
@@ -179,7 +179,7 @@ dependencies {
     compile(name:'intercomsdk-0.8.5', ext:'aar')
     //compile 'com.mcxiaoke.volley:library:1.0.9'
     compile 'com.google.code.gson:gson:2.3.1'
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:appcompat-v7:22.0.0'
 
     testCompile 'junit:junit:4.12'
 }
