@@ -39,10 +39,6 @@ public class StatusBarNotification extends BroadcastReceiver {
     private static final String ACTION_CANCEL_STATUS_BAR_CONVERSATION_NOTIFICATION =
             "ru.taaasty.PusherService.action.ACTION_CANCEL_STATUS_BAR_CONVERSATION_NOTIFICATION";
 
-    private static final int NOTIFICATION_ID = 1;
-
-    private static final int CONVERSATION_NOTIFICATION_ID = 2;
-
     private volatile int mDisableStatusBarNotifications;
 
     private final Context mContext;
@@ -135,7 +131,7 @@ public class StatusBarNotification extends BroadcastReceiver {
         NotificationCompat.Builder notificationBuilder;
 
         if (mNotifications.isEmpty()) {
-            mNotificationManager.cancel(NOTIFICATION_ID);
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
             return;
         }
 
@@ -178,14 +174,14 @@ public class StatusBarNotification extends BroadcastReceiver {
             notificationBuilder.setDefaults(NotificationCompat.DEFAULT_SOUND);
         }
 
-        mNotificationManager.notify(NOTIFICATION_ID, notificationBuilder.build());
+        mNotificationManager.notify(Constants.NOTIFICATION_ID_POST, notificationBuilder.build());
     }
 
     private void refreshStatusBarConversationNotification() {
         NotificationCompat.Builder notificationBuilder;
 
         if (mConversationMessagesCount == 0) {
-            mNotificationManager.cancel(CONVERSATION_NOTIFICATION_ID);
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_CONVERSATION);
             return;
         }
 
@@ -243,7 +239,7 @@ public class StatusBarNotification extends BroadcastReceiver {
                     + mContext.getPackageName() + "/" + R.raw.incoming_message));
         }
 
-        mNotificationManager.notify(CONVERSATION_NOTIFICATION_ID, notificationBuilder.build());
+        mNotificationManager.notify(Constants.NOTIFICATION_ID_CONVERSATION, notificationBuilder.build());
     }
 
     private synchronized void cancelNotifications() {
@@ -255,7 +251,7 @@ public class StatusBarNotification extends BroadcastReceiver {
 
     private synchronized void cancelNotificationNotification() {
         mNotifications.clear();
-        mNotificationManager.cancel(NOTIFICATION_ID);
+        mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
     }
 
     private void markNotificationsAsRead() {
@@ -269,7 +265,7 @@ public class StatusBarNotification extends BroadcastReceiver {
     private synchronized void cancelConversationNotification() {
         mConversationMessagesCount = 0;
         mSeveralConversations = false;
-        mNotificationManager.cancel(CONVERSATION_NOTIFICATION_ID);
+        mNotificationManager.cancel(Constants.NOTIFICATION_ID_CONVERSATION);
     }
 
     private Spanned getNotificationText(Notification notification) {

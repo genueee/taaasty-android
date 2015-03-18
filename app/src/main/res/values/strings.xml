@@ -191,6 +191,7 @@
     <string name="report_post_to_moderator">Пожаловаться</string>
     <string name="edit_post">Редактировать</string>
     <string name="delete_post">Удалить</string>
+    <string name="save_post">Сохранить</string>
     <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_conversations">Сообщения</string>
@@ -269,6 +270,12 @@
 
     <string name="write_an_anonymous_post">Написать анонимку</string>
     <string name="copy_link_to_clipboard_description">Скопируйте ссылку в буфер обмена</string>
+
+    <string name="notification_title_save_images">Загрузка изображений</string>
+    <string name="notification_text_save_images">Загрузка изображений в %1s</string>
+    <string name="pictures_saved">Изображения сохранены</string>
+    <string name="pictures_saved_into">Изображения сохранены в %1s</string>
+    <string name="error_saving_image">Произошла ошибка при сохранении файла</string>
 
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>

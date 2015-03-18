@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.ShapeDrawable;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -270,14 +271,25 @@ public class ImageUtils {
     /**
      * Добавление фоторгафии в галерею после фотографии
      * @param context
-     * @param photoUri путь к файлу (file:/media...)
+     * @param file путь к файлу (file:/media...)
      */
     public static void galleryAddPic(Context context, Uri photoUri) {
-        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-        // File f = new File(photoPath);
-        // Uri contentUri = Uri.fromFile(f);
-        mediaScanIntent.setData(photoUri);
-        context.sendBroadcast(mediaScanIntent);
+        if ("file".equals(photoUri.getScheme())) {
+            // С файлами всё плохо http://droidyue.com/blog/2014/01/19/scan-media-files-in-android/
+            File file = new File(photoUri.getPath());
+            if (file.exists()) {
+                MediaScannerConnection.scanFile(context.getApplicationContext(),
+                        new String[] {file.getAbsolutePath()}, null, null);
+            } else {
+                ContentResolver resolver = context.getContentResolver();
+                resolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                        MediaStore.Images.Media.DATA + "=?", new String[]{file.getAbsolutePath()});
+            }
+        } else {
+            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+            mediaScanIntent.setData(photoUri);
+            context.sendBroadcast(mediaScanIntent);
+        }
     }
 
     public static Intent createPickImageActivityIntent() {

@@ -56,7 +56,26 @@ public interface Constants {
     static final int FEED_TITLE_BACKGROUND_DIM_COLOR_RES = R.color.feed_title_overlay;
 
     float DEFAULT_PARALLAX_FACTOR = 1.9f;
+
     String TLOG_NEWS = "news";
+
     String MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY = "MyFeedHeaderBackground";
+
     float DEFAULT_IMAGE_ASPECT_RATIO = 4f/3f;
+
+
+    /**
+     * ID уведомления в статусбаре для уведомлений о новых постах, подписках и проч.
+     */
+    int NOTIFICATION_ID_POST = 1;
+
+    /**
+     * ID уведомления в статусбаре для диалогов
+     */
+    int NOTIFICATION_ID_CONVERSATION = 2;
+
+    /**
+     * ID уведомления в статусбаре для скачиваемых изображений
+     */
+    int NOTIFICATION_ID_DOWNLOAD_IMAGES = 3;
 }

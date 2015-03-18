@@ -23,6 +23,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.iframely.IFramely;
+import ru.taaasty.model.iframely.Link;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
@@ -310,22 +311,17 @@ public class Entry implements Parcelable {
         return mImages == null ? Collections.<ImageInfo>emptyList() : mImages;
     }
 
+    /**
+     * Все картинки из поста.
+     * Не отсортированные и могут встречаться одинаковые урлы.
+     * @param includeAnimatedGifs Включать анимированные гифки
+     * @return
+     */
     public ArrayList<String> getImageUrls(boolean includeAnimatedGifs) {
         boolean withImageUrl = !TextUtils.isEmpty(mImageUrl);
+        final ArrayList<String> images = new ArrayList<>();
 
-        if (mImages == null) {
-            final ArrayList<String> images;
-            if (!withImageUrl) {
-                images = new ArrayList<>(0);
-            } else {
-                images = new ArrayList<>(1);
-                images.add(mImageUrl);
-            }
-            return images;
-        }
-
-        final ArrayList<String> images = new ArrayList<>(mImages.size() + (withImageUrl ? 1 : 0));
-        if (withImageUrl) images.add(mImageUrl);
+        if (mImageUrl != null) images.add(mImageUrl);
         if (mImages != null) {
             for (ImageInfo imageInfo : mImages) {
                 if (!includeAnimatedGifs && imageInfo.isAnimatedGif()) continue;
@@ -336,6 +332,18 @@ public class Entry implements Parcelable {
                 }
             }
         }
+
+        // Картинки из iframely
+        if (mIframely != null && mIframely.links != null && mIframely.links.image != null) {
+            for (Link l: mIframely.links.image) {
+                images.add(l.getHref());
+            }
+        }
+
+        // Картинки из текста
+        Spanned s = getTextSpanned();
+        if (!TextUtils.isEmpty(s)) images.addAll(UiUtils.getImageSpanUrls(s));
+
         return images;
     }
 

@@ -28,6 +28,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.UploadService;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.model.Entry;
@@ -61,6 +62,7 @@ public class SharePostActivity extends ActivityBase {
         findViewById(R.id.ic_report_post).setVisibility(mEntry.canReport() ? View.VISIBLE : View.GONE);
         findViewById(R.id.ic_delete_post).setVisibility(mEntry.canDelete() ? View.VISIBLE : View.GONE);
         findViewById(R.id.ic_edit_post).setVisibility(mEntry.canEdit() ? View.VISIBLE : View.GONE);
+        findViewById(R.id.ic_save_post).setVisibility(mEntry.getImageUrls(true).isEmpty() ? View.GONE : View.VISIBLE);
 
         setFavoriteIcon();
         EventBus.getDefault().register(this);
@@ -139,6 +141,15 @@ public class SharePostActivity extends ActivityBase {
 
     public void deletePost(View view) {
         DeleteOrReportDialogActivity.startDeletePost(this, mEntry.getId());
+        finish();
+    }
+
+    /**
+     * Сохранение картинок
+     * @param view
+     */
+    public void savePost(View view) {
+        UploadService.startDownloadImages(this, mEntry);
         finish();
     }
 

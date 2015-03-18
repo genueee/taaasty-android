@@ -106,6 +106,13 @@
                     android:onClick="deletePost"
                     style="@style/ShareIconItem" />
 
+                <TextView
+                    android:id="@+id/ic_save_post"
+                    android:drawableTop="@drawable/ic_save_post"
+                    android:text="@string/save_post"
+                    android:onClick="savePost"
+                    style="@style/ShareIconItem" />
+
 
             </LinearLayout>
 
