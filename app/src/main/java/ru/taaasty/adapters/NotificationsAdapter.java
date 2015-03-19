@@ -134,7 +134,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     private void bindReadStatus(ViewHolder holder, Notification notification) {
-
+        holder.unreadIndicator.setVisibility(notification.isMarkedAsRead() ? View.INVISIBLE : View.VISIBLE);
     }
 
     private void bindAvatar(ViewHolder holder, Notification notification) {
@@ -297,6 +297,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        public final View unreadIndicator;
         public final ImageView avatar;
         public final ru.taaasty.widgets.LinkifiedTextView notification;
         public final TextSwitcher notificationDate;
@@ -308,6 +309,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
         public ViewHolder(View v) {
             super(v);
+            unreadIndicator = v.findViewById(R.id.unread_indicator);
             avatar = (ImageView) v.findViewById(R.id.avatar);
             notification = (ru.taaasty.widgets.LinkifiedTextView) v.findViewById(R.id.notification);
             notificationDate = (TextSwitcher) v.findViewById(R.id.notification_date);
