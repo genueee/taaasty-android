@@ -19,6 +19,7 @@
             android:hint="@string/edit_text_title"
             android:inputType="textCapSentences|textMultiLine"
             style="@style/CreatePostEditText"
+            android:maxLength="200"
             android:textSize="32sp"
             android:minLines="1" />
 

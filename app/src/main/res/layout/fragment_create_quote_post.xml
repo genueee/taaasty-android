@@ -16,6 +16,7 @@
             android:inputType="textCapSentences|textMultiLine"
             android:hint="@string/quote_text_hint"
             android:textSize="32sp"
+            android:maxLength="499"
             style="@style/CreatePostEditText" />
 
         <EditText
