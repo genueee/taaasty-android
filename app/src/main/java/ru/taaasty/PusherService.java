@@ -34,12 +34,14 @@ import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.events.ConversationVisibilityChanged;
+import ru.taaasty.events.MarkAsReadRequestCompleted;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.model.Conversation;
+import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.MessagingStatus;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherReadyResponse;
@@ -133,6 +135,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private static final String ACTION_STOP = "ru.taaasty.PusherService.action.STOP";
     private static final String ACTION_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_SET_STATUS_BAR_NOTIFICATIONS";
     private static final String ACTION_MARK_AS_READ = "ru.taaasty.PusherService.action.MARK_AS_READ";
+    private static final String ACTION_MARK_ALL_AS_READ = "ru.taaasty.PusherService.action.MARK_ALL_AS_READ";
     private static final String ACTION_REFRESH_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_REFRESH_NOTIFICATIONS";
 
     private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.PusherService.action.EXTRA_NOTIFICATION_ID";
@@ -202,6 +205,12 @@ public class PusherService extends Service implements PrivateChannelEventListene
         Intent intent = new Intent(context, PusherService.class);
         intent.setAction(ACTION_MARK_AS_READ);
         intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+        context.startService(intent);
+    }
+
+    public static void markAllNotificationsAsRead(Context context) {
+        Intent intent = new Intent(context, PusherService.class);
+        intent.setAction(ACTION_MARK_ALL_AS_READ);
         context.startService(intent);
     }
 
@@ -275,6 +284,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 if (mUpdateNotificationsStatus == UPDATE_NOTIFICATIONS_STATUS_READY) sentAuthReady();
             } else if (ACTION_SET_STATUS_BAR_NOTIFICATIONS.equals(action)) {
                 mStatusBarNotification.addEnableDisableNotifications(intent.getBooleanExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, true));
+            } else if (ACTION_MARK_ALL_AS_READ.equals(action)) {
+                handleMarkAllAsRead();
             }
         }
 
@@ -344,6 +355,10 @@ public class PusherService extends Service implements PrivateChannelEventListene
     @Nullable
     public MessagingStatus getLastMessagingStatus() {
         return mLastMessagingStatus;
+    }
+
+    public boolean hasUnreadMessages() {
+        return mLastMessagingStatus != null && mLastMessagingStatus.unreadNotificationsCount > 0;
     }
 
     public void onEventMainThread(RelationshipChanged relationshipChanged) {
@@ -501,9 +516,12 @@ public class PusherService extends Service implements PrivateChannelEventListene
         }
         Observable<Notification> observableNotification = mApiMessenger.markNotificationAsRead(
                 mPusher.getConnection().getSocketId(), notificationId);
-        observableNotification
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mMarkAsReadObserver);
+        observableNotification.subscribe(mMarkAsReadObserver);
+    }
+
+    private void handleMarkAllAsRead() {
+        Observable<List<MarkNotificationsAsReadResponse>> observable = mApiMessenger.markAllNotificationsAsRead(null);
+        observable.subscribe(mMarkAllAsReadObserver);
     }
 
     private void sentAuthReady() {
@@ -579,6 +597,36 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 mEventBus.post(new NotificationReceived(notification));
             }
 
+        }
+    };
+
+    private final Observer<List<MarkNotificationsAsReadResponse>> mMarkAllAsReadObserver = new Observer<List<MarkNotificationsAsReadResponse>>() {
+        @Override
+        public void onCompleted() {
+            EventBus.getDefault().post(new MarkAsReadRequestCompleted(null));
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            EventBus.getDefault().post(new MarkAsReadRequestCompleted(e));
+        }
+
+        @Override
+        public void onNext(List<MarkNotificationsAsReadResponse> markNotificationsAsReadResponses) {
+            for (MarkNotificationsAsReadResponse status: markNotificationsAsReadResponses) {
+                ListIterator<Notification> i = mNotifications.listIterator();
+                while (i.hasNext()) {
+                    Notification notification = i.next();
+                    if (notification.id == status.id) {
+                        if (!notification.isMarkedAsRead()) {
+                            Notification newNotification = Notification.markAsRead(notification, status.readAt);
+                            i.set(newNotification);
+                            mEventBus.post(new NotificationReceived(newNotification));
+                        }
+                        break;
+                    }
+                }
+            }
         }
     };
 

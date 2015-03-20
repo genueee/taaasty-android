@@ -69,7 +69,7 @@ public class Notification implements Parcelable {
      * Дата отметки сообщения как прочитанного
      */
     @Nullable
-    public Date readAt;
+    private Date readAt;
 
     /**
      * Изображение, если есть
@@ -123,6 +123,12 @@ public class Notification implements Parcelable {
     public static Notification changeSenderRelation(Notification old, Relationship senderRelation) {
         return new Notification(old.id, old.createdAt, old.userId, old.sender, senderRelation,
                 old.readAt, old.image, old.action, old.actionText, old.text, old.entityId,
+                old.entityType, old.parentId, old.parentType, old.entityUrl);
+    }
+
+    public static Notification markAsRead(Notification old, Date date) {
+        return new Notification(old.id, old.createdAt, old.userId, old.sender, old.senderRelation,
+                date, old.image, old.action, old.actionText, old.text, old.entityId,
                 old.entityType, old.parentId, old.parentType, old.entityUrl);
     }
 
@@ -187,6 +193,8 @@ public class Notification implements Parcelable {
     public boolean hasImage() {
         return image != null && image != ImageInfo.Image2.DUMMY;
     }
+
+
 
     @Nullable
     public void startOpenPostActivity(Activity source) {
@@ -266,4 +274,5 @@ public class Notification implements Parcelable {
             return new Notification[size];
         }
     };
+
 }

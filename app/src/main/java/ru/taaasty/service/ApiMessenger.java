@@ -12,6 +12,7 @@ import retrofit.http.Path;
 import retrofit.http.Query;
 import ru.taaasty.model.Conversation;
 import ru.taaasty.model.ConversationMessages;
+import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherReadyResponse;
 import ru.taaasty.model.Status;
@@ -34,6 +35,12 @@ public interface ApiMessenger {
     @PUT("/messenger/notifications/{id}/read.json")
     Observable<Notification> markNotificationAsRead(@Field("socket_id") String socketId,
                                   @Path("id") long notificationId);
+
+    @FormUrlEncoded
+    @POST("/messenger/notifications/read.json")
+    Observable<List<MarkNotificationsAsReadResponse>> markAllNotificationsAsRead(
+            @Field("last_id") Long lastId);
+
 
     @GET("/messenger/conversations.json")
     Observable<List<Conversation>> getConversations(@Query("socket_id") String socketId);

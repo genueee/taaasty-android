@@ -20,6 +20,8 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.adapters.NotificationsAdapter;
+import ru.taaasty.events.MarkAsReadRequestCompleted;
+import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
@@ -48,11 +50,15 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     private View mProgressView;
 
+    private View mMarkAsReadButton;
+
     PusherService mPusherService;
 
     boolean mBound = false;
 
     private NotificationsAdapter mAdapter;
+
+    private boolean mWaitingMessagingStatus;
 
     private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
 
@@ -73,6 +79,13 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         mListView = (RecyclerView)root.findViewById(R.id.list);
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
+        mMarkAsReadButton = root.findViewById(R.id.mark_all_as_read);
+        mMarkAsReadButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                markAsReadClicked();
+            }
+        });
 
         mAdapter = new NotificationsAdapter(getActivity(), mInteractionListener);
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
@@ -94,6 +107,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
                 mListener.onListScrollStateChanged(newState);
             }
         });
+        mWaitingMessagingStatus = false;
         return root;
     }
 
@@ -144,6 +158,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         mListView = null;
         mListener = null;
         mProgressView = null;
+        mMarkAsReadButton = null;
     }
 
     @Override
@@ -158,7 +173,10 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
         mPusherService = binder.getService();
         mBound = true;
-        if (mAdapter != null) mAdapter.setNotifications(mPusherService.getNotifications());
+        if (mAdapter != null) {
+            mAdapter.setNotifications(mPusherService.getNotifications());
+            setupMarkAsReadButtonStatus();
+        }
     }
 
     @Override
@@ -171,6 +189,16 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             mAdapter.setNotifications(mPusherService.getNotifications());
         }
         setupPusherStatus(status.newStatus);
+        setupMarkAsReadButtonStatus();
+    }
+
+    public void onEventMainThread(MessagingStatusReceived status) {
+        mWaitingMessagingStatus = false;
+        setupMarkAsReadButtonStatus();
+    }
+
+    public void onEventMainThread(MarkAsReadRequestCompleted status) {
+        setupMarkAsReadButtonStatus();
     }
 
     public void onEventMainThread(NotificationReceived event) {
@@ -208,6 +236,13 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         }
     }
 
+    void setupMarkAsReadButtonStatus() {
+        if (mMarkAsReadButton == null) return;
+
+        boolean isVisible = !mWaitingMessagingStatus && mBound && mPusherService.hasUnreadMessages();
+        mMarkAsReadButton.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+    }
+
     void follow(Notification notification) {
         mFollowSubscribtion.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
@@ -226,6 +261,15 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         mFollowSubscribtion = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new FollowerObserver(notification.id));
+    }
+
+    void markAsReadClicked() {
+        if (mMarkAsReadButton == null) return;
+        PusherService.markAllNotificationsAsRead(getActivity());
+        // MessagingStatus с pusher обычно приходит позже, чем завершается запрос.
+        // Ждем его, чтобы не мелькать кнопкой.
+        mWaitingMessagingStatus = true;
+        setupMarkAsReadButtonStatus();
     }
 
     public class FollowerObserver implements Observer<Relationship> {

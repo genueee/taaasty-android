@@ -276,6 +276,7 @@
     <string name="pictures_saved">Изображения сохранены</string>
     <string name="pictures_saved_into">Изображения сохранены в %1s</string>
     <string name="error_saving_image">Произошла ошибка при сохранении файла</string>
+    <string name="mark_all_as_read">Отметить все прочитанными</string>
 
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>
