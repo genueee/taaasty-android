@@ -63,13 +63,16 @@
         Диалог удаления/жалобы
     </screenName>
     <screenName name="ru.taaasty.ui.post.SharePostActivity">
-        Добавление в избранное/шаринг facebook
+        Действия над постом
     </screenName>
     <screenName name="ru.taaasty.ui.post.EditPostActivity">
         Редактирование поста
     </screenName>
     <screenName name="ru.taaasty.ui.feeds.AdditionalFeedActivity">
         Избранное/скрытые записи
+    </screenName>
+    <screenName name="ru.taaasty.ui.SettingsActivity">
+        Настройки
     </screenName>
 
 </resources>

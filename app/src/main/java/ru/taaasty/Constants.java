@@ -78,4 +78,10 @@ public interface Constants {
      * ID уведомления в статусбаре для скачиваемых изображений
      */
     int NOTIFICATION_ID_DOWNLOAD_IMAGES = 3;
+
+    String ANALYTICS_CATEGORY_POSTS = "Посты";
+
+    String ANALYTICS_CATEGORY_USERS = "Пользователи";
+
+    String ANALYTICS_CATEGORY_FEEDS = "Ленты";
 }

@@ -20,6 +20,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
@@ -352,6 +353,8 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                     @Override
                     public void onClick(View v) {
                         CreateAnonymousPostActivity.startActivity(v.getContext(), v);
+                        ((TaaastyApplication)getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FEEDS,
+                                "Открыто создание анонимки", null);
                     }
                 });
             }

@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKApi;
 import com.vk.sdk.api.VKApiConst;
@@ -27,7 +28,9 @@ import com.vk.sdk.api.model.VKWallPostResult;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UploadService;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
@@ -95,13 +98,16 @@ public class SharePostActivity extends ActivityBase {
             mDoShareVkontakte = true;
             doSharePostVkontakte();
         }
+        sendAnalyticsShareEvent("Vkontakte");
     }
 
     public void shareFacebook(View view) {
         runPostActionActivity(PostActionActivity.ACTION_SHARE_FACEBOOK);
+        sendAnalyticsShareEvent("Facebook");
     }
 
     public void shareTwitter(View view) {
+        sendAnalyticsShareEvent("Twitter");
         final Uri.Builder builder;
         builder = TWITTER_SHARE_URL.buildUpon();
         builder.appendQueryParameter("url", mEntry.getEntryUrl());
@@ -113,6 +119,7 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void shareOther(View view) {
+        sendAnalyticsShareEvent("Other");
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
         if (!TextUtils.isEmpty(mEntry.getTitle())) {
@@ -125,21 +132,26 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void addToFavorites(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS,
+                mEntry.isFavorited() ? "Удалить из избранного" : "Добавить в избранное", null);
         runPostActionActivity(PostActionActivity.ACTION_ADD_TO_FAVORITES);
         finish();
     }
 
     public void reportPost(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Пожаловаться", null);
         DeleteOrReportDialogActivity.startReportPost(this, mEntry.getId());
         finish();
     }
 
     public void editPost(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Редактировать", null);
         EditPostActivity.startEditPostActivity(this, mEntry);
         finish();
     }
 
     public void deletePost(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Удалить", null);
         DeleteOrReportDialogActivity.startDeletePost(this, mEntry.getId());
         finish();
     }
@@ -149,6 +161,7 @@ public class SharePostActivity extends ActivityBase {
      * @param view
      */
     public void savePost(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Сохранить картинки", null);
         UploadService.startDownloadImages(this, mEntry);
         finish();
     }
@@ -157,11 +170,12 @@ public class SharePostActivity extends ActivityBase {
         finish();
         Intent i = new Intent(this, PostActionActivity.class);
         i.setAction(action);
-        i.putExtra( PostActionActivity.ARG_ENTRY, mEntry);
+        i.putExtra(PostActionActivity.ARG_ENTRY, mEntry);
         startActivity(i);
     }
 
     public void linkToPost(View view) {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Копировать ссылку", null);
         ClipboardManager clipboard = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
         Uri copyUri = Uri.parse(mEntry.getEntryUrl());
@@ -240,6 +254,14 @@ public class SharePostActivity extends ActivityBase {
                 finish();
             }
         });
+    }
 
+    private void sendAnalyticsShareEvent(String network) {
+        ((TaaastyApplication)getApplication()).getTracker().send(new HitBuilders.SocialBuilder()
+                        .setNetwork(network)
+                        .setAction("Share")
+                        .setTarget(mEntry.getEntryUrl())
+                        .build()
+        );
     }
 }

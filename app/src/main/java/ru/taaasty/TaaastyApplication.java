@@ -3,9 +3,11 @@ package ru.taaasty;
 import android.app.Application;
 import android.content.res.Configuration;
 import android.os.StrictMode;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 
@@ -103,6 +105,12 @@ public class TaaastyApplication extends Application {
             config.locale = locale;
             getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         }
+    }
+
+    public void sendAnalyticsEvent(String category, String action, @Nullable String label) {
+        HitBuilders.EventBuilder eb = new HitBuilders.EventBuilder(category, action);
+        if (label != null) eb.setLabel(label);
+        getTracker().send(eb.build());
     }
 
     public synchronized void startIntercomSession() {

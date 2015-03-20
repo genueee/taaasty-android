@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.viewpagerindicator.CirclePageIndicator;
 
@@ -22,7 +24,9 @@ import java.util.Locale;
 import de.greenrobot.event.EventBus;
 import intercom.intercomsdk.Intercom;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.model.Entry;
@@ -77,8 +81,29 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        Tracker t =  ((TaaastyApplication) getApplication()).getTracker();
+        t.setScreenName(mSectionsPagerAdapter.getScreenName(mViewPager.getCurrentItem()));
+        t.send(new HitBuilders.AppViewBuilder().build());
+
         mCircleIndicator = (CirclePageIndicator)findViewById(R.id.circle_page_indicator);
         mCircleIndicator.setViewPager(mViewPager);
+        mCircleIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                if (mSectionsPagerAdapter == null) return;
+                Tracker t = ((TaaastyApplication)getApplication()).getTracker();
+                t.setScreenName(mSectionsPagerAdapter.getScreenName(position));
+                t.send(new HitBuilders.AppViewBuilder().build());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
         mCircleIndicatorParallaxedView = new ParallaxedView(mCircleIndicator) {
             @Override
             protected void translatePreICS(View view, float offset) { throw new IllegalStateException("Not implemented"); }
@@ -109,6 +134,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         switch (item.getItemId()) {
             case R.id.menu_refresh:
                 refreshData();
+                ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                        Constants.ANALYTICS_CATEGORY_FEEDS, "Обновление из сист. меню", null);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -257,6 +284,21 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
                     return getString(R.string.title_anonymous_feed).toUpperCase(l);
             }
             return null;
+        }
+
+        public String getScreenName(int position) {
+            switch (position) {
+                case 0:
+                    return "Прямой эфир";
+                case 1:
+                    return "Лучшее";
+                case 2:
+                    return "Новости";
+                case 3:
+                    return "Анонимки";
+                default:
+                    throw new IllegalStateException();
+            }
         }
     }
 

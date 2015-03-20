@@ -28,6 +28,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UploadService;
 import ru.taaasty.UserManager;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
@@ -295,24 +296,31 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         UserInfoFragment fragment;
+        String action;
         switch (item.getItemId()) {
             case R.id.menu_change_avatar:
                 showChangeAvatarDialog();
+                action = "Открыта смена аватара из сист. меню";
                 break;
             case R.id.menu_change_background:
                 showChangeBackgroundDialog();
+                action = "Открыта смена фона из сист. меню";
                 break;
             case R.id.menu_follow:
                 fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
                 if (fragment != null) fragment.follow();
+                action = "Подписка из сист. меню";
                 break;
             case R.id.menu_unfollow:
                 fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
                 if (fragment != null) fragment.unfollow();
+                action = "Отписка из сист. меню";
                 break;
             default:
                 return super.onOptionsItemSelected(item);
         }
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, action, null);
         return true;
     }
 
@@ -324,26 +332,33 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
     }
 
-
     @Override
     public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
         TlogActivity.startTlogActivity(this, mUserId, view, R.dimen.avatar_normal_diameter);
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Клик на кол-ве постов", null);
     }
 
     @Override
     public void onSelectBackgroundClicked() {
         showChangeBackgroundDialog();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыта смена фона", null);
     }
 
     @Override
     public void onUserAvatarClicked(View view) {
         showChangeAvatarDialog();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыта смена аватара", null);
     }
 
     @Override
     public void onInitiateConversationClicked(Conversation conversation) {
         ConversationActivity.startConversationActivity(this, conversation, null);
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыт диалог с пользователем", null);
     }
 
     @Override
@@ -368,6 +383,9 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
         startActivityForResult(photoPickerIntent, requestCode);
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыт выбор изображения",
+                requestCode == REQUEST_PICK_BACKGROUND_PHOTO ? "фона" : "аватара");
     }
 
     @Override
@@ -384,6 +402,9 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             takePictureIntent = ImageUtils.createMakePhotoIntent(this, requestCode == REQUEST_MAKE_AVATAR_PHOTO);
             mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
             startActivityForResult(takePictureIntent, requestCode);
+            ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                    ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыто фотографирование",
+                    requestCode == REQUEST_PICK_BACKGROUND_PHOTO ? "фона" : "аватара");
         } catch (ImageUtils.MakePhotoException e) {
             Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
         }
@@ -409,6 +430,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
 
         startFeatherPhoto(isBackground, photoUri);
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыто редактирование фото в aviary", null);
     }
 
     private @Nullable TlogDesign getDesign() {

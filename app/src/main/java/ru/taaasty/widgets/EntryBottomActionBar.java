@@ -15,7 +15,9 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Rating;
 import ru.taaasty.model.TlogDesign;
@@ -241,6 +243,7 @@ public class EntryBottomActionBar {
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            String action = null;
             if (mListener == null) return;
             if (mOnItemListenerEntry == null) {
                 if (DBG) throw new IllegalStateException();
@@ -249,18 +252,28 @@ public class EntryBottomActionBar {
             switch (v.getId()) {
                 case R.id.comments_count:
                     mListener.onPostCommentsClicked(v, mOnItemListenerEntry);
+                    action = "Открыты комментарии";
                     break;
                 case R.id.more:
                     mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry);
+                    action = "Открыто доп. меню";
                     break;
                 case R.id.user_info:
                     mListener.onPostUserInfoClicked(v, mOnItemListenerEntry);
+                    action = "Открыт юзер их нижнего меню";
                     break;
                 case R.id.likes:
-                    if (mCanVote) mListener.onPostLikesClicked(v, mOnItemListenerEntry);
+                    if (mCanVote) {
+                        mListener.onPostLikesClicked(v, mOnItemListenerEntry);
+                        action = mIsVoted ? "Снят лайк" : "Поставлен лайк";
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException();
+            }
+            if (action != null && v.getContext().getApplicationContext() instanceof  TaaastyApplication) {
+                ((TaaastyApplication) v.getContext().getApplicationContext())
+                        .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, action, null);
             }
         }
     };
