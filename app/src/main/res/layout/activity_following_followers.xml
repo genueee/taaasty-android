@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:layout_marginLeft="@dimen/following_followers_padding_right"
@@ -15,32 +15,46 @@
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal"
         android:baselineAligned="false"
+        android:measureWithLargestChild="false"
         android:background="@drawable/following_followers_indicator_stroke">
 
         <TextView
             android:id="@+id/you_follow_indicator"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             tools:textColor="#24b166"
             android:background="@drawable/following_followers_indicator_item_left"
             android:text="@string/you_follow"
+            android:textScaleX="0.8"
             style="@style/FollowingFollowersIndicatorItem" />
 
         <TextView
             android:id="@+id/your_followers_indicator"
             tools:textColor="#24b166"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             android:background="@drawable/following_followers_indicator_item_center"
             android:text="@string/your_followers"
-            style="@style/FollowingFollowersIndicatorItem"/>
+            android:textScaleX="0.8"
+            style="@style/FollowingFollowersIndicatorItem" />
+
+        <TextView
+            android:id="@+id/your_requests_indicator"
+            tools:textColor="#24b166"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/following_followers_indicator_item_center"
+            android:text="@string/your_requests"
+            style="@style/FollowingFollowersIndicatorItem" />
 
         <TextView
             android:id="@+id/your_friends_indicator"
+            android:layout_width="0dp"
+            android:layout_weight="1"
             style="@style/FollowingFollowersIndicatorItem"
-            android:layout_width="wrap_content"
             android:background="@drawable/following_followers_indicator_item_right"
             tools:textColor="#24b166"
-            android:text="@string/your_friends"/>
-
+            android:text="@string/your_friends" />
     </LinearLayout>
 
     <android.support.v4.view.ViewPager

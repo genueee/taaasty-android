@@ -2,8 +2,13 @@ package ru.taaasty.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 import com.google.gson.annotations.SerializedName;
+
+import java.util.Comparator;
+
+import ru.taaasty.utils.Objects;
 
 public class Relationship implements Parcelable {
 
@@ -12,8 +17,9 @@ public class Relationship implements Parcelable {
     public static final String RELATIONSHIP_GUESSED = "guessed";
     public static final String RELATIONSHIP_IGNORED = "ignored";
     public static final String RELATIONSHIP_REQUESTED = "requested";
+
     @SerializedName("id")
-    private long mId;
+    private Long mId;
 
     @SerializedName("user_id")
     private long mUserId = -1;
@@ -30,6 +36,24 @@ public class Relationship implements Parcelable {
     @SerializedName("user")
     private User mUser = User.DUMMY;
 
+    /**
+     * Сортировка по убыванию id (более новые - в начале списка)
+     */
+    public static transient Comparator<Relationship> ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR = new Comparator<Relationship>() {
+        @Override
+        public int compare(Relationship lhs, Relationship rhs) {
+            if (lhs == null && rhs == null) {
+                return 0;
+            } else if (lhs == null || lhs.getId() == null) {
+                return -1;
+            } else if (rhs == null || rhs.getId() == null) {
+                return 1;
+            } else {
+                return Objects.compare(rhs.getId(), lhs.getId());
+            }
+        }
+    };
+
     public Relationship() {
     }
 
@@ -38,7 +62,13 @@ public class Relationship implements Parcelable {
                 || RELATIONSHIP_REQUESTED.equals(myRelationship));
     }
 
-    public long getId() {
+    /**
+     * ID отношения.
+     * Может быть null, если отношения между пользователями нет.
+     * @return
+     */
+    @Nullable
+    public Long getId() {
         return mId;
     }
 

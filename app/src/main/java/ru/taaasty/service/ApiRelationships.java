@@ -1,5 +1,6 @@
 package ru.taaasty.service;
 
+import retrofit.http.DELETE;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.Path;
@@ -89,5 +90,15 @@ public interface ApiRelationships {
     @POST("/relationships/by/tlog/{id_or_slug}/disapprove.json")
     Observable<Relationship> disapproveTlogRelationship(
             @Path("id_or_slug") String idOrSlug);
+
+    @DELETE("/relationships/by/tlog/{id_or_slug}.json")
+    Observable<Relationship> unsubscribe(@Path("id_or_slug") String idOrSlug);
+
+    @GET("/relationships/by/requested.json")
+    Observable<Relationships> getRelationshipsRequested(
+            @Query("since_position") Integer sincePosition,
+            @Query("limit") Integer limit,
+            @Query("expose_reverse") Boolean exposeReverse
+    );
 
 }

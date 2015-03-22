@@ -11,8 +11,10 @@ import java.util.Date;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.UserManager;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.Objects;
 
 /**
@@ -195,7 +197,6 @@ public class Notification implements Parcelable {
     }
 
 
-
     @Nullable
     public void startOpenPostActivity(Activity source) {
         Intent intent = null;
@@ -213,14 +214,26 @@ public class Notification implements Parcelable {
                     .setShowFullPost(true)
                     .startActivity();
         } else if (isTypeRelationship()) {
-            //Инфа о юзере
-            new UserInfoActivity.Builder(source)
-                    .setUserId(sender.getId())
-                    .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                    .startActivity();
+            if (isFollowingRequest()) {
+                // Запросы на дружбу
+                Intent i = new Intent(source, FollowingFollowersActivity.class);
+                i.putExtra(FollowingFollowersActivity.ARG_USER, UserManager.getInstance().getCachedCurrentUser());
+                i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_REQUESTS);
+                source.startActivity(i);
+            } else {
+                //Инфа о юзере
+                new UserInfoActivity.Builder(source)
+                        .setUserId(sender.getId())
+                        .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                        .startActivity();
+            }
         } else {
             if (BuildConfig.DEBUG) throw new IllegalStateException("Неожиданный тип уведомления");
         }
+    }
+
+    public boolean isFollowingRequest() {
+        return "following_request".equals(action);
     }
 
     @Override

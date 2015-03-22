@@ -8,6 +8,7 @@ import ru.taaasty.model.CurrentUser;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
+import rx.functions.Action1;
 
 public class UserManager {
 
@@ -70,7 +71,16 @@ public class UserManager {
     }
 
     public Observable<CurrentUser> getCurrentUser() {
-        return NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class).getMyInfo();
+        return NetworkUtils.getInstance()
+                .createRestAdapter()
+                .create(ApiUsers.class)
+                .getMyInfo()
+                .doOnNext(new Action1<CurrentUser>() {
+                    @Override
+                    public void call(CurrentUser currentUser) {
+                        mCurrentUser = currentUser;
+                    }
+                });
         // return Observable.from(mCurrentUser);
     }
 

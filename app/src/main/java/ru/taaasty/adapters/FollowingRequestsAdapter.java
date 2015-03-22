@@ -17,18 +17,13 @@ import ru.taaasty.model.User;
 import ru.taaasty.ui.relationships.RelationshipListFragmentBase;
 import ru.taaasty.utils.ImageUtils;
 
-public class RelationshipsAdapter extends BaseAdapter implements RelationshipListFragmentBase.IRelationshipAdapter {
+public class FollowingRequestsAdapter extends BaseAdapter implements RelationshipListFragmentBase.IRelationshipAdapter {
     private final LayoutInflater mInfater;
     private final ImageUtils mImageUtils;
 
     private final SortedList<Relationship> mRelationships;
-    private final boolean mUseReader;
 
-    public RelationshipsAdapter(Context context) {
-        this(context, true);
-    }
-
-    public RelationshipsAdapter(Context context, boolean useReader) {
+    public FollowingRequestsAdapter(Context context) {
         super();
         mInfater = LayoutInflater.from(context);
         mImageUtils = ImageUtils.getInstance();
@@ -79,7 +74,6 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
                 notifyDataSetChanged();
             }
         });
-        mUseReader = useReader;
     }
 
     public void setRelationships(List<Relationship> relationships) {
@@ -120,7 +114,7 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
         View res;
 
         if (convertView == null) {
-            res = mInfater.inflate(R.layout.relationships_item, parent, false);
+            res = mInfater.inflate(R.layout.following_requests_item, parent, false);
             vh = new ViewHolder(res);
             res.setTag(R.id.relationships_view_holder, vh);
         } else {
@@ -129,16 +123,14 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
         }
 
         Relationship rel = getItem(position);
-        User author = mUseReader ? rel.getReader() : rel.getUser();
+        User author = rel.getReader();
         mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
 
         vh.userName.setText(author.getName());
 
         int posts = (int)(author.getTotalEntriesCount() % 1000000);
         vh.entriesCount.setText(vh.entriesCount.getResources().getQuantityString(
-                        R.plurals.records_title, posts, posts));
-
-        // XXX: add button
+                R.plurals.records_title, posts, posts));
 
         return res;
     }
@@ -153,15 +145,15 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
         public final ImageView avatar;
         public final TextView userName;
         public final TextView entriesCount;
-        public final View addedButton;
-        public final View addButton;
+        public final View approveButton;
+        public final View disapproveButton;
 
         public ViewHolder(View v) {
             avatar = (ImageView) v.findViewById(R.id.avatar);
             userName = (TextView) v.findViewById(R.id.user_name);
             entriesCount = (TextView) v.findViewById(R.id.posts_count);
-            addButton = v.findViewById(R.id.add_relationship);
-            addedButton = v.findViewById(R.id.relationship_added);
+            approveButton = v.findViewById(R.id.approve);
+            disapproveButton = v.findViewById(R.id.disapprove);
         }
     }
 }

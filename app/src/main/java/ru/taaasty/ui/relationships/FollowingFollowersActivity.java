@@ -16,13 +16,15 @@ import java.util.Locale;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Relationship;
-import ru.taaasty.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
 
-public class FollowingFollowersActivity extends ActivityBase implements  FollowingsFragment.OnFragmentInteractionListener {
+public class FollowingFollowersActivity extends ActivityBase implements
+        FollowingsFragment.OnFragmentInteractionListener,
+        RequestsFragment.OnFragmentInteractionListener  {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FollowingFollowersAct";
     public static final String ARG_USER = "ru.taaasty.ui.relationships.FollowingFollowersActivity.user";
@@ -32,20 +34,27 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
     /**
      * Подписки
      */
-    public static final int SECTION_FOLLOWINGS = 0;
+    public static final int SECTION_FOLLOWINGS = -1;
     /**
      * Подписчики
      */
-    public static final int SECTION_FOLLOWERS = 1;
+    public static final int SECTION_FOLLOWERS = -2;
+
+    /**
+     * Заявки
+     */
+    public static final int SECTION_REQUESTS = -3;
+
     /**
      * Друзья
      */
-    public static final int SECTION_FRIENDS = 2;
+    public static final int SECTION_FRIENDS = -4;
+
 
     SectionsPagerAdapter mSectionsPagerAdapter;
     ViewPager mViewPager;
 
-    private User mUser;
+    private CurrentUser mUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,10 +71,14 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOffscreenPageLimit(2);
+        mViewPager.setOffscreenPageLimit(4);
 
-        int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_FOLLOWINGS);
-        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager);
+        boolean showRequests = mUser.isPrivacy();
+
+        int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_FOLLOWERS);
+
+        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager, showRequests);
+        if (initialSection == SECTION_REQUESTS && !showRequests) initialSection = SECTION_FOLLOWERS;
         indicator.setSection(initialSection);
 
         ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
@@ -93,8 +106,9 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
     @Override
     public void onRelationshipClicked(View view, Relationship relationship) {
         long userId;
-        switch (mViewPager.getCurrentItem()) {
+        switch (viewPagerPosition2Section(mViewPager.getCurrentItem(), mUser.isPrivacy())) {
             case SECTION_FOLLOWERS:
+            case SECTION_REQUESTS:
                 userId = relationship.getReaderId();
                 break;
             case SECTION_FOLLOWINGS:
@@ -107,23 +121,63 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         TlogActivity.startTlogActivity(this, userId, view);
     }
 
+    public static int viewPagerPosition2Section(int position, boolean showRequests) {
+        if (!showRequests) {
+            switch (position) {
+                case 0:
+                    return SECTION_FOLLOWINGS;
+                case 1:
+                    return SECTION_FOLLOWERS;
+                case 2:
+                    return SECTION_FRIENDS;
+            }
+        } else {
+            switch (position) {
+                case 0:
+                    return SECTION_FOLLOWINGS;
+                case 1:
+                    return SECTION_FOLLOWERS;
+                case 2:
+                    return SECTION_REQUESTS;
+                case 3:
+                    return SECTION_FRIENDS;
+            }
+        }
+        throw new IllegalStateException();
+    }
+
+    public static int section2ViewPagerPosition(int section, boolean showRequests) {
+        switch (section) {
+            case SECTION_FOLLOWINGS: return 0;
+            case SECTION_FOLLOWERS: return 1;
+            case SECTION_REQUESTS: return 2;
+            case SECTION_FRIENDS: return showRequests ? 3 : 2;
+            default: throw new IllegalStateException();
+        }
+    }
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
+        private final boolean mShowRequests;
+
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
+            mShowRequests = mUser.isPrivacy();
         }
 
         @Override
         public Fragment getItem(int position) {
-            switch (position) {
+            switch (viewPagerPosition2Section(position, mShowRequests)) {
                 case SECTION_FOLLOWERS:
                     return FollowersFragment.newInstance(mUser.getId());
                 case SECTION_FOLLOWINGS:
                     return FollowingsFragment.newInstance(mUser.getId());
+                case SECTION_REQUESTS:
+                    return RequestsFragment.newInstance();
                 case SECTION_FRIENDS:
                     return FriendsFragment.newInstance();
                 default:
@@ -133,17 +187,19 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
 
         @Override
         public int getCount() {
-            return 3;
+            return mShowRequests ? 4 : 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
             Locale l = Locale.getDefault();
-            switch (position) {
+            switch (viewPagerPosition2Section(position, mShowRequests)) {
                 case SECTION_FOLLOWERS:
                     return getString(R.string.title_followers).toUpperCase(l);
                 case SECTION_FOLLOWINGS:
                     return getString(R.string.title_followings).toUpperCase(l);
+                case SECTION_REQUESTS:
+                    return getString(R.string.title_requests).toUpperCase(l);
                 case SECTION_FRIENDS:
                     return getString(R.string.title_friends).toUpperCase(l);
             }
@@ -158,16 +214,20 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         private final ViewGroup mRoot;
         private final ViewPager mPager;
 
-        public PagerIndicator(ViewGroup root, ViewPager pager) {
+        private final boolean mShowRequests;
+
+        public PagerIndicator(ViewGroup root, ViewPager pager, boolean showRequests) {
             mRoot = root;
             mPager = pager;
+            mShowRequests = showRequests;
             mPager.setOnPageChangeListener(this);
             int count = mRoot.getChildCount();
             for (int i = 0; i < count; ++i) mRoot.getChildAt(i).setOnClickListener(this);
+            mRoot.findViewById(R.id.your_requests_indicator).setVisibility(mShowRequests ? View.VISIBLE : View.GONE);
         }
 
         public void setSection(int section) {
-            mPager.setCurrentItem(section, false);
+            mPager.setCurrentItem(section2ViewPagerPosition(section, mShowRequests), false);
             setActivatedView(section);
         }
 
@@ -176,6 +236,7 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
             switch (section) {
                 case SECTION_FOLLOWERS: viewId = R.id.your_followers_indicator; break;
                 case SECTION_FOLLOWINGS: viewId = R.id.you_follow_indicator; break;
+                case SECTION_REQUESTS: viewId = R.id.your_requests_indicator; break;
                 case SECTION_FRIENDS: viewId = R.id.your_friends_indicator; break;
                 default: throw new IllegalArgumentException();
             }
@@ -187,6 +248,7 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
             switch (viewId) {
                 case R.id.your_followers_indicator: section = SECTION_FOLLOWERS; break;
                 case R.id.you_follow_indicator: section = SECTION_FOLLOWINGS; break;
+                case R.id.your_requests_indicator: section = SECTION_REQUESTS; break;
                 case R.id.your_friends_indicator: section = SECTION_FRIENDS; break;
                 default: throw new IllegalStateException();
             }
@@ -208,8 +270,8 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
         }
 
         @Override
-        public void onPageSelected(int i) {
-            setActivatedView(i);
+        public void onPageSelected(int position) {
+            setActivatedView(viewPagerPosition2Section(position, mShowRequests));
         }
 
         @Override
@@ -219,7 +281,7 @@ public class FollowingFollowersActivity extends ActivityBase implements  Followi
 
         @Override
         public void onClick(View v) {
-            mPager.setCurrentItem(viewId2Section(v.getId()), true);
+            mPager.setCurrentItem(section2ViewPagerPosition(viewId2Section(v.getId()), mShowRequests), true);
         }
     }
 

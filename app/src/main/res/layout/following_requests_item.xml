@@ -21,8 +21,7 @@
         android:layout_marginRight="16dp" />
 
 
-    <!-- кнопку откладываем пока не разберемся, как с API получить нужные данные -->
-    <FrameLayout
+    <LinearLayout
         android:id="@+id/add_remove_relationship_container"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
@@ -30,29 +29,31 @@
         android:layout_height="wrap_content">
 
         <ru.taaasty.widgets.HintedExtendedImageView
-            android:id="@+id/relationship_added"
-            android:src="@drawable/ic_create_post"
+            android:id="@+id/disapprove"
             android:visibility="invisible"
             tools:visibility="visible"
             tools:ignore="contentDescription"
+            android:src="@drawable/ic_disapprove"
+            android:contentDescription="@string/disapprove_following_request_content_description"
             android:background="?android:selectableItemBackground"
             android:padding="4dp"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center" />
+            android:layout_marginRight="8dp"
+            android:layout_gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
 
         <ru.taaasty.widgets.HintedExtendedImageView
-            android:id="@+id/add_relationship"
-            android:src="@drawable/ic_relationship_add"
+            android:id="@+id/approve"
+            android:src="@drawable/ic_create_post"
             tools:ignore="contentDescription"
-            android:background="?android:selectableItemBackground"
             android:visibility="invisible"
+            android:contentDescription="@string/approve_following_request_content_description"
             android:padding="4dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
 
-    </FrameLayout>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/user_name"

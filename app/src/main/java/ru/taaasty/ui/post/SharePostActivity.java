@@ -238,7 +238,7 @@ public class SharePostActivity extends ActivityBase {
         post.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
-                VKWallPostResult result = (VKWallPostResult)response.parsedModel;
+                VKWallPostResult result = (VKWallPostResult) response.parsedModel;
                 Uri url = Uri.parse("https://vk.com/wall"
                         + String.valueOf(VKSdk.getAccessToken().userId)
                         + "_" + String.valueOf(result.post_id));

@@ -210,6 +210,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     private void bindRelationship(ViewHolder holder, Notification notification) {
         boolean meSubscribed = notification.isMeSubscribed();
+
         holder.rightContainer.setVisibility(View.VISIBLE);
         holder.entryImage.setVisibility(View.GONE);
         if (mFollowProcess.contains(notification.id)) {
@@ -218,8 +219,13 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             holder.addedButton.setVisibility(View.INVISIBLE);
         } else {
             holder.progressButton.setVisibility(View.INVISIBLE);
-            holder.addButton.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
-            holder.addedButton.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
+            if (notification.isFollowingRequest()) {
+                holder.addButton.setVisibility(View.INVISIBLE);
+                holder.addedButton.setVisibility(View.INVISIBLE);
+            } else {
+                holder.addButton.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
+                holder.addedButton.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
+            }
         }
     }
 

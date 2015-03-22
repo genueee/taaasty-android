@@ -523,7 +523,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     public interface OnFragmentInteractionListener extends CustomErrorView {
         public void onShowAdditionalMenuClicked();
         public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
-        public void onCurrentUserLoaded(User user, TlogDesign design);
+        public void onCurrentUserLoaded(CurrentUser user, TlogDesign design);
         public void onSharePostMenuClicked(Entry entry);
     }
 }

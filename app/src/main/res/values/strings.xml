@@ -17,6 +17,7 @@
     <string name="title_followings">Вы подписаны</string>
     <string name="title_followers">Ваши подписчики</string>
     <string name="title_friends">Друзья</string>
+    <string name="title_requests">Заявки</string>
     <string name="title_text_post">Текстовый пост</string>
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
@@ -169,8 +170,11 @@
     <string name="error_loading_background">Ошибка загрузки фона</string>
     <string name="you_follow">Вы подписаны</string>
     <string name="your_followers">Ваши подписчики</string>
+    <string name="your_requests">Заявки</string>
     <string name="your_friends">Друзья</string>
     <string name="no_subscribers">Нет подписчиков</string>
+    <string name="no_subscriptions">Нет подписок</string>
+    <string name="no_requests">Нет заявок</string>
     <string name="no_friends">Список пуст</string>
     <string name="logout">Выйти</string>
     <string name="clean_cache">Очистка кэша</string>
@@ -277,6 +281,9 @@
     <string name="pictures_saved_into">Изображения сохранены в %1s</string>
     <string name="error_saving_image">Произошла ошибка при сохранении файла</string>
     <string name="mark_all_as_read">Отметить все прочитанными</string>
+    <string name="approve_following_request_content_description">Подтвердить</string>
+    <string name="disapprove_following_request_content_description">Отклонить</string>
+    <string name="unsubscripe_content_description">Отписать</string>
 
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>

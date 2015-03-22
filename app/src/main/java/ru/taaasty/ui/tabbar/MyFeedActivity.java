@@ -22,6 +22,7 @@ import intercom.intercomsdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
@@ -45,7 +46,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     private static final String KEY_CURRENT_USER = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER";
     private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER_DESIGN";
 
-    private User mCurrentUser;
+    private CurrentUser mCurrentUser;
     private TlogDesign mCurrentUserDesign;
 
     private DrawerLayout mDrawerLayout;
@@ -177,7 +178,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     @Override
-    public void onCurrentUserLoaded(User user, TlogDesign design) {
+    public void onCurrentUserLoaded(CurrentUser user, TlogDesign design) {
         mCurrentUser = user;
         mCurrentUserDesign = design;
     }
