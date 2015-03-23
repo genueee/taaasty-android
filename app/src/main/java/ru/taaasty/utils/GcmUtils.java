@@ -95,6 +95,7 @@ public class GcmUtils {
                     storeRegistrationId();
                 } catch (IOException ex) {
                     Log.d("GcmUtils", "GCM ISSUE", ex);
+                    // TODO: retry after delay
                 }
                 return null;
             }
@@ -102,7 +103,7 @@ public class GcmUtils {
     }
 
     private void sendRegistrationIdToBackend() {
-        Intercom.enablePush(mRegId, mContext.getPackageName(), R.mipmap.ic_launcher);
+        Intercom.client().setupGCM(mRegId, R.mipmap.ic_launcher);
     }
 
 

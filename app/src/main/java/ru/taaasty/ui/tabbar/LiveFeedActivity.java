@@ -67,7 +67,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
 
-        Intercom.handleIntercomPush(getIntent().getData());
+        Intercom.client().openGCMMessage(getIntent().getData());
 
         mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
 

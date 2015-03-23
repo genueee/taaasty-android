@@ -260,7 +260,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openSupport() {
-        Intercom.presentMessageViewAsConversationsList(false);
+        Intercom.client().displayConversationsList();
     }
 
     void logout() {

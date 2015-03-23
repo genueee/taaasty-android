@@ -14,7 +14,8 @@ import com.google.android.gms.analytics.Tracker;
 import java.util.Locale;
 
 import intercom.intercomsdk.Intercom;
-import intercom.intercomsdk.enums.IntercomPresentationMode;
+import intercom.intercomsdk.enums.IntercomPreviewPosition;
+import intercom.intercomsdk.identity.Registration;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
@@ -55,8 +56,7 @@ public class TaaastyApplication extends Application {
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
         resetLanguage();
-        Intercom.initialize(getApplicationContext());
-        Intercom.setApiKey(BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
+        Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
     }
 
     @Override
@@ -118,23 +118,15 @@ public class TaaastyApplication extends Application {
         Long userId = UserManager.getInstance().getCurrentUserId();
         if (userId == null) return;
         mInterSessionStarted = true;
-        Intercom.setPresentationMode(IntercomPresentationMode.BOTTOM_RIGHT);
-        Intercom.beginSessionWithUserId(String.valueOf(userId), this, new Intercom.IntercomEventListener() {
-            @Override
-            public void onComplete(String error) {
-                if (error != null) {
-                    mInterSessionStarted = false;
-                    Log.e(TAG, "intercom error: " + error);
-                } else {
-                    GcmUtils utils = GcmUtils.getInstance(TaaastyApplication.this);
-                    utils.setupPlayServices();
-                }
-            }
-        });
+        Intercom.client().setPreviewPosition(IntercomPreviewPosition.BOTTOM_RIGHT);
+        Intercom.client().registerIdentifiedUser(new Registration().withUserId(String.valueOf(userId)));
+
+        GcmUtils utils = GcmUtils.getInstance(TaaastyApplication.this);
+        utils.setupPlayServices();
     }
 
     public synchronized void endIntercomSession() {
-        Intercom.endSession();
+        Intercom.client().reset();
         mInterSessionStarted = false;
     }
 
