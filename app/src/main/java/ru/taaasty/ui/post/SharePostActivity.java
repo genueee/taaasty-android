@@ -1,12 +1,14 @@
 package ru.taaasty.ui.post;
 
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Html;
+import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -16,14 +18,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.vk.sdk.VKSdk;
-import com.vk.sdk.api.VKApi;
-import com.vk.sdk.api.VKApiConst;
 import com.vk.sdk.api.VKError;
-import com.vk.sdk.api.VKParameters;
-import com.vk.sdk.api.VKRequest;
-import com.vk.sdk.api.VKResponse;
-import com.vk.sdk.api.model.VKAttachments;
-import com.vk.sdk.api.model.VKWallPostResult;
+
+import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
@@ -39,6 +36,8 @@ import ru.taaasty.model.Entry;
 public class SharePostActivity extends ActivityBase {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.entry";
+    private static final Uri VKONTAKTE_SHARE_URL = Uri.parse("http://vk.com/share.php");
+    private static final String VK_APP_PACKAGE_ID = "com.vkontakte.android";
 
     private static final String KEY_DO_SHARE_VKONTAKTE = "ru.taaasty.ui.post.SharePostActivity.KEY_DO_SHARE_VKONTAKTE";
 
@@ -91,6 +90,13 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void shareVkontakte(View view) {
+        sendAnalyticsShareEvent("Vkontakte");
+
+        // Так самый лучший результат
+        if (shareVkontakteByIntent()) {
+            return;
+        }
+
         if (!VKSdk.wakeUpSession()) {
             mDoShareVkontakte = true;
             VKSdk.authorize(VkontakteHelper.VK_SCOPE, true, false);
@@ -98,7 +104,6 @@ public class SharePostActivity extends ActivityBase {
             mDoShareVkontakte = true;
             doSharePostVkontakte();
         }
-        sendAnalyticsShareEvent("Vkontakte");
     }
 
     public void shareFacebook(View view) {
@@ -120,19 +125,14 @@ public class SharePostActivity extends ActivityBase {
 
     public void shareOther(View view) {
         sendAnalyticsShareEvent("Other");
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        if (!TextUtils.isEmpty(mEntry.getTitle())) {
-            intent.putExtra(Intent.EXTRA_SUBJECT, Html.fromHtml(mEntry.getTitle()).toString());
-        }
-        intent.putExtra(Intent.EXTRA_TEXT, mEntry.getEntryUrl());
+        Intent intent = mEntry.getShareIntent();
         Intent chooser = Intent.createChooser(intent, getString(R.string.share_title));
         startActivity(chooser);
         finish();
     }
 
     public void addToFavorites(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS,
+        ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS,
                 mEntry.isFavorited() ? "Удалить из избранного" : "Добавить в избранное", null);
         runPostActionActivity(PostActionActivity.ACTION_ADD_TO_FAVORITES);
         finish();
@@ -221,39 +221,80 @@ public class SharePostActivity extends ActivityBase {
                 break;
             case VkGlobalEvent.VK_ACCEPT_USER_TOKEN:
             case VkGlobalEvent.VK_RECEIVE_NEW_TOKEN:
-                doSharePostVkontakte();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        doSharePostVkontakte();
+                    }
+                }, 64);
                 break;
             default:
                 break;
         }
     }
 
+    private Uri getVkontakteUri() {
+        final Uri.Builder builder;
+        final Uri uri;
+
+        builder = VKONTAKTE_SHARE_URL.buildUpon();
+        builder.appendQueryParameter("url", mEntry.getEntryUrl());
+        /*
+        if (!TextUtils.isEmpty(mEntry.getTitle())) {
+            builder.appendQueryParameter("title", Html.fromHtml(mEntry.getTitle()).toString());
+        }
+        if (!TextUtils.isEmpty(mEntry.getText())) {
+            String description = Html.fromHtml(mEntry.getText()).toString();
+            if (!TextUtils.isEmpty(mEntry.getSource())) {
+                description += "\n " + Html.fromHtml(mEntry.getSource()).toString();
+            }
+            builder.appendQueryParameter("description", description);
+        }
+        */
+
+        return builder.build();
+    }
+
+
     private void doSharePostVkontakte() {
-        VKAttachments attachments = null; //TODO указывать аттачи и текст
-        String message = mEntry.getEntryUrl();
+        if (VKSdk.wakeUpSession()) {
+            Intent intent = new Intent(this, PostActionActivity.class);
+            intent.putExtra(PostActionActivity.ARG_ENTRY, mEntry);
+            intent.setAction(PostActionActivity.ACTION_SHARE_VKONTAKTE_DIALOG);
+            startActivity(intent);
+            finish();
+        } else {
+            shareVkontakteByLink();
+        }
+    }
 
-        VKRequest post = VKApi.wall().post(VKParameters.from(VKApiConst.ATTACHMENTS, attachments,
-                VKApiConst.MESSAGE, message));
-        post.setModelClass(VKWallPostResult.class);
-        post.executeWithListener(new VKRequest.VKRequestListener() {
-            @Override
-            public void onComplete(VKResponse response) {
-                VKWallPostResult result = (VKWallPostResult) response.parsedModel;
-                Uri url = Uri.parse("https://vk.com/wall"
-                        + String.valueOf(VKSdk.getAccessToken().userId)
-                        + "_" + String.valueOf(result.post_id));
-                Toast.makeText(SharePostActivity.this, "Ссыка добавлена на стену", Toast.LENGTH_LONG).show();
-                Intent i = new Intent(Intent.ACTION_VIEW, url);
-                startActivity(i);
-                finish();
-            }
+    private boolean shareVkontakteByIntent() {
+        Intent shareIntent = mEntry.getShareIntent();
+        List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(shareIntent, 0);
 
-            @Override
-            public void onError(VKError error) {
-                Toast.makeText(SharePostActivity.this, R.string.error_vkontakte_failed, Toast.LENGTH_LONG).show();
+        for (ResolveInfo info: resInfo) {
+            if (info.activityInfo != null
+                    && VK_APP_PACKAGE_ID.equals(info.activityInfo.packageName)
+                    ) {
+                shareIntent.setPackage(VK_APP_PACKAGE_ID);
+                startActivity(shareIntent);
                 finish();
+                return true;
             }
-        });
+        }
+
+        return false;
+    }
+
+    private void shareVkontakteByLink() {
+        Uri uri = getVkontakteUri();
+        try {
+            Intent myIntent = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            // ignore
+        }
+        finish();
     }
 
     private void sendAnalyticsShareEvent(String network) {

@@ -1,5 +1,6 @@
 package ru.taaasty.model;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -412,6 +413,16 @@ public class Entry implements Parcelable {
     @Nullable
     public String getImageUrl() {
         return mImageUrl;
+    }
+
+    public Intent getShareIntent() {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        if (!TextUtils.isEmpty(getTitleSpanned())) {
+            intent.putExtra(Intent.EXTRA_SUBJECT, getTitleSpanned().toString());
+        }
+        intent.putExtra(Intent.EXTRA_TEXT, getEntryUrl());
+        return intent;
     }
 
     public Entry() {
