@@ -223,62 +223,6 @@
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />
         </activity>
 
-        <!--
-        ======================================================================
-                                                AVIARY - REQUIRED ENTRIES
-        ======================================================================
-        -->
-
-
-        <!-- Aviary Main Editor Activity -->
-        <activity
-            android:name="com.aviary.android.feather.sdk.FeatherActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:finishOnTaskLaunch="true"
-            android:hardwareAccelerated="true"
-            android:process=":standalone"
-            android:screenOrientation="unspecified"
-            android:theme="@style/AviaryTheme"
-            android:uiOptions="splitActionBarWhenNarrow" />
-
-        <!-- CDS Content Service -->
-        <service
-            android:name="com.aviary.android.feather.cds.AviaryCdsService"
-            android:exported="false"
-            android:process=":aviarycds" >
-            <intent-filter>
-                <action android:name="aviary.intent.action.CDS_DOWNLOAD_START" />
-                <action android:name="aviary.intent.action.CDS_RESTORE_USER_ITEMS" />
-            </intent-filter>
-        </service>
-
-        <!-- Aviary Cds Content Provider -->
-        <provider
-            android:name="com.aviary.android.feather.cds.AviaryCdsProvider"
-            android:authorities="${applicationId}.AviaryCdsProvider"
-            android:exported="false"
-            android:process=":aviarycds"
-            android:syncable="true" />
-
-        <!-- Aviary CDS Download Receiver -->
-        <receiver
-            android:name="com.aviary.android.feather.cds.AviaryCdsReceiver"
-            android:process=":aviarycds" >
-            <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
-
-        <meta-data
-            android:name="com.aviary.android.feather.v1.API_KEY"
-            android:value="@string/aviary_key" />
-
-        <!--
-        ======================================================================
-                                                        END AVIARY ENTRIES
-        ======================================================================
-        -->
-
         <service
             android:name="ru.taaasty.UploadService"
             android:exported="false" >
@@ -301,6 +245,29 @@
             android:enabled="true"
             android:exported="false" >
         </service>
+
+        <!--
+        ======================================================================
+                                                AVIARY - REQUIRED ENTRIES
+        ======================================================================
+        -->
+        <!--
+         Cds Content Provider,
+         NOTE that the "authorities" value MUST be formatted in this way:
+         android:authorities="{your.packagename}.AviaryCdsProvider"
+        -->
+        <provider
+            android:name="com.aviary.android.feather.sdk.internal.cds.AviaryCdsProvider"
+            android:authorities="${applicationId}.AviaryCdsProvider"
+            android:exported="false"
+            android:process=":aviary_cds"/>
+        <!--
+        ======================================================================
+                                                        END AVIARY ENTRIES
+        ======================================================================
+        -->
+
+
 
     </application>
 

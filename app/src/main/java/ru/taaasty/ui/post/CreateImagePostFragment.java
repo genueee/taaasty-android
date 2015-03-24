@@ -16,7 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.aviary.android.feather.library.Constants;
+import com.aviary.android.feather.sdk.internal.Constants;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 

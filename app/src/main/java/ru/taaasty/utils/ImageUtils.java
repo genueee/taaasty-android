@@ -25,9 +25,10 @@ import android.util.Log;
 import android.util.TimingLogger;
 import android.widget.ImageView;
 
-import com.aviary.android.feather.headless.utils.MegaPixels;
-import com.aviary.android.feather.library.Constants;
+import com.aviary.android.feather.sdk.AviaryIntent;
 import com.aviary.android.feather.sdk.FeatherActivity;
+import com.aviary.android.feather.sdk.internal.Constants;
+import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -315,17 +316,14 @@ public class ImageUtils {
     }
 
     public static Intent createFeatherPhotoIntent(Context context, Uri originalPhotoUri) throws MakePhotoException {
-        Intent featherPhotoIntent;
         Uri newPhotoUri;
-
         newPhotoUri = createAviaryPictureOutputPath(context);
-        featherPhotoIntent = new Intent(context , FeatherActivity.class );
-        featherPhotoIntent.setData(originalPhotoUri);
-        featherPhotoIntent.putExtra( Constants.EXTRA_IN_API_KEY_SECRET, context.getString(R.string.aviary_secret) );
-        featherPhotoIntent.putExtra( Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, false );
-        featherPhotoIntent.putExtra( Constants.EXTRA_OUTPUT, newPhotoUri );
-        featherPhotoIntent.putExtra( Constants.EXTRA_IN_HIRES_MEGAPIXELS, MegaPixels.Mp3.ordinal());
-        return featherPhotoIntent;
+        return new AviaryIntent.Builder(context)
+                .setData(originalPhotoUri)
+                .saveWithNoChanges(false)
+                .withOutput(newPhotoUri)
+                .withOutputSize(MegaPixels.Mp7)
+                .build();
     }
 
     public void loadAvatar(@Nullable User a, ImageView dst, @DimenRes int diameterResource) {

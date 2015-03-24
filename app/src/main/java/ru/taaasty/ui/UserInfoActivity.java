@@ -19,8 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
-
-import com.aviary.android.feather.library.Constants;
+import com.aviary.android.feather.sdk.internal.Constants;
 
 import java.io.File;
 

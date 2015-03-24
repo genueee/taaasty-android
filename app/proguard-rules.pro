@@ -83,3 +83,8 @@
     @com.squareup.otto.Subscribe public *;
     @com.squareup.otto.Produce public *;
 }
+
+#adobe sdk
+-keepnames class com.adobe.creativesdk.foundation.internal.auth,** {
+   *;
+}

@@ -1,11 +1,14 @@
 package ru.taaasty;
 
-import android.app.Application;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.StrictMode;
 import android.support.annotation.Nullable;
+import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
+import com.aviary.android.feather.sdk.IAviaryClientCredentials;
+import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Logger;
@@ -22,7 +25,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
-public class TaaastyApplication extends Application {
+public class TaaastyApplication extends MultiDexApplication implements IAviaryClientCredentials {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TaaastyApplication";
 
@@ -57,6 +60,14 @@ public class TaaastyApplication extends Application {
         getTracker();
         resetLanguage();
         Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
+
+        if (BuildConfig.DEBUG) {
+            try {
+                AviaryIntentConfigurationValidator.validateConfiguration(this);
+            } catch (PackageManager.NameNotFoundException e) {
+                throw new IllegalStateException("aviary validatuion error", e);
+            }
+        }
     }
 
     @Override
@@ -130,4 +141,18 @@ public class TaaastyApplication extends Application {
         mInterSessionStarted = false;
     }
 
+    @Override
+    public String getClientID() {
+        return getResources().getString(R.string.adobe_client_id);
+    }
+
+    @Override
+    public String getClientSecret() {
+        return getResources().getString(R.string.adobe_client_secret);
+    }
+
+    @Override
+    public String getBillingKey() {
+        return "";
+    }
 }
