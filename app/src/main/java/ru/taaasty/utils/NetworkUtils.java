@@ -36,7 +36,6 @@ import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.model.ResponseError;
 import ru.taaasty.ui.login.LoginActivity;
@@ -162,7 +161,6 @@ public final class NetworkUtils {
     }
 
     public void factoryReset(Context context) {
-        ((TaaastyApplication)context.getApplicationContext()).endIntercomSession();
         mUserManager.logout();
         LoginActivity.logout(context);
         try {

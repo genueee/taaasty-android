@@ -16,11 +16,7 @@ import com.google.android.gms.analytics.Tracker;
 
 import java.util.Locale;
 
-import intercom.intercomsdk.Intercom;
-import intercom.intercomsdk.enums.IntercomPreviewPosition;
-import intercom.intercomsdk.identity.Registration;
 import ru.taaasty.utils.FontManager;
-import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -31,7 +27,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     private volatile Tracker mAnalyticsTracker;
 
-    private volatile Intercom mIntercom;
     private volatile boolean mInterSessionStarted;
 
     @Override
@@ -59,7 +54,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
         resetLanguage();
-        Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
 
         if (BuildConfig.DEBUG) {
             try {
@@ -128,17 +122,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         if (mInterSessionStarted) return;
         Long userId = UserManager.getInstance().getCurrentUserId();
         if (userId == null) return;
-        mInterSessionStarted = true;
-        Intercom.client().setPreviewPosition(IntercomPreviewPosition.BOTTOM_RIGHT);
-        Intercom.client().registerIdentifiedUser(new Registration().withUserId(String.valueOf(userId)));
-
-        GcmUtils utils = GcmUtils.getInstance(TaaastyApplication.this);
-        utils.setupPlayServices();
-    }
-
-    public synchronized void endIntercomSession() {
-        Intercom.client().reset();
-        mInterSessionStarted = false;
     }
 
     @Override
