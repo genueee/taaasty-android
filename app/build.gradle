@@ -42,8 +42,8 @@ android {
         applicationId "ru.taaasty"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 12
-        versionName "1.0.2"
+        versionCode 13
+        versionName "1.1.0"
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
@@ -153,7 +153,6 @@ dependencies {
     compile 'com.facebook.android:facebook-android-sdk:3.22.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.google.android.gms:play-services-analytics:7.0.0'
-    compile 'com.google.android.gms:play-services-gcm:7.0.0'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.pusher:pusher-java-client:0.3.3'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
