@@ -180,11 +180,11 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         if (imgSize.width < image.image.geometry.width) {
             // Изображение было уменьшено под размеры imageView
             resizeToWidth = parentWidth;
-            imgViewHeight = (int)Math.ceil(imgSize.height);
+            imgViewHeight = (int)imgSize.height;
         } else {
             // Изображение должно быть увеличено под размеры ImageView
             imgSize.stretchToWidth(parentWidth);
-            imgViewHeight = (int)Math.ceil(imgSize.height);
+            imgViewHeight = (int)imgSize.height;
         }
 
         mImageView.setAdjustViewBounds(true);
@@ -212,7 +212,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
-        mImageView.requestLayout();
+        mImageView.requestLayout();  //Иначе иногда ImageView не принимает новые размеры
 
         mImageViewUrl = b.toUrl();
 
@@ -294,7 +294,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
     @Override
     public void onSuccess() {
-        mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
     }
 
     @Override
@@ -339,7 +339,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                             imageView.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                     imageView.setImageDrawable(drawable);
                                 }
                             });

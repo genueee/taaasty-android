@@ -22,6 +22,7 @@
             android:layout_height="wrap_content"
             android:cropToPadding="false"
             android:adjustViewBounds="false"
+            android:scaleType="centerCrop"
             android:contentDescription="@string/feed_item_image_content_description" />
 
         <ProgressBar
