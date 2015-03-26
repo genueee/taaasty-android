@@ -85,6 +85,6 @@
 }
 
 #adobe sdk
--keepnames class com.adobe.creativesdk.foundation.internal.auth,** {
+-keepnames class com.adobe.creativesdk.foundation.internal.auth.** {
    *;
 }
