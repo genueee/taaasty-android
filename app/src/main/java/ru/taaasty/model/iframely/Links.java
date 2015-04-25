@@ -126,4 +126,40 @@ public class Links implements Parcelable, Iterable<Link> {
             return new Links[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Links links = (Links) o;
+
+        if (player != null ? !player.equals(links.player) : links.player != null) return false;
+        if (thumbnail != null ? !thumbnail.equals(links.thumbnail) : links.thumbnail != null)
+            return false;
+        if (image != null ? !image.equals(links.image) : links.image != null) return false;
+        if (app != null ? !app.equals(links.app) : links.app != null) return false;
+        if (reader != null ? !reader.equals(links.reader) : links.reader != null) return false;
+        if (survey != null ? !survey.equals(links.survey) : links.survey != null) return false;
+        if (file != null ? !file.equals(links.file) : links.file != null) return false;
+        if (icon != null ? !icon.equals(links.icon) : links.icon != null) return false;
+        if (logo != null ? !logo.equals(links.logo) : links.logo != null) return false;
+        return !(other != null ? !other.equals(links.other) : links.other != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = player != null ? player.hashCode() : 0;
+        result = 31 * result + (thumbnail != null ? thumbnail.hashCode() : 0);
+        result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (app != null ? app.hashCode() : 0);
+        result = 31 * result + (reader != null ? reader.hashCode() : 0);
+        result = 31 * result + (survey != null ? survey.hashCode() : 0);
+        result = 31 * result + (file != null ? file.hashCode() : 0);
+        result = 31 * result + (icon != null ? icon.hashCode() : 0);
+        result = 31 * result + (logo != null ? logo.hashCode() : 0);
+        result = 31 * result + (other != null ? other.hashCode() : 0);
+        return result;
+    }
 }

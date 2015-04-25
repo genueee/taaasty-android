@@ -1,6 +1,7 @@
 package ru.taaasty.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,12 +11,14 @@ import android.widget.TextView;
 
 import java.util.List;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.model.Relationship;
 import ru.taaasty.model.User;
 import ru.taaasty.ui.relationships.RelationshipListFragmentBase;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.Objects;
 
 public class FollowingRequestsAdapter extends BaseAdapter implements RelationshipListFragmentBase.IRelationshipAdapter {
     private final LayoutInflater mInfater;
@@ -27,51 +30,41 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
         super();
         mInfater = LayoutInflater.from(context);
         mImageUtils = ImageUtils.getInstance();
-        mRelationships = new SortedList<Relationship>(Relationship.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR) {
+        mRelationships = new SortedList<>(Relationship.class, new android.support.v7.util.SortedList.Callback<Relationship>() {
             @Override
-            public long getItemId(Relationship item) {
-                return item.getId();
+            public int compare(Relationship o1, Relationship o2) {
+                return Relationship.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(o1, o2);
             }
-        };
-        mRelationships.setListener(new SortedList.OnListChangedListener() {
+
             @Override
-            public void onDataSetChanged() {
+            public void onInserted(int position, int count) {
+                if (BuildConfig.DEBUG) Log.v("FollowingsRqAdapt", "onInserted pos: " + position + " count: " + count);
                 notifyDataSetChanged();
             }
 
             @Override
-            public void onItemChanged(int location) {
+            public void onRemoved(int position, int count) {
                 notifyDataSetChanged();
             }
 
             @Override
-            public void onItemInserted(int location) {
+            public void onMoved(int fromPosition, int toPosition) {
                 notifyDataSetChanged();
             }
 
             @Override
-            public void onItemRemoved(int location) {
+            public void onChanged(int position, int count) {
                 notifyDataSetChanged();
             }
 
             @Override
-            public void onItemMoved(int fromLocation, int toLocation) {
-                notifyDataSetChanged();
+            public boolean areContentsTheSame(Relationship oldItem, Relationship newItem) {
+                return oldItem.equals(newItem);
             }
 
             @Override
-            public void onItemRangeChanged(int locationStart, int itemCount) {
-                notifyDataSetChanged();
-            }
-
-            @Override
-            public void onItemRangeInserted(int locationStart, int itemCount) {
-                notifyDataSetChanged();
-            }
-
-            @Override
-            public void onItemRangeRemoved(int locationStart, int itemCount) {
-                notifyDataSetChanged();
+            public boolean areItemsTheSame(Relationship item1, Relationship item2) {
+                return Objects.equals(item1.getId(), item2.getId());
             }
         });
     }
@@ -85,11 +78,17 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
     }
 
     public void setRelationship(Relationship relationship) {
-        mRelationships.insertItem(relationship);
+        mRelationships.add(relationship);
     }
 
     public void deleteRelationship(long id) {
-        mRelationships.deleteItem(id);
+        for (int i=mRelationships.size() - 1; i >= 0; --i) {
+            Long l = mRelationships.get(i).getId();
+            if (l != null && l == id) {
+                mRelationships.removeItemAt(i);
+                break;
+            }
+        }
     }
 
     @Override

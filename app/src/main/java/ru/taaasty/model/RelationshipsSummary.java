@@ -61,4 +61,27 @@ public class RelationshipsSummary implements Parcelable {
                 ", ignoredCount=" + ignoredCount +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        RelationshipsSummary that = (RelationshipsSummary) o;
+
+        if (followingsCount != that.followingsCount) return false;
+        if (guessesCount != that.guessesCount) return false;
+        if (followersCount != that.followersCount) return false;
+        return ignoredCount == that.ignoredCount;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (followingsCount ^ (followingsCount >>> 32));
+        result = 31 * result + (int) (guessesCount ^ (guessesCount >>> 32));
+        result = 31 * result + (int) (followersCount ^ (followersCount >>> 32));
+        result = 31 * result + (int) (ignoredCount ^ (ignoredCount >>> 32));
+        return result;
+    }
 }

@@ -146,4 +146,31 @@ public class Relationship implements Parcelable {
             return new Relationship[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Relationship that = (Relationship) o;
+
+        if (mUserId != that.mUserId) return false;
+        if (mReaderId != that.mReaderId) return false;
+        if (mId != null ? !mId.equals(that.mId) : that.mId != null) return false;
+        if (mState != null ? !mState.equals(that.mState) : that.mState != null) return false;
+        if (mReader != null ? !mReader.equals(that.mReader) : that.mReader != null) return false;
+        return !(mUser != null ? !mUser.equals(that.mUser) : that.mUser != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = mId != null ? mId.hashCode() : 0;
+        result = 31 * result + (int) (mUserId ^ (mUserId >>> 32));
+        result = 31 * result + (int) (mReaderId ^ (mReaderId >>> 32));
+        result = 31 * result + (mState != null ? mState.hashCode() : 0);
+        result = 31 * result + (mReader != null ? mReader.hashCode() : 0);
+        result = 31 * result + (mUser != null ? mUser.hashCode() : 0);
+        return result;
+    }
 }

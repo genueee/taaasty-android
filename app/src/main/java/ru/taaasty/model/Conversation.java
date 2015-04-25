@@ -127,6 +127,39 @@ public class Conversation implements Parcelable {
                 return new Message[size];
             }
         };
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Message message = (Message) o;
+
+            if (id != message.id) return false;
+            if (userId != message.userId) return false;
+            if (conversationId != message.conversationId) return false;
+            if (recipientId != message.recipientId) return false;
+            if (uuid != null ? !uuid.equals(message.uuid) : message.uuid != null) return false;
+            if (createdAt != null ? !createdAt.equals(message.createdAt) : message.createdAt != null)
+                return false;
+            if (readAt != null ? !readAt.equals(message.readAt) : message.readAt != null)
+                return false;
+            return !(contentHtml != null ? !contentHtml.equals(message.contentHtml) : message.contentHtml != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = (int) (id ^ (id >>> 32));
+            result = 31 * result + (int) (userId ^ (userId >>> 32));
+            result = 31 * result + (int) (conversationId ^ (conversationId >>> 32));
+            result = 31 * result + (int) (recipientId ^ (recipientId >>> 32));
+            result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
+            result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
+            result = 31 * result + (readAt != null ? readAt.hashCode() : 0);
+            result = 31 * result + (contentHtml != null ? contentHtml.hashCode() : 0);
+            return result;
+        }
     }
 
     @Override
@@ -175,4 +208,42 @@ public class Conversation implements Parcelable {
             return new Conversation[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Conversation that = (Conversation) o;
+
+        if (id != that.id) return false;
+        if (userId != that.userId) return false;
+        if (recipientId != that.recipientId) return false;
+        if (unreadMessagesCount != that.unreadMessagesCount) return false;
+        if (unreceivedMessagesCount != that.unreceivedMessagesCount) return false;
+        if (messagesCount != that.messagesCount) return false;
+        if (createdAt != null ? !createdAt.equals(that.createdAt) : that.createdAt != null)
+            return false;
+        if (updatedAt != null ? !updatedAt.equals(that.updatedAt) : that.updatedAt != null)
+            return false;
+        if (recipient != null ? !recipient.equals(that.recipient) : that.recipient != null)
+            return false;
+        return !(lastMessage != null ? !lastMessage.equals(that.lastMessage) : that.lastMessage != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (int) (userId ^ (userId >>> 32));
+        result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
+        result = 31 * result + (updatedAt != null ? updatedAt.hashCode() : 0);
+        result = 31 * result + (int) (recipientId ^ (recipientId >>> 32));
+        result = 31 * result + (recipient != null ? recipient.hashCode() : 0);
+        result = 31 * result + unreadMessagesCount;
+        result = 31 * result + unreceivedMessagesCount;
+        result = 31 * result + messagesCount;
+        result = 31 * result + (lastMessage != null ? lastMessage.hashCode() : 0);
+        return result;
+    }
 }

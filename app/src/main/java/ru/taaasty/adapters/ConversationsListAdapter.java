@@ -3,6 +3,7 @@ package ru.taaasty.adapters;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -86,7 +87,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     public void addConversation(Conversation conversation) {
-        mConversations.insertItem(conversation);
+        mConversations.add(conversation);
     }
 
     @Nullable
@@ -171,56 +172,25 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         }
     };
 
-    private final class ConversationsList extends SortedList<Conversation> implements SortedList.OnListChangedListener {
+    private final class ConversationsList extends SortedList<Conversation> {
 
         public ConversationsList() {
-            super(Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR);
-            setListener(this);
-        }
+            super(Conversation.class, new SortedListAdapterCallback<Conversation>(ConversationsListAdapter.this) {
+                @Override
+                public int compare(Conversation o1, Conversation o2) {
+                    return Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
+                }
 
-        @Override
-        public long getItemId(Conversation item) {
-            return item.id;
-        }
+                @Override
+                public boolean areContentsTheSame(Conversation oldItem, Conversation newItem) {
+                    return oldItem.equals(newItem);
+                }
 
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(location);
-        }
-
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(location);
-        }
-
-        @Override
-        public void onItemRemoved(int location) {
-            notifyItemRemoved(location);
-        }
-
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(fromLocation, toLocation);
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeChanged(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(locationStart, itemCount);
+                @Override
+                public boolean areItemsTheSame(Conversation item1, Conversation item2) {
+                    return item1.id == item2.id;
+                }
+            });
         }
     }
 

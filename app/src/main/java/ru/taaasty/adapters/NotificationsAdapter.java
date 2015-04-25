@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -111,7 +112,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     public void addNotification(Notification notification) {
-        mNotifications.insertItem(notification);
+        mNotifications.add(notification);
         onNotificationFollowUnfollowStopped(notification.id);
     }
 
@@ -248,57 +249,25 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     };
 
-    private final class NotificationsList extends SortedList<Notification> implements SortedList.OnListChangedListener {
+    private final class NotificationsList extends SortedList<Notification> {
 
         public NotificationsList() {
-            super(Notification.SORT_BY_CREATED_AT_DESC_COMPARATOR);
-            setListener(this);
+            super(Notification.class, new SortedListAdapterCallback<Notification>(NotificationsAdapter.this) {
+                @Override
+                public int compare(Notification o1, Notification o2) {
+                    return Notification.SORT_BY_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
+                }
 
-        }
+                @Override
+                public boolean areContentsTheSame(Notification oldItem, Notification newItem) {
+                    return oldItem.equals(newItem);
+                }
 
-        @Override
-        public long getItemId(Notification item) {
-            return item.id;
-        }
-
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(location);
-        }
-
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(location);
-        }
-
-        @Override
-        public void onItemRemoved(int position) {
-            notifyItemRemoved(position);
-        }
-
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(fromLocation, toLocation);
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeInserted(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(locationStart, itemCount);
+                @Override
+                public boolean areItemsTheSame(Notification item1, Notification item2) {
+                    return item1.id == item2.id;
+                }
+            });
         }
     }
 
@@ -364,10 +333,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     public static interface InteractionListener {
-        public void onNotificationClicked(View v, Notification notification);
-        public void onAvatarClicked(View v, Notification notification);
-        public void onAddButtonClicked(View v, Notification notification);
-        public void onAddedButtonClicked(View v, Notification notification);
+        void onNotificationClicked(View v, Notification notification);
+        void onAvatarClicked(View v, Notification notification);
+        void onAddButtonClicked(View v, Notification notification);
+        void onAddedButtonClicked(View v, Notification notification);
     }
 
 }

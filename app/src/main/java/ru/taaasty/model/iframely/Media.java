@@ -82,4 +82,33 @@ public class Media implements Parcelable {
                 ", min_height=" + min_height +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Media media = (Media) o;
+
+        if (Float.compare(media.aspect_ratio, aspect_ratio) != 0) return false;
+        if (width != media.width) return false;
+        if (height != media.height) return false;
+        if (max_width != media.max_width) return false;
+        if (min_width != media.min_width) return false;
+        if (max_height != media.max_height) return false;
+        return min_height == media.min_height;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (aspect_ratio != +0.0f ? Float.floatToIntBits(aspect_ratio) : 0);
+        result = 31 * result + width;
+        result = 31 * result + height;
+        result = 31 * result + max_width;
+        result = 31 * result + min_width;
+        result = 31 * result + max_height;
+        result = 31 * result + min_height;
+        return result;
+    }
 }

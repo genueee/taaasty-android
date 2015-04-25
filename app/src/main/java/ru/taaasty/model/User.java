@@ -252,4 +252,58 @@ public class User implements Parcelable {
                 ", mRelationshipsSummary=" + mRelationshipsSummary +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        User user = (User) o;
+
+        if (mId != user.mId) return false;
+        if (mIsFemale != user.mIsFemale) return false;
+        if (mIsDaylog != user.mIsDaylog) return false;
+        if (mIsPrivacy != user.mIsPrivacy) return false;
+        if (mTotalEntriesCount != user.mTotalEntriesCount) return false;
+        if (privateEntriesCount != user.privateEntriesCount) return false;
+        if (publicEntriesCount != user.publicEntriesCount) return false;
+        if (mName != null ? !mName.equals(user.mName) : user.mName != null) return false;
+        if (mSlug != null ? !mSlug.equals(user.mSlug) : user.mSlug != null) return false;
+        if (mTitle != null ? !mTitle.equals(user.mTitle) : user.mTitle != null) return false;
+        if (mTlogUrl != null ? !mTlogUrl.equals(user.mTlogUrl) : user.mTlogUrl != null)
+            return false;
+        if (mCreateAt != null ? !mCreateAt.equals(user.mCreateAt) : user.mCreateAt != null)
+            return false;
+        if (mUpdatedAt != null ? !mUpdatedAt.equals(user.mUpdatedAt) : user.mUpdatedAt != null)
+            return false;
+        if (mEmail != null ? !mEmail.equals(user.mEmail) : user.mEmail != null) return false;
+        if (mUserpic != null ? !mUserpic.equals(user.mUserpic) : user.mUserpic != null)
+            return false;
+        if (mRelationshipsSummary != null ? !mRelationshipsSummary.equals(user.mRelationshipsSummary) : user.mRelationshipsSummary != null)
+            return false;
+        return !(mDesign != null ? !mDesign.equals(user.mDesign) : user.mDesign != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (mId ^ (mId >>> 32));
+        result = 31 * result + (mName != null ? mName.hashCode() : 0);
+        result = 31 * result + (mSlug != null ? mSlug.hashCode() : 0);
+        result = 31 * result + (mTitle != null ? mTitle.hashCode() : 0);
+        result = 31 * result + (mIsFemale ? 1 : 0);
+        result = 31 * result + (mIsDaylog ? 1 : 0);
+        result = 31 * result + (mTlogUrl != null ? mTlogUrl.hashCode() : 0);
+        result = 31 * result + (mCreateAt != null ? mCreateAt.hashCode() : 0);
+        result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
+        result = 31 * result + (mEmail != null ? mEmail.hashCode() : 0);
+        result = 31 * result + (mIsPrivacy ? 1 : 0);
+        result = 31 * result + (int) (mTotalEntriesCount ^ (mTotalEntriesCount >>> 32));
+        result = 31 * result + (int) (privateEntriesCount ^ (privateEntriesCount >>> 32));
+        result = 31 * result + (int) (publicEntriesCount ^ (publicEntriesCount >>> 32));
+        result = 31 * result + (mUserpic != null ? mUserpic.hashCode() : 0);
+        result = 31 * result + (mRelationshipsSummary != null ? mRelationshipsSummary.hashCode() : 0);
+        result = 31 * result + (mDesign != null ? mDesign.hashCode() : 0);
+        return result;
+    }
 }

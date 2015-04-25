@@ -105,6 +105,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), true));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);

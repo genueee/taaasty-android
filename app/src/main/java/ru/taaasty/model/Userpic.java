@@ -86,6 +86,26 @@ public class Userpic implements Parcelable {
                 return new DefaultColors[size];
             }
         };
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DefaultColors that = (DefaultColors) o;
+
+            if (background != null ? !background.equals(that.background) : that.background != null)
+                return false;
+            return !(name != null ? !name.equals(that.name) : that.name != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = background != null ? background.hashCode() : 0;
+            result = 31 * result + (name != null ? name.hashCode() : 0);
+            return result;
+        }
     }
 
     @Override
@@ -149,5 +169,37 @@ public class Userpic implements Parcelable {
                 ", thumborPath='" + thumborPath + '\'' +
                 ", defaultColors=" + defaultColors +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Userpic userpic = (Userpic) o;
+
+        if (largeUrl != null ? !largeUrl.equals(userpic.largeUrl) : userpic.largeUrl != null)
+            return false;
+        if (thumb64Url != null ? !thumb64Url.equals(userpic.thumb64Url) : userpic.thumb64Url != null)
+            return false;
+        if (originalUrl != null ? !originalUrl.equals(userpic.originalUrl) : userpic.originalUrl != null)
+            return false;
+        if (thumb128Url != null ? !thumb128Url.equals(userpic.thumb128Url) : userpic.thumb128Url != null)
+            return false;
+        if (thumborPath != null ? !thumborPath.equals(userpic.thumborPath) : userpic.thumborPath != null)
+            return false;
+        return !(defaultColors != null ? !defaultColors.equals(userpic.defaultColors) : userpic.defaultColors != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = largeUrl != null ? largeUrl.hashCode() : 0;
+        result = 31 * result + (thumb64Url != null ? thumb64Url.hashCode() : 0);
+        result = 31 * result + (originalUrl != null ? originalUrl.hashCode() : 0);
+        result = 31 * result + (thumb128Url != null ? thumb128Url.hashCode() : 0);
+        result = 31 * result + (thumborPath != null ? thumborPath.hashCode() : 0);
+        result = 31 * result + (defaultColors != null ? defaultColors.hashCode() : 0);
+        return result;
     }
 }

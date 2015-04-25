@@ -288,4 +288,54 @@ public class Notification implements Parcelable {
         }
     };
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Notification that = (Notification) o;
+
+        if (id != that.id) return false;
+        if (userId != that.userId) return false;
+        if (entityId != that.entityId) return false;
+        if (createdAt != null ? !createdAt.equals(that.createdAt) : that.createdAt != null)
+            return false;
+        if (sender != null ? !sender.equals(that.sender) : that.sender != null) return false;
+        if (senderRelation != null ? !senderRelation.equals(that.senderRelation) : that.senderRelation != null)
+            return false;
+        if (readAt != null ? !readAt.equals(that.readAt) : that.readAt != null) return false;
+        if (image != null ? !image.equals(that.image) : that.image != null) return false;
+        if (action != null ? !action.equals(that.action) : that.action != null) return false;
+        if (actionText != null ? !actionText.equals(that.actionText) : that.actionText != null)
+            return false;
+        if (text != null ? !text.equals(that.text) : that.text != null) return false;
+        if (entityType != null ? !entityType.equals(that.entityType) : that.entityType != null)
+            return false;
+        if (parentId != null ? !parentId.equals(that.parentId) : that.parentId != null)
+            return false;
+        if (parentType != null ? !parentType.equals(that.parentType) : that.parentType != null)
+            return false;
+        return !(entityUrl != null ? !entityUrl.equals(that.entityUrl) : that.entityUrl != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
+        result = 31 * result + (int) (userId ^ (userId >>> 32));
+        result = 31 * result + (sender != null ? sender.hashCode() : 0);
+        result = 31 * result + (senderRelation != null ? senderRelation.hashCode() : 0);
+        result = 31 * result + (readAt != null ? readAt.hashCode() : 0);
+        result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (action != null ? action.hashCode() : 0);
+        result = 31 * result + (actionText != null ? actionText.hashCode() : 0);
+        result = 31 * result + (text != null ? text.hashCode() : 0);
+        result = 31 * result + (int) (entityId ^ (entityId >>> 32));
+        result = 31 * result + (entityType != null ? entityType.hashCode() : 0);
+        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
+        result = 31 * result + (parentType != null ? parentType.hashCode() : 0);
+        result = 31 * result + (entityUrl != null ? entityUrl.hashCode() : 0);
+        return result;
+    }
 }

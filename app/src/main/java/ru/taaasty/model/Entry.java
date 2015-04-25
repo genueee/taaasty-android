@@ -431,27 +431,30 @@ public class Entry implements Parcelable {
     @Override
     public String toString() {
         return "Entry{" +
-                "mId=" + mId +
+                "mAuthor=" + mAuthor +
+                ", mId=" + mId +
                 ", mType='" + mType + '\'' +
-                ", mAuthor=" + mAuthor +
                 ", mCommentsCount=" + mCommentsCount +
                 ", mCreatedAt=" + mCreatedAt +
                 ", mUpdatedAt=" + mUpdatedAt +
                 ", mEntryUrl='" + mEntryUrl + '\'' +
                 ", mRating=" + mRating +
                 ", mTitle='" + mTitle + '\'' +
+                ", mVideoUrl='" + mVideoUrl + '\'' +
+                ", mCoverUrl='" + mCoverUrl + '\'' +
+                ", mIframely=" + mIframely +
                 ", mText='" + mText + '\'' +
                 ", mSource='" + mSource + '\'' +
-                ", mPrivacy='" + mPrivacy + '\'' +
                 ", mVia='" + mVia + '\'' +
+                ", mPrivacy='" + mPrivacy + '\'' +
                 ", mImages=" + mImages +
-                ", mFavorited" + mFavorited +
-                ", mCanEdit" + mCanEdit +
-                ", mCanReport" + mCanReport +
-                ", mCanDelete" + mCanDelete +
-                ", mCanVote" + mCanVote +
-                ", mIsVoteable" + mIsVoteable +
-                ", mImageUrl" + mImageUrl +
+                ", mFavorited=" + mFavorited +
+                ", mIsVoteable=" + mIsVoteable +
+                ", mCanVote=" + mCanVote +
+                ", mCanReport=" + mCanReport +
+                ", mCanEdit=" + mCanEdit +
+                ", mCanDelete=" + mCanDelete +
+                ", mImageUrl='" + mImageUrl + '\'' +
                 '}';
     }
 
@@ -527,4 +530,74 @@ public class Entry implements Parcelable {
             return new Entry[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Entry entry = (Entry) o;
+
+        if (mId != entry.mId) return false;
+        if (mCommentsCount != entry.mCommentsCount) return false;
+        if (mFavorited != entry.mFavorited) return false;
+        if (mIsVoteable != entry.mIsVoteable) return false;
+        if (mCanVote != entry.mCanVote) return false;
+        if (mCanReport != entry.mCanReport) return false;
+        if (mCanEdit != entry.mCanEdit) return false;
+        if (mCanDelete != entry.mCanDelete) return false;
+        if (mType != null ? !mType.equals(entry.mType) : entry.mType != null) return false;
+        if (mAuthor != null ? !mAuthor.equals(entry.mAuthor) : entry.mAuthor != null) return false;
+        if (mCreatedAt != null ? !mCreatedAt.equals(entry.mCreatedAt) : entry.mCreatedAt != null)
+            return false;
+        if (mUpdatedAt != null ? !mUpdatedAt.equals(entry.mUpdatedAt) : entry.mUpdatedAt != null)
+            return false;
+        if (mEntryUrl != null ? !mEntryUrl.equals(entry.mEntryUrl) : entry.mEntryUrl != null)
+            return false;
+        if (mRating != null ? !mRating.equals(entry.mRating) : entry.mRating != null) return false;
+        if (mTitle != null ? !mTitle.equals(entry.mTitle) : entry.mTitle != null) return false;
+        if (mVideoUrl != null ? !mVideoUrl.equals(entry.mVideoUrl) : entry.mVideoUrl != null)
+            return false;
+        if (mCoverUrl != null ? !mCoverUrl.equals(entry.mCoverUrl) : entry.mCoverUrl != null)
+            return false;
+        if (mIframely != null ? !mIframely.equals(entry.mIframely) : entry.mIframely != null)
+            return false;
+        if (mText != null ? !mText.equals(entry.mText) : entry.mText != null) return false;
+        if (mSource != null ? !mSource.equals(entry.mSource) : entry.mSource != null) return false;
+        if (mVia != null ? !mVia.equals(entry.mVia) : entry.mVia != null) return false;
+        if (mPrivacy != null ? !mPrivacy.equals(entry.mPrivacy) : entry.mPrivacy != null)
+            return false;
+        if (mImages != null ? !mImages.equals(entry.mImages) : entry.mImages != null) return false;
+        return !(mImageUrl != null ? !mImageUrl.equals(entry.mImageUrl) : entry.mImageUrl != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (mId ^ (mId >>> 32));
+        result = 31 * result + (mType != null ? mType.hashCode() : 0);
+        result = 31 * result + (mAuthor != null ? mAuthor.hashCode() : 0);
+        result = 31 * result + mCommentsCount;
+        result = 31 * result + (mCreatedAt != null ? mCreatedAt.hashCode() : 0);
+        result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
+        result = 31 * result + (mEntryUrl != null ? mEntryUrl.hashCode() : 0);
+        result = 31 * result + (mRating != null ? mRating.hashCode() : 0);
+        result = 31 * result + (mTitle != null ? mTitle.hashCode() : 0);
+        result = 31 * result + (mVideoUrl != null ? mVideoUrl.hashCode() : 0);
+        result = 31 * result + (mCoverUrl != null ? mCoverUrl.hashCode() : 0);
+        result = 31 * result + (mIframely != null ? mIframely.hashCode() : 0);
+        result = 31 * result + (mText != null ? mText.hashCode() : 0);
+        result = 31 * result + (mSource != null ? mSource.hashCode() : 0);
+        result = 31 * result + (mVia != null ? mVia.hashCode() : 0);
+        result = 31 * result + (mPrivacy != null ? mPrivacy.hashCode() : 0);
+        result = 31 * result + (mImages != null ? mImages.hashCode() : 0);
+        result = 31 * result + (mFavorited ? 1 : 0);
+        result = 31 * result + (mIsVoteable ? 1 : 0);
+        result = 31 * result + (mCanVote ? 1 : 0);
+        result = 31 * result + (mCanReport ? 1 : 0);
+        result = 31 * result + (mCanEdit ? 1 : 0);
+        result = 31 * result + (mCanDelete ? 1 : 0);
+        result = 31 * result + (mImageUrl != null ? mImageUrl.hashCode() : 0);
+        return result;
+    }
 }

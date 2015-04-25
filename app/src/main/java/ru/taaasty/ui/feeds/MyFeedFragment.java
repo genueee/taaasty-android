@@ -44,6 +44,7 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -113,6 +114,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
@@ -273,6 +275,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+            if (DBG) Log.v(TAG, "onCreateHeaderViewHolder");
             View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_my_feed, mListView, false);
             HeaderHolder holder = new HeaderHolder(child);
             holder.avatarView.setOnClickListener(mOnClickListener);
@@ -282,6 +285,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
 
         @Override
         protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+            if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
             HeaderHolder holder = (HeaderHolder)viewHolder;
             holder.titleView.setText(mTitle);
             bindDesign(holder);
@@ -294,9 +298,11 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
 
         public void setTitleUser(String title, User user) {
-            mTitle = title;
-            mUser = user;
-            notifyItemChanged(0);
+            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
+                mTitle = title;
+                mUser = user;
+                notifyItemChanged(0);
+            }
         }
 
         private void bindDesign(HeaderHolder holder) {

@@ -109,4 +109,45 @@ public class Meta implements Parcelable {
                 ", duration=" + duration +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Meta meta = (Meta) o;
+
+        if (title != null ? !title.equals(meta.title) : meta.title != null) return false;
+        if (description != null ? !description.equals(meta.description) : meta.description != null)
+            return false;
+        if (canonical != null ? !canonical.equals(meta.canonical) : meta.canonical != null)
+            return false;
+        if (shortlink != null ? !shortlink.equals(meta.shortlink) : meta.shortlink != null)
+            return false;
+        if (category != null ? !category.equals(meta.category) : meta.category != null)
+            return false;
+        if (keywords != null ? !keywords.equals(meta.keywords) : meta.keywords != null)
+            return false;
+        if (author != null ? !author.equals(meta.author) : meta.author != null) return false;
+        if (author_url != null ? !author_url.equals(meta.author_url) : meta.author_url != null)
+            return false;
+        if (site != null ? !site.equals(meta.site) : meta.site != null) return false;
+        return !(duration != null ? !duration.equals(meta.duration) : meta.duration != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = title != null ? title.hashCode() : 0;
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (canonical != null ? canonical.hashCode() : 0);
+        result = 31 * result + (shortlink != null ? shortlink.hashCode() : 0);
+        result = 31 * result + (category != null ? category.hashCode() : 0);
+        result = 31 * result + (keywords != null ? keywords.hashCode() : 0);
+        result = 31 * result + (author != null ? author.hashCode() : 0);
+        result = 31 * result + (author_url != null ? author_url.hashCode() : 0);
+        result = 31 * result + (site != null ? site.hashCode() : 0);
+        result = 31 * result + (duration != null ? duration.hashCode() : 0);
+        return result;
+    }
 }

@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.PicassoDrawable;
 
 /**
@@ -68,64 +71,31 @@ public class UsernameAdapter extends RecyclerView.Adapter<UsernameAdapter.ViewHo
         mUsers.resetItems(users);
     }
 
-    public User findUser(long userId) {
-        return mUsers.findItem(userId);
-    }
-
     public boolean isEmpty() {
         return mUsers.isEmpty();
     }
 
-    private final class UserList extends SortedList<ru.taaasty.model.User> implements SortedList.OnListChangedListener {
+    private final class UserList extends SortedList<User> {
 
         public UserList() {
-            super(User.SORT_BY_NAME_COMPARATOR);
-            setListener(this);
-        }
+            super(User.class, new SortedListAdapterCallback<User>(UsernameAdapter.this) {
 
-        @Override
-        public long getItemId(ru.taaasty.model.User item) {
-            return item.getId();
-        }
+                @Override
+                public int compare(User o1, User o2) {
+                    return User.SORT_BY_NAME_COMPARATOR.compare(o1, o2);
+                }
 
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
+                @Override
+                public boolean areContentsTheSame(User oldItem, User newItem) {
+                    if (!TextUtils.equals(oldItem.getName(), newItem.getName())) return false;
+                    return Objects.equals(oldItem.getUserpic(), newItem.getUserpic());
+                }
 
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(location);
-        }
-
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(location);
-        }
-
-        @Override
-        public void onItemRemoved(int location) {
-            notifyItemRemoved(location);
-        }
-
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(fromLocation, toLocation);
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeChanged(locationStart, itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(locationStart, itemCount);
+                @Override
+                public boolean areItemsTheSame(User item1, User item2) {
+                    return item1.getId() == item2.getId();
+                }
+            });
         }
     }
 

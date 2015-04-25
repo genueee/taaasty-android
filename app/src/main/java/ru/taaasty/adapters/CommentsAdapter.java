@@ -147,7 +147,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
     }
 
     public void appendComment(Comment comments) {
-        mComments.insertItem(comments);
+        mComments.add(comments);
     }
 
     public void appendComments(List<Comment> comments) {
@@ -155,7 +155,13 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
     }
 
     public void deleteComment(long commentId) {
-        mComments.deleteItem(commentId);
+        for (int i = mComments.size() - 1; i >= 0; --i) {
+            Long l = mComments.get(i).getId();
+            if (mComments.get(i).getId() == commentId) {
+                mComments.removeItemAt(i);
+                break;
+            }
+        }
     }
 
     @Nullable
@@ -255,22 +261,24 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
 
     @Nullable
     public Integer findCommentPosition(long commentId) {
-        Integer pos = mComments.findLocation(commentId);
-        return pos == null ? null : getAdapterPosition(pos);
+        for (int i = mComments.size() - 1; i >= 0; --i) {
+            if (mComments.get(i).getId() == commentId) return getAdapterPosition(i);
+        }
+        return null;
     }
 
     @Nullable
     public Comment getComment(ViewHolder holder) {
-        if (holder.getPosition() < 0) return null;
-        Integer location = getCommentsLocation(holder.getPosition());
+        if (holder.getAdapterPosition() < 0) return null;
+        Integer location = getCommentsLocation(holder.getAdapterPosition());
         if (location == null) return null;
         return mComments.get(location);
     }
 
     public interface OnCommentButtonClickListener {
-        public void onReplyToCommentClicked(View view, ViewHolder holder);
-        public void onDeleteCommentClicked(View view, ViewHolder holder);
-        public void onReportContentClicked(View view, ViewHolder holder);
+        void onReplyToCommentClicked(View view, ViewHolder holder);
+        void onDeleteCommentClicked(View view, ViewHolder holder);
+        void onReportContentClicked(View view, ViewHolder holder);
     }
 
     public ValueAnimator createHideButtonsAnimator(ViewHolder holder) {
@@ -282,56 +290,45 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         return mCommentViewBinder.createShowButtonsAnimator(holder, comment);
     }
 
-    private final class CommentsList extends SortedList<Comment> implements SortedList.OnListChangedListener {
+    private final class CommentsList extends SortedList<Comment> {
 
         public CommentsList() {
-            super(Comment.ORDER_BY_DATE_ID_COMARATOR);
-            setListener(this);
-        }
+            super(Comment.class, new Callback<Comment>() {
+                @Override
+                public int compare(Comment o1, Comment o2) {
+                    return Comment.ORDER_BY_DATE_ID_COMARATOR.compare(o1, o2);
+                }
 
-        @Override
-        public long getItemId(Comment item) {
-            return item.getId();
-        }
+                @Override
+                public void onInserted(int position, int count) {
+                    notifyItemRangeInserted(getAdapterPosition(position), count);
+                }
 
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
+                @Override
+                public void onRemoved(int position, int count) {
+                    notifyItemRangeRemoved(getAdapterPosition(position), count);
+                }
 
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(getAdapterPosition(location));
-        }
+                @Override
+                public void onMoved(int fromPosition, int toPosition) {
+                    notifyItemMoved(getAdapterPosition(fromPosition), getAdapterPosition(toPosition));
+                }
 
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(getAdapterPosition(location));
-        }
+                @Override
+                public void onChanged(int position, int count) {
+                    notifyItemRangeChanged(getAdapterPosition(position), count);
+                }
 
-        @Override
-        public void onItemRemoved(int location) {
-            notifyItemRemoved(getAdapterPosition(location));
-        }
+                @Override
+                public boolean areContentsTheSame(Comment oldItem, Comment newItem) {
+                    return oldItem.equals(newItem);
+                }
 
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(getAdapterPosition(fromLocation), getAdapterPosition(toLocation));
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
+                @Override
+                public boolean areItemsTheSame(Comment item1, Comment item2) {
+                    return item1.getId() == item2.getId();
+                }
+            });
         }
     }
 

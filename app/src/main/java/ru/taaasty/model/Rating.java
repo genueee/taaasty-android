@@ -65,4 +65,29 @@ public class Rating implements Parcelable {
                 ", isVoteable=" + isVoteable +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Rating rating1 = (Rating) o;
+
+        if (votes != rating1.votes) return false;
+        if (Float.compare(rating1.rating, rating) != 0) return false;
+        if (entryId != rating1.entryId) return false;
+        if (isVoted != rating1.isVoted) return false;
+        return isVoteable == rating1.isVoteable;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = votes;
+        result = 31 * result + (rating != +0.0f ? Float.floatToIntBits(rating) : 0);
+        result = 31 * result + (int) (entryId ^ (entryId >>> 32));
+        result = 31 * result + (isVoted ? 1 : 0);
+        result = 31 * result + (isVoteable ? 1 : 0);
+        return result;
+    }
 }

@@ -147,4 +147,40 @@ public class Comment implements Parcelable {
             return new Comment[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Comment comment = (Comment) o;
+
+        if (mId != comment.mId) return false;
+        if (mIsDisabled != comment.mIsDisabled) return false;
+        if (mCanEdit != comment.mCanEdit) return false;
+        if (mCanReport != comment.mCanReport) return false;
+        if (mCanDelete != comment.mCanDelete) return false;
+        if (mAuthor != null ? !mAuthor.equals(comment.mAuthor) : comment.mAuthor != null)
+            return false;
+        if (mCreatedAt != null ? !mCreatedAt.equals(comment.mCreatedAt) : comment.mCreatedAt != null)
+            return false;
+        if (mUpdatedAt != null ? !mUpdatedAt.equals(comment.mUpdatedAt) : comment.mUpdatedAt != null)
+            return false;
+        return !(mText != null ? !mText.equals(comment.mText) : comment.mText != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (mId ^ (mId >>> 32));
+        result = 31 * result + (mAuthor != null ? mAuthor.hashCode() : 0);
+        result = 31 * result + (mCreatedAt != null ? mCreatedAt.hashCode() : 0);
+        result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
+        result = 31 * result + (mText != null ? mText.hashCode() : 0);
+        result = 31 * result + (mIsDisabled ? 1 : 0);
+        result = 31 * result + (mCanEdit ? 1 : 0);
+        result = 31 * result + (mCanReport ? 1 : 0);
+        result = 31 * result + (mCanDelete ? 1 : 0);
+        return result;
+    }
 }

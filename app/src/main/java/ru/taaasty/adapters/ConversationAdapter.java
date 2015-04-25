@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 import ru.taaasty.BuildConfig;
@@ -129,7 +129,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     public void addMessage(Conversation.Message message) {
-        mMessages.insertItem(message);
+        mMessages.add(message);
     }
 
     public void markMessagesAsRead(List<UpdateMessages.UpdateMessageInfo> messageInfos) {
@@ -137,6 +137,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         LongSparseArray<UpdateMessages.UpdateMessageInfo> infosHash = new LongSparseArray<>(messageInfos.size());
         for (UpdateMessages.UpdateMessageInfo info: messageInfos) infosHash.append(info.id, info);
 
+        mMessages.beginBatchedUpdates();
         int size = mMessages.size();
         for (int i = 0; i < size; ++i) {
             UpdateMessages.UpdateMessageInfo info = infosHash.get(mMessages.get(i).id);
@@ -301,105 +302,86 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
     }
 
-    private final class MessageFeed extends SortedList<Conversation.Message> implements SortedList.OnListChangedListener {
+    private final class MessageFeed extends SortedList<Conversation.Message> {
 
         public MessageFeed() {
-            super(Conversation.Message.SORT_BY_ID_COMPARATOR);
-            setListener(this);
+            super(Conversation.Message.class, new Callback<Conversation.Message>() {
+                @Override
+                public int compare(Conversation.Message o1, Conversation.Message o2) {
+                    return Conversation.Message.SORT_BY_ID_COMPARATOR.compare(o1, o2);
+                }
+
+                @Override
+                public void onInserted(int position, int count) {
+                    notifyItemRangeInserted(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public void onRemoved(int position, int count) {
+                    notifyItemRangeRemoved(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public void onMoved(int fromPosition, int toPosition) {
+                    notifyItemMoved(getAdapterPosition(fromPosition), getAdapterPosition(toPosition));
+                }
+
+                @Override
+                public void onChanged(int position, int count) {
+                    notifyItemRangeChanged(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public boolean areContentsTheSame(Conversation.Message oldItem, Conversation.Message newItem) {
+                    return oldItem.equals(newItem);
+                }
+
+                @Override
+                public boolean areItemsTheSame(Conversation.Message item1, Conversation.Message item2) {
+                    return item1.id == item2.id;
+                }
+            });
         }
 
-        @Override
-        public long getItemId(Conversation.Message item) {
-            return item.id;
-        }
-
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(getAdapterPosition(location));
-        }
 
         /**
          * Удаляем сообщения, uuid которых уже есть в списке. Используем последнее пришедшее
          * В основном, нужно, чтобы отфильтровать сообщения при диалоге самим с собой.
          */
         private void removeUuids(Set<String> uuids) {
-            Set<Long> toDelete = new HashSet<>();
 
-            for (Conversation.Message message: getItems()) {
-                if (uuids.contains(message.uuid)) {
-                    toDelete.add(message.id);
-                }
+            for (int i = size() - 1; i >= 0; --i) {
+                if (uuids.contains(get(i).uuid)) super.removeItemAt(i);
             }
-            for (Long id: toDelete) deleteItem(id);
         }
 
         @Override
-        public void insertItem(Conversation.Message item) {
+        public int add(Conversation.Message item) {
             if (!TextUtils.isEmpty(item.uuid)) {
                 removeUuids(Collections.singleton(item.uuid));
             }
-            super.insertItem(item);
+            return super.add(item);
         }
 
         @Override
-        public void insertItems(List<Conversation.Message> items) {
+        public void insertItems(Collection<Conversation.Message> items) {
             Set<String> uuids = new HashSet<>();
             for (Conversation.Message item: items) if (!TextUtils.isEmpty(item.uuid)) uuids.add(item.uuid);
 
             // Удаляем сообщения с одинаковым uuid в списке. Используем всегда последнее.
             List<Conversation.Message> itemsFiltered = new ArrayList<>(items.size());
-            Set<String> itemUuids = new HashSet<>();
-            ListIterator<Conversation.Message> li = items.listIterator(items.size());
-            while (li.hasPrevious()) {
-                Conversation.Message item = li.previous();
-                if (TextUtils.isEmpty(item.uuid) || !itemUuids.contains(item.uuid)) {
-                    itemsFiltered.add(item);
-                    if (!TextUtils.isEmpty(item.uuid)) itemUuids.add(item.uuid);
+            HashMap<String, Conversation.Message> msgByUuid = new HashMap<>();
+
+            for (Conversation.Message msg: items) {
+                if (TextUtils.isEmpty(msg.uuid)) {
+                    itemsFiltered.add(msg);
+                } else {
+                    msgByUuid.put(msg.uuid, msg);
                 }
             }
-
+            itemsFiltered.addAll(msgByUuid.values());
             if (!uuids.isEmpty()) removeUuids(uuids);
             super.insertItems(itemsFiltered);
-        }
-
-        @Override
-        public void resetItems(@Nullable Collection<Conversation.Message> newItems) {
-            super.resetItems(newItems);
-        }
-
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(getAdapterPosition(location));
-        }
-
-        @Override
-        public void onItemRemoved(int location) {
-            notifyItemRemoved(getAdapterPosition(location));
-        }
-
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(getAdapterPosition(fromLocation), getAdapterPosition(toLocation));
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
         }
     }
 

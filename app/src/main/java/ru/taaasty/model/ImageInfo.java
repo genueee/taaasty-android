@@ -72,6 +72,50 @@ public class ImageInfo implements Parcelable {
         }
     };
 
+    @Override
+    public String toString() {
+        return "ImageInfo{" +
+                "contentType='" + contentType + '\'' +
+                ", id=" + id +
+                ", createAt=" + createAt +
+                ", title='" + title + '\'' +
+                ", source='" + source + '\'' +
+                ", image=" + image +
+                ", framesCount=" + framesCount +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ImageInfo imageInfo = (ImageInfo) o;
+
+        if (id != imageInfo.id) return false;
+        if (framesCount != imageInfo.framesCount) return false;
+        if (createAt != null ? !createAt.equals(imageInfo.createAt) : imageInfo.createAt != null)
+            return false;
+        if (title != null ? !title.equals(imageInfo.title) : imageInfo.title != null) return false;
+        if (source != null ? !source.equals(imageInfo.source) : imageInfo.source != null)
+            return false;
+        if (image != null ? !image.equals(imageInfo.image) : imageInfo.image != null) return false;
+        return !(contentType != null ? !contentType.equals(imageInfo.contentType) : imageInfo.contentType != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (createAt != null ? createAt.hashCode() : 0);
+        result = 31 * result + (title != null ? title.hashCode() : 0);
+        result = 31 * result + (source != null ? source.hashCode() : 0);
+        result = 31 * result + (image != null ? image.hashCode() : 0);
+        result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
+        result = 31 * result + framesCount;
+        return result;
+    }
+
     public static class Image2 implements Parcelable {
 
         public static final Image2 DUMMY = new Image2();
@@ -124,6 +168,42 @@ public class ImageInfo implements Parcelable {
                 return new Image2[size];
             }
         };
+
+        @Override
+        public String toString() {
+            return "Image2{" +
+                    "geometry=" + geometry +
+                    ", url='" + url + '\'' +
+                    ", path='" + path + '\'' +
+                    ", title='" + title + '\'' +
+                    ", source='" + source + '\'' +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Image2 image2 = (Image2) o;
+
+            if (url != null ? !url.equals(image2.url) : image2.url != null) return false;
+            if (path != null ? !path.equals(image2.path) : image2.path != null) return false;
+            if (geometry != null ? !geometry.equals(image2.geometry) : image2.geometry != null)
+                return false;
+            if (title != null ? !title.equals(image2.title) : image2.title != null) return false;
+            return !(source != null ? !source.equals(image2.source) : image2.source != null);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = url != null ? url.hashCode() : 0;
+            result = 31 * result + (path != null ? path.hashCode() : 0);
+            result = 31 * result + (geometry != null ? geometry.hashCode() : 0);
+            result = 31 * result + (title != null ? title.hashCode() : 0);
+            result = 31 * result + (source != null ? source.hashCode() : 0);
+            return result;
+        }
     }
 
     public static class ImageGeometry implements Parcelable {
@@ -163,6 +243,33 @@ public class ImageInfo implements Parcelable {
                 return new ImageGeometry[size];
             }
         };
+
+        @Override
+        public String toString() {
+            return "ImageGeometry{" +
+                    "height=" + height +
+                    ", width=" + width +
+                    '}';
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ImageGeometry that = (ImageGeometry) o;
+
+            if (width != that.width) return false;
+            return height == that.height;
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = width;
+            result = 31 * result + height;
+            return result;
+        }
     }
 
 }

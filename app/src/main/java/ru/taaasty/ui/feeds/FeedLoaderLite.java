@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
 import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
@@ -103,8 +104,8 @@ public abstract class FeedLoaderLite {
 
     private void activateCacheInBackground() {
         if (DBG) Log.v(TAG, "activateCacheInBackground()");
-        final Long lastEntryId = mAdapter.getFeed().getLastEntryId();
-        if (lastEntryId == null) return;
+        final Entry lastEntry = mAdapter.getFeed().getLastEntry();
+        if (lastEntry == null) return;
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -116,7 +117,7 @@ public abstract class FeedLoaderLite {
                 }
 
                 int requestEntries = Constants.LIST_FEED_APPEND_LENGTH;
-                mFeedAppendSubscription = createObservable(lastEntryId, requestEntries)
+                mFeedAppendSubscription = createObservable(lastEntry.getId(), requestEntries)
                         .observeOn(AndroidSchedulers.mainThread())
                         .finallyDo(new Action0() {
                             @Override

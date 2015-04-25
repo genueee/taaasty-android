@@ -37,19 +37,6 @@ public class Link implements Parcelable {
      */
     public Media media = Media.DUMMY;
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(this.media, 0);
-        dest.writeString(this.href);
-        dest.writeStringList(this.rel);
-        dest.writeString(this.type);
-    }
-
     /**
      * @return true если линк - изображение, с проставленными width и height
      */
@@ -60,6 +47,16 @@ public class Link implements Parcelable {
     public boolean isTextHtml() {
         return "text/html".equals(type);
     }
+
+    public String getHref() {
+        if (href == null) return "";
+        if (href.startsWith("//")) {
+            // Прикол soundcloud'а. Ссылка валидная, но у нас, вроде, не поддерживается.
+            return "http:" + href;
+        }
+        return href;
+    }
+
 
     public Link() {
     }
@@ -81,13 +78,17 @@ public class Link implements Parcelable {
         }
     };
 
-    public String getHref() {
-        if (href == null) return "";
-        if (href.startsWith("//")) {
-            // Прикол soundcloud'а. Ссылка валидная, но у нас, вроде, не поддерживается.
-            return "http:" + href;
-        }
-        return href;
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(this.media, 0);
+        dest.writeString(this.href);
+        dest.writeStringList(this.rel);
+        dest.writeString(this.type);
     }
 
     @Override
@@ -100,4 +101,26 @@ public class Link implements Parcelable {
                 '}';
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Link link = (Link) o;
+
+        if (rel != null ? !rel.equals(link.rel) : link.rel != null) return false;
+        if (href != null ? !href.equals(link.href) : link.href != null) return false;
+        if (type != null ? !type.equals(link.type) : link.type != null) return false;
+        return !(media != null ? !media.equals(link.media) : link.media != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = rel != null ? rel.hashCode() : 0;
+        result = 31 * result + (href != null ? href.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (media != null ? media.hashCode() : 0);
+        return result;
+    }
 }

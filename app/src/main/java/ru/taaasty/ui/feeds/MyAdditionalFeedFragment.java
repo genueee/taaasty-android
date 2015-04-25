@@ -48,6 +48,7 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
@@ -148,9 +149,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), showUserAvatar));
         mListView.setAdapter(mAdapter);
-
 
         setupEmptyView(v);
 
@@ -422,9 +423,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         public void setTitleUser(String title, User user) {
-            mTitle = title;
-            mUser = user;
-            notifyItemChanged(0);
+            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
+                mTitle = title;
+                mUser = user;
+                notifyItemChanged(0);
+            }
         }
 
         void bindTitleName(HeaderHolder holder) {
@@ -442,8 +445,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.headerUserFeedMain,
                     mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                     super.onBitmapLoaded(bitmap, from);
                     ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
                 }
@@ -480,7 +483,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         @Override
         public void onEventMainThread(EntryChanged event) {
             if(!event.postEntry.isFavorited() && (mFeedType == FEED_TYPE_FAVORITES)) {
-                mAdapter.removeEntry(event.postEntry.getId());
+                mAdapter.removeEntry(event.postEntry);
             }
             else
                 mAdapter.addEntry(event.postEntry);

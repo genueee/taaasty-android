@@ -43,6 +43,7 @@ import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -85,6 +86,11 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private boolean mForceShowRefreshingIndicator;
 
     private TlogDesign mTlogDesign;
+
+    private Integer mLastPublicEntriesCount;
+    private Integer mlastBestEntriesCount;
+    private Integer mlastAnonymousEntriesCount;
+
 
     public static ListFeedFragment createLiveFeedInstance() {
         ListFeedFragment fragment = new ListFeedFragment();
@@ -152,6 +158,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarVisibleOnPost()));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
@@ -282,7 +289,31 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     }
 
     public void onEventMainThread(OnStatsLoaded event) {
-        if (mAdapter != null) mAdapter.notifyItemChanged(0);
+        if (mAdapter == null) return;
+        switch (mFeedType) {
+            case FEED_LIVE:
+                if (!Objects.equals(mLastPublicEntriesCount, event.stats.getPublicEntriesInDayCount())) {
+                    mLastPublicEntriesCount = event.stats.getPublicEntriesInDayCount();
+                    mAdapter.notifyItemChanged(0);
+                }
+                break;
+            case FEED_BEST:
+                if (!Objects.equals(mlastBestEntriesCount, event.stats.getBestEntriesInDayCount())) {
+                    mlastBestEntriesCount = event.stats.getBestEntriesInDayCount();
+                    mAdapter.notifyItemChanged(0);
+                }
+                break;
+            case FEED_ANONYMOUS:
+                if (!Objects.equals(mlastAnonymousEntriesCount, event.stats.getAnonymousEntriesInDayCount())) {
+                    mlastAnonymousEntriesCount = event.stats.getAnonymousEntriesInDayCount();
+                    mAdapter.notifyItemChanged(0);
+                }
+                break;
+            case FEED_NEWS:
+                break;
+            default:
+                throw new IllegalStateException();
+        }
     }
 
     boolean isUserAvatarVisibleOnPost() {
@@ -381,17 +412,20 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
                 switch (mFeedType) {
                     case FEED_LIVE:
                         if (stats.getPublicEntriesInDayCount() != null) {
-                            subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, stats.getPublicEntriesInDayCount(), stats.getPublicEntriesInDayCount());
+                            mLastPublicEntriesCount = stats.getPublicEntriesInDayCount();
+                            subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mLastPublicEntriesCount, mLastPublicEntriesCount);
                         }
                         break;
                     case FEED_BEST:
                         if (stats.getBestEntriesInDayCount() != null) {
-                            subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, stats.getBestEntriesInDayCount(), stats.getBestEntriesInDayCount());
+                            mlastBestEntriesCount = stats.getBestEntriesInDayCount();
+                            subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mlastBestEntriesCount, mlastBestEntriesCount);
                         }
                         break;
                     case FEED_ANONYMOUS:
                         if (stats.getAnonymousEntriesInDayCount() != null) {
-                            subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, stats.getAnonymousEntriesInDayCount(), stats.getAnonymousEntriesInDayCount());
+                            mlastAnonymousEntriesCount = stats.getAnonymousEntriesInDayCount();
+                            subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mlastAnonymousEntriesCount, mlastAnonymousEntriesCount);
                         }
                         break;
                     case FEED_NEWS:

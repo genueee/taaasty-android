@@ -111,4 +111,29 @@ public class IFramely implements Parcelable {
             return new IFramely[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        IFramely iFramely = (IFramely) o;
+
+        if (id != null ? !id.equals(iFramely.id) : iFramely.id != null) return false;
+        if (url != null ? !url.equals(iFramely.url) : iFramely.url != null) return false;
+        if (meta != null ? !meta.equals(iFramely.meta) : iFramely.meta != null) return false;
+        if (links != null ? !links.equals(iFramely.links) : iFramely.links != null) return false;
+        return !(html != null ? !html.equals(iFramely.html) : iFramely.html != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (url != null ? url.hashCode() : 0);
+        result = 31 * result + (meta != null ? meta.hashCode() : 0);
+        result = 31 * result + (links != null ? links.hashCode() : 0);
+        result = 31 * result + (html != null ? html.hashCode() : 0);
+        return result;
+    }
 }

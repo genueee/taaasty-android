@@ -50,6 +50,7 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
@@ -184,6 +185,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
@@ -467,9 +469,11 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         private void setTitleUser(String title, User user) {
-            mTitle = title;
-            mUser = user;
-            notifyItemChanged(0);
+            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
+                mTitle = title;
+                mUser = user;
+                notifyItemChanged(0);
+            }
         }
 
         private void bindDesign(HeaderHolder holder) {

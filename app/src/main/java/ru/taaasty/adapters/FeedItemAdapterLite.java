@@ -225,12 +225,12 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return mEntries.get(getFeedLocation(position));
     }
 
-    public void removeEntry(long entryId) {
-        mEntries.deleteItem(entryId);
+    public void removeEntry(Entry entry) {
+        mEntries.remove(entry);
     }
 
     public void addEntry(Entry entry) {
-        mEntries.insertItem(entry);
+        mEntries.add(entry);
     }
 
     public void setInteractionListener(InteractionListener listener) {
@@ -250,13 +250,22 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     public abstract void onEventMainThread(EntryChanged update);
 
     public void onEventMainThread(EntryRemoved event) {
-        mEntries.deleteItem(event.postId);
+        for (int i = mEntries.size() - 1; i >= 0; --i) {
+            if (mEntries.get(i).getId() == event.postId) {
+                mEntries.removeItemAt(i);
+                break;
+            }
+        }
     }
 
     public void onEventMainThread(EntryRatingStatusChanged event) {
         if (event.newStatus == EntryRatingStatusChanged.STATUS_START_UPDATE) {
-            Integer location = mEntries.findLocation(event.entryId);
-            if (location != null) notifyItemChanged(getAdapterPosition(location));
+            for (int i = mEntries.size() - 1; i >= 0; --i) {
+                if (mEntries.get(i).getId() == event.entryId) {
+                    notifyItemChanged(getAdapterPosition(i));
+                    break;
+                }
+            }
         }
     }
 
@@ -265,7 +274,10 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     protected boolean hasEntry(long id) {
-        return mEntries.findItem(id) != null;
+        for (int i = mEntries.size() - 1; i >= 0; --i) {
+            if (mEntries.get(i).getId() == id) return true;
+        }
+        return false;
     }
 
     private int getFeedLocation(int adapterPosition) {
@@ -291,60 +303,50 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     public interface InteractionListener {
-        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
+        void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
     }
 
-    public final class EntryList extends SortedList<Entry> implements SortedList.OnListChangedListener {
-
+    public final class EntryList extends SortedList<Entry> {
         public EntryList() {
-            super(Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR);
-            setListener(this);
+            super(Entry.class, new Callback<Entry>() {
+
+                @Override
+                public int compare(Entry o1, Entry o2) {
+                    return Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(o1, o2);
+                }
+
+                @Override
+                public void onInserted(int position, int count) {
+                    notifyItemRangeInserted(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public void onRemoved(int position, int count) {
+                    notifyItemRangeRemoved(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public void onMoved(int fromPosition, int toPosition) {
+                    notifyItemMoved(getAdapterPosition(fromPosition), getAdapterPosition(toPosition));
+                }
+
+                @Override
+                public void onChanged(int position, int count) {
+                    notifyItemRangeChanged(getAdapterPosition(position), count);
+                }
+
+                @Override
+                public boolean areContentsTheSame(Entry oldItem, Entry newItem) {
+                    // TODO
+                    return oldItem.equals(newItem);
+                }
+
+                @Override
+                public boolean areItemsTheSame(Entry item1, Entry item2) {
+                    return Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(item1, item2) == 0;
+                }
+            });
         }
 
-        @Override
-        public void onDataSetChanged() {
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public void onItemChanged(int location) {
-            notifyItemChanged(getAdapterPosition(location));
-        }
-
-        @Override
-        public void onItemInserted(int location) {
-            notifyItemInserted(getAdapterPosition(location));
-        }
-
-        @Override
-        public void onItemRemoved(int position) {
-            notifyItemRemoved(getAdapterPosition(position));
-        }
-
-        @Override
-        public void onItemMoved(int fromLocation, int toLocation) {
-            notifyItemMoved(getAdapterPosition(fromLocation), getAdapterPosition(toLocation));
-        }
-
-        @Override
-        public void onItemRangeChanged(int locationStart, int itemCount) {
-            notifyItemRangeChanged(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeInserted(int locationStart, int itemCount) {
-            notifyItemRangeInserted(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public void onItemRangeRemoved(int locationStart, int itemCount) {
-            notifyItemRangeRemoved(getAdapterPosition(locationStart), itemCount);
-        }
-
-        @Override
-        public long getItemId(Entry item) {
-            return item.getId();
-        }
     }
-
 }
