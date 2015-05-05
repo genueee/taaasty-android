@@ -140,7 +140,6 @@ public abstract class FeedLoaderLite {
     }
 
     protected void onLoadNext(boolean isRefresh, int entriesRequested, Feed feed) {
-        if (DBG) Log.e(TAG, "onNext " + feed.toString());
         boolean keepOnAppending = (feed != null) && (feed.entries.size() >= 0);
 
         if (feed != null) {
