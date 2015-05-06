@@ -216,7 +216,7 @@ public class Entry implements Parcelable {
     }
 
     public String getTitle() {
-        return mTitle;
+        return mTitle == null ? "" : mTitle;
     }
 
     public String getText() {
