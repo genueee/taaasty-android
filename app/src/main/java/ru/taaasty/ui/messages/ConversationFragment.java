@@ -83,8 +83,6 @@ public class ConversationFragment extends Fragment {
 
     private Subscription mPostMessageSubscription = SubscriptionHelper.empty();
 
-    private Handler mRefreshDatesHandler;
-
     /**
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
@@ -154,9 +152,6 @@ public class ConversationFragment extends Fragment {
 
         EventBus.getDefault().register(this);
 
-        mRefreshDatesHandler = new Handler();
-        refreshDelayed();
-
         return v;
     }
 
@@ -209,8 +204,6 @@ public class ConversationFragment extends Fragment {
         mListView = null;
         mAdapter = null;
         mListScrollController = null;
-        mRefreshDatesHandler.removeCallbacks(mRefreshDatesRunnable);
-        mRefreshDatesHandler = null;
         mEmptyView = null;
     }
 
@@ -242,22 +235,6 @@ public class ConversationFragment extends Fragment {
         mConversation = conversation;
         if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
     }
-
-    private void refreshDelayed() {
-        if (mRefreshDatesHandler == null) return;
-        mRefreshDatesHandler.postDelayed(mRefreshDatesRunnable, REFRESH_DATES_DELAY_MILLIS);
-    }
-
-    private final Runnable mRefreshDatesRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (mListView == null || mAdapter == null) return;
-            if (DBG) Log.v(TAG, "refreshRelativeDates");
-            mAdapter.refreshRelativeDates(mListView);
-            refreshDelayed();
-        }
-    };
-
 
     private void initSendMessageForm() {
         mSendMessageText.setOnEditorActionListener(new TextView.OnEditorActionListener() {

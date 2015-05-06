@@ -47,16 +47,28 @@
             android:minWidth="150dp"
             android:minHeight="40dp" />
 
-        <TextView
-            android:id="@+id/date"
+        <ru.taaasty.widgets.RelativeDateTextSwitcher
+            android:id="@+id/relative_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingLeft="16dp"
-            android:textColor="#c9c9c9"
-            android:textSize="10sp"
-            tools:text="24 ноября 15:55 X"
             android:layout_marginRight="8dp"
-            tools:ignore="SmallSp" />
+            android:paddingLeft="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#c9c9c9"
+                android:textSize="10sp"
+                tools:ignore="SmallSp"
+                tools:text="24 ноября 15:55 X" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#c9c9c9"
+                android:textSize="10sp"
+                tools:ignore="SmallSp"
+                tools:text="24 ноября 15:55 X" />
+        </ru.taaasty.widgets.RelativeDateTextSwitcher>
 
     </LinearLayout>
 

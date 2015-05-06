@@ -2,20 +2,16 @@ package ru.taaasty.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.TextSwitcher;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -31,20 +27,18 @@ import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 /**
  * Created by alexey on 24.10.14.
  */
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
 
-    public static final int REFRESH_NOTIFICATIONS_PERIOD = 10000;
     private final NotificationsList mNotifications;
     private final ImageUtils mImageUtils;
     private final Picasso mPicasso;
     private final InteractionListener mListener;
     private final Context mContext;
-    private final Handler mHandler;
-    private long mSwitcherLastPostId = -1;
     private Drawable mStubPlaceholder;
 
     private Set<Long> mFollowProcess;
@@ -57,7 +51,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         mImageUtils = ImageUtils.getInstance();
         mPicasso = Picasso.with(context);
         mStubPlaceholder = context.getResources().getDrawable(R.drawable.image_loading_drawable);
-        mHandler = new Handler();
         setHasStableIds(true);
     }
 
@@ -92,15 +85,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     @Override
     public int getItemCount() {
         return mNotifications.size();
-    }
-
-    public void onStart() {
-        mHandler.removeCallbacks(mRefreshNotificationDateRunnable);
-        mHandler.postDelayed(mRefreshNotificationDateRunnable, REFRESH_NOTIFICATIONS_PERIOD);
-    }
-
-    public void onStop() {
-        mHandler.removeCallbacks(mRefreshNotificationDateRunnable);
     }
 
     public boolean isEmpty() {
@@ -158,24 +142,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     }
 
     private void bindNotificationDate(ViewHolder holder, Notification notification) {
-        // Коррекция на разницу часов серверных и устройства
-        long createdAtTime = System.currentTimeMillis();
-        if (notification.createdAt.getTime() < createdAtTime) createdAtTime = notification.createdAt.getTime();
-
-        CharSequence newDate = DateUtils.getRelativeDateTimeString(mContext, createdAtTime,
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.WEEK_IN_MILLIS,
-                0);
-
-        CharSequence oldDate = ((TextView)holder.notificationDate.getChildAt(holder.notificationDate.getDisplayedChild())).getText();
-        if (oldDate == null || !newDate.toString().equals(oldDate.toString())) {
-            if (mSwitcherLastPostId != notification.id) {
-                mSwitcherLastPostId = notification.id;
-                holder.notificationDate.setCurrentText(newDate);
-            } else {
-                holder.notificationDate.setText(newDate);
-            }
-        }
+        holder.notificationDate.setRelativeDate(notification.createdAt.getTime());
     }
 
     private void bindEntryImage(ViewHolder holder, Notification notification) {
@@ -230,25 +197,6 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
-    private Runnable mRefreshNotificationDateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            boolean hasItemsToRefresh = false;
-            int size = mNotifications.size();
-            long currentTime = System.currentTimeMillis();
-            for (int i=0; i < size; ++i) {
-                if (Math.abs(currentTime - mNotifications.get(i).createdAt.getTime()) < DateUtils.HOUR_IN_MILLIS) {
-                    notifyItemChanged(i);
-                    hasItemsToRefresh = true;
-                }
-            }
-            if (hasItemsToRefresh) {
-                mHandler.removeCallbacks(this);
-                mHandler.postDelayed(this, REFRESH_NOTIFICATIONS_PERIOD);
-            }
-        }
-    };
-
     private final class NotificationsList extends SortedList<Notification> {
 
         public NotificationsList() {
@@ -275,7 +223,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         public final View unreadIndicator;
         public final ImageView avatar;
         public final ru.taaasty.widgets.LinkifiedTextView notification;
-        public final TextSwitcher notificationDate;
+        public final RelativeDateTextSwitcher notificationDate;
         public final View rightContainer;
         public final View addedButton;
         public final View addButton;
@@ -287,7 +235,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             unreadIndicator = v.findViewById(R.id.unread_indicator);
             avatar = (ImageView) v.findViewById(R.id.avatar);
             notification = (ru.taaasty.widgets.LinkifiedTextView) v.findViewById(R.id.notification);
-            notificationDate = (TextSwitcher) v.findViewById(R.id.notification_date);
+            notificationDate = (RelativeDateTextSwitcher) v.findViewById(R.id.notification_date);
             addButton = v.findViewById(R.id.add_relationship);
             addedButton = v.findViewById(R.id.relationship_added);
             progressButton = v.findViewById(R.id.change_relationship_progress);
@@ -332,7 +280,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
-    public static interface InteractionListener {
+    public interface InteractionListener {
         void onNotificationClicked(View v, Notification notification);
         void onAvatarClicked(View v, Notification notification);
         void onAddButtonClicked(View v, Notification notification);

@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +32,7 @@ import ru.taaasty.model.UpdateMessages;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
 //  TODO првоерять что мы получаем сообщения от pusher'а
@@ -205,18 +205,6 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
     }
 
-    public void refreshRelativeDates(RecyclerView recyclerView) {
-        int childCount = recyclerView.getChildCount();
-        for (int i =0; i < childCount; ++i) {
-            RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
-            if (holder != null && holder instanceof ViewHolderMessage) {
-                ViewHolderMessage messageHolder = (ViewHolderMessage) holder;
-                String newDate = getDate(recyclerView.getContext(), messageHolder.createdAtValue);
-                if (!newDate.equals(messageHolder.date.getText().toString())) notifyItemChanged(holder.getPosition());
-            }
-        }
-    }
-
     protected boolean isLoadMoreIndicatorPosition(int position) {
         if (!showLoadMoreButton) {
             return false;
@@ -283,22 +271,10 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     private void bindMessageDate(ViewHolderMessage holder, Conversation.Message message) {
-        String date = getDate(holder.itemView.getContext(), message.createdAt.getTime());
-        holder.date.setText(date);
+        holder.relativeDate.setRelativeDate(message.createdAt.getTime());
         if (holder.isMyMessage) {
-            holder.date.setCompoundDrawablesWithIntrinsicBounds(0, 0,
+            holder.relativeDate.setCompoundDrawablesWithIntrinsicBounds(0, 0,
                     message.readAt == null ? R.drawable.ic_done_grey_10dp : R.drawable.ic_done_all_grey_10dp, 0);
-        }
-        holder.createdAtValue = message.createdAt.getTime();
-    }
-
-    private String getDate(Context context, long pDate) {
-        String date = UiUtils.getRelativeDate(context, pDate);
-        if (date == null) {
-            DateFormat df = DateFormat.getDateTimeInstance();
-            return df.format(pDate);
-        } else {
-            return date;
         }
     }
 
@@ -393,9 +369,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
         public final TextView text;
 
-        public final TextView date;
-
-        long createdAtValue;
+        public final RelativeDateTextSwitcher relativeDate;
 
         public static ViewHolderMessage createMyMessageHolder(View root) {
             return new ViewHolderMessage(root, true);
@@ -410,7 +384,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             this.isMyMessage = isMyMessage;
             avatar = (ImageView)v.findViewById(R.id.avatar);
             text = (TextView)v.findViewById(R.id.message);
-            date = (TextView)v.findViewById(R.id.date);
+            relativeDate = (RelativeDateTextSwitcher)v.findViewById(R.id.relative_date);
         }
     }
 }

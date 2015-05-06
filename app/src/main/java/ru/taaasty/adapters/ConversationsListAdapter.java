@@ -1,18 +1,15 @@
 package ru.taaasty.adapters;
 
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextSwitcher;
 import android.widget.TextView;
 
 import java.util.List;
@@ -23,25 +20,19 @@ import ru.taaasty.model.Conversation;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
-/**
- * Created by alexey on 24.11.14.
- */
+
 public class ConversationsListAdapter extends RecyclerView.Adapter<ConversationsListAdapter.ViewHolder> {
-
-    public static final int REFRESH_NOTIFICATIONS_PERIOD = 10000;
 
     private final ImageUtils mImageUtils;
 
     private final ConversationsList mConversations;
 
-    private final Handler mHandler;
-
     public ConversationsListAdapter() {
         super();
         mConversations = new ConversationsList();
         mImageUtils = ImageUtils.getInstance();
-        mHandler = new Handler();
         setHasStableIds(true);
     }
 
@@ -71,15 +62,6 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     @Override
     public long getItemId(int position) {
         return mConversations.get(position).id;
-    }
-
-    public void onStart() {
-        mHandler.removeCallbacks(mRefreshNotificationDateRunnable);
-        mHandler.postDelayed(mRefreshNotificationDateRunnable, REFRESH_NOTIFICATIONS_PERIOD);
-    }
-
-    public void onStop() {
-        mHandler.removeCallbacks(mRefreshNotificationDateRunnable);
     }
 
     public void setConversations(List<Conversation> conversations) {
@@ -120,24 +102,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     private void bindDate(ViewHolder holder, Conversation conversation) {
-        // Коррекция на разницу часов серверных и устройства
-        long createdAtTime = System.currentTimeMillis();
-        if (conversation.createdAt.getTime() < createdAtTime) createdAtTime = conversation.createdAt.getTime();
-
-        CharSequence newDate = DateUtils.getRelativeDateTimeString(holder.itemView.getContext(), createdAtTime,
-                DateUtils.MINUTE_IN_MILLIS,
-                DateUtils.WEEK_IN_MILLIS,
-                0);
-
-        CharSequence oldDate = ((TextView)holder.date.getChildAt(holder.date.getDisplayedChild())).getText();
-        if (oldDate == null || !newDate.toString().equals(oldDate.toString())) {
-            if (holder.mDateLastConversationId != conversation.id) {
-                holder.mDateLastConversationId = conversation.id;
-                holder.date.setCurrentText(newDate);
-            } else {
-                holder.date.setText(newDate);
-            }
-        }
+        holder.date.setRelativeDate(conversation.createdAt.getTime());
     }
 
     private void bindUnreadMessages(ViewHolder holder, Conversation conversation) {
@@ -151,26 +116,6 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             holder.unreceivedIndicator.setVisibility(conversation.unreceivedMessagesCount > 0 ? View.VISIBLE : View.INVISIBLE);
         }
     }
-
-    private Runnable mRefreshNotificationDateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            boolean hasItemsToRefresh = false;
-            int size = mConversations.size();
-            long currentTime = System.currentTimeMillis();
-            for (int i=0; i < size; ++i) {
-                // Обновляем даты "XXX минут назад" для всех переписок, созданных за последний час
-                if (Math.abs(currentTime - mConversations.get(i).createdAt.getTime()) < DateUtils.HOUR_IN_MILLIS) {
-                    notifyItemChanged(i);
-                    hasItemsToRefresh = true;
-                }
-            }
-            if (hasItemsToRefresh) {
-                mHandler.removeCallbacks(this);
-                mHandler.postDelayed(this, REFRESH_NOTIFICATIONS_PERIOD);
-            }
-        }
-    };
 
     private final class ConversationsList extends SortedList<Conversation> {
 
@@ -200,21 +145,17 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public final TextView text;
 
-        public final TextSwitcher date;
+        public final RelativeDateTextSwitcher date;
 
         public final TextView  msgCount;
 
         public final View unreceivedIndicator;
 
-        // Защита от повторного использования viewholder'а для другого поста.
-        // Если пост изменился, не анимируем старое неверное значение в текущее.
-        public long mDateLastConversationId = -1;
-
         public ViewHolder(View v) {
             super(v);
             avatar = (ImageView)v.findViewById(R.id.avatar);
             text = (TextView)v.findViewById(R.id.last_message);
-            date = (TextSwitcher)v.findViewById(R.id.notification_date);
+            date = (RelativeDateTextSwitcher)v.findViewById(R.id.notification_date);
             msgCount = (TextView)v.findViewById(R.id.unread_messages_count);
             unreceivedIndicator = v.findViewById(R.id.unreceived_messages_indicator);
         }

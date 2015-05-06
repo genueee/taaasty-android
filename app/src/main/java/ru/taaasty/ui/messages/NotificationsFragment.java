@@ -128,7 +128,6 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         EventBus.getDefault().register(this);
         Intent intent = new Intent(getActivity(), PusherService.class);
         mAdapter.registerAdapterDataObserver(mDataObserver);
-        mAdapter.onStart();
         getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
@@ -136,7 +135,6 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     public void onStop() {
         super.onStop();
         mAdapter.unregisterAdapterDataObserver(mDataObserver);
-        mAdapter.onStop();
         EventBus.getDefault().unregister(this);
         if (mBound) {
             getActivity().unbindService(this);

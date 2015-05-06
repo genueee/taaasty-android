@@ -124,8 +124,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
             }
         });
 
-        mAdapter.onStart();
-
         root.findViewById(R.id.initiate_conversation).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -183,7 +181,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     public void onDestroyView() {
         super.onDestroyView();
         mConversationsSubscription.unsubscribe();
-        mAdapter.onStop();
         mListView = null;
         mListener = null;
         mProgressView = null;
@@ -324,9 +321,9 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onInitiateConversationClicked(View view);
-        public void onListScrolled(int dy, boolean atTop);
-        public void onListScrollStateChanged(int state);
+        void onInitiateConversationClicked(View view);
+        void onListScrolled(int dy, boolean atTop);
+        void onListScrollStateChanged(int state);
     }
 
 }

@@ -44,7 +44,7 @@
             android:paddingBottom="4dp"
             tools:text="genue sf" />
 
-        <ru.taaasty.widgets.SmartTextSwitcher
+        <ru.taaasty.widgets.RelativeDateTextSwitcher
             android:id="@+id/notification_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -67,7 +67,7 @@
                 android:textSize="15sp"
                 tools:text="1 час назад" />
 
-        </ru.taaasty.widgets.SmartTextSwitcher>
+        </ru.taaasty.widgets.RelativeDateTextSwitcher>
 
     </LinearLayout>
 

@@ -53,4 +53,21 @@
         <attr name="android:adjustViewBounds"/>
     </declare-styleable>
 
+    <declare-styleable name="RelativeDateTextSwitcher">
+        <attr name="isRelativeDateTimeFormat" format="boolean" />
+        <attr name="dateFormatFlags" format="integer">
+            <flag name="format_show_time" value="0x00001" />
+            <flag name="format_show_weekday" value="0x00002" />
+            <flag name="format_show_year" value="0x00004" />
+            <flag name="format_show_date" value="0x00010" />
+            <flag name="format_abbrev_time" value="0x04000" />
+            <flag name="format_abbrev_weekday" value="0x08000" />
+            <flag name="format_abbrev_month" value="0x10000" />
+            <flag name="format_numeric_date" value="0x20000" />
+            <flag name="format_abbrev_relative" value="0x04000" />
+            <flag name="format_abbrev_all" value="0x80000" />
+        </attr>
+    </declare-styleable>
+
+
 </resources>
