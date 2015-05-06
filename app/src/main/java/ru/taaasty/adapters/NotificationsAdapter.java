@@ -153,8 +153,8 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         holder.addedButton.setVisibility(View.GONE);
 
         String url;
-        // TODO: убрать startsWith, когда на сервере в path перестанут выдавать абсолютные ссылки на картинки
         if (!TextUtils.isEmpty(notification.image.path)
+                // Можно убрать, не актуально, сервер http://, и пр. больше не возвращает
                 && !notification.image.path.startsWith("http://")
                 && !notification.image.path.startsWith("https://")
                 ) {
