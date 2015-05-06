@@ -317,13 +317,15 @@ public class ImageUtils {
 
     public static Intent createFeatherPhotoIntent(Context context, Uri originalPhotoUri) throws MakePhotoException {
         Uri newPhotoUri;
+        Intent featherPhotoIntent;
+
         newPhotoUri = createAviaryPictureOutputPath(context);
-        return new AviaryIntent.Builder(context)
-                .setData(originalPhotoUri)
-                .saveWithNoChanges(false)
-                .withOutput(newPhotoUri)
-                .withOutputSize(MegaPixels.Mp7)
-                .build();
+        featherPhotoIntent = new Intent(context , FeatherActivity.class );
+        featherPhotoIntent.setData(originalPhotoUri);
+        featherPhotoIntent.putExtra(Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, false);
+        featherPhotoIntent.putExtra(Constants.EXTRA_OUTPUT, newPhotoUri);
+        featherPhotoIntent.putExtra(Constants.EXTRA_IN_HIRES_MEGAPIXELS, MegaPixels.Mp7.ordinal());
+        return featherPhotoIntent;
     }
 
     public void loadAvatar(@Nullable User a, ImageView dst, @DimenRes int diameterResource) {

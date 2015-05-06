@@ -148,11 +148,11 @@ dependencies {
     // You must install or update the Support Repository through the SDK manager to use this dependency.
     compile 'com.android.support:support-annotations:22.1.0'
     compile 'com.android.support:support-v13:22.1.0'
-    compile 'com.android.support:support-v4:22.1.0'
+    compile 'com.android.support:support-v4:22.1.1'
     compile 'com.android.support:recyclerview-v7:22.1.0'
     compile 'com.facebook.android:facebook-android-sdk:3.22.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
-    compile 'com.google.android.gms:play-services-analytics:7.0.0'
+    compile 'com.google.android.gms:play-services-analytics:7.3.0'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.pusher:pusher-java-client:0.3.3'
     compile 'com.squareup.okhttp:okhttp:2.2.0'
