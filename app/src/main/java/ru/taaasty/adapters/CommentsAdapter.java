@@ -88,7 +88,6 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
             case VIEW_TYPE_POST_HEADER:
             case VIEW_TYPE_LOAD_MORE_HEADER:
                 holder =  onCreateHeaderViewHolder(parent, viewType);
-                holder.setIsRecyclable(false);
                 break;
             case VIEW_TYPE_COMMENT:
                 View res = mInfater.inflate(R.layout.comments_item2, parent, false);
