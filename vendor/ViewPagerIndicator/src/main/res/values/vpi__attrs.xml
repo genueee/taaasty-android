@@ -33,7 +33,7 @@
 
     <attr name="centered" format="boolean" />
     <attr name="selectedColor" format="color" />
-    <attr name="strokeWidth" format="dimension" />
+    <attr name="vpi_strokeWidth" format="dimension" />
     <attr name="unselectedColor" format="color" />
 
     <declare-styleable name="CirclePageIndicator">
@@ -50,9 +50,9 @@
         <!-- Whether or not the selected indicator snaps to the circles. -->
         <attr name="snap" format="boolean" />
         <!-- Color of the open circles. -->
-        <attr name="strokeColor" format="color" />
+        <attr name="vpi_strokeColor" format="color" />
         <!-- Width of the stroke used to draw the circles. -->
-        <attr name="strokeWidth" />
+        <attr name="vpi_strokeWidth" />
         <!-- View background -->
         <attr name="android:background"/>
     </declare-styleable>
@@ -67,7 +67,7 @@
         <!-- Width of each indicator line. -->
         <attr name="lineWidth" format="dimension" />
         <!-- Width of each indicator line's stroke. -->
-        <attr name="strokeWidth" />
+        <attr name="vpi_strokeWidth" />
         <!-- Width of the gap between each indicator line. -->
         <attr name="gapWidth" format="dimension" />
         <!-- View background -->

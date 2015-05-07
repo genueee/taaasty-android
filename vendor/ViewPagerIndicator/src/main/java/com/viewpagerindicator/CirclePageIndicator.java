@@ -95,8 +95,8 @@ public class CirclePageIndicator extends View implements PageIndicator {
         mPaintPageFill.setStyle(Style.FILL);
         mPaintPageFill.setColor(a.getColor(R.styleable.CirclePageIndicator_pageColor, defaultPageColor));
         mPaintStroke.setStyle(Style.STROKE);
-        mPaintStroke.setColor(a.getColor(R.styleable.CirclePageIndicator_strokeColor, defaultStrokeColor));
-        mPaintStroke.setStrokeWidth(a.getDimension(R.styleable.CirclePageIndicator_strokeWidth, defaultStrokeWidth));
+        mPaintStroke.setColor(a.getColor(R.styleable.CirclePageIndicator_vpi_strokeColor, defaultStrokeColor));
+        mPaintStroke.setStrokeWidth(a.getDimension(R.styleable.CirclePageIndicator_vpi_strokeWidth, defaultStrokeWidth));
         mPaintFill.setStyle(Style.FILL);
         mPaintFill.setColor(a.getColor(R.styleable.CirclePageIndicator_fillColor, defaultFillColor));
         mRadius = a.getDimension(R.styleable.CirclePageIndicator_radius, defaultRadius);

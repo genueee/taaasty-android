@@ -279,6 +279,10 @@
     <string name="approve_following_request_content_description">Подтвердить</string>
     <string name="disapprove_following_request_content_description">Отклонить</string>
 
+    <string name="show_stickers">Открыть стикеры</string>
+    <string name="stickers_for_user">Стикеры для @%s</string>
+    <string name="error_payment_error">Ошибка оплаты %s</string>
+
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>
         <item quantity="few">Ещё %d фотографии…</item>

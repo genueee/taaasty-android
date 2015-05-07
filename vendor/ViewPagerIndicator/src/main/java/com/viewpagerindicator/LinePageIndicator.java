@@ -82,7 +82,7 @@ public class LinePageIndicator extends View implements PageIndicator {
         mCentered = a.getBoolean(R.styleable.LinePageIndicator_centered, defaultCentered);
         mLineWidth = a.getDimension(R.styleable.LinePageIndicator_lineWidth, defaultLineWidth);
         mGapWidth = a.getDimension(R.styleable.LinePageIndicator_gapWidth, defaultGapWidth);
-        setStrokeWidth(a.getDimension(R.styleable.LinePageIndicator_strokeWidth, defaultStrokeWidth));
+        setStrokeWidth(a.getDimension(R.styleable.LinePageIndicator_vpi_strokeWidth, defaultStrokeWidth));
         mPaintUnselected.setColor(a.getColor(R.styleable.LinePageIndicator_unselectedColor, defaultUnselectedColor));
         mPaintSelected.setColor(a.getColor(R.styleable.LinePageIndicator_selectedColor, defaultSelectedColor));
 

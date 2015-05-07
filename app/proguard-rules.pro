@@ -84,3 +84,6 @@
 -keepnames class com.adobe.creativesdk.foundation.internal.auth.** {
    *;
 }
+
+#Paycards
+-dontwarn retrofit.client.**

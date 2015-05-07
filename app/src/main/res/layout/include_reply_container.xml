@@ -11,6 +11,18 @@
     android:minHeight="48dp"
     android:orientation="horizontal">
 
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/button_show_stickers"
+        android:src="@drawable/ic_keyboard_stickers_button"
+        android:clickable="true"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:background="?android:selectableItemBackground"
+        android:contentDescription="@string/show_stickers"
+        android:scaleType="fitCenter"/>
+
     <EditText
         android:id="@+id/reply_to_comment_text"
         android:layout_width="0dp"
@@ -19,7 +31,7 @@
         android:inputType="textCapSentences|textShortMessage|textMultiLine"
         android:background="@null"
         android:textSize="16sp"
-        android:layout_marginLeft="@dimen/post_item_comments_padding_left"
+        android:layout_marginLeft="16dp"
         android:imeOptions="actionSend"
         android:imeActionLabel="@string/send_button_short"
         android:imeActionId="@+id/send_reply_to_comment"

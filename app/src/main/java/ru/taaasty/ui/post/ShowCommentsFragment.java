@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,11 +28,18 @@ import android.widget.Toast;
 import junit.framework.Assert;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import cards.pay.card_recognition_library.api.withacquiring.PayCardsCallbacks;
+import cards.pay.card_recognition_library.api.withacquiring.PayCardsHelper;
+import cards.pay.card_recognition_library.data.ErrorResponse;
+import cards.pay.card_recognition_library.data.OrderInfo;
+import cards.pay.card_recognition_library.data.StatusOrder;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.UserManager;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
@@ -165,6 +173,7 @@ public class ShowCommentsFragment extends Fragment {
             }
         });
         mPostButton.setOnClickListener(mOnClickListener);
+        replyToCommentContainer.findViewById(R.id.button_show_stickers).setOnClickListener(mOnClickListener);
 
         return v;
     }
@@ -212,6 +221,14 @@ public class ShowCommentsFragment extends Fragment {
 
         mRefreshDatesHandler = new Handler();
         refreshDelayed();
+    }
+
+    @Override
+    public void onActivityResult(final int requestCode, final int
+            resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        PayCardsHelper.onActivityResult(requestCode, resultCode, data,
+                mPaycardsCallbacks);
     }
 
     @Override
@@ -333,6 +350,8 @@ public class ShowCommentsFragment extends Fragment {
                     break;
                 case R.id.reply_to_comment_button:
                     sendRepyToComment();
+                case R.id.button_show_stickers:
+                    onShowStickersClicked(v);
                     break;
             }
         }
@@ -491,6 +510,45 @@ public class ShowCommentsFragment extends Fragment {
             va.start();
         }
     }
+
+    private void onShowStickersClicked(View view) {
+        boolean toShowStickers = !view.isActivated();
+        view.setActivated(!view.isActivated());
+
+        if (toShowStickers) {
+            OrderInfo orderInfo = new OrderInfo();
+            orderInfo.setWmiCurrencyId(643);
+            orderInfo.setWmiPaymentAmount(1.23);
+            orderInfo.setCustomerId(String.valueOf(UserManager.getInstance().getCurrentUserId()));
+            orderInfo.setWmiOrderId("744954637305");
+            orderInfo.setCustomerMail(UserManager.getInstance().getCachedCurrentUser().getEmail());
+            orderInfo.setWmiDescription(view.getContext().getString(R.string.stickers_for_user,
+                    UserManager.getInstance().getCurrentUserSlug()));
+            orderInfo.setWmiMerchantId("137622880509");
+            PayCardsHelper.ConfigBuilder cb = new PayCardsHelper.ConfigBuilder(orderInfo);
+            PayCardsHelper.startPayment(this, cb);
+        } else {
+            // TODO: return keyboard
+        }
+    }
+
+    private final PayCardsCallbacks mPaycardsCallbacks = new PayCardsCallbacks() {
+        @Override
+        public void onOperationComplete(StatusOrder statusOrder, long l) {
+            if (DBG) Log.v(TAG, "PayCardsCallbacks complete status: " + statusOrder.name());
+        }
+
+        @Override
+        public void onOperationCanceled() {
+            if (DBG) Log.v(TAG, "PayCardsCallbacks operation canvelled");
+        }
+
+        @Override
+        public void onOperationError(ErrorResponse errorResponse) {
+            if (DBG) Log.v(TAG, "PayCardsCallbacks error " + errorResponse.getErrorMessage());
+            mListener.notifyError(getString(R.string.error_payment_error, errorResponse.getErrorMessage()), errorResponse.getException());
+        }
+    };
 
     private final class Adapter extends CommentsAdapter {
 
@@ -734,7 +792,6 @@ public class ShowCommentsFragment extends Fragment {
         public void onError(Throwable e) {
             mListener.notifyError(getString(R.string.error_loading_comments), e);
             mLoadComments = false;
-
         }
 
         @Override

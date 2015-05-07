@@ -22,6 +22,7 @@ repositories {
         dirs 'libs'
     }
     maven { url "${project.rootDir}/vendor/creativesdk" }
+    maven { url "http://pay.cards/maven"}
 }
 
 android {
@@ -182,7 +183,12 @@ dependencies {
     //compile 'com.adobe.creativesdk.foundation:auth:0.3.94'
     compile 'com.adobe.creativesdk:image:4.0.0'
 
+    // Paycards
+    compile 'cards.pay:camera_card_recognition_library:+'
+    compile 'cards.pay:card_recognition_library_with_acquiring:+'
+
     testCompile 'junit:junit:4.12'
+
 }
 
 ['beta', 'release'].each { typeName ->
