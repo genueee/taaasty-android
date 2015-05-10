@@ -42,8 +42,8 @@ android {
         applicationId "ru.taaasty"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 13
-        versionName "1.1.0"
+        versionCode 14
+        versionName "1.2.0"
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
@@ -72,6 +72,12 @@ android {
         resValue "string", "adobe_client_id", "a28b7e7fa93c49c98c0caf1438ec3d53"
         resValue "string", "adobe_client_secret", "6102b00a-823c-4ab9-8af8-8e5799961774"
         resValue "string", "facebook_app_id", "\"731919696901929\""
+
+        resConfigs "en", "ru" // Выносим неиспользуемые языки
+
+        ndk {
+            abiFilters "armeabi-v7a", "armeabi", "x86"
+        }
 
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
