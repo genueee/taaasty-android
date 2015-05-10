@@ -35,7 +35,7 @@
             android:layout_height="wrap_content" />
     </FrameLayout>
 
-    <TextView
+    <info.piwai.android.JellyBeanSpanFixTextView
         android:background="?android:selectableItemBackground"
         android:id="@+id/more_photos_indicator"
         android:visibility="gone"
@@ -46,7 +46,7 @@
         android:layout_height="32dp"
         android:gravity="center" />
 
-    <TextView
+    <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_title"
         android:layout_marginTop="14dp"
         style="@style/PostText"

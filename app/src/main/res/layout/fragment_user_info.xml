@@ -75,7 +75,7 @@
             android:textSize="@dimen/user_name_text_size"
             tools:text="Genue" />
 
-        <TextView
+        <info.piwai.android.JellyBeanSpanFixTextView
             android:id="@+id/user_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

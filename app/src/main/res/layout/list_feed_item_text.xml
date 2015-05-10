@@ -8,7 +8,7 @@
 
     <include layout="@layout/include_feed_item_author"/>
 
-    <TextView
+    <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_title"
         style="@style/PostTitle"
         android:paddingTop="0dp"
@@ -17,7 +17,7 @@
         android:textSize="28sp"
         tools:visibility="visible" />
 
-    <TextView
+    <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_text"
         style="@style/PostText"
         tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд" />

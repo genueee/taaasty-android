@@ -1,5 +1,6 @@
 package ru.taaasty.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
@@ -8,12 +9,13 @@ import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.widget.TextView;
+
+import info.piwai.android.JellyBeanSpanFixTextView;
 
 /**
  *
  */
-public class EllipsizingTextView extends TextView {
+public class EllipsizingTextView extends JellyBeanSpanFixTextView {
     private static final String ELLIPSIS = "\u2026";
 
     private boolean isEllipsized;
@@ -83,6 +85,8 @@ public class EllipsizingTextView extends TextView {
         super.onDraw(canvas);
     }
 
+
+    @SuppressLint("NewApi")
     private void resetText() {
         int maxLines = getMaxLines();
         SpannableStringBuilder result = new SpannableStringBuilder(fullText);
