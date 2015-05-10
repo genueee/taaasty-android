@@ -1,65 +1,77 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activityRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    tools:context=".ui.FollowingFollowersActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginLeft="@dimen/following_followers_padding_right"
-        android:layout_marginRight="@dimen/following_followers_padding_right"
-        android:minHeight="42dp"
-        android:id="@+id/following_followers_indicator"
-        android:layout_gravity="center_horizontal"
-        android:orientation="horizontal"
-        android:baselineAligned="false"
-        android:measureWithLargestChild="false"
-        android:background="@drawable/following_followers_indicator_stroke">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/you_follow_indicator"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            tools:textColor="#24b166"
-            android:background="@drawable/following_followers_indicator_item_left"
-            android:text="@string/you_follow"
-            android:textScaleX="0.8"
-            style="@style/FollowingFollowersIndicatorItem" />
+        <LinearLayout
+            android:id="@+id/following_followers_indicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/following_followers_padding_right"
+            android:layout_marginRight="@dimen/following_followers_padding_right"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/following_followers_indicator_stroke"
+            android:baselineAligned="false"
+            android:measureWithLargestChild="false"
+            android:minHeight="42dp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/your_followers_indicator"
-            tools:textColor="#24b166"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/following_followers_indicator_item_center"
-            android:text="@string/your_followers"
-            android:textScaleX="0.8"
-            style="@style/FollowingFollowersIndicatorItem" />
+            <TextView
+                android:id="@+id/you_follow_indicator"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_left"
+                android:text="@string/you_follow"
+                android:textScaleX="0.8"
+                tools:textColor="#24b166" />
 
-        <TextView
-            android:id="@+id/your_requests_indicator"
-            tools:textColor="#24b166"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:background="@drawable/following_followers_indicator_item_center"
-            android:text="@string/your_requests"
-            style="@style/FollowingFollowersIndicatorItem" />
+            <TextView
+                android:id="@+id/your_followers_indicator"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_center"
+                android:text="@string/your_followers"
+                android:textScaleX="0.8"
+                tools:textColor="#24b166" />
 
-        <TextView
-            android:id="@+id/your_friends_indicator"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            style="@style/FollowingFollowersIndicatorItem"
-            android:background="@drawable/following_followers_indicator_item_right"
-            tools:textColor="#24b166"
-            android:text="@string/your_friends" />
+            <TextView
+                android:id="@+id/your_requests_indicator"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_center"
+                android:text="@string/your_requests"
+                tools:textColor="#24b166" />
+
+            <TextView
+                android:id="@+id/your_friends_indicator"
+                style="@style/FollowingFollowersIndicatorItem"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:background="@drawable/following_followers_indicator_item_right"
+                android:text="@string/your_friends"
+                tools:textColor="#24b166" />
+        </LinearLayout>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
     </LinearLayout>
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
-</LinearLayout>
+    <ru.taaasty.widgets.ErrorTextView
+        android:id="@+id/error_text"
+        tools:text="Неправильный логин или пароль"
+        style="@style/ErrorTextView" />
+</FrameLayout>
