@@ -161,8 +161,8 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:7.3.0'
     compile 'io.reactivex:rxandroid:0.24.0'
     compile 'com.pusher:pusher-java-client:0.3.3'
-    compile 'com.squareup.okhttp:okhttp:2.2.0'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.2.0' // aviary, intercom
+    compile 'com.squareup.okhttp:okhttp:2.3.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.3.0' // aviary, intercom
     compile 'com.squareup:pollexor:2.0.2'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.retrofit:retrofit:1.9.0'

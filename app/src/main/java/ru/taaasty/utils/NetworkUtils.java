@@ -14,7 +14,9 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
@@ -91,14 +93,10 @@ public final class NetworkUtils {
         if (httpCacheDir != null) {
             long cacheSize = NetworkUtils.calculateDiskCacheSize(httpCacheDir);
             if (DBG) Log.v(TAG, "cache size, mb: " + cacheSize / 1024 / 1024);
-            try {
-                // HttpResponseCache.install(httpCacheDir, cacheSize);
-                Cache cache = new Cache(httpCacheDir, cacheSize);
-                mOkHttpClient.setCache(cache);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Cache cache = new Cache(httpCacheDir, cacheSize);
+            mOkHttpClient.setCache(cache);
         }
+        //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
         mRetrofitClient = new OkClient(mOkHttpClient);
     }
 
@@ -230,6 +228,8 @@ public final class NetworkUtils {
                 request.addHeader("Authorization", mBasicAuth);
             }
         }
+
+
     };
 
     public final ErrorHandler mErrorHandler = new ErrorHandler() {
@@ -321,6 +321,22 @@ public final class NetworkUtils {
         @Nullable
         public String getUserError() {
             return error == null ? null : error.error;
+        }
+    }
+
+    private class OkLoggingInterceptor implements Interceptor {
+        @Override public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
+            Request request = chain.request();
+
+            Log.i("Ok", String.format("REQ     %s on %n%s%n",
+                    request.url(), request.headers()));
+
+            com.squareup.okhttp.Response response = chain.proceed(request);
+
+            Log.i("Ok", String.format("RESP %d %s, %n%s%n",
+                    response.code(), response.request().url(), response.headers()));
+
+            return response;
         }
     }
 
