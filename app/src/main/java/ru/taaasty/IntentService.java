@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -80,14 +81,17 @@ public class IntentService extends android.app.IntentService {
     private static final String ACTION_MARK_NOTIFICATION_AS_READ = "ru.taaasty.IntentService.action.MARK_AS_READ";
     private static final String ACTION_MARK_ALL_NOTIFICATIONS_AS_READ = "ru.taaasty.IntentService.action.MARK_ALL_AS_READ";
 
+    public static final String ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED = "ru.taaasty.IntentService.action.ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED";
+
     private static final String EXTRA_FORM = "ru.taaasty.extra.FORM";
 
     private static final String EXTRA_ENTRY_ID = "ru.taaasty.extra.ENTRY_ID";
     private static final String EXTRA_USER_ID = "ru.taaasty.extra.USER_ID";
     private static final String EXTRA_IMAGE_URI = "ru.taaasty.extra.IMAGE_URI";
     private static final String EXTRA_IMAGE_URL_LIST = "ru.taaasty.extra.IMAGE_URL_LIST";
+    private static final String EXTRA_NOTIFY_NOTIFICATION_HELPER = "ru.taaasty.IntentService.extra.EXRA_NOTIFY_NOTIFICATION_HELPER";
 
-    private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.extra.EXTRA_NOTIFICATION_ID";
+    private static final String EXTRA_NOTIFICATION_IDS = "ru.taaasty.extra.EXTRA_NOTIFICATION_IDS";
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile("^(.+)(\\..{1,5})$");
 
@@ -141,10 +145,16 @@ public class IntentService extends android.app.IntentService {
         context.startService(intent);
     }
 
-    public static void markNotificationAsRead(Context context, long notificationId) {
+    public static Intent getMarkNotificationAsReadIntent(Context context, long notificationIds[], boolean notifyNotificationHelper) {
         Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_MARK_NOTIFICATION_AS_READ);
-        intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+        intent.putExtra(EXTRA_NOTIFICATION_IDS, notificationIds);
+        intent.putExtra(EXTRA_NOTIFY_NOTIFICATION_HELPER, notifyNotificationHelper);
+        return intent;
+    }
+
+    public static void markNotificationAsRead(Context context, long id) {
+        Intent intent = getMarkNotificationAsReadIntent(context, new long[] {id}, false);
         context.startService(intent);
     }
 
@@ -197,9 +207,15 @@ public class IntentService extends android.app.IntentService {
                 List<String> urlList = intent.getStringArrayListExtra(EXTRA_IMAGE_URL_LIST);
                 handleDownloadImages(urlList);
             } else if (ACTION_MARK_NOTIFICATION_AS_READ.equals(action)) {
-                handleMarkNotificationAsRead(intent.getLongExtra(EXTRA_NOTIFICATION_ID, -1));
+                long ids[] = intent.getLongArrayExtra(EXTRA_NOTIFICATION_IDS);
+                if (ids != null) handleMarkNotificationsAsRead(ids);
+                if (intent.getBooleanExtra(EXTRA_NOTIFY_NOTIFICATION_HELPER, false)) {
+                    StatusBarNotification.getInstance().onNotificationsMarkedAsRead();
+                }
             } else if (ACTION_MARK_ALL_NOTIFICATIONS_AS_READ.equals(action)) {
                 handleMarkAllNotificationsAsRead();
+            } else if (ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED.equals(action)) {
+                StatusBarNotification.getInstance().onConversationNotificationCancelled();
             }
         }
     }
@@ -397,13 +413,17 @@ public class IntentService extends android.app.IntentService {
         }
     }
 
-    private void handleMarkNotificationAsRead(long notificationId) {
+    private void handleMarkNotificationsAsRead(long notificationIds[]) {
+        if (DBG) Log.v(TAG, "handleMarkNotificationsAsRead ids: " + Arrays.toString(notificationIds));
         ApiMessenger api = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
-        try {
-            Notification notification = api.markNotificationAsRead(null, notificationId);
-            EventBus.getDefault().post(new NotificationReceived(notification));
-        } catch (Throwable e) {
-            Log.e(TAG, "markNotificationAsRead error", e);
+        for (long notificationId: notificationIds) {
+            try {
+                Notification notification = api.markNotificationAsRead(null, notificationId);
+                EventBus.getDefault().post(new NotificationReceived(notification));
+                StatusBarNotification.getInstance().onNewNotificationIdSeen(notificationId); // На всякий случай, иначе может и не дойти
+            } catch (Throwable e) {
+                Log.e(TAG, "markNotificationAsRead error", e);
+            }
         }
     }
 
@@ -414,6 +434,10 @@ public class IntentService extends android.app.IntentService {
             List<MarkNotificationsAsReadResponse> response = api.markAllNotificationsAsRead(null, null);
             eventBus.post(new NotificationMarkedAsRead(response));
             eventBus.post(new MarkAllAsReadRequestCompleted(null));
+
+            long maxId = 0;
+            for (MarkNotificationsAsReadResponse item: response) maxId = Math.max(maxId, item.id);
+            StatusBarNotification.getInstance().onNewNotificationIdSeen(maxId); // На всякий случай, иначе может и не дойти
         } catch (Throwable e) {
             Log.e(TAG, "markNotificationAsRead error", e);
             EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(e));

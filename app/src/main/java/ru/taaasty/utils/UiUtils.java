@@ -157,7 +157,7 @@ public class UiUtils {
                                            int textAppearance,
                                            int colorList) {
         CustomTypefaceSpan cts = new CustomTypefaceSpan(context, textAppearance, colorList,
-                FontManager.getInstance().getFontSystemBold());
+                FontManager.getInstance(context).getFontSystemBold());
         ClickableNicknameSpan acs = new ClickableNicknameSpan(userId);
         stringBuilder.setSpan(acs, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         stringBuilder.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
+
 import com.aviary.android.feather.sdk.internal.Constants;
 
 import java.io.File;
@@ -26,9 +28,9 @@ import java.io.File;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.IntentService;
 import ru.taaasty.UserManager;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
@@ -71,7 +73,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     private Uri mMakePhotoDstUri;
 
     public static class Builder {
-        private final Activity mActivity;
+        private final Context mContext;
 
         private View mSrcView;
 
@@ -85,8 +87,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         private String mThumbnailBitmapCacheKey;
 
-        public Builder(Activity activity) {
-            mActivity = activity;
+        public Builder(Context context) {
+            mContext = context;
         }
 
         public Builder setUserId(long userId) {
@@ -137,7 +139,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
                 throw new IllegalStateException("user not defined");
             }
 
-            Intent intent = new Intent(mActivity, UserInfoActivity.class);
+            Intent intent = new Intent(mContext, UserInfoActivity.class);
             if (mUserId != null && mUser == null) {
                 intent.putExtra(UserInfoActivity.ARG_USER_ID, (long)mUserId);
             }
@@ -156,12 +158,12 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         public void startActivity() {
             Intent intent = buildIntent();
-            if (mSrcView != null) {
+            if (mSrcView != null && (mContext instanceof Activity)) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                         mSrcView, 0, 0, mSrcView.getWidth(), mSrcView.getHeight());
-                ActivityCompat.startActivity(mActivity, intent, options.toBundle());
+                ActivityCompat.startActivity((Activity) mContext, intent, options.toBundle());
             } else {
-                mActivity.startActivity(intent);
+                mContext.startActivity(intent);
             }
         }
     }

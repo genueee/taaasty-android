@@ -78,10 +78,19 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private InterfaceVisibilityController mInterfaceVisibilityController;
 
-    public static void startTlogActivity(Context source, long userId, View animateFrom, int avatarThumbnailSizeRes) {
+    public static Intent getStartTlogActivityIntent(Context source, long userId,  int avatarThumbnailSizeRes) {
         Intent intent = new Intent(source, TlogActivity.class);
         intent.putExtra(ARG_USER_ID, userId);
         intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailSizeRes);
+        return intent;
+    }
+
+    public static Intent getStartTlogActivityIntent(Context source, long userId) {
+        return getStartTlogActivityIntent(source, userId, R.dimen.avatar_extra_small_diameter_34dp);
+    }
+
+    public static void startTlogActivity(Context source, long userId, View animateFrom, int avatarThumbnailSizeRes) {
+        Intent intent = getStartTlogActivityIntent(source, userId, avatarThumbnailSizeRes);
         if (animateFrom != null && source instanceof Activity) {
             ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                     animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());

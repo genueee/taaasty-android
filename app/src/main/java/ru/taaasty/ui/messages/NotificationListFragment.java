@@ -1,5 +1,6 @@
 package ru.taaasty.ui.messages;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -7,10 +8,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -24,10 +27,11 @@ import java.util.ArrayList;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.RetainedFragmentCallbacks;
+import ru.taaasty.StatusBarNotification;
 import ru.taaasty.adapters.NotificationListAdapter;
 import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
@@ -339,10 +343,20 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     private final NotificationListAdapter.InteractionListener mInteractionListener = new NotificationListAdapter.InteractionListener() {
 
+        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
         @Override
         public void onNotificationClicked(View v, Notification notification) {
             markNotificationRead(notification);
-            notification.startOpenPostActivity(getActivity());
+            Intent intent = notification.getOpenNotificationActivityIntent(getActivity());
+            if (intent != null) {
+                Bundle options = ActivityOptionsCompat.makeScaleUpAnimation(
+                        v, 0, 0, v.getWidth(), v.getHeight()).toBundle();
+                if ((Build.VERSION.SDK_INT >= 16) && (options != null)) {
+                    startActivity(intent, options);
+                } else {
+                    startActivity(intent);
+                }
+            }
         }
 
         @Override
@@ -619,6 +633,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                         mNotificationList.insertItems(list.notifications);
                         if (!mIsRefresh && mEntriesRequested != 0 && sizeBefore == mNotificationList.size())
                             keepOnAppending = false;
+                        if (!mNotificationList.isEmpty()) {
+                            StatusBarNotification.getInstance().onNewNotificationIdSeen(mNotificationList.get(0).id);
+                        }
                     }
                     setKeepOnAppending(keepOnAppending);
                     onNewListPendingIndicatorStatus(false);

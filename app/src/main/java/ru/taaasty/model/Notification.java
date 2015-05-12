@@ -1,10 +1,13 @@
 package ru.taaasty.model;
 
-import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v4.app.TaskStackBuilder;
 
 import java.util.Comparator;
 import java.util.Date;
@@ -13,8 +16,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
+import ru.taaasty.ui.tabbar.NotificationsActivity;
 import ru.taaasty.utils.Objects;
 
 /**
@@ -27,6 +32,49 @@ public class Notification implements Parcelable {
     public static final String ENTITY_TYPE_RELATIONSHIP = "Relationship";
 
     public static final String ENTITY_TYPE_COMMENT = "Comment";
+
+    /**
+     * Кто-то проголосовал за запись
+     * type: entry
+     */
+    public static final String ACTION_VOTE = "vote";
+
+    /**
+     * Кто-то добавил запись в избранное
+     * type: entry
+     */
+    public static final String ACTION_FAVORITE = "favorite";
+
+    /**
+     * Одобрение дружбы
+     * type: relationship
+     */
+    public static final String ACTION_FOLLOWING_APPROVE = "following_approve";
+
+    /**
+     * Запрос на дружбу
+     * type: relationship
+     */
+    public static final String ACTION_FOLLOWING_REQUEST = "following_request";
+
+    /**
+     * Кто-то подписался
+     * type: relationship
+     */
+    public static final String ACTION_FOLLOWING = "following";
+
+    /**
+     * Новый комментарий в статье
+     * type: coment
+     */
+    public static final String ACTION_NEW_COMMENT = "new_comment";
+
+    /**
+     * Упоминание ника в статье
+     * type: coment
+     */
+    public static final String ACTION_NEW_MENTION = "new_mention";
+
 
     /**
      * Сортировка по убыванию даты создания (более новые - в начале списка)
@@ -46,6 +94,16 @@ public class Notification implements Parcelable {
                 int compareDates = rhs.createdAt.compareTo(lhs.createdAt);
                 return compareDates != 0 ? compareDates : compareIds;
             }
+        }
+    };
+
+    /**
+     * Сортировка по возрастанию ID
+     */
+    public static Comparator<Notification> SORT_BY_ID_COMPARATOR = new Comparator<Notification>() {
+        @Override
+        public int compare(Notification lhs, Notification rhs) {
+            return Objects.compare(lhs.id, rhs.id);
         }
     };
 
@@ -198,44 +256,78 @@ public class Notification implements Parcelable {
         return image != null && image != ImageInfo.Image2.DUMMY;
     }
 
+    /**
+     * @return title для нотификаций в зависимости от action. Для уведомлений. 0 для неизвестных типов
+     */
+    public @StringRes int getActionNotificationTitle() {
+        if (action == null) return 0;
+        switch (action) {
+            case ACTION_VOTE: return R.string.notification_action_title_vote;
+            case ACTION_FAVORITE: return R.string.notification_action_title_favorite;
+            case ACTION_FOLLOWING: return R.string.notification_action_title_following;
+            case ACTION_FOLLOWING_APPROVE: return R.string.notification_action_title_following_approve;
+            case ACTION_FOLLOWING_REQUEST: return R.string.notification_action_title_following_request;
+            case ACTION_NEW_COMMENT: return R.string.notification_action_title_new_comment;
+            case ACTION_NEW_MENTION: return R.string.notification_action_title_new_mention;
+            default: return 0;
+        }
+    }
 
+    /**
+     * @return PendingIntent для просмотра уведомления при открытии из статусбара
+     */
     @Nullable
-    public void startOpenPostActivity(Activity source) {
-        Intent intent = null;
+    public PendingIntent createShowNotificationPendingIntent(Context context) {
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+
+        // Открывает сначала уведомления
+        Intent notificationsIntent = new Intent(context, NotificationsActivity.class);
+        stackBuilder.addNextIntent(notificationsIntent);
+
+        Intent nextIntent =  getOpenNotificationActivityIntent(context);
+        if (nextIntent != null) stackBuilder.addNextIntent(nextIntent);
+        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    public Intent getOpenNotificationActivityIntent(Context context) {
         if (isTypeEntry()) {
             // Пост
-            new ShowPostActivity.Builder(source)
+            return new ShowPostActivity.Builder(context)
                     .setEntryId(entityId)
                     .setShowFullPost(true)
-                    .startActivity();
+                    .buildIntent();
         } else if (isTypeComment()) {
-            if (parentId == null) return; // TODO договорились, что API в будущем возвращать null не будет, но пока возвращает
-            new ShowPostActivity.Builder(source)
+            if (parentId == null) return null; // null - обычно если запись удалена
+            return new ShowPostActivity.Builder(context)
                     .setEntryId(parentId)
                     .setCommentId(entityId)
                     .setShowFullPost(true)
-                    .startActivity();
+                    .buildIntent();
         } else if (isTypeRelationship()) {
             if (isFollowingRequest()) {
                 // Запросы на дружбу
-                Intent i = new Intent(source, FollowingFollowersActivity.class);
+                Intent i = new Intent(context, FollowingFollowersActivity.class);
                 i.putExtra(FollowingFollowersActivity.ARG_USER, UserManager.getInstance().getCachedCurrentUser());
                 i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_REQUESTS);
-                source.startActivity(i);
+                return i;
+            } else if (ACTION_FOLLOWING_APPROVE.equals(action)) {
+                // Тлог заапрувившего
+                return TlogActivity.getStartTlogActivityIntent(context, sender.getId(), R.dimen.avatar_small_diameter);
             } else {
                 //Инфа о юзере
-                new UserInfoActivity.Builder(source)
+                return new UserInfoActivity.Builder(context)
                         .setUserId(sender.getId())
                         .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                        .startActivity();
+                        .buildIntent();
             }
         } else {
             if (BuildConfig.DEBUG) throw new IllegalStateException("Неожиданный тип уведомления");
         }
+        return null;
     }
 
     public boolean isFollowingRequest() {
-        return "following_request".equals(action);
+        return ACTION_FOLLOWING_REQUEST.equals(action);
     }
 
     @Override

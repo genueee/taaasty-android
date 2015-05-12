@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
@@ -14,8 +15,9 @@ import android.view.ViewTreeObserver;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.PusherService;
+import ru.taaasty.IntentService;
 import ru.taaasty.R;
+import ru.taaasty.StatusBarNotification;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.model.Conversation;
@@ -33,6 +35,8 @@ public class NotificationsActivity extends TabbarActivityBase implements
     private static final String TAG = "NotificationsActivity";
 
     public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.tabbar.NotificationsActivity.ARG_KEY_SHOW_SECTION";
+
+    public static final String ARK_KEY_MARK_NOTIFICATIONS_AS_READ = "ru.taaasty.ui.tabbar.NotificationsActivity.ARK_KEY_MARK_NOTIFICATIONS_AS_READ";
 
     public static final int SECTION_NOTIFICATIONS = 0;
     public static final int SECTION_CONVERSATIONS = 1;
@@ -60,18 +64,27 @@ public class NotificationsActivity extends TabbarActivityBase implements
         indicator.setSection(initialSection);
 
         mHeaderController = new HeaderController(findViewById(R.id.notifications_conversations_container));
+
+        if (savedInstanceState == null && getIntent().hasExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ)) {
+            long ids[] = getIntent().getLongArrayExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
+            if (ids.length != 0) {
+                Intent intent = IntentService.getMarkNotificationAsReadIntent(this, ids, false);
+                startService(intent);
+            }
+        }
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        PusherService.disableStatusBarNotifications(this);
+        StatusBarNotification.getInstance().disableStatusBarNotifications();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        PusherService.enableStatusBarNotifications(this);
+        StatusBarNotification.getInstance().enableStatusBarNotifications();
     }
 
     @Override

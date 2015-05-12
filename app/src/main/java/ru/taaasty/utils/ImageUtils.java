@@ -356,7 +356,7 @@ public class ImageUtils {
         Picasso picasso;
 
         avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
-        defaultUserpicDrawable = new DefaultUserpicDrawable(userpic, userName);
+        defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
         if (userpic == null || (TextUtils.isEmpty(userpic.thumborPath) && TextUtils.isEmpty(userpic.thumb128Url))) {
             target.onDrawableReady(defaultUserpicDrawable);

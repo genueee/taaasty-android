@@ -1,11 +1,13 @@
 package ru.taaasty.widgets;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
@@ -23,6 +25,8 @@ public class DefaultUserpicDrawable extends Drawable {
     private final Paint mBackgroundPaint;
     private final Paint mTextPaint;
 
+    private final Typeface mMainFont;
+
     private int mBackgroundColor;
     private int mTextColor;
     private int mAlpha;
@@ -31,21 +35,22 @@ public class DefaultUserpicDrawable extends Drawable {
 
     private boolean mPaintsInvalidated;
 
-    public DefaultUserpicDrawable(String username, int backgroundColor, int textColor) {
+    public DefaultUserpicDrawable(Context context, String username, int backgroundColor, int textColor) {
         mBackgroundPaint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
         mTextPaint = new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
         mAlpha = 255;
+        mMainFont = FontManager.getInstance(context).getMainFont();
         setUser(username, backgroundColor, textColor);
     }
 
-    public DefaultUserpicDrawable() {
-        this("", 0, 0);
+    public DefaultUserpicDrawable(Context context) {
+        this(context, "", 0, 0);
         Random rnd = new Random();
         setUser("", Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256)), Color.BLACK);
     }
 
-    public DefaultUserpicDrawable(Userpic userpic, String name) {
-        this();
+    public DefaultUserpicDrawable(Context context, Userpic userpic, String name) {
+        this(context);
         setUser(userpic, name);
     }
 
@@ -119,7 +124,7 @@ public class DefaultUserpicDrawable extends Drawable {
         mBackgroundPaint.setColor(Color.argb(mAlpha, Color.red(mBackgroundColor), Color.green(mBackgroundColor), Color.blue(mBackgroundColor)));
         mBackgroundPaint.setAntiAlias(true);
         mTextPaint.setColor(Color.argb(mAlpha, Color.red(mTextColor), Color.green(mTextColor), Color.blue(mTextColor)));
-        mTextPaint.setTypeface(FontManager.getInstance().getMainFont());
+        mTextPaint.setTypeface(mMainFont);
         mTextPaint.setAntiAlias(true);
         mTextPaint.setTextAlign(Paint.Align.CENTER);
 

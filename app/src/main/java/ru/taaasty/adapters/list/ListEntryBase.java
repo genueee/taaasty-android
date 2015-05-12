@@ -32,7 +32,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     public ListEntryBase(Context context, View v, boolean showUserAvatar) {
         super(v);
-        mFontManager = FontManager.getInstance();
+        mFontManager = FontManager.getInstance(context);
         mShowUserAvatar = showUserAvatar;
         mAvatarAuthor = (TextView) v.findViewById(R.id.avatar_author);
         mEntryActionBar = new EntryBottomActionBar(v.findViewById(R.id.entry_bottom_action_bar), true);

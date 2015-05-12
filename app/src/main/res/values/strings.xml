@@ -224,12 +224,9 @@
     <string name="remove_from_favourites_ok">Пост убран из избранного</string>
     <string name="share_title">Поделиться</string>
 
-    <plurals name="notifications_received_title">
-        <item quantity="one">Уведомление…</item>
-        <item quantity="few">Пришло %d уведомления…</item>
-        <item quantity="many">Пришло %d уведомлений…</item>
-        <item quantity="other">Пришло %d уведомлений…</item>
-    </plurals>
+    <string name="notification_received_title">Пришло уведомление</string>
+    <string name="notifications_received_title">Есть непрочитанные уведомления</string>
+
     <plurals name="conversation_received_title">
         <item quantity="one">Получено сообщение…</item>
         <item quantity="few">Получено %d сообщения…</item>
@@ -292,5 +289,14 @@
         <item quantity="many">Ещё %d фотографий…</item>
         <item quantity="other">Ещё %d фотографий…</item>
     </plurals>
+
+    <!-- title для нотификаций. Основной смысл в пределах первых 22 символов (лучше 16) -->
+    <string name="notification_action_title_vote">Проголосовали за запись</string>
+    <string name="notification_action_title_favorite">Запись добавили в избранное</string>
+    <string name="notification_action_title_following">Новые подписчики</string>
+    <string name="notification_action_title_following_approve">Разрешено чтение тлога</string>
+    <string name="notification_action_title_following_request">Запрошено чтение тлога</string>
+    <string name="notification_action_title_new_comment">Новый комментарий</string>
+    <string name="notification_action_title_new_mention">Вас упомянули</string>
 
 </resources>

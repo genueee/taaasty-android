@@ -38,6 +38,13 @@ public interface ApiMessenger {
                                                  @Query("limit") Integer limit,
                                                  @Query("order") String order);
 
+    @GET("/messenger/notifications.json")
+    NotificationList getNotificationsSync(@Query("socket_id") String socketId,
+                                                  @Query("from_notification_id") Long fromMessageId,
+                                                  @Query("to_notification_id") Long toMessageId,
+                                                  @Query("limit") Integer limit,
+                                                  @Query("order") String order);
+
 
     @FormUrlEncoded
     @PUT("/messenger/notifications/{id}/read.json")

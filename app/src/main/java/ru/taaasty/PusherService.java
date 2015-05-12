@@ -25,7 +25,6 @@ import de.greenrobot.event.EventBus;
 import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.ConversationChanged;
-import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationMarkedAsRead;
@@ -37,6 +36,7 @@ import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherEventUpdateNotifications;
 import ru.taaasty.model.UpdateMessages;
 import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import rx.Subscription;
@@ -91,12 +91,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
      */
     public static final String EVENT_UPDATE_NOTIFICATIONS = "update_notifications";
 
-
     private static final String ACTION_START = "ru.taaasty.PusherService.action.START";
-    private static final String ACTION_STOP = "ru.taaasty.PusherService.action.STOP";
-    private static final String ACTION_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_SET_STATUS_BAR_NOTIFICATIONS";
 
-    private static final String EXTRA_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.EXTRA_SET_STATUS_BAR_NOTIFICATIONS";
+    public static final String ACTION_HANDLE_GCM_PUSH = "ru.taaasty.PusherService.action.ACTION_HANDLE_GCM_PUSH";
 
     private final IBinder mBinder = new LocalBinder();
 
@@ -106,15 +103,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     private Handler mHandler;
 
-    private boolean mPusherMustBeActive = false;
-
     private Subscription mSendAuthReadySubscription = Subscriptions.unsubscribed();
 
-    private StatusBarNotification mStatusBarNotification;
-
     private Gson mGson;
-
-    private EventBus mEventBus;
 
     private MessagingStatus mLastMessagingStatus;
 
@@ -130,28 +121,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     public static void stopPusher(Context context) {
         Intent intent = new Intent(context, PusherService.class);
-        intent.setAction(ACTION_STOP);
-        context.startService(intent);
-    }
-
-    public static void enableStatusBarNotifications(Context context) {
-        setStatusBarNotifications(context, true);
-    }
-
-    public static void disableStatusBarNotifications(Context context) {
-        setStatusBarNotifications(context, false);
-    }
-
-    /**
-     * Включение или выключение получения нотификаций в статусбаре
-     * @param context
-     * @param enable
-     */
-    private static void setStatusBarNotifications(Context context, boolean enable) {
-        Intent intent = new Intent(context, PusherService.class);
-        intent.setAction(ACTION_SET_STATUS_BAR_NOTIFICATIONS);
-        intent.putExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, enable);
-        context.startService(intent);
+        context.stopService(intent);
     }
 
     public PusherService() {
@@ -167,10 +137,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
         super.onCreate();
         mHandler = new Handler();
         mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
-        mStatusBarNotification = new StatusBarNotification(this);
         mGson = NetworkUtils.getInstance().getGson();
-        mEventBus = EventBus.getDefault();
-        mEventBus.register(this);
     }
 
     @Override
@@ -180,14 +147,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
             final String action = intent.getAction();
             if (ACTION_START.equals(action)) {
                 if (DBG) Log.v(TAG, "ACTION_START");
-                mPusherMustBeActive = true;
                 pusherConnect();
-            } else if (ACTION_STOP.equals(action)) {
-                mPusherMustBeActive = false;
-                if (DBG) Log.v(TAG, "ACTION_STOP");
-                stopSelf();
-            } else if (ACTION_SET_STATUS_BAR_NOTIFICATIONS.equals(action)) {
-                mStatusBarNotification.addEnableDisableNotifications(intent.getBooleanExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, true));
+            } else if (ACTION_HANDLE_GCM_PUSH.equals(action)) {
+                onGcmPushReceived(intent);
             }
         }
 
@@ -201,9 +163,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
         if (DBG) Log.v(TAG, "onDestroy()");
         mHandler.removeCallbacks(mReconnectPusherRunnable);
         mHandler = null;
-        mEventBus.unregister(this);
-        mStatusBarNotification.onDestroy();
-        mStatusBarNotification = null;
         mSendAuthReadySubscription.unsubscribe();
         destroyPusher();
         mApiMessenger = null;
@@ -224,33 +183,31 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 MessagingStatus status = mGson.fromJson(data, MessagingStatus.class);
                 if (!Objects.equals(status, mLastMessagingStatus)) {
                     mLastMessagingStatus = status;
-                    mEventBus.post(new MessagingStatusReceived(status));
+                    EventBus.getDefault().post(new MessagingStatusReceived(status));
                 }
                 break;
             case EVENT_ACTIVE_CONVERSATIONS:
                 break;
             case EVENT_PUSH_MESSAGE:
                 Conversation.Message message =  mGson.fromJson(data, Conversation.Message.class);
-                mEventBus.post(new MessageChanged(message));
-                mStatusBarNotification.append(message);
+                EventBus.getDefault().post(new MessageChanged(message));
                 break;
             case EVENT_UPDATE_CONVERSATION:
                 Conversation conversation =  mGson.fromJson(data, Conversation.class);
-                mEventBus.post(new ConversationChanged(conversation));
+                EventBus.getDefault().post(new ConversationChanged(conversation));
                 break;
             case EVENT_UPDATE_MESSAGES:
                 UpdateMessages updateMessages =  mGson.fromJson(data, UpdateMessages.class);
-                mEventBus.post(new UpdateMessagesReceived(updateMessages));
+                EventBus.getDefault().post(new UpdateMessagesReceived(updateMessages));
                 break;
             case EVENT_PUSH_NOTIFICATION:
                 Notification notification = mGson.fromJson(data, Notification.class);
-                mEventBus.post(new NotificationReceived(notification));
-                mStatusBarNotification.append(notification);
+                EventBus.getDefault().post(new NotificationReceived(notification));
                 break;
             case EVENT_UPDATE_NOTIFICATIONS:
                 PusherEventUpdateNotifications event = mGson.fromJson(data, PusherEventUpdateNotifications.class);
                 if (!event.notifications.isEmpty()) {
-                    mEventBus.post(new NotificationMarkedAsRead(event.notifications));
+                    EventBus.getDefault().post(new NotificationMarkedAsRead(event.notifications));
                 }
                 break;
             default:
@@ -265,10 +222,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     public boolean hasUnreadNotifications() {
         return mLastMessagingStatus != null && mLastMessagingStatus.unreadNotificationsCount > 0;
-    }
-
-    public void onEventMainThread(ConversationVisibilityChanged event) {
-        if (mStatusBarNotification != null) mStatusBarNotification.onConversationVisibilityChanged(event);
     }
 
     @Override
@@ -371,12 +324,34 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     }
 
+    private void onGcmPushReceived(Intent intent) {
+        if (mPusher != null) {
+            Log.v(TAG, "skip GCM sync: pusher is connected");
+            GcmBroadcastReceiver.completeWakefulIntent(intent);
+        } else {
+            String messageType = GcmUtils.getGcmNotificationType(intent.getExtras());
+            if (GcmUtils.GCM_NOTIFICATION_TYPE_PUSH_NOTIFICATION.equals(messageType)) {
+                StatusBarNotification ssb = StatusBarNotification.getInstance();
+                ssb.onGcmPushNotificationReceived(intent);
+                stopSelf();
+                //pusherConnect();
+            } else if (GcmUtils.GCM_NOTIFICATION_TYPE_PUSH_MESSAGE.equals(messageType)) {
+                StatusBarNotification ssb = StatusBarNotification.getInstance();
+                ssb.onGcmPushConversationReceived(intent);
+                pusherConnect();
+            } else {
+                GcmBroadcastReceiver.completeWakefulIntent(intent);
+                throw new IllegalStateException();
+            }
+        }
+    }
+
     private final ConnectionEventListener mConnectionEventListener = new ConnectionEventListener() {
         @Override
         public void onConnectionStateChange(ConnectionStateChange change) {
             if (DBG) Log.v(TAG, "onConnectionStateChange() change: " + change.getPreviousState() + " -> " + change.getCurrentState());
             if (mPusher == null) return;
-            if (mPusherMustBeActive && change.getCurrentState() == ConnectionState.DISCONNECTED) {
+            if (change.getCurrentState() == ConnectionState.DISCONNECTED) {
                 reconnectPusherLater();
             } else if (change.getCurrentState() == ConnectionState.CONNECTED) {
                 mHandler.removeCallbacks(mReconnectPusherRunnable);

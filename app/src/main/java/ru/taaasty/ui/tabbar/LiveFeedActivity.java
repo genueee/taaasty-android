@@ -22,6 +22,7 @@ import com.viewpagerindicator.CirclePageIndicator;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
+import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -65,6 +66,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
+
+        Intercom.client().openGCMMessage(getIntent().getData());
 
         mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
 

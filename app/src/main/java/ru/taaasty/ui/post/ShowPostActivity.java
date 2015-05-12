@@ -120,7 +120,6 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             return this;
         }
 
-
         public Intent buildIntent() {
             if (mPostId == null && mEntry == null) {
                 throw new IllegalStateException("post not defined");

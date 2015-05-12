@@ -59,6 +59,12 @@
                     style="@style/AdditionalMenuItem" />
 
                 <TextView
+                    android:id="@+id/support"
+                    android:text="@string/title_support"
+                    android:drawableLeft="@drawable/ic_support"
+                    style="@style/AdditionalMenuItem" />
+
+                <TextView
                     android:id="@+id/settings"
                     android:text="@string/settings"
                     android:drawableLeft="@drawable/ic_settings"
