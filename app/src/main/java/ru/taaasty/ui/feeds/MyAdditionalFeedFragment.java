@@ -49,7 +49,6 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -61,6 +60,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 
 public class MyAdditionalFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
@@ -91,7 +91,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     private Adapter mAdapter;
     private MyFeedLoader mFeedLoader;
 
-    private Subscription mUserSubscribtion = SubscriptionHelper.empty();
+    private Subscription mUserSubscribtion = Subscriptions.unsubscribed();
 
     private int mFeedType = FEED_TYPE_FAVORITES;
 

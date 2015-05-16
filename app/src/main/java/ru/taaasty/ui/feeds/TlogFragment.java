@@ -51,7 +51,6 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -63,6 +62,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -85,7 +85,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private Adapter mAdapter;
     private MyFeedLoader mFeedLoader;
 
-    private Subscription mUserSubscribtion = SubscriptionHelper.empty();
+    private Subscription mUserSubscribtion = Subscriptions.unsubscribed();
 
     @Nullable
     private Long mUserId;

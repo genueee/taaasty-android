@@ -11,12 +11,12 @@ import ru.taaasty.Constants;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.Feed;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 /**
  * подгрузчик записей
@@ -52,8 +52,8 @@ public abstract class FeedLoaderLite {
         mAdapter = adapter;
         mHandler = new Handler();
         mKeepOnAppending = new AtomicBoolean(true);
-        mFeedAppendSubscription = SubscriptionHelper.empty();
-        mFeedRefreshSubscription = SubscriptionHelper.empty();
+        mFeedAppendSubscription = Subscriptions.unsubscribed();
+        mFeedRefreshSubscription = Subscriptions.unsubscribed();
         mAdapter.setInteractionListener(new FeedItemAdapterLite.InteractionListener() {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {

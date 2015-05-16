@@ -37,11 +37,11 @@ import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -56,7 +56,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     private ApiApp mApiStatsService;
 
-    private Subscription mStatsSubscription = SubscriptionHelper.empty();
+    private Subscription mStatsSubscription = Subscriptions.unsubscribed();
 
     @Nullable
     private Stats mStats;

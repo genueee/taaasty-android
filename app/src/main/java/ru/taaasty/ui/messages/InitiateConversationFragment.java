@@ -28,12 +28,12 @@ import ru.taaasty.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -58,8 +58,8 @@ public class InitiateConversationFragment extends Fragment {
 
     private boolean mCreatingConversation;
 
-    private Subscription mLoadingNamesSubscription = SubscriptionHelper.empty();
-    private Subscription mCreatingConversationSubscription = SubscriptionHelper.empty();
+    private Subscription mLoadingNamesSubscription = Subscriptions.unsubscribed();
+    private Subscription mCreatingConversationSubscription = Subscriptions.unsubscribed();
 
     private ApiUsers mApiUsers;
 

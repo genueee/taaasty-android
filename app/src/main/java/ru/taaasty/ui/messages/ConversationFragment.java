@@ -43,13 +43,13 @@ import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 public class ConversationFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -81,7 +81,7 @@ public class ConversationFragment extends Fragment {
 
     private ListScrollController mListScrollController;
 
-    private Subscription mPostMessageSubscription = SubscriptionHelper.empty();
+    private Subscription mPostMessageSubscription = Subscriptions.unsubscribed();
 
     /**
      * Use this factory method to create a new instance of
@@ -471,7 +471,7 @@ public class ConversationFragment extends Fragment {
 
         private final ApiMessenger mApiMessenger;
 
-        private Subscription mPostMessageSubscription = SubscriptionHelper.empty();
+        private Subscription mPostMessageSubscription = Subscriptions.unsubscribed();
 
         /**
          * Выполняется или запланирована отправка на сервер. Устанавливается дл postDelayed, снимается когда очередь пуста.
@@ -574,8 +574,8 @@ public class ConversationFragment extends Fragment {
         public MessagesLoader()  {
             mHandler = new Handler();
             mKeepOnAppending = new AtomicBoolean(true);
-            mMessagesAppendSubscription = SubscriptionHelper.empty();
-            mMessagesRefreshSubscription = SubscriptionHelper.empty();
+            mMessagesAppendSubscription = Subscriptions.unsubscribed();
+            mMessagesRefreshSubscription = Subscriptions.unsubscribed();
             mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
         }
 

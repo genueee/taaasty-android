@@ -44,7 +44,6 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -54,6 +53,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -81,7 +81,7 @@ public class ListFeedFragment extends Fragment implements SwipeRefreshLayout.OnR
     private Adapter mAdapter;
     private FeedLoader mFeedLoader;
 
-    private Subscription mCurrentUserSubscription = SubscriptionHelper.empty();
+    private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
 
     private boolean mForceShowRefreshingIndicator;
 

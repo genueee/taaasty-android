@@ -18,13 +18,13 @@ import ru.taaasty.UserManager;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,9 +44,9 @@ public class SettingsFragment extends PreferenceFragment {
         return new SettingsFragment();
     }
 
-    private Subscription mUserSubscription = SubscriptionHelper.empty();
+    private Subscription mUserSubscription = Subscriptions.unsubscribed();
 
-    private Subscription mPutSubscription = SubscriptionHelper.empty();
+    private Subscription mPutSubscription = Subscriptions.unsubscribed();
 
     private ApiUsers mApiUsers;
 

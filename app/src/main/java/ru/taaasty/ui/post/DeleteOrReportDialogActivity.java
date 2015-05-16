@@ -24,13 +24,13 @@ import ru.taaasty.service.ApiComments;
 import ru.taaasty.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Диалог с удалением, либо жалобой на пост или комментарий
@@ -61,7 +61,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     private ActionHandler mActionHandler;
 
-    Subscription mSubscription = SubscriptionHelper.empty();
+    Subscription mSubscription = Subscriptions.unsubscribed();
 
     private static void startActivityAction(Context context, int actionId, long postId, long commentId) {
         Intent i = new Intent(context, DeleteOrReportDialogActivity.class);

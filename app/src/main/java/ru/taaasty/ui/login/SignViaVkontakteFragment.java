@@ -35,12 +35,12 @@ import ru.taaasty.service.ApiSessions;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Created by alexey on 18.09.14.
@@ -52,8 +52,8 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mAuthSubscription = SubscriptionHelper.empty();
-    private Subscription mSignupSubscription = SubscriptionHelper.empty();
+    private Subscription mAuthSubscription = Subscriptions.unsubscribed();
+    private Subscription mSignupSubscription = Subscriptions.unsubscribed();
 
     public static SignViaVkontakteFragment createInstance() {
         return new SignViaVkontakteFragment();

@@ -31,11 +31,11 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class ConversationsListFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -57,7 +57,7 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
 
     private ApiMessenger mApiMessenger;
 
-    private Subscription mConversationsSubscription = SubscriptionHelper.empty();
+    private Subscription mConversationsSubscription = Subscriptions.unsubscribed();
 
     public static ConversationsListFragment newInstance() {
         return new ConversationsListFragment();

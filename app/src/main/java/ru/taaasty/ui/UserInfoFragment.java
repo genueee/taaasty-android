@@ -37,7 +37,6 @@ import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
@@ -45,6 +44,7 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class UserInfoFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -85,9 +85,9 @@ public class UserInfoFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
-    private Subscription mFollowSubscription = SubscriptionHelper.empty();
-    private Subscription mCreateConversationSubscription = SubscriptionHelper.empty();
+    private Subscription mUserInfoSubscription = Subscriptions.unsubscribed();
+    private Subscription mFollowSubscription = Subscriptions.unsubscribed();
+    private Subscription mCreateConversationSubscription = Subscriptions.unsubscribed();
 
     // Antoid picasso weak ref
     private TargetSetHeaderBackground mTargetSetHeaderBackground;

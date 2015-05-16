@@ -34,7 +34,6 @@ import ru.taaasty.model.User;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
@@ -43,6 +42,7 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 
 public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmentInteractionListener {
@@ -65,7 +65,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
     private SpannableString mAbTitle;
 
-    private Subscription mFollowSubscription = SubscriptionHelper.empty();
+    private Subscription mFollowSubscription = Subscriptions.unsubscribed();
 
     private View mSubscribeView;
     private View mUnsubscribeView;

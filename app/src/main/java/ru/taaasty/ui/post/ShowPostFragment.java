@@ -54,7 +54,6 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -64,6 +63,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Пост с комментариями
@@ -84,10 +84,10 @@ public class ShowPostFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    private Subscription mPostSubscription = SubscriptionHelper.empty();
-    private Subscription mCommentsSubscription = SubscriptionHelper.empty();
-    private Subscription mTlogDesignSubscription = SubscriptionHelper.empty();
-    private Subscription mPostCommentSubscription = SubscriptionHelper.empty();
+    private Subscription mPostSubscription = Subscriptions.unsubscribed();
+    private Subscription mCommentsSubscription = Subscriptions.unsubscribed();
+    private Subscription mTlogDesignSubscription = Subscriptions.unsubscribed();
+    private Subscription mPostCommentSubscription = Subscriptions.unsubscribed();
 
     private ApiEntries mEntriesService;
     private ApiComments mCommentsService;

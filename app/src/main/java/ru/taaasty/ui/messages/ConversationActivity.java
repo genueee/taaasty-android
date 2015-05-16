@@ -32,7 +32,6 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.User;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
@@ -40,6 +39,7 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class ConversationActivity extends Activity implements ConversationFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -62,7 +62,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
 
     private boolean imeKeyboardShown;
 
-    private Subscription mConversationSubscription = SubscriptionHelper.empty();
+    private Subscription mConversationSubscription = Subscriptions.unsubscribed();
 
     private long mRecipientId;
 

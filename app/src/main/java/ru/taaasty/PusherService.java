@@ -39,8 +39,8 @@ import ru.taaasty.model.UpdateMessages;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Subscription;
+import rx.subscriptions.Subscriptions;
 
 public class PusherService extends Service implements PrivateChannelEventListener {
     public static final boolean DBG = BuildConfig.DEBUG;
@@ -108,7 +108,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     private boolean mPusherMustBeActive = false;
 
-    private Subscription mSendAuthReadySubscription = SubscriptionHelper.empty();
+    private Subscription mSendAuthReadySubscription = Subscriptions.unsubscribed();
 
     private StatusBarNotification mStatusBarNotification;
 
