@@ -15,7 +15,6 @@ import ru.taaasty.model.ConversationMessages;
 import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.NotificationList;
-import ru.taaasty.model.PusherReadyResponse;
 import ru.taaasty.model.Status;
 import rx.Observable;
 
@@ -29,8 +28,8 @@ public interface ApiMessenger {
     Response authPusher(@Field("channel_name") String channelName, @Field("socket_id") String socketId);
 
     @FormUrlEncoded
-    @POST("/messenger/ready.json")
-    Observable<PusherReadyResponse> authReady(@Field("socket_id") String socketId);
+    @POST("/messenger/only_ready.json")
+    Observable<Void> authReady2(@Field("socket_id") String socketId);
 
     @GET("/messenger/notifications.json")
     Observable<NotificationList> getNotifications(@Query("socket_id") String socketId,

@@ -35,11 +35,10 @@ import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.model.Conversation;
-import ru.taaasty.model.PusherEventUpdateNotifications;
 import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.MessagingStatus;
 import ru.taaasty.model.Notification;
-import ru.taaasty.model.PusherReadyResponse;
+import ru.taaasty.model.PusherEventUpdateNotifications;
 import ru.taaasty.model.UpdateMessages;
 import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.utils.NetworkUtils;
@@ -48,7 +47,6 @@ import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
 
 public class PusherService extends Service implements PrivateChannelEventListener {
     public static final boolean DBG = BuildConfig.DEBUG;
@@ -413,28 +411,11 @@ public class PusherService extends Service implements PrivateChannelEventListene
         }
         mSendAuthReadySubscription.unsubscribe();
 
-        mSendAuthReadySubscription = mApiMessenger.authReady(mPusher.getConnection().getSocketId())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mPusherReadyResponseObserver);
+        // Игнорируем все ошибки и результаты
+        mSendAuthReadySubscription = mApiMessenger.authReady2(mPusher.getConnection().getSocketId())
+                .subscribe();
 
     }
-
-    private final Observer<PusherReadyResponse> mPusherReadyResponseObserver = new Observer<PusherReadyResponse>() {
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            Log.e(TAG, "authReady failed", e);
-            destroyPusher();
-            reconnectPusherLater();
-        }
-
-        @Override
-        public void onNext(PusherReadyResponse pusherReadyResponse) {
-        }
-    };
 
     private final Observer<Notification> mMarkAsReadObserver = new Observer<Notification>() {
 
