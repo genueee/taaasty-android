@@ -42,7 +42,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
 
     IRelationshipAdapter mRelationshipsAdapter;
     OnFragmentInteractionListener mListener;
-    Subscription mRelationshipsSubscribtion = Subscriptions.unsubscribed();
+    Subscription mRelationshipsSubscription = Subscriptions.unsubscribed();
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -113,7 +113,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mRelationshipsSubscribtion.unsubscribe();
+        mRelationshipsSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
     }
 
@@ -140,7 +140,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
     }
 
     void refreshRelationships() {
-        mRelationshipsSubscribtion.unsubscribe();
+        mRelationshipsSubscription.unsubscribe();
 
         // XXX
         Observable<Relationships> observable = createRelationshipsObservable();
@@ -151,7 +151,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
             setListShown(false);
         }
 
-        mRelationshipsSubscribtion = observable
+        mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mRelationshipsObserver);
     }

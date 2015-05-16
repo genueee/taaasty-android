@@ -137,10 +137,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             }
 
             mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
-            mSubscribeView.setOnClickListener(mOnSubscribtionClickListener);
+            mSubscribeView.setOnClickListener(mOnSubscriptionClickListener);
 
             mUnsubscribeView = ab.getCustomView().findViewById(R.id.unsubscribe);
-            mUnsubscribeView.setOnClickListener(mOnSubscribtionClickListener);
+            mUnsubscribeView.setOnClickListener(mOnSubscriptionClickListener);
 
             mFollowUnfollowProgressView = ab.getCustomView().findViewById(R.id.follow_unfollow_progress);
             refreshFollowUnfollowView();
@@ -451,7 +451,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     };
 
 
-    private final View.OnClickListener mOnSubscribtionClickListener = new View.OnClickListener() {
+    private final View.OnClickListener mOnSubscriptionClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {

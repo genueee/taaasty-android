@@ -91,7 +91,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     private Adapter mAdapter;
     private MyFeedLoader mFeedLoader;
 
-    private Subscription mUserSubscribtion = Subscriptions.unsubscribed();
+    private Subscription mUserSubscription = Subscriptions.unsubscribed();
 
     private int mFeedType = FEED_TYPE_FAVORITES;
 
@@ -223,7 +223,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mUserSubscribtion.unsubscribe();
+        mUserSubscription.unsubscribe();
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -249,7 +249,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     boolean isLoading() {
-        return mFeedLoader.isRefreshing() || !mUserSubscribtion.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mUserSubscription.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {
@@ -283,14 +283,14 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     public void refreshUser() {
-        if (!mUserSubscribtion.isUnsubscribed()) {
-            mUserSubscribtion.unsubscribe();
+        if (!mUserSubscription.isUnsubscribed()) {
+            mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
         Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
-        mUserSubscribtion = observableCurrentUser
+        mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);

@@ -40,7 +40,7 @@ public class RequestsFragment extends ListFragment {
 
     RequestsAdapter mAdapter;
     OnFragmentInteractionListener mListener;
-    Subscription mRelationshipsSubscribtion = Subscriptions.unsubscribed();
+    Subscription mRelationshipsSubscription = Subscriptions.unsubscribed();
 
     private ApiRelationships mApiRelationships;
 
@@ -107,7 +107,7 @@ public class RequestsFragment extends ListFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mRelationshipsSubscribtion.unsubscribe();
+        mRelationshipsSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
     }
 
@@ -142,7 +142,7 @@ public class RequestsFragment extends ListFragment {
     }
 
     void refreshRelationships() {
-        mRelationshipsSubscribtion.unsubscribe();
+        mRelationshipsSubscription.unsubscribe();
 
         if (isResumed()) {
             setListShownNoAnimation(false);
@@ -153,7 +153,7 @@ public class RequestsFragment extends ListFragment {
         Observable<Relationships> observable = AppObservable.bindFragment(this,
                 mApiRelationships.getRelationshipsRequested(null, 200, false));
 
-        mRelationshipsSubscribtion = observable
+        mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mRelationshipsObserver);
     }

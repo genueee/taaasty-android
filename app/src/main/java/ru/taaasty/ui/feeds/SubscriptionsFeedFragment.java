@@ -66,7 +66,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     private Adapter mAdapter;
     private FeedLoader mFeedLoader;
 
-    private Subscription mCurrentUserSubscribtion = Subscriptions.unsubscribed();
+    private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
 
     private int mRefreshCounter;
 
@@ -174,7 +174,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mCurrentUserSubscribtion.unsubscribe();
+        mCurrentUserSubscription.unsubscribe();
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
             mFeedLoader.onDestroy();
@@ -380,16 +380,16 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
     };
 
     public void refreshUser() {
-        if (!mCurrentUserSubscribtion.isUnsubscribed()) {
-            if (DBG) Log.v(TAG, "current user subscription is not unsubscribed " + mCurrentUserSubscribtion);
-            mCurrentUserSubscribtion.unsubscribe();
+        if (!mCurrentUserSubscription.isUnsubscribed()) {
+            if (DBG) Log.v(TAG, "current user subscription is not unsubscribed " + mCurrentUserSubscription);
+            mCurrentUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
         setRefreshing(true);
         Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
-        mCurrentUserSubscribtion = observableCurrentUser
+        mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);

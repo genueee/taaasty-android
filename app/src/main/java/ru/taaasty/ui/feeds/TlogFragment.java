@@ -85,7 +85,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private Adapter mAdapter;
     private MyFeedLoader mFeedLoader;
 
-    private Subscription mUserSubscribtion = Subscriptions.unsubscribed();
+    private Subscription mUserSubscription = Subscriptions.unsubscribed();
 
     @Nullable
     private Long mUserId;
@@ -280,7 +280,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mUserSubscribtion.unsubscribe();
+        mUserSubscription.unsubscribe();
 
         mDateIndicatorView = null;
         if (mFeedLoader != null) {
@@ -311,7 +311,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     boolean isLoading() {
-        return mFeedLoader.isRefreshing() || !mUserSubscribtion.isUnsubscribed();
+        return mFeedLoader.isRefreshing() || !mUserSubscription.isUnsubscribed();
     }
 
     void setupRefreshingIndicator() {
@@ -646,14 +646,14 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     };
 
     public void refreshUser() {
-        if (!mUserSubscribtion.isUnsubscribed()) {
-            mUserSubscribtion.unsubscribe();
+        if (!mUserSubscription.isUnsubscribed()) {
+            mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
         Observable<TlogInfo> observableCurrentUser = AppObservable.bindFragment(this,
                 mTlogService.getUserInfo(mUserId == null ? mUserSlug : mUserId.toString()));
 
-        mUserSubscribtion = observableCurrentUser
+        mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
