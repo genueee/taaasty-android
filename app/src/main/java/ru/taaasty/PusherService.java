@@ -243,9 +243,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 mEventBus.post(new UpdateMessagesReceived(updateMessages));
                 break;
             case EVENT_PUSH_NOTIFICATION:
-                Notification n = mGson.fromJson(data, Notification.class);
-                addNotification(n);
-                mStatusBarNotification.append(n);
+                Notification notification = mGson.fromJson(data, Notification.class);
+                mEventBus.post(new NotificationReceived(notification));
+                mStatusBarNotification.append(notification);
                 break;
             case EVENT_UPDATE_NOTIFICATIONS:
                 PusherEventUpdateNotifications event = mGson.fromJson(data, PusherEventUpdateNotifications.class);
@@ -336,10 +336,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     private String getMessagingChannelName() {
         return "private-" + UserManager.getInstance().getCurrentUserId() + "-messaging";
-    }
-
-    private synchronized void addNotification(Notification notification) {
-        mEventBus.post(new NotificationReceived(notification));
     }
 
     public class LocalBinder extends Binder {
