@@ -66,7 +66,6 @@ public class NotificationsActivity extends TabbarActivityBase implements
     protected void onStart() {
         super.onStart();
         PusherService.disableStatusBarNotifications(this);
-        PusherService.refreshNotifications(this);
     }
 
     @Override

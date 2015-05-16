@@ -150,7 +150,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         super.onStart();
         EventBus.getDefault().register(this);
         Intent intent = new Intent(getActivity(), PusherService.class);
-        mAdapter.registerAdapterDataObserver(mDataObserver);
         getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
@@ -163,7 +162,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     @Override
     public void onStop() {
         super.onStop();
-        mAdapter.unregisterAdapterDataObserver(mDataObserver);
         EventBus.getDefault().unregister(this);
         if (mBound) {
             getActivity().unbindService(this);
@@ -208,24 +206,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         if (mAdapter != null && event.conversation.messagesCount > 0) mAdapter.addConversation(event.conversation);
     }
 
-    private void setNewStatus(PusherService.NotificationsStatus status) {
-        switch (status.code) {
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_LOADING:
-                mConversationsSubscription.unsubscribe();
-                setStatusLoading();
-                break;
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_READY:
-                mConversationsSubscription.unsubscribe();
-                setStatusReady();
-                refreshConversationList();
-                break;
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_FAILURE:
-                mConversationsSubscription.unsubscribe();
-                setStatusFailure(status.errorMessage);
-                break;
-        }
-    }
-
     private boolean isRefreshIndicatorShown() {
         return mProgressView.getVisibility() == View.VISIBLE;
     }
@@ -261,8 +241,8 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     }
 
     public void refreshConversationList() {
-        if (isRefreshing() || !mBound) {
-            if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing() + " bound: " + mBound);
+        if (isRefreshing()) {
+            if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing());
             return;
         }
         if (mApiMessenger == null || mPusherService == null || mConversationsSubscription == null) {
@@ -271,6 +251,7 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         }
         if (DBG) Log.v(TAG, "refreshConversationList");
 
+        String socketId = mBound && mPusherService != null ? mPusherService.getSocketId() : null;
         mConversationsSubscription.unsubscribe();
         mConversationsSubscription = AppObservable.bindFragment(this, mApiMessenger.getConversations(mPusherService.getSocketId()))
                 .observeOn(AndroidSchedulers.mainThread())
@@ -299,14 +280,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
                 for (Conversation c: conversations) if (c.messagesCount > 0)  ge0.add(c);
                 mAdapter.setConversations(ge0);
             }
-        }
-    };
-
-    private final RecyclerView.AdapterDataObserver mDataObserver = new RecyclerView.AdapterDataObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            if (mBound) setNewStatus(mPusherService.getNotificationsStatus());
         }
     };
 

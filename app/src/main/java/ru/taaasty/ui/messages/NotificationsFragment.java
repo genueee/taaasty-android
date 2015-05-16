@@ -22,9 +22,11 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.UserManager;
 import ru.taaasty.adapters.NotificationsAdapter;
-import ru.taaasty.events.MarkAsReadRequestCompleted;
+import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessagingStatusReceived;
+import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
@@ -208,23 +210,75 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         setupMarkAsReadButtonStatus();
     }
 
-    public void onEventMainThread(MarkAsReadRequestCompleted status) {
-        if (DBG) Log.v(TAG, "MarkAsReadRequestCompleted " + status);
+    public void onEventMainThread(MarkAllAsReadRequestCompleted status) {
+        if (DBG) Log.v(TAG, "MarkAllAsReadRequestCompleted " + status);
         setupMarkAsReadButtonStatus();
     }
 
     public void onEventMainThread(NotificationReceived event) {
         if (mAdapter == null ) return;
         if (DBG) Log.v(TAG, "NotificationReceived " + event);
-        View top = mListView.getChildAt(0);
-        boolean listAtTop = top == null || (mListView.getChildAdapterPosition(top) == 0);
         mAdapter.addNotification(event.notification);
-        if (listAtTop) mListView.smoothScrollToPosition(0);
+        scrollShowTopPosition();
     }
 
-    public void onEventMainThread(ru.taaasty.events.NotificationsStatus status) {
-        if (DBG) Log.v(TAG, "NotificationsStatus " + status);
-        setupMarkAsReadButtonStatus();
+    /**
+     * При отписке или отписке юзера на тлог в списке нотификаций нужно изменить кнопку "подтвердить/уже в друзьях"
+     * Через пушер новая нотификация не приходит.
+     * @param relationshipChanged
+     */
+    // Это лютый пиздец, что оно здесь, хотя да и похуй
+    public void onEventMainThread(RelationshipChanged relationshipChanged) {
+        Relationship newRelationship = relationshipChanged.relationship;
+        long me = UserManager.getInstance().getCurrentUserId();
+        long him;
+        boolean changed = false;
+
+        if (!newRelationship.isMyRelationToHim(me)) return; // Не интересно
+        him = newRelationship.getToId();
+
+        // Меняем relation
+        synchronized (this) {
+            for (Notification notification : mAdapter.getNotifications().getItems()) {
+                if (!notification.isTypeRelationship()) return;
+                if (notification.sender.getId() == him) {
+                    Notification newNotification = Notification.changeSenderRelation(notification, newRelationship);
+                    mAdapter.addNotification(newNotification);
+                    changed = true;
+                }
+            }
+        }
+        if (changed) scrollShowTopPosition();
+    }
+
+    public void onEventMainThread(NotificationMarkedAsRead event) {
+        NotificationsAdapter.NotificationsList notifications = mAdapter.getNotifications();
+
+        boolean changed = false;
+        int notificationsSize = notifications.size();
+        for (int responseIdx = 0; responseIdx < event.id.length; ++responseIdx) {
+            for (int i = 0; i < notificationsSize; ++i) {
+                Notification notification = notifications.get(i);
+                if (notification.id == event.id[responseIdx]) {
+                    if (!notification.isMarkedAsRead()) {
+                        Notification newNotification = Notification.markAsRead(notification, event.readAt[responseIdx]);
+                        mAdapter.addNotification(newNotification);
+                        changed = true;
+                    }
+                    break;
+                }
+            }
+        }
+        if (changed) scrollShowTopPosition();
+    }
+
+    /**
+     * Если верхний элемент показан частично - скроллим, чтобы он был виден полностью
+     */
+    private void scrollShowTopPosition() {
+        View top = mListView.getChildAt(0);
+        boolean listAtTop = top == null || (mListView.getChildAdapterPosition(top) == 0);
+        if (listAtTop) mListView.smoothScrollToPosition(0);
     }
 
     public void setupLoadingState() {
@@ -240,7 +294,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
      */
     void setupMarkAsReadButtonStatus() {
         if (mMarkAsReadButton == null) return;
-        boolean isVisible = !mWaitingMessagingStatus && mBound && mPusherService.hasUnreadMessages();
+        boolean isVisible = !mWaitingMessagingStatus && mBound && mPusherService.hasUnreadNotifications();
         mMarkAsReadButton.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 

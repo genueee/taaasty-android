@@ -5,11 +5,11 @@ import android.support.annotation.Nullable;
 /**
  * Created by alexey on 20.03.15.
  */
-public class MarkAsReadRequestCompleted {
+public class MarkAllAsReadRequestCompleted {
 
     public Throwable exception;
 
-    public MarkAsReadRequestCompleted(@Nullable Throwable e) {
+    public MarkAllAsReadRequestCompleted(@Nullable Throwable e) {
         this.exception = e;
     }
 
