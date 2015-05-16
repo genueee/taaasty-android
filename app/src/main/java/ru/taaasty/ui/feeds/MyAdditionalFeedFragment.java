@@ -71,9 +71,25 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     @Retention(RetentionPolicy.CLASS)
     @IntDef({FEED_TYPE_MAIN, FEED_TYPE_FRIENDS, FEED_TYPE_FAVORITES, FEED_TYPE_PRIVATE})
     public @interface FeedType {}
+
+    /**
+     * Основная моя лента
+     */
     public static final int FEED_TYPE_MAIN = 0;
+
+    /**
+     * Лента моих друзей
+     */
     public static final int FEED_TYPE_FRIENDS = 1;
+
+    /**
+     * Мои избранные записи
+     */
     public static final int FEED_TYPE_FAVORITES = 2;
+
+    /**
+     * Мои скрытые записи
+     */
     public static final int FEED_TYPE_PRIVATE = 3;
 
     private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";

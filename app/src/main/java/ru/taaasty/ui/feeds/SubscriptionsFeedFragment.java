@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,6 +99,7 @@ public class SubscriptionsFeedFragment extends Fragment implements SwipeRefreshL
         View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
+        ((TextView)mEmptyView).setText(R.string.friends_have_not_written_anything);
 
         mRefreshLayout.setOnRefreshListener(this);
 

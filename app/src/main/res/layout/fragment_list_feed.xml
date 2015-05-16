@@ -32,7 +32,7 @@
         android:paddingLeft="50dp"
         android:paddingRight="50dp"
         android:paddingTop="@dimen/feed_header_height"
-        android:text="@string/you_have_not_written_anything"
+        android:text="@string/no_records"
         android:textColor="#7d7d7d"
         android:textSize="22sp"
         android:visibility="gone" />
