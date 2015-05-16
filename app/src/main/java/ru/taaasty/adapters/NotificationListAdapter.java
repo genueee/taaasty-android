@@ -3,7 +3,6 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,11 +17,10 @@ import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import ru.taaasty.R;
-import ru.taaasty.SortedList;
+import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.User;
 import ru.taaasty.utils.ImageUtils;
@@ -30,29 +28,25 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
-/**
- * Created by alexey on 24.10.14.
- */
 public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder> {
 
     public static final int VIEW_TYPE_ITEM = R.id.view_type_item;
 
     public static final int VIEW_TYPE_PENDING_INDICATOR = R.id.view_type_pending_indicator;
 
-    private final NotificationsList mNotifications;
     private final ImageUtils mImageUtils;
     private final Picasso mPicasso;
     private final InteractionListener mListener;
     private final Context mContext;
-    private Drawable mStubPlaceholder;
+    private final Drawable mStubPlaceholder;
 
+    private NotificationsListManaged mNotifications;
     private Set<Long> mFollowProcess;
 
     private boolean mPendingIndicatorShown;
 
     public NotificationListAdapter(Context context, InteractionListener listener) {
         mContext = context;
-        mNotifications = new NotificationsList();
         mFollowProcess = new HashSet<>(1);
         mPendingIndicatorShown = false;
         mListener = listener;
@@ -87,6 +81,10 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
                 super.onItemRangeRemoved(positionStart, itemCount);
             }
         });
+    }
+
+    public void setNotificationList(NotificationsListManaged list) {
+        mNotifications = list;
     }
 
     @Override
@@ -146,23 +144,6 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     @Override
     public int getItemCount() {
         return mNotifications.size() + (mPendingIndicatorShown ? 1 : 0);
-    }
-
-    public boolean isEmpty() {
-        return mNotifications.isEmpty();
-    }
-
-    public void setNotifications(List<Notification> notifications) {
-        mNotifications.resetItems(notifications);
-    }
-
-    public void addNotification(Notification notification) {
-        mNotifications.add(notification);
-        onNotificationFollowUnfollowStopped(notification.id);
-    }
-
-    public NotificationsList getNotifications() {
-        return mNotifications;
     }
 
     public void onNotificationFollowUnfollowStarted(long notificationId) {
@@ -281,28 +262,6 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         }
     }
 
-    public final class NotificationsList extends SortedList<Notification> {
-
-        public NotificationsList() {
-            super(Notification.class, new SortedListAdapterCallback<Notification>(NotificationListAdapter.this) {
-                @Override
-                public int compare(Notification o1, Notification o2) {
-                    return Notification.SORT_BY_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
-                }
-
-                @Override
-                public boolean areContentsTheSame(Notification oldItem, Notification newItem) {
-                    return oldItem.equals(newItem);
-                }
-
-                @Override
-                public boolean areItemsTheSame(Notification item1, Notification item2) {
-                    return item1.id == item2.id;
-                }
-            });
-        }
-    }
-
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
@@ -356,7 +315,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
         @Override
         public void onClick(View v) {
-            Notification notification = mNotifications.get(getPosition());
+            Notification notification = mNotifications.get(getAdapterPosition());
             switch (v.getId()) {
                 case R.id.avatar:
                     mListener.onAvatarClicked(v, notification);

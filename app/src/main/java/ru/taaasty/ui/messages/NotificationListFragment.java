@@ -23,12 +23,10 @@ import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
 import ru.taaasty.adapters.NotificationListAdapter;
+import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessagingStatusReceived;
-import ru.taaasty.events.NotificationMarkedAsRead;
-import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.NotificationList;
@@ -48,7 +46,7 @@ import rx.subscriptions.Subscriptions;
 
 public class NotificationListFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "NotificationListFragment";
+    private static final String TAG = "NotificationListFrgmnt";
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,6 +61,8 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     PusherService mPusherService;
 
     boolean mBound = false;
+
+    private NotificationsListManaged mNotificationList;
 
     private NotificationListAdapter mAdapter;
 
@@ -104,13 +104,16 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 if (viewHolder instanceof ViewHolderItem) mLoader.onBindViewHolder(viewHolder, position, mAdapter.getItemCount());
             }
         };
+        mNotificationList = new NotificationsListManaged(mAdapter);
+        mAdapter.setNotificationList(mNotificationList);
+
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
         mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -126,6 +129,21 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         mWaitingMessagingStatus = false;
         mLoader = new NotificationListLoader();
         mLoader.onCreate();
+        mNotificationList.onCreate();
+
+        mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                scrollShowTopPosition();
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                scrollShowTopPosition();
+            }
+        });
+
         return root;
     }
 
@@ -178,7 +196,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             mLoader.onDestroy();
             mLoader = null;
         }
-        mListView.setOnScrollListener(null);
+        mNotificationList.onDestroy();
+        mNotificationList = null;
+        mListView.removeOnScrollListener(null);
         mListView = null;
         mListener = null;
         mProgressView = null;
@@ -216,67 +236,11 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         setupMarkAsReadButtonStatus();
     }
 
-    public void onEventMainThread(NotificationReceived event) {
-        if (mAdapter == null ) return;
-        if (DBG) Log.v(TAG, "NotificationReceived " + event);
-        mAdapter.addNotification(event.notification);
-        scrollShowTopPosition();
-    }
-
-    /**
-     * При отписке или отписке юзера на тлог в списке нотификаций нужно изменить кнопку "подтвердить/уже в друзьях"
-     * Через пушер новая нотификация не приходит.
-     * @param relationshipChanged
-     */
-    // Это лютый пиздец, что оно здесь, хотя да и похуй
-    public void onEventMainThread(RelationshipChanged relationshipChanged) {
-        Relationship newRelationship = relationshipChanged.relationship;
-        long me = UserManager.getInstance().getCurrentUserId();
-        long him;
-        boolean changed = false;
-
-        if (!newRelationship.isMyRelationToHim(me)) return; // Не интересно
-        him = newRelationship.getToId();
-
-        // Меняем relation
-        synchronized (this) {
-            for (Notification notification : mAdapter.getNotifications().getItems()) {
-                if (!notification.isTypeRelationship()) return;
-                if (notification.sender.getId() == him) {
-                    Notification newNotification = Notification.changeSenderRelation(notification, newRelationship);
-                    mAdapter.addNotification(newNotification);
-                    changed = true;
-                }
-            }
-        }
-        if (changed) scrollShowTopPosition();
-    }
-
-    public void onEventMainThread(NotificationMarkedAsRead event) {
-        NotificationListAdapter.NotificationsList notifications = mAdapter.getNotifications();
-
-        boolean changed = false;
-        int notificationsSize = notifications.size();
-        for (int responseIdx = 0; responseIdx < event.id.length; ++responseIdx) {
-            for (int i = 0; i < notificationsSize; ++i) {
-                Notification notification = notifications.get(i);
-                if (notification.id == event.id[responseIdx]) {
-                    if (!notification.isMarkedAsRead()) {
-                        Notification newNotification = Notification.markAsRead(notification, event.readAt[responseIdx]);
-                        mAdapter.addNotification(newNotification);
-                        changed = true;
-                    }
-                    break;
-                }
-            }
-        }
-        if (changed) scrollShowTopPosition();
-    }
-
     /**
      * Если верхний элемент показан частично - скроллим, чтобы он был виден полностью
      */
     private void scrollShowTopPosition() {
+        if (mListView == null) return;
         View top = mListView.getChildAt(0);
         boolean listAtTop = top == null || (mListView.getChildAdapterPosition(top) == 0);
         if (listAtTop) mListView.smoothScrollToPosition(0);
@@ -285,9 +249,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     public void setupLoadingState() {
         if (DBG) Log.v(TAG, "setupLoadingState");
         if (mProgressView == null || mLoader == null) return;
-        boolean showNoItemsIndicator = !mLoader.isRefreshing() && mAdapter.isEmpty();
+        boolean showNoItemsIndicator = !mLoader.isRefreshing() && mNotificationList.isEmpty();
         mAdapterEmpty.setVisibility(showNoItemsIndicator ? View.VISIBLE : View.GONE);
-        mProgressView.setVisibility(mLoader.isRefreshing() && mAdapter.isEmpty() ? View.VISIBLE : View.INVISIBLE);
+        mProgressView.setVisibility(mLoader.isRefreshing() && mNotificationList.isEmpty() ? View.VISIBLE : View.INVISIBLE);
     }
 
     /**
@@ -456,7 +420,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
         private void activateCacheInBackground() {
             if (DBG) Log.v(TAG, "activateCacheInBackground()");
-            final Notification lastEntry = mAdapter.getNotifications().getLastEntry();
+            final Notification lastEntry = mNotificationList.getLastEntry();
             if (lastEntry == null) return;
             mHandler.post(new Runnable() {
                 @Override
@@ -488,9 +452,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             boolean keepOnAppending = (list != null) && (list.notifications.size() >= 0);
 
             if (list != null) {
-                int sizeBefore = mAdapter.getNotifications().size();
-                mAdapter.getNotifications().insertItems(list.notifications);
-                if (!isRefresh && entriesRequested != 0 && sizeBefore == mAdapter.getNotifications().size())
+                int sizeBefore = mNotificationList.size();
+                mNotificationList.insertItems(list.notifications);
+                if (!isRefresh && entriesRequested != 0 && sizeBefore == mNotificationList.size())
                     keepOnAppending = false;
             }
             setKeepOnAppending(keepOnAppending);
@@ -529,11 +493,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 NotificationListLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, notifications);
             }
         }
-
     }
 
-
-        /**
+    /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
