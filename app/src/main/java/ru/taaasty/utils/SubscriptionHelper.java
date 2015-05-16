@@ -7,6 +7,11 @@ import rx.Subscription;
  */
 public class SubscriptionHelper {
 
+    /**
+     * TODO Заменить на Subscriptions.unsubscribed
+     * @return
+     */
+    @Deprecated
     public static Subscription empty() {
         return EMPTY;
     }

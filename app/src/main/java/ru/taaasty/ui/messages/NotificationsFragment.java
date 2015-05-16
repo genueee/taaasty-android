@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.adapters.NotificationsAdapter;
@@ -25,18 +28,20 @@ import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.model.Notification;
+import ru.taaasty.model.NotificationList;
 import ru.taaasty.model.Relationship;
+import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.SubscriptionHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class NotificationsFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -60,9 +65,11 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     private boolean mWaitingMessagingStatus;
 
-    private Subscription mUserInfoSubscription = SubscriptionHelper.empty();
+    private Subscription mUserInfoSubscription = Subscriptions.unsubscribed();
 
-    private Subscription mFollowSubscribtion = SubscriptionHelper.empty();
+    private Subscription mFollowSubscription = Subscriptions.unsubscribed();
+
+    private NotificationsLoader mLoader;
 
     public static NotificationsFragment newInstance() {
         return new NotificationsFragment();
@@ -87,7 +94,13 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             }
         });
 
-        mAdapter = new NotificationsAdapter(getActivity(), mInteractionListener);
+        mAdapter = new NotificationsAdapter(getActivity(), mInteractionListener) {
+            @Override
+            public void onBindViewHolder(ViewHolder viewHolder, int position) {
+                super.onBindViewHolder(viewHolder, position);
+                if (viewHolder instanceof ViewHolderItem) mLoader.onBindViewHolder(viewHolder, position, mAdapter.getItemCount());
+            }
+        };
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
@@ -108,6 +121,8 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             }
         });
         mWaitingMessagingStatus = false;
+        mLoader = new NotificationsLoader();
+        mLoader.onCreate();
         return root;
     }
 
@@ -127,21 +142,25 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         super.onStart();
         EventBus.getDefault().register(this);
         Intent intent = new Intent(getActivity(), PusherService.class);
-        mAdapter.registerAdapterDataObserver(mDataObserver);
         getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mLoader.refreshFeed();
+        setupLoadingState();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mAdapter.unregisterAdapterDataObserver(mDataObserver);
         EventBus.getDefault().unregister(this);
         if (mBound) {
             getActivity().unbindService(this);
             mBound = false;
         }
     }
-
 
     @Override
     public void onDetach() {
@@ -152,6 +171,10 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (mLoader != null) {
+            mLoader.onDestroy();
+            mLoader = null;
+        }
         mListView.setOnScrollListener(null);
         mListView = null;
         mListener = null;
@@ -162,7 +185,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         mUserInfoSubscription.unsubscribe();
     }
 
@@ -171,10 +194,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
         mPusherService = binder.getService();
         mBound = true;
-        if (mAdapter != null) {
-            mAdapter.setNotifications(mPusherService.getNotifications());
-            setupMarkAsReadButtonStatus();
-        }
+        if (mAdapter != null) setupMarkAsReadButtonStatus();
     }
 
     @Override
@@ -182,81 +202,64 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         mBound = false;
     }
 
-    public void onEventMainThread(ru.taaasty.events.NotificationsStatus status) {
-        if (status.newStatus.code == PusherService.UPDATE_NOTIFICATIONS_STATUS_READY && (mAdapter != null) && mBound) {
-            mAdapter.setNotifications(mPusherService.getNotifications());
-        }
-        setupPusherStatus(status.newStatus);
-        setupMarkAsReadButtonStatus();
-    }
-
     public void onEventMainThread(MessagingStatusReceived status) {
         mWaitingMessagingStatus = false;
+        if (DBG) Log.v(TAG, "MessagingStatusReceived " + status);
         setupMarkAsReadButtonStatus();
     }
 
     public void onEventMainThread(MarkAsReadRequestCompleted status) {
+        if (DBG) Log.v(TAG, "MarkAsReadRequestCompleted " + status);
         setupMarkAsReadButtonStatus();
     }
 
     public void onEventMainThread(NotificationReceived event) {
         if (mAdapter == null ) return;
+        if (DBG) Log.v(TAG, "NotificationReceived " + event);
         View top = mListView.getChildAt(0);
-        boolean listAtTop = top == null || (mListView.getChildPosition(top) == 0);
+        boolean listAtTop = top == null || (mListView.getChildAdapterPosition(top) == 0);
         mAdapter.addNotification(event.notification);
         if (listAtTop) mListView.smoothScrollToPosition(0);
     }
 
-    private void setupPusherStatus(PusherService.NotificationsStatus status) {
-        switch (status.code) {
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_LOADING:
-                mAdapterEmpty.setVisibility(View.INVISIBLE);
-                // Не играемся с видимостью ListView - раздражает. При обновлении и спиннер не показываем
-                if (mAdapter != null && !mAdapter.isEmpty()) {
-                    mProgressView.setVisibility(View.INVISIBLE);
-                } else {
-                    mProgressView.setVisibility(View.VISIBLE);
-                }
-                break;
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_READY:
-                if (mAdapter == null || mAdapter.isEmpty()) {
-                    mAdapterEmpty.setVisibility(View.VISIBLE);
-                } else {
-                    mAdapterEmpty.setVisibility(View.INVISIBLE);
-                }
-                mProgressView.setVisibility(View.INVISIBLE);
-                break;
-            case PusherService.UPDATE_NOTIFICATIONS_STATUS_FAILURE:
-                mAdapterEmpty.setVisibility(View.INVISIBLE);
-                mProgressView.setVisibility(View.INVISIBLE);
-                if (mListener != null) mListener.notifyError(status.errorMessage, null);
-                break;
-        }
+    public void onEventMainThread(ru.taaasty.events.NotificationsStatus status) {
+        if (DBG) Log.v(TAG, "NotificationsStatus " + status);
+        setupMarkAsReadButtonStatus();
     }
 
+    public void setupLoadingState() {
+        if (DBG) Log.v(TAG, "setupLoadingState");
+        if (mProgressView == null || mLoader == null) return;
+        boolean showNoItemsIndicator = !mLoader.isRefreshing() && mAdapter.isEmpty();
+        mAdapterEmpty.setVisibility(showNoItemsIndicator ? View.VISIBLE : View.GONE);
+        mProgressView.setVisibility(mLoader.isRefreshing() && mAdapter.isEmpty() ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    /**
+     * Показ/скрытие кнопки "пометить все как прочитанные"
+     */
     void setupMarkAsReadButtonStatus() {
         if (mMarkAsReadButton == null) return;
-
         boolean isVisible = !mWaitingMessagingStatus && mBound && mPusherService.hasUnreadMessages();
         mMarkAsReadButton.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     void follow(Notification notification) {
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.follow(String.valueOf(notification.sender.getId())));
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new FollowerObserver(notification.id));
     }
 
     void unfollow(Notification notification) {
-        mFollowSubscribtion.unsubscribe();
+        mFollowSubscription.unsubscribe();
         ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.unfollow(String.valueOf(notification.sender.getId())));
-        mFollowSubscribtion = observable
+        mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new FollowerObserver(notification.id));
     }
@@ -297,14 +300,6 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         }
     }
 
-    private final RecyclerView.AdapterDataObserver mDataObserver = new RecyclerView.AdapterDataObserver() {
-        @Override
-        public void onChanged() {
-            super.onChanged();
-            if (mBound) setupPusherStatus(mPusherService.getNotificationsStatus());
-        }
-    };
-
     private void markNotificationRead(Notification notification) {
         if (notification.isMarkedAsRead()) return;
         PusherService.markNotificationAsRead(getActivity(), notification.id);
@@ -335,6 +330,155 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     };
 
     /**
+     * Подгрузчик нотификаций
+     */
+    class NotificationsLoader {
+        public static final int ENTRIES_TO_TRIGGER_APPEND = 3;
+
+        private final Handler mHandler;
+
+        /**
+         * Лента загружена не до конца, продолжаем подгружать
+         */
+        private boolean mKeepOnAppending;
+
+        /**
+         * Подгрузка нотификаций
+         */
+        private Subscription mAppendSubscription;
+
+        /**
+         * Обновление нотификаций
+         */
+        private Subscription mRefreshSubscription;
+
+        private final ApiMessenger mApiMessenger;
+
+        public NotificationsLoader()  {
+            mHandler = new Handler();
+            mKeepOnAppending = true;
+            mAppendSubscription = Subscriptions.unsubscribed();
+            mRefreshSubscription = Subscriptions.unsubscribed();
+            mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        }
+
+        protected Observable<NotificationList> createObservable(Long sinceEntryId, Integer limit) {
+            return mApiMessenger.getNotifications(null, null, sinceEntryId, limit, null);
+        }
+
+        public void refreshFeed() {
+            if (!mRefreshSubscription.isUnsubscribed()) {
+                return;
+            }
+            int entriesRequested = Constants.LIST_FEED_INITIAL_LENGTH;
+            Observable<NotificationList> observable = createObservable(null, entriesRequested);
+            mRefreshSubscription = observable
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new LoadObserver(true, entriesRequested));
+        }
+
+        public boolean isLoading() {
+            return !mAppendSubscription.isUnsubscribed() || !mRefreshSubscription.isUnsubscribed();
+        }
+
+        public boolean isRefreshing() {
+            return !mRefreshSubscription.isUnsubscribed();
+        }
+
+        public void onCreate() {
+
+        }
+
+        public void onDestroy() {
+            mAppendSubscription.unsubscribe();
+            mRefreshSubscription.unsubscribe();
+        }
+
+        private void setKeepOnAppending(boolean newValue) {
+            mKeepOnAppending = newValue;
+            if (!newValue) mAdapter.setShowPendingIndicator(false);
+        }
+
+        private void activateCacheInBackground() {
+            if (DBG) Log.v(TAG, "activateCacheInBackground()");
+            final Notification lastEntry = mAdapter.getNotifications().getLastEntry();
+            if (lastEntry == null) return;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (isLoading()) return;
+                    mAppendSubscription.unsubscribe();
+                    mAdapter.setShowPendingIndicator(true);
+                    int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+                    mAppendSubscription = createObservable(lastEntry.id, requestEntries)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new LoadObserver(false, requestEntries));
+                }
+            });
+        }
+
+        protected void onLoadCompleted(boolean isRefresh, int entriesRequested) {
+            if (DBG) Log.v(TAG, "onCompleted()");
+            setupMarkAsReadButtonStatus();
+            setupLoadingState();
+        }
+
+        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+            if (DBG) Log.e(TAG, "onError", e);
+            mAdapter.setShowPendingIndicator(false);
+            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+        }
+
+        protected void onLoadNext(boolean isRefresh, int entriesRequested, NotificationList list) {
+            boolean keepOnAppending = (list != null) && (list.notifications.size() >= 0);
+
+            if (list != null) {
+                int sizeBefore = mAdapter.getNotifications().size();
+                mAdapter.getNotifications().insertItems(list.notifications);
+                if (!isRefresh && entriesRequested != 0 && sizeBefore == mAdapter.getNotifications().size())
+                    keepOnAppending = false;
+            }
+            setKeepOnAppending(keepOnAppending);
+            mAdapter.setShowPendingIndicator(false);
+        }
+
+        private void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+            if (!mKeepOnAppending
+                    || feedSize == 0
+                    || isLoading()) return;
+            if (position >= feedSize - ENTRIES_TO_TRIGGER_APPEND) activateCacheInBackground();
+        }
+
+        public class LoadObserver implements Observer<NotificationList> {
+
+            private final boolean mIsRefresh;
+            private final int mEntriesRequested;
+
+            public LoadObserver(boolean isRefresh, int entriesRequested) {
+                mIsRefresh = isRefresh;
+                mEntriesRequested = entriesRequested;
+            }
+
+            @Override
+            public void onCompleted() {
+                NotificationsLoader.this.onLoadCompleted(mIsRefresh, mEntriesRequested);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                NotificationsLoader.this.onLoadError(mIsRefresh, mEntriesRequested, e);
+            }
+
+            @Override
+            public void onNext(NotificationList notifications) {
+                NotificationsLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, notifications);
+            }
+        }
+
+    }
+
+
+        /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
@@ -345,8 +489,8 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onListScrolled(int dy, boolean atTop);
-        public void onListScrollStateChanged(int state);
+        void onListScrolled(int dy, boolean atTop);
+        void onListScrollStateChanged(int state);
     }
 
 }

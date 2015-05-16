@@ -41,8 +41,10 @@ public class Notification implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
+                int compareIds = Objects.compare(rhs.id, lhs.id);
+                if (compareIds == 0) return 0;
                 int compareDates = rhs.createdAt.compareTo(lhs.createdAt);
-                return compareDates != 0 ? compareDates : Objects.compare(rhs.id, lhs.id);
+                return compareDates != 0 ? compareDates : compareIds;
             }
         }
     };
@@ -287,6 +289,28 @@ public class Notification implements Parcelable {
             return new Notification[size];
         }
     };
+
+    @Override
+    public String toString() {
+        if (!BuildConfig.DEBUG) return super.toString();
+        return "Notification{" +
+                "action='" + action + '\'' +
+                ", id=" + id +
+                ", createdAt=" + createdAt +
+                ", userId=" + userId +
+                ", sender=" + sender +
+                ", senderRelation=" + senderRelation +
+                ", readAt=" + readAt +
+                ", image=" + image +
+                ", actionText='" + actionText + '\'' +
+                ", text='" + text + '\'' +
+                ", entityId=" + entityId +
+                ", entityType='" + entityType + '\'' +
+                ", parentId=" + parentId +
+                ", parentType='" + parentType + '\'' +
+                ", entityUrl='" + entityUrl + '\'' +
+                '}';
+    }
 
     @Override
     public boolean equals(Object o) {

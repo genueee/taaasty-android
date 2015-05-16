@@ -1,5 +1,6 @@
 package ru.taaasty.events;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.model.Notification;
 
 /**
@@ -13,4 +14,11 @@ public class NotificationReceived {
         this.notification = notification;
     }
 
+    @Override
+    public String toString() {
+        if (!BuildConfig.DEBUG) return super.toString();
+        return "NotificationReceived{" +
+                "notification=" + notification +
+                '}';
+    }
 }

@@ -6,6 +6,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,10 @@ import ru.taaasty.widgets.RelativeDateTextSwitcher;
  */
 public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
 
+    public static final int VIEW_TYPE_ITEM = R.id.view_type_item;
+
+    public static final int VIEW_TYPE_PENDING_INDICATOR = R.id.view_type_pending_indicator;
+
     private final NotificationsList mNotifications;
     private final ImageUtils mImageUtils;
     private final Picasso mPicasso;
@@ -43,48 +48,104 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     private Set<Long> mFollowProcess;
 
+    private boolean mPendingIndicatorShown;
+
     public NotificationsAdapter(Context context, InteractionListener listener) {
         mContext = context;
         mNotifications = new NotificationsList();
         mFollowProcess = new HashSet<>(1);
+        mPendingIndicatorShown = false;
         mListener = listener;
         mImageUtils = ImageUtils.getInstance();
         mPicasso = Picasso.with(context);
         mStubPlaceholder = context.getResources().getDrawable(R.drawable.image_loading_drawable);
         setHasStableIds(true);
+        registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                Log.v("", "onChanged");
+            }
+
+            @Override
+            public void onItemRangeChanged(int positionStart, int itemCount) {
+                super.onItemRangeChanged(positionStart, itemCount);
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+            }
+
+            @Override
+            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+                super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+            }
+
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                super.onItemRangeRemoved(positionStart, itemCount);
+            }
+        });
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View root = LayoutInflater.from(parent.getContext()).inflate(R.layout.notifications_item, parent, false);
-        return new ViewHolder(root);
+        View root;
+        final ViewHolder holder;
+
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        switch (viewType) {
+            case VIEW_TYPE_PENDING_INDICATOR:
+                root = inflater.inflate(R.layout.endless_loading_indicator, parent, false);
+                holder = new ViewHolderPendingIndicator(root);
+                break;
+            case VIEW_TYPE_ITEM:
+                root = inflater.inflate(R.layout.notifications_item, parent, false);
+                holder = new ViewHolderItem(root);
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+
+        return holder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        Notification notification = mNotifications.get(position);
-        bindReadStatus(viewHolder, notification);
-        bindAvatar(viewHolder, notification);
-        bindNotificationText(viewHolder, notification);
-        bindNotificationDate(viewHolder, notification);
-
-        if (notification.isTypeRelationship()) {
-            bindRelationship(viewHolder, notification);
-        } else if (notification.hasImage()) {
-            bindEntryImage(viewHolder, notification);
+        if (isPendingIndicatorPosition(position)) {
+            return;
         } else {
-            viewHolder.rightContainer.setVisibility(View.GONE);
+            ViewHolderItem holderItem = (ViewHolderItem)viewHolder;
+            Notification notification = mNotifications.get(position);
+            bindReadStatus(holderItem, notification);
+            bindAvatar(holderItem, notification);
+            bindNotificationText(holderItem, notification);
+            bindNotificationDate(holderItem, notification);
+
+            if (notification.isTypeRelationship()) {
+                bindRelationship(holderItem, notification);
+            } else if (notification.hasImage()) {
+                bindEntryImage(holderItem, notification);
+            } else {
+                holderItem.rightContainer.setVisibility(View.GONE);
+            }
         }
     }
 
     @Override
     public long getItemId(int position) {
-        return mNotifications.get(position).id;
+        return isPendingIndicatorPosition(position) ? RecyclerView.NO_ID : mNotifications.get(position).id;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return isPendingIndicatorPosition(position) ? VIEW_TYPE_PENDING_INDICATOR : VIEW_TYPE_ITEM;
     }
 
     @Override
     public int getItemCount() {
-        return mNotifications.size();
+        return mNotifications.size() + (mPendingIndicatorShown ? 1 : 0);
     }
 
     public boolean isEmpty() {
@@ -98,6 +159,10 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public void addNotification(Notification notification) {
         mNotifications.add(notification);
         onNotificationFollowUnfollowStopped(notification.id);
+    }
+
+    public NotificationsList getNotifications() {
+        return mNotifications;
     }
 
     public void onNotificationFollowUnfollowStarted(long notificationId) {
@@ -118,15 +183,34 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
-    private void bindReadStatus(ViewHolder holder, Notification notification) {
+    public void setShowPendingIndicator(boolean newValue) {
+        if (newValue == mPendingIndicatorShown) return;
+        mPendingIndicatorShown = newValue;
+        if (newValue) {
+            notifyItemInserted(getPendingIndicatorPosition());
+        } else {
+            notifyItemRemoved(getPendingIndicatorPosition());
+        }
+    }
+
+    private int getPendingIndicatorPosition() {
+        return mNotifications.size();
+    }
+
+    private boolean isPendingIndicatorPosition(int position) {
+        if (!mPendingIndicatorShown) return false;
+        return position == getPendingIndicatorPosition();
+    }
+
+    private void bindReadStatus(ViewHolderItem holder, Notification notification) {
         holder.unreadIndicator.setVisibility(notification.isMarkedAsRead() ? View.INVISIBLE : View.VISIBLE);
     }
 
-    private void bindAvatar(ViewHolder holder, Notification notification) {
+    private void bindAvatar(ViewHolderItem holder, Notification notification) {
         mImageUtils.loadAvatar(notification.sender, holder.avatar, R.dimen.avatar_small_diameter);
     }
 
-    private void bindNotificationText(ViewHolder holder, Notification notification) {
+    private void bindNotificationText(ViewHolderItem holder, Notification notification) {
         User author = notification.sender;
         SpannableStringBuilder ssb = new SpannableStringBuilder("@");
         ssb.append(author.getName());
@@ -141,11 +225,11 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         holder.notification.setText(ssb);
     }
 
-    private void bindNotificationDate(ViewHolder holder, Notification notification) {
+    private void bindNotificationDate(ViewHolderItem holder, Notification notification) {
         holder.notificationDate.setRelativeDate(notification.createdAt.getTime());
     }
 
-    private void bindEntryImage(ViewHolder holder, Notification notification) {
+    private void bindEntryImage(ViewHolderItem holder, Notification notification) {
         holder.rightContainer.setVisibility(View.VISIBLE);
         holder.entryImage.setVisibility(View.VISIBLE);
         holder.progressButton.setVisibility(View.GONE);
@@ -176,7 +260,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
                 .into(holder.entryImage);
     }
 
-    private void bindRelationship(ViewHolder holder, Notification notification) {
+    private void bindRelationship(ViewHolderItem holder, Notification notification) {
         boolean meSubscribed = notification.isMeSubscribed();
 
         holder.rightContainer.setVisibility(View.VISIBLE);
@@ -197,7 +281,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
-    private final class NotificationsList extends SortedList<Notification> {
+    public final class NotificationsList extends SortedList<Notification> {
 
         public NotificationsList() {
             super(Notification.class, new SortedListAdapterCallback<Notification>(NotificationsAdapter.this) {
@@ -219,7 +303,19 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         }
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public ViewHolder(View itemView) {
+            super(itemView);
+        }
+    }
+
+    public final class ViewHolderPendingIndicator extends ViewHolder {
+        public ViewHolderPendingIndicator(View itemView) {
+            super(itemView);
+        }
+    }
+
+    public final class ViewHolderItem extends ViewHolder implements  View.OnClickListener {
         public final View unreadIndicator;
         public final ImageView avatar;
         public final ru.taaasty.widgets.LinkifiedTextView notification;
@@ -230,7 +326,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         public final View progressButton;
         public final ImageView entryImage;
 
-        public ViewHolder(View v) {
+        public ViewHolderItem(View v) {
             super(v);
             unreadIndicator = v.findViewById(R.id.unread_indicator);
             avatar = (ImageView) v.findViewById(R.id.avatar);

@@ -186,7 +186,7 @@ public class ConversationFragment extends Fragment {
         super.onResume();
         if (mAdapter.isEmpty()) {
             getView().findViewById(R.id.progress).setVisibility(View.VISIBLE);
-            refreshMessages();
+            mMessagesLoader.refreshMessages();
         }
         mListScrollController.checkScroll();
     }
@@ -288,14 +288,6 @@ public class ConversationFragment extends Fragment {
                     }
                 })
                 .subscribe(mPostMessageObserver);
-    }
-
-    private void refreshMessages() {
-        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-        Observable<ConversationMessages> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
-                .observeOn(AndroidSchedulers.mainThread());
-
-        mMessagesLoader.refreshFeed(observableFeed, requestEntries);
     }
 
     private void addMessageScrollToEnd(Conversation.Message message) {
@@ -591,7 +583,15 @@ public class ConversationFragment extends Fragment {
             return mApiMessenger.getMessages(null, mConversationId, null, sinceEntryId, limit, null);
         }
 
-        public void refreshFeed(Observable<ConversationMessages> observable, int entriesRequested) {
+        public void refreshMessages() {
+            int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+            Observable<ConversationMessages> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
+                    .observeOn(AndroidSchedulers.mainThread());
+
+            refreshFeed(observableFeed, requestEntries);
+        }
+
+        private void refreshFeed(Observable<ConversationMessages> observable, int entriesRequested) {
             if (!mMessagesRefreshSubscription.isUnsubscribed()) {
                 onFeedIsUnsubscribed(true);
                 mMessagesRefreshSubscription.unsubscribe();

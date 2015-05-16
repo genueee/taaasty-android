@@ -204,6 +204,7 @@
     <string name="no_notifications">Здесь будут отображаться ваши уведомления</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
+    <string name="error_load_notifications">Ошибка загрузки уведомлений</string>
     <string name="sharing_description">Пост на тейсти</string>
     <string name="facebook_sharing_ok">Ссылка размещена на вашей страничке в facebook</string>
     <string name="facebook_sharing_fail">Упс, что то не получилось…</string>

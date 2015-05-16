@@ -14,6 +14,7 @@ import ru.taaasty.model.Conversation;
 import ru.taaasty.model.ConversationMessages;
 import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.Notification;
+import ru.taaasty.model.NotificationList;
 import ru.taaasty.model.PusherReadyResponse;
 import ru.taaasty.model.Status;
 import rx.Observable;
@@ -30,6 +31,14 @@ public interface ApiMessenger {
     @FormUrlEncoded
     @POST("/messenger/ready.json")
     Observable<PusherReadyResponse> authReady(@Field("socket_id") String socketId);
+
+    @GET("/messenger/notifications.json")
+    Observable<NotificationList> getNotifications(@Query("socket_id") String socketId,
+                                                 @Query("from_notification_id") Long fromMessageId,
+                                                 @Query("to_notification_id") Long toMessageId,
+                                                 @Query("limit") Integer limit,
+                                                 @Query("order") String order);
+
 
     @FormUrlEncoded
     @PUT("/messenger/notifications/{id}/read.json")
