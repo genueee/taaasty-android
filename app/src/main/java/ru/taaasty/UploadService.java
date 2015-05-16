@@ -38,9 +38,14 @@ import java.util.regex.Pattern;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.events.MarkAllAsReadRequestCompleted;
+import ru.taaasty.events.NotificationMarkedAsRead;
+import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.model.Entry;
+import ru.taaasty.model.MarkNotificationsAsReadResponse;
+import ru.taaasty.model.Notification;
 import ru.taaasty.model.PostAnonymousTextForm;
 import ru.taaasty.model.PostEmbeddForm;
 import ru.taaasty.model.PostForm;
@@ -51,6 +56,7 @@ import ru.taaasty.model.TlogDesign;
 import ru.taaasty.model.Userpic;
 import ru.taaasty.service.ApiDesignSettings;
 import ru.taaasty.service.ApiEntries;
+import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.service.ApiUsers;
 import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.ImageUtils;
@@ -75,12 +81,17 @@ public class UploadService extends IntentService {
 
     private static final String ACTION_DOWNLOAD_IMAGES = "ru.taaasty.UploadService.action.DOWNLOAD_IMAGES";
 
+    private static final String ACTION_MARK_NOTIFICATION_AS_READ = "ru.taaasty.UploadService.action.MARK_AS_READ";
+    private static final String ACTION_MARK_ALL_NOTIFICATIONS_AS_READ = "ru.taaasty.UploadService.action.MARK_ALL_AS_READ";
+
     private static final String EXTRA_FORM = "ru.taaasty.extra.FORM";
 
     private static final String EXTRA_ENTRY_ID = "ru.taaasty.extra.ENTRY_ID";
     private static final String EXTRA_USER_ID = "ru.taaasty.extra.USER_ID";
     private static final String EXTRA_IMAGE_URI = "ru.taaasty.extra.IMAGE_URI";
     private static final String EXTRA_IMAGE_URL_LIST = "ru.taaasty.extra.IMAGE_URL_LIST";
+
+    private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.extra.EXTRA_NOTIFICATION_ID";
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile("^(.+)(\\..{1,5})$");
 
@@ -134,6 +145,19 @@ public class UploadService extends IntentService {
         context.startService(intent);
     }
 
+    public static void markNotificationAsRead(Context context, long notificationId) {
+        Intent intent = new Intent(context, UploadService.class);
+        intent.setAction(ACTION_MARK_NOTIFICATION_AS_READ);
+        intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
+        context.startService(intent);
+    }
+
+    public static void markAllNotificationsAsRead(Context context) {
+        Intent intent = new Intent(context, UploadService.class);
+        intent.setAction(ACTION_MARK_ALL_NOTIFICATIONS_AS_READ);
+        context.startService(intent);
+    }
+
     public UploadService() {
         super("UploadService");
         mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
@@ -176,6 +200,10 @@ public class UploadService extends IntentService {
             } else if (ACTION_DOWNLOAD_IMAGES.equals(action)) {
                 List<String> urlList = intent.getStringArrayListExtra(EXTRA_IMAGE_URL_LIST);
                 handleDownloadImages(urlList);
+            } else if (ACTION_MARK_NOTIFICATION_AS_READ.equals(action)) {
+                handleMarkNotificationAsRead(intent.getLongExtra(EXTRA_NOTIFICATION_ID, -1));
+            } else if (ACTION_MARK_ALL_NOTIFICATIONS_AS_READ.equals(action)) {
+                handleMarkAllNotificationsAsRead();
             }
         }
     }
@@ -370,6 +398,29 @@ public class UploadService extends IntentService {
         } finally {
             notificationManager.cancel(Constants.NOTIFICATION_ID_DOWNLOAD_IMAGES);
             showToastPicturesSaved(notificationManager, firstFile);
+        }
+    }
+
+    private void handleMarkNotificationAsRead(long notificationId) {
+        ApiMessenger api = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        try {
+            Notification notification = api.markNotificationAsRead(null, notificationId);
+            EventBus.getDefault().post(new NotificationReceived(notification));
+        } catch (Throwable e) {
+            Log.e(TAG, "markNotificationAsRead error", e);
+        }
+    }
+
+    private void handleMarkAllNotificationsAsRead() {
+        ApiMessenger api = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        EventBus eventBus = EventBus.getDefault();
+        try {
+            List<MarkNotificationsAsReadResponse> response = api.markAllNotificationsAsRead(null, null);
+            eventBus.post(new NotificationMarkedAsRead(response));
+            eventBus.post(new MarkAllAsReadRequestCompleted(null));
+        } catch (Throwable e) {
+            Log.e(TAG, "markNotificationAsRead error", e);
+            EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(e));
         }
     }
 

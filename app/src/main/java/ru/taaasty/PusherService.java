@@ -21,21 +21,17 @@ import com.pusher.client.connection.ConnectionStateChange;
 
 import org.apache.commons.io.IOUtils;
 
-import java.util.List;
-
 import de.greenrobot.event.EventBus;
 import retrofit.client.Response;
 import retrofit.mime.TypedInput;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.events.ConversationVisibilityChanged;
-import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.model.Conversation;
-import ru.taaasty.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.model.MessagingStatus;
 import ru.taaasty.model.Notification;
 import ru.taaasty.model.PusherEventUpdateNotifications;
@@ -44,8 +40,6 @@ import ru.taaasty.service.ApiMessenger;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.SubscriptionHelper;
-import rx.Observable;
-import rx.Observer;
 import rx.Subscription;
 
 public class PusherService extends Service implements PrivateChannelEventListener {
@@ -101,18 +95,14 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private static final String ACTION_START = "ru.taaasty.PusherService.action.START";
     private static final String ACTION_STOP = "ru.taaasty.PusherService.action.STOP";
     private static final String ACTION_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.ACTION_SET_STATUS_BAR_NOTIFICATIONS";
-    private static final String ACTION_MARK_AS_READ = "ru.taaasty.PusherService.action.MARK_AS_READ";
-    private static final String ACTION_MARK_ALL_AS_READ = "ru.taaasty.PusherService.action.MARK_ALL_AS_READ";
-
-    private static final String EXTRA_NOTIFICATION_ID = "ru.taaasty.PusherService.action.EXTRA_NOTIFICATION_ID";
 
     private static final String EXTRA_SET_STATUS_BAR_NOTIFICATIONS = "ru.taaasty.PusherService.action.EXTRA_SET_STATUS_BAR_NOTIFICATIONS";
 
     private final IBinder mBinder = new LocalBinder();
 
-    private ApiMessenger mApiMessenger;
-
     private Pusher mPusher;
+
+    private ApiMessenger mApiMessenger;
 
     private Handler mHandler;
 
@@ -141,19 +131,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
     public static void stopPusher(Context context) {
         Intent intent = new Intent(context, PusherService.class);
         intent.setAction(ACTION_STOP);
-        context.startService(intent);
-    }
-
-    public static void markNotificationAsRead(Context context, long notificationId) {
-        Intent intent = new Intent(context, PusherService.class);
-        intent.setAction(ACTION_MARK_AS_READ);
-        intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
-        context.startService(intent);
-    }
-
-    public static void markAllNotificationsAsRead(Context context) {
-        Intent intent = new Intent(context, PusherService.class);
-        intent.setAction(ACTION_MARK_ALL_AS_READ);
         context.startService(intent);
     }
 
@@ -209,12 +186,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 mPusherMustBeActive = false;
                 if (DBG) Log.v(TAG, "ACTION_STOP");
                 stopSelf();
-            } else if (ACTION_MARK_AS_READ.equals(action)) {
-                handleMarkAsRead(intent.getLongExtra(EXTRA_NOTIFICATION_ID, -1));
             } else if (ACTION_SET_STATUS_BAR_NOTIFICATIONS.equals(action)) {
                 mStatusBarNotification.addEnableDisableNotifications(intent.getBooleanExtra(EXTRA_SET_STATUS_BAR_NOTIFICATIONS, true));
-            } else if (ACTION_MARK_ALL_AS_READ.equals(action)) {
-                handleMarkAllAsRead();
             }
         }
 
@@ -389,21 +362,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
         }
     };
 
-    private void handleMarkAsRead(long notificationId) {
-        if (mPusher == null || mPusher.getConnection().getState() != ConnectionState.CONNECTED) {
-            if (DBG) Log.v(TAG, "handleMarkAsRead pusher disconnected");
-            return;
-        }
-        Observable<Notification> observableNotification = mApiMessenger.markNotificationAsRead(
-                mPusher.getConnection().getSocketId(), notificationId);
-        observableNotification.subscribe(mMarkAsReadObserver);
-    }
-
-    private void handleMarkAllAsRead() {
-        Observable<List<MarkNotificationsAsReadResponse>> observable = mApiMessenger.markAllNotificationsAsRead(null);
-        observable.subscribe(mMarkAllAsReadObserver);
-    }
-
     private void sentAuthReady() {
         if (mPusher == null || mPusher.getConnection().getState() != ConnectionState.CONNECTED) {
             if (DBG) Log.v(TAG, "sentAuthReady pusher disconnected");
@@ -416,40 +374,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 .subscribe();
 
     }
-
-    private final Observer<Notification> mMarkAsReadObserver = new Observer<Notification>() {
-
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            // XXX
-        }
-
-        @Override
-        public void onNext(Notification notification) {
-            mEventBus.post(new NotificationReceived(notification));
-        }
-    };
-
-    private final Observer<List<MarkNotificationsAsReadResponse>> mMarkAllAsReadObserver = new Observer<List<MarkNotificationsAsReadResponse>>() {
-        @Override
-        public void onCompleted() {
-            EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(null));
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(e));
-        }
-
-        @Override
-        public void onNext(List<MarkNotificationsAsReadResponse> markNotificationsAsReadResponses) {
-            mEventBus.post(new NotificationMarkedAsRead(markNotificationsAsReadResponses));
-        }
-    };
 
     private final ConnectionEventListener mConnectionEventListener = new ConnectionEventListener() {
         @Override

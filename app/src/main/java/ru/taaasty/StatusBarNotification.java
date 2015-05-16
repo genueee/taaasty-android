@@ -257,7 +257,7 @@ public class StatusBarNotification extends BroadcastReceiver {
     private void markNotificationsAsRead() {
         for (Notification notification: mNotifications) {
             if (!notification.isMarkedAsRead()) {
-                PusherService.markNotificationAsRead(mContext, notification.id);
+                UploadService.markNotificationAsRead(mContext, notification.id);
             }
         }
     }

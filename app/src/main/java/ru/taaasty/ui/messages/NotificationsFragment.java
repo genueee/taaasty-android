@@ -22,6 +22,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.UploadService;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.NotificationsAdapter;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
@@ -320,7 +321,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     void markAsReadClicked() {
         if (mMarkAsReadButton == null) return;
-        PusherService.markAllNotificationsAsRead(getActivity());
+        UploadService.markAllNotificationsAsRead(getActivity());
         // MessagingStatus с pusher обычно приходит позже, чем завершается запрос.
         // Ждем его, чтобы не мелькать кнопкой.
         mWaitingMessagingStatus = true;
@@ -356,7 +357,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     private void markNotificationRead(Notification notification) {
         if (notification.isMarkedAsRead()) return;
-        PusherService.markNotificationAsRead(getActivity(), notification.id);
+        UploadService.markNotificationAsRead(getActivity(), notification.id);
     }
 
     private final NotificationsAdapter.InteractionListener mInteractionListener = new NotificationsAdapter.InteractionListener() {

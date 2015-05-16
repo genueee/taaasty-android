@@ -41,12 +41,13 @@ public interface ApiMessenger {
 
     @FormUrlEncoded
     @PUT("/messenger/notifications/{id}/read.json")
-    Observable<Notification> markNotificationAsRead(@Field("socket_id") String socketId,
+    Notification markNotificationAsRead(@Field("socket_id") String socketId,
                                   @Path("id") long notificationId);
 
     @FormUrlEncoded
     @POST("/messenger/notifications/read.json")
-    Observable<List<MarkNotificationsAsReadResponse>> markAllNotificationsAsRead(
+    List<MarkNotificationsAsReadResponse> markAllNotificationsAsRead(
+            @Field("socket_id") String socketId,
             @Field("last_id") Long lastId);
 
 
