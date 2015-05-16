@@ -26,9 +26,9 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UploadService;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.model.Entry;
@@ -162,7 +162,7 @@ public class SharePostActivity extends ActivityBase {
      */
     public void savePost(View view) {
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Сохранить картинки", null);
-        UploadService.startDownloadImages(this, mEntry);
+        IntentService.startDownloadImages(this, mEntry);
         finish();
     }
 

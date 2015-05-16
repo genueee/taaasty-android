@@ -224,7 +224,7 @@
         </activity>
 
         <service
-            android:name="ru.taaasty.UploadService"
+            android:name=".IntentService"
             android:exported="false" >
         </service>
 

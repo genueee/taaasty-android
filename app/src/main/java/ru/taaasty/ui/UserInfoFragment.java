@@ -20,6 +20,7 @@ import com.squareup.picasso.Picasso;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.events.RelationshipChanged;
@@ -249,7 +250,7 @@ public class UserInfoFragment extends Fragment {
     }
 
     /**
-     * Нотификация EventBus от {@link ru.taaasty.UploadService} о статусе смены аватарки
+     * Нотификация EventBus от {@link IntentService} о статусе смены аватарки
      * @param status статус
      */
     public void onEventMainThread(UserpicUploadStatus status) {
@@ -284,7 +285,7 @@ public class UserInfoFragment extends Fragment {
     }
 
     /**
-     * Нотификация EventBus от {@link ru.taaasty.UploadService} о статусе смены заднего фона
+     * Нотификация EventBus от {@link IntentService} о статусе смены заднего фона
      * @param status статус
      */
     public void onEventMainThread(TlogBackgroundUploadStatus status) {

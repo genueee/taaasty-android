@@ -25,7 +25,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UploadService;
+import ru.taaasty.IntentService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostAnonymousTextForm;
@@ -230,7 +230,7 @@ public class EditPostActivity extends ActivityBase implements
         post.privacy = mCreatePostButtons.getPrivacy();
         originalPost = getOriginalPost();
         if (!originalPost.equals(post)) {
-            UploadService.startEditEntry(this, mEntry.getId(), getChangedPost(post));
+            IntentService.startEditEntry(this, mEntry.getId(), getChangedPost(post));
             setUploadingStatus(true);
         } else {
             Toast.makeText(this, R.string.post_has_not_been_changed, Toast.LENGTH_LONG).show();

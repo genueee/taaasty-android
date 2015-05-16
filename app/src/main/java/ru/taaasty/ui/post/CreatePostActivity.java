@@ -21,8 +21,8 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.IntentService;
 import ru.taaasty.R;
-import ru.taaasty.UploadService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.PostForm;
@@ -145,7 +145,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         }
         post = fragment.getForm();
         post.privacy = mCreatePostButtons.getPrivacy();
-        UploadService.startPostEntry(this, post);
+        IntentService.startPostEntry(this, post);
         setUploadingStatus(true);
     }
 

@@ -1,6 +1,5 @@
 package ru.taaasty;
 
-import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -63,26 +62,23 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
+ * An {@link android.app.IntentService} subclass for handling asynchronous task requests in
  * a service on a separate handler thread.
- * <p>
- * TODO: Customize class - update intent actions, extra parameters and static
- * helper methods.
  */
-public class UploadService extends IntentService {
+public class IntentService extends android.app.IntentService {
     public static final boolean DBG = BuildConfig.DEBUG;
-    public static final String TAG = "UploadService";
+    public static final String TAG = "IntentService";
 
-    private static final String ACTION_POST_ENTRY = "ru.taaasty.UploadService.action.POST_ENTRY";
-    private static final String ACTION_EDIT_ENTRY = "ru.taaasty.UploadService.action.EDIT_ENTRY";
+    private static final String ACTION_POST_ENTRY = "ru.taaasty.IntentService.action.POST_ENTRY";
+    private static final String ACTION_EDIT_ENTRY = "ru.taaasty.IntentService.action.EDIT_ENTRY";
 
-    private static final String ACTION_UPLOAD_USERPIC = "ru.taaasty.UploadService.action.UPLOAD_USERPIC";
-    private static final String ACTION_UPLOAD_BACKGROUND = "ru.taaasty.UploadService.action.UPLOAD_BACKGROUND";
+    private static final String ACTION_UPLOAD_USERPIC = "ru.taaasty.IntentService.action.UPLOAD_USERPIC";
+    private static final String ACTION_UPLOAD_BACKGROUND = "ru.taaasty.IntentService.action.UPLOAD_BACKGROUND";
 
-    private static final String ACTION_DOWNLOAD_IMAGES = "ru.taaasty.UploadService.action.DOWNLOAD_IMAGES";
+    private static final String ACTION_DOWNLOAD_IMAGES = "ru.taaasty.IntentService.action.DOWNLOAD_IMAGES";
 
-    private static final String ACTION_MARK_NOTIFICATION_AS_READ = "ru.taaasty.UploadService.action.MARK_AS_READ";
-    private static final String ACTION_MARK_ALL_NOTIFICATIONS_AS_READ = "ru.taaasty.UploadService.action.MARK_ALL_AS_READ";
+    private static final String ACTION_MARK_NOTIFICATION_AS_READ = "ru.taaasty.IntentService.action.MARK_AS_READ";
+    private static final String ACTION_MARK_ALL_NOTIFICATIONS_AS_READ = "ru.taaasty.IntentService.action.MARK_ALL_AS_READ";
 
     private static final String EXTRA_FORM = "ru.taaasty.extra.FORM";
 
@@ -105,17 +101,17 @@ public class UploadService extends IntentService {
      * Starts this service to perform action Foo with the given parameters. If
      * the service is already performing a task this action will be queued.
      *
-     * @see IntentService
+     * @see android.app.IntentService
      */
     public static void startPostEntry(Context context, PostForm form) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_POST_ENTRY);
         intent.putExtra(EXTRA_FORM, form.asHtmlForm());
         context.startService(intent);
     }
 
     public static void startEditEntry(Context context, long entryId, PostForm form) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_EDIT_ENTRY);
         intent.putExtra(EXTRA_ENTRY_ID, entryId);
         intent.putExtra(EXTRA_FORM, form.asHtmlForm());
@@ -123,7 +119,7 @@ public class UploadService extends IntentService {
     }
 
     public static void startUploadUserpic(Context context, long userId, Uri imageUri) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_UPLOAD_USERPIC);
         intent.putExtra(EXTRA_USER_ID, userId);
         intent.putExtra(EXTRA_IMAGE_URI, imageUri);
@@ -131,7 +127,7 @@ public class UploadService extends IntentService {
     }
 
     public static void startUploadBackground(Context context, long userId, Uri imageUri) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_UPLOAD_BACKGROUND);
         intent.putExtra(EXTRA_USER_ID, userId);
         intent.putExtra(EXTRA_IMAGE_URI, imageUri);
@@ -139,27 +135,27 @@ public class UploadService extends IntentService {
     }
 
     public static void startDownloadImages(Context context, Entry entry) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_DOWNLOAD_IMAGES);
         intent.putStringArrayListExtra(EXTRA_IMAGE_URL_LIST, entry.getImageUrls(true));
         context.startService(intent);
     }
 
     public static void markNotificationAsRead(Context context, long notificationId) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_MARK_NOTIFICATION_AS_READ);
         intent.putExtra(EXTRA_NOTIFICATION_ID, notificationId);
         context.startService(intent);
     }
 
     public static void markAllNotificationsAsRead(Context context) {
-        Intent intent = new Intent(context, UploadService.class);
+        Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_MARK_ALL_NOTIFICATIONS_AS_READ);
         context.startService(intent);
     }
 
-    public UploadService() {
-        super("UploadService");
+    public IntentService() {
+        super("IntentService");
         mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
         mApiUsersService = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
         mApiDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
@@ -451,7 +447,7 @@ public class UploadService extends IntentService {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(UploadService.this)
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(IntentService.this)
                         .setSmallIcon(R.drawable.ic_stat_file_download)
                         .setContentTitle(getText(R.string.pictures_saved))
                         .setContentText(firstFile.getPath())

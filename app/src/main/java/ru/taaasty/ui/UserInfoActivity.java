@@ -28,7 +28,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UploadService;
+import ru.taaasty.IntentService;
 import ru.taaasty.UserManager;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
@@ -486,12 +486,12 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     void updateBackground(Uri imageUri) {
-        UploadService.startUploadBackground(this, mUserId, imageUri);
+        IntentService.startUploadBackground(this, mUserId, imageUri);
         EventBus.getDefault().post(TlogBackgroundUploadStatus.createUploadStarted(mUserId, imageUri));
     }
 
     void updateAvatar(Uri imageUri) {
-        UploadService.startUploadUserpic(this, mUserId, imageUri);
+        IntentService.startUploadUserpic(this, mUserId, imageUri);
         EventBus.getDefault().post(UserpicUploadStatus.createUploadStarted(mUserId, imageUri));
     }
 }

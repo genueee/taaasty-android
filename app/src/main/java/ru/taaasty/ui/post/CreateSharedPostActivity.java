@@ -25,7 +25,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UploadService;
+import ru.taaasty.IntentService;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.model.PostForm;
 import ru.taaasty.utils.UiUtils;
@@ -130,7 +130,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
 
         fragment = (CreatePostFragmentBase)getFragmentManager().findFragmentById(R.id.container);
         post = fragment.getForm();
-        UploadService.startPostEntry(this, post);
+        IntentService.startPostEntry(this, post);
         setUploadingStatus(true);
     }
 

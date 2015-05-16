@@ -20,9 +20,9 @@ import android.widget.TextView;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
-import ru.taaasty.UploadService;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.NotificationsAdapter;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
@@ -321,7 +321,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     void markAsReadClicked() {
         if (mMarkAsReadButton == null) return;
-        UploadService.markAllNotificationsAsRead(getActivity());
+        IntentService.markAllNotificationsAsRead(getActivity());
         // MessagingStatus с pusher обычно приходит позже, чем завершается запрос.
         // Ждем его, чтобы не мелькать кнопкой.
         mWaitingMessagingStatus = true;
@@ -357,7 +357,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     private void markNotificationRead(Notification notification) {
         if (notification.isMarkedAsRead()) return;
-        UploadService.markNotificationAsRead(getActivity(), notification.id);
+        IntentService.markNotificationAsRead(getActivity(), notification.id);
     }
 
     private final NotificationsAdapter.InteractionListener mInteractionListener = new NotificationsAdapter.InteractionListener() {
