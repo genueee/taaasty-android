@@ -33,7 +33,7 @@ import ru.taaasty.widgets.RelativeDateTextSwitcher;
 /**
  * Created by alexey on 24.10.14.
  */
-public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdapter.ViewHolder> {
+public class NotificationListAdapter extends RecyclerView.Adapter<NotificationListAdapter.ViewHolder> {
 
     public static final int VIEW_TYPE_ITEM = R.id.view_type_item;
 
@@ -50,7 +50,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
 
     private boolean mPendingIndicatorShown;
 
-    public NotificationsAdapter(Context context, InteractionListener listener) {
+    public NotificationListAdapter(Context context, InteractionListener listener) {
         mContext = context;
         mNotifications = new NotificationsList();
         mFollowProcess = new HashSet<>(1);
@@ -284,7 +284,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
     public final class NotificationsList extends SortedList<Notification> {
 
         public NotificationsList() {
-            super(Notification.class, new SortedListAdapterCallback<Notification>(NotificationsAdapter.this) {
+            super(Notification.class, new SortedListAdapterCallback<Notification>(NotificationListAdapter.this) {
                 @Override
                 public int compare(Notification o1, Notification o2) {
                     return Notification.SORT_BY_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);

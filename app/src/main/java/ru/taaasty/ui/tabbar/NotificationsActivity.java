@@ -22,10 +22,10 @@ import ru.taaasty.model.Conversation;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.messages.ConversationsListFragment;
 import ru.taaasty.ui.messages.InitiateConversationFragment;
-import ru.taaasty.ui.messages.NotificationsFragment;
+import ru.taaasty.ui.messages.NotificationListFragment;
 
 public class NotificationsActivity extends TabbarActivityBase implements
-        NotificationsFragment.OnFragmentInteractionListener,
+        NotificationListFragment.OnFragmentInteractionListener,
         ConversationsListFragment.OnFragmentInteractionListener,
         InitiateConversationFragment.OnFragmentInteractionListener
 {
@@ -121,7 +121,7 @@ public class NotificationsActivity extends TabbarActivityBase implements
         public Fragment getItem(int position) {
             switch (position) {
                 case SECTION_NOTIFICATIONS:
-                    return NotificationsFragment.newInstance();
+                    return NotificationListFragment.newInstance();
                 case SECTION_CONVERSATIONS:
                     return ConversationsListFragment.newInstance();
                 default:

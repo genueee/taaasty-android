@@ -24,7 +24,7 @@ import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.adapters.NotificationsAdapter;
+import ru.taaasty.adapters.NotificationListAdapter;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationMarkedAsRead;
@@ -46,9 +46,9 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class NotificationsFragment extends Fragment implements ServiceConnection {
+public class NotificationListFragment extends Fragment implements ServiceConnection {
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "NotificationsFragment";
+    private static final String TAG = "NotificationListFragment";
 
     private OnFragmentInteractionListener mListener;
 
@@ -64,7 +64,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     boolean mBound = false;
 
-    private NotificationsAdapter mAdapter;
+    private NotificationListAdapter mAdapter;
 
     private boolean mWaitingMessagingStatus;
 
@@ -72,13 +72,13 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
     private Subscription mFollowSubscription = Subscriptions.unsubscribed();
 
-    private NotificationsLoader mLoader;
+    private NotificationListLoader mLoader;
 
-    public static NotificationsFragment newInstance() {
-        return new NotificationsFragment();
+    public static NotificationListFragment newInstance() {
+        return new NotificationListFragment();
     }
 
-    public NotificationsFragment() {
+    public NotificationListFragment() {
         // Required empty public constructor
     }
 
@@ -97,7 +97,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             }
         });
 
-        mAdapter = new NotificationsAdapter(getActivity(), mInteractionListener) {
+        mAdapter = new NotificationListAdapter(getActivity(), mInteractionListener) {
             @Override
             public void onBindViewHolder(ViewHolder viewHolder, int position) {
                 super.onBindViewHolder(viewHolder, position);
@@ -124,7 +124,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
             }
         });
         mWaitingMessagingStatus = false;
-        mLoader = new NotificationsLoader();
+        mLoader = new NotificationListLoader();
         mLoader.onCreate();
         return root;
     }
@@ -253,7 +253,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     }
 
     public void onEventMainThread(NotificationMarkedAsRead event) {
-        NotificationsAdapter.NotificationsList notifications = mAdapter.getNotifications();
+        NotificationListAdapter.NotificationsList notifications = mAdapter.getNotifications();
 
         boolean changed = false;
         int notificationsSize = notifications.size();
@@ -360,7 +360,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
         IntentService.markNotificationAsRead(getActivity(), notification.id);
     }
 
-    private final NotificationsAdapter.InteractionListener mInteractionListener = new NotificationsAdapter.InteractionListener() {
+    private final NotificationListAdapter.InteractionListener mInteractionListener = new NotificationListAdapter.InteractionListener() {
 
         @Override
         public void onNotificationClicked(View v, Notification notification) {
@@ -387,7 +387,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
     /**
      * Подгрузчик нотификаций
      */
-    class NotificationsLoader {
+    class NotificationListLoader {
         public static final int ENTRIES_TO_TRIGGER_APPEND = 3;
 
         private final Handler mHandler;
@@ -409,7 +409,7 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
         private final ApiMessenger mApiMessenger;
 
-        public NotificationsLoader()  {
+        public NotificationListLoader()  {
             mHandler = new Handler();
             mKeepOnAppending = true;
             mAppendSubscription = Subscriptions.unsubscribed();
@@ -516,17 +516,17 @@ public class NotificationsFragment extends Fragment implements ServiceConnection
 
             @Override
             public void onCompleted() {
-                NotificationsLoader.this.onLoadCompleted(mIsRefresh, mEntriesRequested);
+                NotificationListLoader.this.onLoadCompleted(mIsRefresh, mEntriesRequested);
             }
 
             @Override
             public void onError(Throwable e) {
-                NotificationsLoader.this.onLoadError(mIsRefresh, mEntriesRequested, e);
+                NotificationListLoader.this.onLoadError(mIsRefresh, mEntriesRequested, e);
             }
 
             @Override
             public void onNext(NotificationList notifications) {
-                NotificationsLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, notifications);
+                NotificationListLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, notifications);
             }
         }
 

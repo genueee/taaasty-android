@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.messages.NotificationsFragment">
+    tools:context="ru.taaasty.ui.messages.NotificationListFragment">
 
     <ProgressBar
         android:id="@+id/progress"
