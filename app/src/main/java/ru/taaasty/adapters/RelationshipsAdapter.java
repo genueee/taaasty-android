@@ -36,7 +36,7 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
         mRelationships = new SortedList<>(Relationship.class, new android.support.v7.util.SortedList.Callback<Relationship>() {
             @Override
             public int compare(Relationship o1, Relationship o2) {
-                return Relationship.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(o1, o2);
+                return Relationship.ORDER_BY_ID_DESC_COMARATOR.compare(o1, o2);
             }
 
             @Override

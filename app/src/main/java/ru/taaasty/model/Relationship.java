@@ -39,7 +39,7 @@ public class Relationship implements Parcelable {
     /**
      * Сортировка по убыванию id (более новые - в начале списка)
      */
-    public static transient Comparator<Relationship> ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR = new Comparator<Relationship>() {
+    public static transient Comparator<Relationship> ORDER_BY_ID_DESC_COMARATOR = new Comparator<Relationship>() {
         @Override
         public int compare(Relationship lhs, Relationship rhs) {
             if (lhs == null && rhs == null) {

@@ -47,6 +47,7 @@ public class Conversation implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
+                if (lhs.id == rhs.id) return 0;
                 Date rhsDate = (rhs.lastMessage == null ? rhs.createdAt : rhs.lastMessage.createdAt);
                 Date lhsDate = (lhs.lastMessage == null ? lhs.createdAt : lhs.lastMessage.createdAt);
                 int compareDates = rhsDate.compareTo(lhsDate);
