@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
@@ -48,7 +49,7 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class NotificationListFragment extends Fragment implements ServiceConnection {
+public class NotificationListFragment extends Fragment implements ServiceConnection, RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "NotificationListFrgmnt";
 
@@ -65,7 +66,6 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     PusherService mPusherService;
 
     boolean mBound = false;
-
 
     private NotificationListAdapter mAdapter;
 
@@ -416,7 +416,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
             if (savedInstanceState != null) {
                 ArrayList<Notification> notifications = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_NOTIFICATION_LIST);
-                mNotificationList.resetItems(notifications);
+                if (notifications != null) mNotificationList.resetItems(notifications);
             }
 
             mNotificationList.onCreate();
@@ -435,13 +435,13 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
-            ((NotificationListFragment)getTargetFragment()).onWorkFragmentActivityCreated();
+            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentActivityCreated();
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            if (getTargetFragment() != null) ((NotificationListFragment)getTargetFragment()).onWorkFragmentResume();
+            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentResume();
         }
 
         @Override
@@ -472,11 +472,6 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         public boolean isRefreshing() {
             return mLoader.isRefreshing();
         }
-
-        public boolean isInitialized() {
-            return mLoader != null;
-        }
-
 
         @Nullable
         private NotificationListAdapter getTargetAdapter() {

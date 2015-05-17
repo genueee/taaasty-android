@@ -2,7 +2,6 @@ package ru.taaasty.adapters;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -27,11 +26,11 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private final ImageUtils mImageUtils;
 
-    private final ConversationsList mConversations;
+    private final SortedList<Conversation> mConversations;
 
-    public ConversationsListAdapter() {
+    public ConversationsListAdapter(SortedList<Conversation> conversationList) {
         super();
-        mConversations = new ConversationsList();
+        mConversations = conversationList;
         mImageUtils = ImageUtils.getInstance();
         setHasStableIds(true);
     }
@@ -114,28 +113,6 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         } else {
             holder.msgCount.setVisibility(View.INVISIBLE);
             holder.unreceivedIndicator.setVisibility(conversation.unreceivedMessagesCount > 0 ? View.VISIBLE : View.INVISIBLE);
-        }
-    }
-
-    private final class ConversationsList extends SortedList<Conversation> {
-
-        public ConversationsList() {
-            super(Conversation.class, new SortedListAdapterCallback<Conversation>(ConversationsListAdapter.this) {
-                @Override
-                public int compare(Conversation o1, Conversation o2) {
-                    return Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
-                }
-
-                @Override
-                public boolean areContentsTheSame(Conversation oldItem, Conversation newItem) {
-                    return oldItem.equals(newItem);
-                }
-
-                @Override
-                public boolean areItemsTheSame(Conversation item1, Conversation item2) {
-                    return item1.id == item2.id;
-                }
-            });
         }
     }
 

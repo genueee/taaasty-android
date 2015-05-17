@@ -2,12 +2,10 @@ package ru.taaasty.ui.messages;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
+import android.app.FragmentManager;
 import android.os.Bundle;
-import android.os.IBinder;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,8 +19,9 @@ import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.RetainedFragmentCallbacks;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.model.Conversation;
@@ -37,7 +36,7 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class ConversationsListFragment extends Fragment implements ServiceConnection {
+public class ConversationsListFragment extends Fragment implements RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationsListFrag";
 
@@ -49,15 +48,9 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
 
     private View mProgressView;
 
-    PusherService mPusherService;
-
-    boolean mBound = false;
-
     private ConversationsListAdapter mAdapter;
 
-    private ApiMessenger mApiMessenger;
-
-    private Subscription mConversationsSubscription = Subscriptions.unsubscribed();
+    private WorkRetainedFragment mWorkFragment;
 
     public static ConversationsListFragment newInstance() {
         return new ConversationsListFragment();
@@ -68,12 +61,6 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_conversations, container, false);
@@ -81,34 +68,10 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
 
-        mAdapter = new ConversationsListAdapter() {
-            public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int position = holder.getPosition();
-                        Conversation conversation = getConversation(position);
-                        ConversationActivity.startConversationActivity(v.getContext(), conversation, v);
-                    }
-                });
-                holder.avatar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int position = holder.getPosition();
-                        Conversation conversation = getConversation(position);
-                        new UserInfoActivity.Builder(getActivity())
-                                .set(conversation.recipient, v, conversation.recipient.getDesign())
-                                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                                .startActivity();
-                    }
-                });
-            }
-        };
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
-        mListView.setAdapter(mAdapter);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -146,27 +109,50 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        EventBus.getDefault().register(this);
-        Intent intent = new Intent(getActivity(), PusherService.class);
-        getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        refreshConversationList();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        EventBus.getDefault().unregister(this);
-        if (mBound) {
-            getActivity().unbindService(this);
-            mBound = false;
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        FragmentManager fm = getFragmentManager();
+        mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("ConversationListWorkFragment");
+        if (mWorkFragment == null) {
+            mWorkFragment = new WorkRetainedFragment();
+            mWorkFragment.setTargetFragment(this, 0);
+            fm.beginTransaction().add(mWorkFragment, "ConversationListWorkFragment").commit();
+        } else {
+            mWorkFragment.setTargetFragment(this, 0);
         }
+    }
+
+    @Override
+    public void onWorkFragmentActivityCreated() {
+        mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList()) {
+            public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int position = holder.getAdapterPosition();
+                        Conversation conversation = getConversation(position);
+                        ConversationActivity.startConversationActivity(v.getContext(), conversation, v);
+                    }
+                });
+                holder.avatar.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        int position = holder.getPosition();
+                        Conversation conversation = getConversation(position);
+                        new UserInfoActivity.Builder(getActivity())
+                                .set(conversation.recipient, v, conversation.recipient.getDesign())
+                                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
+                                .startActivity();
+                    }
+                });
+            }
+        };
+        mListView.setAdapter(mAdapter);
+    }
+
+    @Override
+    public void onWorkFragmentResume() {
+        mWorkFragment.refreshConversationList();
     }
 
     @Override
@@ -178,40 +164,11 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mConversationsSubscription.unsubscribe();
+        mWorkFragment.setTargetFragment(null, 0);
+        mWorkFragment = null;
         mListView = null;
         mListener = null;
         mProgressView = null;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder service) {
-        PusherService.LocalBinder binder = (PusherService.LocalBinder) service;
-        mPusherService = binder.getService();
-        mBound = true;
-        refreshConversationList();
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        mBound = false;
-    }
-
-    public void onEventMainThread(ConversationChanged event) {
-        if (mAdapter != null && event.conversation.messagesCount > 0) mAdapter.addConversation(event.conversation);
-    }
-
-    private boolean isRefreshIndicatorShown() {
-        return mProgressView.getVisibility() == View.VISIBLE;
-    }
-
-    private boolean isRefreshing() {
-        return !mConversationsSubscription.isUnsubscribed();
     }
 
     private void setStatusLoading() {
@@ -240,50 +197,182 @@ public class ConversationsListFragment extends Fragment implements ServiceConnec
         if (mListener != null) mListener.notifyError(error, null);
     }
 
-    public void refreshConversationList() {
-        if (isRefreshing()) {
-            if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing());
-            return;
-        }
-        if (mApiMessenger == null || mPusherService == null || mConversationsSubscription == null) {
-            // Бывает при вызове из onServiceConnected, непонятно как
-            return;
-        }
-        if (DBG) Log.v(TAG, "refreshConversationList");
+    public static class WorkRetainedFragment extends Fragment {
 
-        String socketId = mBound && mPusherService != null ? mPusherService.getSocketId() : null;
-        mConversationsSubscription.unsubscribe();
-        mConversationsSubscription = AppObservable.bindFragment(this, mApiMessenger.getConversations(mPusherService.getSocketId()))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mConversationListObserver);
-        setStatusLoading();
-    }
+        private static final String BUNDLE_KEY_SUBSCRIPTION_LIST = "ru.taaasty.ui.messages.ConversationsListFragment.WorkRetainedFragment.BUNDLE_KEY_SUBSCRIPTION_LIST";
 
-    private final Observer<List<Conversation>> mConversationListObserver = new  Observer<List<Conversation>>() {
+        private CustomErrorView mListener;
+
+        private ApiMessenger mApiMessenger;
+
+        private Subscription mConversationsSubscription = Subscriptions.unsubscribed();
+
+        private SortedList<Conversation> mConversationList;
 
         @Override
-        public void onCompleted() {
-            setStatusReady();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.v(TAG, "onError");
-            setStatusFailure(getString(R.string.error_loading_conversations));
-        }
-
-        @Override
-        public void onNext(List<Conversation> conversations) {
-            if (DBG) Log.v(TAG, "onNext");
-            if (mAdapter != null) {
-                List<Conversation> ge0 = new ArrayList<>(conversations.size());
-                for (Conversation c: conversations) if (c.messagesCount > 0)  ge0.add(c);
-                mAdapter.setConversations(ge0);
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            try {
+                mListener = (CustomErrorView) activity;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(activity.toString()
+                        + " must implement CustomErrorView");
             }
         }
-    };
 
-    /**
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+            mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+            mConversationList = new SortedList<>(Conversation.class, new android.support.v7.util.SortedList.Callback<Conversation>() {
+                @Override
+                public int compare(Conversation o1, Conversation o2) {
+                    return Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
+                }
+
+                @Override
+                public void onInserted(int position, int count) {
+                    RecyclerView.Adapter adapter = getTargetAdapter();
+                    if (adapter != null) adapter.notifyItemRangeInserted(position, count);
+                }
+
+                @Override
+                public void onRemoved(int position, int count) {
+                    RecyclerView.Adapter adapter = getTargetAdapter();
+                    if (adapter != null) adapter.notifyItemRangeRemoved(position, count);
+                }
+
+                @Override
+                public void onMoved(int fromPosition, int toPosition) {
+                    RecyclerView.Adapter adapter = getTargetAdapter();
+                    if (adapter != null) adapter.notifyItemMoved(fromPosition, toPosition);
+                }
+
+                @Override
+                public void onChanged(int position, int count) {
+                    RecyclerView.Adapter adapter = getTargetAdapter();
+                    if (adapter != null) adapter.notifyItemRangeChanged(position, count);
+                }
+
+                @Override
+                public boolean areContentsTheSame(Conversation oldItem, Conversation newItem) {
+                    return oldItem.equals(newItem);
+                }
+
+                @Override
+                public boolean areItemsTheSame(Conversation item1, Conversation item2) {
+                    return item1.id == item2.id;
+                }
+            });
+            if (savedInstanceState != null) {
+                ArrayList<Conversation> list = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_SUBSCRIPTION_LIST);
+                if (list != null) mConversationList.resetItems(list);
+            }
+
+            EventBus.getDefault().register(this);
+        }
+
+        @Override
+        public void onSaveInstanceState(Bundle outState) {
+            super.onSaveInstanceState(outState);
+            if (!mConversationList.isEmpty()) {
+                outState.putParcelableArrayList(BUNDLE_KEY_SUBSCRIPTION_LIST,
+                        new ArrayList<Parcelable>(mConversationList.getItems()));
+            }
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentActivityCreated();
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentResume();
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            mConversationsSubscription.unsubscribe();
+            EventBus.getDefault().unregister(this);
+        }
+
+        @Override
+        public void onDetach() {
+            super.onDetach();
+            mListener = null;
+        }
+
+        public SortedList<Conversation> getConversationList() {
+            return mConversationList;
+        }
+
+        public boolean isRefreshing() {
+            return !mConversationsSubscription.isUnsubscribed();
+        }
+
+        public void refreshConversationList() {
+            if (isRefreshing()) {
+                if (DBG) Log.v(TAG, "refreshConversationList failed not started. refreshing: " + isRefreshing());
+                return;
+            }
+            if (mApiMessenger == null || mConversationsSubscription == null) {
+                // Бывает при вызове из onServiceConnected, непонятно как
+                return;
+            }
+            if (DBG) Log.v(TAG, "refreshConversationList");
+
+            mConversationsSubscription.unsubscribe();
+            mConversationsSubscription = AppObservable.bindFragment(this, mApiMessenger.getConversations(null))
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(mConversationListObserver);
+            if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusLoading();
+        }
+
+        public void onEventMainThread(ConversationChanged event) {
+            if (event.conversation.messagesCount > 0) mConversationList.add(event.conversation);
+        }
+
+        @Nullable
+        private RecyclerView.Adapter getTargetAdapter() {
+            if (getTargetFragment() != null) {
+                return ((ConversationsListFragment) getTargetFragment()).mAdapter;
+            } else {
+                return null;
+            }
+        }
+
+        private final Observer<List<Conversation>> mConversationListObserver = new  Observer<List<Conversation>>() {
+
+            @Override
+            public void onCompleted() {
+                if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusReady();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (DBG) Log.v(TAG, "onError");
+                if (mListener != null)
+                if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment())
+                        .setStatusFailure(getString(R.string.error_loading_conversations));
+            }
+
+            @Override
+            public void onNext(List<Conversation> conversations) {
+                if (DBG) Log.v(TAG, "onNext");
+                List<Conversation> ge0 = new ArrayList<>(conversations.size());
+                for (Conversation c : conversations) if (c.messagesCount > 0) ge0.add(c);
+                mConversationList.resetItems(ge0);
+            }
+        };
+
+    }
+
+        /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
