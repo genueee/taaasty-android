@@ -119,7 +119,7 @@ public class Relationship implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.mId);
+        dest.writeValue(this.mId);
         dest.writeLong(this.mUserId);
         dest.writeLong(this.mReaderId);
         dest.writeString(this.mState);
@@ -128,7 +128,7 @@ public class Relationship implements Parcelable {
     }
 
     private Relationship(Parcel in) {
-        this.mId = in.readLong();
+        this.mId = (Long) in.readValue(Long.class.getClassLoader());
         this.mUserId = in.readLong();
         this.mReaderId = in.readLong();
         this.mState = in.readString();
@@ -136,8 +136,7 @@ public class Relationship implements Parcelable {
         this.mUser = in.readParcelable(User.class.getClassLoader());
     }
 
-
-    public static final Parcelable.Creator<Relationship> CREATOR = new Parcelable.Creator<Relationship>() {
+    public static final Creator<Relationship> CREATOR = new Creator<Relationship>() {
         public Relationship createFromParcel(Parcel source) {
             return new Relationship(source);
         }

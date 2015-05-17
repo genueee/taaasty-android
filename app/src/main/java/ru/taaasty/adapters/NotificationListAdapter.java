@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,12 +39,12 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     private final Context mContext;
     private final Drawable mStubPlaceholder;
 
-    private NotificationsListManaged mNotifications;
+    private final NotificationsListManaged mNotifications;
     private Set<Long> mFollowProcess;
 
     private boolean mPendingIndicatorShown;
 
-    public NotificationListAdapter(Context context, InteractionListener listener) {
+    public NotificationListAdapter(Context context, InteractionListener listener, NotificationsListManaged list) {
         mContext = context;
         mFollowProcess = new HashSet<>(1);
         mPendingIndicatorShown = false;
@@ -53,38 +52,8 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         mImageUtils = ImageUtils.getInstance();
         mPicasso = Picasso.with(context);
         mStubPlaceholder = context.getResources().getDrawable(R.drawable.image_loading_drawable);
-        setHasStableIds(true);
-        registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                Log.v("", "onChanged");
-            }
-
-            @Override
-            public void onItemRangeChanged(int positionStart, int itemCount) {
-                super.onItemRangeChanged(positionStart, itemCount);
-            }
-
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-            }
-
-            @Override
-            public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-                super.onItemRangeMoved(fromPosition, toPosition, itemCount);
-            }
-
-            @Override
-            public void onItemRangeRemoved(int positionStart, int itemCount) {
-                super.onItemRangeRemoved(positionStart, itemCount);
-            }
-        });
-    }
-
-    public void setNotificationList(NotificationsListManaged list) {
         mNotifications = list;
+        setHasStableIds(true);
     }
 
     @Override

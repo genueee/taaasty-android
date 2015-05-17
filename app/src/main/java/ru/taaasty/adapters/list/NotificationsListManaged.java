@@ -1,7 +1,5 @@
 package ru.taaasty.adapters.list;
 
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.util.Log;
 
 import java.util.Date;
@@ -10,7 +8,6 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.SortedList;
 import ru.taaasty.UserManager;
-import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
@@ -21,12 +18,8 @@ public final class NotificationsListManaged extends SortedList<Notification> {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "NotificationsListMgd";
 
-    public NotificationsListManaged(AdapterCallback callback) {
+    public NotificationsListManaged(Callback callback) {
         super(Notification.class, callback);
-    }
-
-    public NotificationsListManaged(RecyclerView.Adapter adapter) {
-        this(new AdapterCallback(adapter));
     }
 
     public void onCreate() {
@@ -86,17 +79,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
         }
     }
 
-    public static class AdapterCallback extends SortedListAdapterCallback<Notification> {
-
-        /**
-         * Creates a {@link Callback} that will forward data change events to the provided
-         * Adapter.
-         *
-         * @param adapter The Adapter instance which should receive events from the SortedList.
-         */
-        public AdapterCallback(RecyclerView.Adapter adapter) {
-            super(adapter);
-        }
+    public static abstract class Callback extends android.support.v7.util.SortedList.Callback<Notification> {
 
         @Override
         public int compare(Notification o1, Notification o2) {

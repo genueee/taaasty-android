@@ -62,10 +62,14 @@ public class SortedList<E> extends android.support.v7.util.SortedList<E> {
         }
     }
 
-    public List<E> getItems() {
+    public E[] getItemsArray() {
         E[] items = (E[])Array.newInstance(mTClass, size());
         for (int i = 0, size = size(); i < size; ++i) items[i] = get(i);
-        return Arrays.asList(items);
+        return items;
+    }
+
+    public List<E> getItems() {
+        return Arrays.asList(getItemsArray());
     }
 
     public E getLastEntry() {
