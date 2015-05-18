@@ -44,7 +44,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     private static final String TAG = "FeedItemAdapterLite";
     private static final boolean DBG = BuildConfig.DEBUG;
 
-    private final EntryList mEntries;
+    private final SortedList<Entry> mEntries;
 
     private final int mPendingResource;
 
@@ -64,12 +64,16 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     protected abstract void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
 
     public FeedItemAdapterLite(Context context, @Nullable List<Entry> feed, boolean showUserAvatar) {
-        this(context, feed, showUserAvatar, R.layout.endless_loading_indicator);
+        this(null, feed, showUserAvatar, R.layout.endless_loading_indicator);
     }
 
-    private FeedItemAdapterLite(Context context, @Nullable List<Entry> feed, boolean showUserAvatar, int pendingResource) {
+    public FeedItemAdapterLite(SortedList<Entry> list, boolean showUserAvatar) {
+        this(list, null, showUserAvatar, R.layout.endless_loading_indicator);
+    }
+
+    private FeedItemAdapterLite(SortedList<Entry> entries, @Nullable List<Entry> feed, boolean showUserAvatar, int pendingResource) {
         super();
-        mEntries = new EntryList();
+        mEntries = entries != null ? entries : new EntryList();
         mShowUserAvatar = showUserAvatar;
         mPendingResource = pendingResource;
         mFeedDesign = TlogDesign.DUMMY;
@@ -269,7 +273,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         }
     }
 
-    public EntryList getFeed() {
+    public SortedList<Entry> getFeed() {
         return mEntries;
     }
 
@@ -280,15 +284,15 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return false;
     }
 
-    private int getFeedLocation(int adapterPosition) {
+    public static int getFeedLocation(int adapterPosition) {
         return adapterPosition - HEADERS_COUNT;
     }
 
-    private int getAdapterPosition(int feedLocation) {
+    public static int getAdapterPosition(int feedLocation) {
         return feedLocation + HEADERS_COUNT;
     }
 
-    private boolean isHeaderPosition(int position) {
+    public boolean isHeaderPosition(int position) {
         return position == 0;
     }
 
@@ -296,7 +300,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return position == mEntries.size() + HEADERS_COUNT;
     }
 
-    private boolean isPositionInFeed(int position) {
+    public boolean isPositionInFeed(int position) {
         return position != RecyclerView.NO_POSITION
                 && !isHeaderPosition(position)
                 && !isPendingIndicatorPosition(position);
@@ -306,13 +310,25 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
     }
 
+
     public final class EntryList extends SortedList<Entry> {
         public EntryList() {
-            super(Entry.class, new Callback<Entry>() {
+            super(Entry.class, new SortedList.Callback<Entry>() {
 
                 @Override
                 public int compare(Entry o1, Entry o2) {
                     return Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(o1, o2);
+                }
+
+                @Override
+                public boolean areContentsTheSame(Entry oldItem, Entry newItem) {
+                    // TODO
+                    return oldItem.equals(newItem);
+                }
+
+                @Override
+                public boolean areItemsTheSame(Entry item1, Entry item2) {
+                    return item1.getId() == item2.getId();
                 }
 
                 @Override
@@ -333,17 +349,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
                 @Override
                 public void onChanged(int position, int count) {
                     notifyItemRangeChanged(getAdapterPosition(position), count);
-                }
-
-                @Override
-                public boolean areContentsTheSame(Entry oldItem, Entry newItem) {
-                    // TODO
-                    return oldItem.equals(newItem);
-                }
-
-                @Override
-                public boolean areItemsTheSame(Entry item1, Entry item2) {
-                    return Entry.ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR.compare(item1, item2) == 0;
                 }
             });
         }

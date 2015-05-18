@@ -77,6 +77,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+        mViewPager.setOffscreenPageLimit(5);
 
         Tracker t =  ((TaaastyApplication) getApplication()).getTracker();
         t.setScreenName(mSectionsPagerAdapter.getScreenName(mViewPager.getCurrentItem()));

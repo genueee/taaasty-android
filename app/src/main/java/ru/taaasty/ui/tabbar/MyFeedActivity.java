@@ -21,6 +21,7 @@ import android.view.ViewConfiguration;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.UserManager;
 import ru.taaasty.model.CurrentUser;
 import ru.taaasty.model.Entry;
 import ru.taaasty.model.TlogDesign;
@@ -42,12 +43,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     public static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
 
-    private static final String KEY_CURRENT_USER = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER";
-    private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.tabbar.MyFeedActivity.KEY_CURRENT_USER_DESIGN";
-
-    private CurrentUser mCurrentUser;
-    private TlogDesign mCurrentUserDesign;
-
     private DrawerLayout mDrawerLayout;
 
 
@@ -61,10 +56,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-        if (savedInstanceState != null) {
-            mCurrentUser = savedInstanceState.getParcelable(KEY_CURRENT_USER);
-            mCurrentUserDesign = savedInstanceState.getParcelable(KEY_CURRENT_USER_DESIGN);
-        } else {
+        if (savedInstanceState == null) {
             Fragment fragment = MyFeedFragment.newInstance();
             getFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
@@ -124,13 +116,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mCurrentUser != null) outState.putParcelable(KEY_CURRENT_USER, mCurrentUser);
-        if (mCurrentUserDesign != null) outState.putParcelable(KEY_CURRENT_USER_DESIGN, mCurrentUserDesign);
-    }
-
-    @Override
     void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {
         switch (resultCode) {
             case CreatePostActivity.CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED:
@@ -173,15 +158,9 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         startActivity(intent);
     }
 
-    @Override
-    public void onCurrentUserLoaded(CurrentUser user, TlogDesign design) {
-        mCurrentUser = user;
-        mCurrentUserDesign = design;
-    }
-
     void refreshData() {
         Fragment current = getFragmentManager().findFragmentById(R.id.container);
-        if (current != null) ((IRereshable)current).refreshData();
+        if (current != null) ((IRereshable)current).refreshData(true);
     }
 
     public void onAdditionMenuItemClicked(int viewId) {
@@ -236,9 +215,10 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openFriends() {
-        if (mCurrentUser == null) return;
+        CurrentUser user = UserManager.getInstance().getCachedCurrentUser();
+        if (user == null) return;
         Intent i = new Intent(this, FollowingFollowersActivity.class);
-        i.putExtra(FollowingFollowersActivity.ARG_USER, mCurrentUser);
+        i.putExtra(FollowingFollowersActivity.ARG_USER, user);
         i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_FRIENDS);
         startActivity(i);
     }

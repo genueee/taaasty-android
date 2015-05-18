@@ -4,10 +4,11 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
+import android.app.FragmentManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,13 +27,14 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.RetainedFragmentCallbacks;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -59,20 +61,16 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
-public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkRetainedFragment.TargetFragmentInteraction {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogFragment";
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_USER_SLUG = "user_slug";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
-
-    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.TlogFragment.feed_items";
-    private static final String BUNDLE_KEY_TLOG_INFO = "ru.taaasty.ui.feeds.TlogFragment.tlog_info";
 
     private OnFragmentInteractionListener mListener;
 
@@ -81,26 +79,17 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     private View mEmptyView;
     private DateIndicatorWidget mDateIndicatorView;
 
-    private ApiTlog mTlogService;
     private Adapter mAdapter;
-    private MyFeedLoader mFeedLoader;
-
-    private Subscription mUserSubscription = Subscriptions.unsubscribed();
-
-    @Nullable
-    private Long mUserId;
-
-    @Nullable
-    private String mUserSlug;
-
-    @Nullable
-    private TlogInfo mTlogInfo;
 
     private String mBackgroundBitmapKey;
 
     private boolean mForceShowRefreshingIndicator;
 
     private int mAvatarThumbnailRes;
+
+    private WorkRetainedFragment mWorkFragment;
+
+    private Handler mHandler;
 
     public static TlogFragment newInstance(long userId) {
         return newInstance(userId, 0);
@@ -128,23 +117,22 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            mListener = (OnFragmentInteractionListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-        if (args.containsKey(ARG_USER_ID)) {
-            mUserId = args.getLong(ARG_USER_ID);
-            mUserSlug = null;
-        } else {
-            mUserId = null;
-            mUserSlug = args.getString(ARG_USER_SLUG);
-        }
-        mAvatarThumbnailRes = args.getInt(ARG_AVATAR_THUMBNAIL_RES, 0);
-
-        mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
-        if (savedInstanceState != null) {
-            mTlogInfo = savedInstanceState.getParcelable(BUNDLE_KEY_TLOG_INFO);
-        }
+        mAvatarThumbnailRes = getArguments().getInt(ARG_AVATAR_THUMBNAIL_RES, 0);
         mForceShowRefreshingIndicator = false;
+        mHandler = new Handler();
     }
 
     @Override
@@ -156,8 +144,13 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
         mEmptyView = v.findViewById(R.id.empty_view);
 
-        mRefreshLayout.setOnRefreshListener(this);
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener () {
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData(false);
+            }
+        });
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener () {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
             }
@@ -182,7 +175,7 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         });
 
         LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
-        mListView.setHasFixedSize(true);
+        //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.getItemAnimator().setSupportsChangeAnimations(false);
@@ -231,62 +224,46 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        FragmentManager fm = getFragmentManager();
+        mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("TlogFragmentWorkFragment");
+        if (mWorkFragment == null) {
+            mWorkFragment = new WorkRetainedFragment();
+            mWorkFragment.setArguments(getArguments());
+            mWorkFragment.setTargetFragment(this, 0);
+            fm.beginTransaction().add(mWorkFragment, "TlogFragmentWorkFragment").commit();
+        } else {
+            mWorkFragment.setTargetFragment(this, 0);
         }
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        List<Entry> feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-        mAdapter = new Adapter(getActivity(), feed);
+    public void onWorkFragmentActivityCreated() {
+        mAdapter = new Adapter(mWorkFragment.getEntryList());
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-        if (mTlogInfo != null) {
-            mAdapter.setUser(mTlogInfo.author);
+        if (mWorkFragment.getUser() != null) {
+            mAdapter.setUser(mWorkFragment.getUser().author);
             setupFeedDesign();
+            mListener.onTlogInfoLoaded(mWorkFragment.getUser());
         }
-        if (savedInstanceState != null) mDateIndicatorView.setVisibility(mAdapter.getFeed().isEmpty() ? View.INVISIBLE : View.VISIBLE);
 
         mListView.setAdapter(mAdapter);
-        mFeedLoader = new MyFeedLoader(mAdapter);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            List<Entry> feed = mAdapter.getFeed().getItems();
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<>(feed));
-        }
-        outState.putParcelable(BUNDLE_KEY_TLOG_INFO, mTlogInfo);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (!isLoading()) refreshData(mAdapter.getFeed().isEmpty());
-        updateDateIndicator(true);
+    public void onWorkFragmentResume() {
+        if (!mWorkFragment.isRefreshing()) refreshData(false);
+        updateIndicatorDelayed();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mUserSubscription.unsubscribe();
-
+        mHandler.removeCallbacksAndMessages(null);
         mDateIndicatorView = null;
-        if (mFeedLoader != null) {
-            mFeedLoader.onDestroy();
-            mFeedLoader = null;
-        }
+        mWorkFragment.setTargetFragment(null, 0);
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy(mListView);
@@ -302,37 +279,49 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     @Override
-    public void onRefresh() {
-        refreshData(true);
+    public void onShowPendingIndicatorChanged(boolean newValue) {
+        if (mAdapter != null) mAdapter.setLoading(newValue);
     }
+
+    @Override
+    public void onLoadingStateChanged(String reason) {
+        mHandler.removeCallbacks(mRefreshLoadingState);
+        mHandler.postDelayed(mRefreshLoadingState, 16);
+    }
+
+    @Override
+    public void onDesignChanged() {
+    }
+
+    @Override
+    public void onCurrentUserChanged() {
+        if (mListener != null) mListener.onTlogInfoLoaded(mWorkFragment.getUser());
+        setupFeedDesign();
+        if (mAdapter != null) mAdapter.setUser(mWorkFragment.getUser().author);
+    }
+
+    @Override
+    public RecyclerView.Adapter getAdapter() {
+        return mAdapter;
+    }
+
 
     public void onOverlayVisibilityChanged(boolean visible) {
         updateDateIndicatorVisibility(visible);
     }
 
-    boolean isLoading() {
-        return mFeedLoader.isRefreshing() || !mUserSubscription.isUnsubscribed();
-    }
-
-    void setupRefreshingIndicator() {
-        if (mAdapter == null) return;
-        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
-        mRefreshLayout.setRefreshing(showIndicator && isLoading());
-
-        if (!isLoading()) mForceShowRefreshingIndicator = false;
-    }
-
-    public void refreshData(boolean showIndicator) {
-        if (DBG) Log.v(TAG, "refreshData()");
-        if (showIndicator) mForceShowRefreshingIndicator = true;
-        refreshUser();
-        if (mUserId != null) refreshFeed();
+    public void refreshData(boolean forceShowRefreshingIndicator) {
+        if (!mRefreshLayout.isRefreshing()) {
+            mRefreshLayout.setRefreshing(mWorkFragment.getEntryList().isEmpty() || forceShowRefreshingIndicator);
+        }
+        mWorkFragment.refreshData();
     }
 
     void onAvatarClicked(View v) {
-        if (mTlogInfo == null || mTlogInfo.author == null) return;
+        TlogInfo user = mWorkFragment.getUser();
+        if (user == null || user.author == null) return;
         new UserInfoActivity.Builder(getActivity())
-                .set(mTlogInfo.author, v, mTlogInfo.design)
+                .set(mWorkFragment.getUser().author, v, user.design)
                 .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
                 .setBackgroundThumbnailKey(mBackgroundBitmapKey)
                 .startActivity();
@@ -340,12 +329,13 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
 
     @Nullable
     public Long getUserId() {
-        return mUserId;
+        return mWorkFragment.mUserId;
     }
 
     void setupFeedDesign() {
-        if (mTlogInfo == null) return;
-        TlogDesign design = mTlogInfo.design;
+        TlogInfo user = mWorkFragment.getUser();
+        if (user == null) return;
+        TlogDesign design = user.design;
 
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         mAdapter.setFeedDesign(design);
@@ -418,14 +408,64 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     }
 
+    public void setupLoadingState() {
+        if (mRefreshLayout == null) return;
+
+        if (DBG) Log.v(TAG, "setupLoadingState() work fragment != null: "
+                        + (mWorkFragment != null)
+                        + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
+                        + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
+                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.getEntryList().isEmpty())
+                        + " adapter != null: " + (mAdapter != null)
+        );
+
+        // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
+        // при свайпе вверх, либо если адаптер пустой. В другом месте.
+        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
+        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+
+        boolean listIsEmpty = mAdapter != null
+                && mWorkFragment != null
+                && !mWorkFragment.isLoading()
+                && mWorkFragment.getEntryList().isEmpty();
+
+        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        updateDateIndicatorVisibility();
+    }
+
+    private void setupAdapterPendingIndicator() {
+        if (mAdapter == null) return;
+        boolean pendingIndicatorShown = mWorkFragment != null
+                && mWorkFragment.isPendingIndicatorShown();
+
+        if (DBG) Log.v(TAG, "setupAdapterPendingIndicator() shown: " + pendingIndicatorShown);
+
+        mAdapter.setLoading(pendingIndicatorShown);
+    }
+
+    private final Runnable mRefreshLoadingState = new Runnable() {
+        @Override
+        public void run() {
+            if (mListView == null) return;
+            setupLoadingState();
+            setupAdapterPendingIndicator();
+        }
+    };
+
     public class Adapter extends FeedItemAdapterLite {
         private String mTitle;
         private User mUser = User.DUMMY;
         private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
         private ImageUtils.DrawableTarget mAvatarLoadTarget;
 
-        public Adapter(Context context, List<Entry> feed) {
-            super(context, feed, false);
+        public Adapter(SortedList<Entry> feed) {
+            super(feed, false);
+            setInteractionListener(new InteractionListener() {
+                @Override
+                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+                    if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
+                }
+            });
         }
 
         @Override
@@ -477,8 +517,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
 
         private void bindDesign(HeaderHolder holder) {
-            if (mTlogInfo == null) return;
-            TlogDesign design = mTlogInfo.design;
+            if (mWorkFragment == null || mWorkFragment.getUser() == null) return;
+
+            TlogDesign design = mWorkFragment.getUser().design;
             String backgroudUrl = design.getBackgroundUrl();
             if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
             holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
@@ -589,12 +630,6 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
     }
 
     final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-        private Runnable mUpdateIndicatorRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateDateIndicator(true);
-            }
-        };
 
         @Override
         public void onChanged() {
@@ -606,11 +641,19 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
             updateIndicatorDelayed();
         }
 
-        private void updateIndicatorDelayed() {
-            if (mListView != null) {
-                mListView.removeCallbacks(mUpdateIndicatorRunnable);
-                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-            }
+    };
+
+    void updateIndicatorDelayed() {
+        if (mListView != null) {
+            mListView.removeCallbacks(mUpdateIndicatorRunnable);
+            mListView.postDelayed(mUpdateIndicatorRunnable, 64);
+        }
+    }
+
+    private Runnable mUpdateIndicatorRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateDateIndicator(true);
         }
     };
 
@@ -631,7 +674,9 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
-            if (design == null && mTlogInfo != null) design = mTlogInfo.design;
+            if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null)  {
+                design = mWorkFragment.getUser().design;
+            }
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setDesign(design)
@@ -645,101 +690,253 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
         }
     };
 
-    public void refreshUser() {
-        if (!mUserSubscription.isUnsubscribed()) {
-            mUserSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-        Observable<TlogInfo> observableCurrentUser = AppObservable.bindFragment(this,
-                mTlogService.getUserInfo(mUserId == null ? mUserSlug : mUserId.toString()));
 
-        mUserSubscription = observableCurrentUser
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction)
-                .subscribe(mCurrentUserObserver);
-        setupRefreshingIndicator();
-    }
+    public static class WorkRetainedFragment extends Fragment {
 
-    private void refreshFeed() {
-        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-        Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction);
-        mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setupRefreshingIndicator();
-    }
+        private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.TlogFragment.WorkRetainedFragment.BUNDLE_KEY_FEED_ITEMS";
+        private static final String BUNDLE_KEY_TLOG_INFO = "ru.taaasty.ui.feeds.TlogFragment.WorkRetainedFragment.BUNDLE_KEY_TLOG_INFO";
 
-    private Action0 mStopRefreshingAction = new Action0() {
+        private FeedLoader mFeedLoader;
+
+        private ApiTlog mTlogService;
+
+        private Long mUserId;
+
+        private String mUserSlug;
+
+        private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
+
+        private TlogInfo mUser;
+
+        private CustomErrorView mListener;
+
+        private SortedList<Entry> mEntryList;
+
+
         @Override
-        public void call() {
-            if (DBG) Log.v(TAG, "doOnTerminate()");
-            setupRefreshingIndicator();
-        }
-    };
-
-    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoaderLite {
-
-        public MyFeedLoader(FeedItemAdapterLite adapter) {
-            super(adapter);
+        public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            try {
+                mListener = (CustomErrorView) activity;
+            } catch (ClassCastException e) {
+                throw new ClassCastException(activity.toString()
+                        + " must implement CustomErrorView");
+            }
         }
 
         @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setRetainInstance(true);
+            mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+            Bundle args = getArguments();
+            if (args.containsKey(ARG_USER_ID)) {
+                mUserId = args.getLong(ARG_USER_ID);
+                mUserSlug = null;
+            } else {
+                mUserId = null;
+                mUserSlug = args.getString(ARG_USER_SLUG);
+            }
+            mEntryList = new FeedSortedList(new FeedSortedList.IAdapterProvider() {
+                @Nullable
+                @Override
+                public RecyclerView.Adapter getTargetAdapter() {
+                    return getMainFragment() == null ? null : getMainFragment().getAdapter();
+                }
+            });
+            mFeedLoader = new FeedLoader(mEntryList);
+            mUser = null;
+            if (savedInstanceState != null) {
+                ArrayList<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS + getKeysSuffix());
+                if (feed != null) mEntryList.resetItems(feed);
+
+                TlogInfo info = savedInstanceState.getParcelable(BUNDLE_KEY_TLOG_INFO + getKeysSuffix());
+                if (info != null) {
+                    mUser = info;
+                }
+            }
+        }
+
+        @Override
+        public void onSaveInstanceState(Bundle outState) {
+            super.onSaveInstanceState(outState);
+            if (!mEntryList.isEmpty()) {
+                outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS + getKeysSuffix(), new ArrayList<>(mEntryList.getItems()));
+            }
+
+            if (mUser != null) {
+                outState.putParcelable(BUNDLE_KEY_TLOG_INFO + getKeysSuffix(), mUser);
+            }
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            ((RetainedFragmentCallbacks) getTargetFragment()).onWorkFragmentActivityCreated();
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            ((RetainedFragmentCallbacks) getTargetFragment()).onWorkFragmentResume();
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            mCurrentUserSubscription.unsubscribe();
+            if (mFeedLoader != null) {
+                mFeedLoader.onDestroy();
+                mFeedLoader = null;
+            }
+        }
+
+        @Override
+        public void onDetach() {
+            super.onDetach();
+            mListener = null;
+        }
+
+        protected String getKeysSuffix() {
+            return "TlogFeed";
+        }
+
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return AppObservable.bindFragment(TlogFragment.this,
-                    mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit));
+            return mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit);
         }
 
-        @Override
-        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
-            if (DBG) Log.v(TAG, "onCompleted()");
-            if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
+        @Nullable
+        public TlogFragment getMainFragment() {
+            return (TlogFragment) getTargetFragment();
+        }
+
+        public void refreshData() {
+            if (DBG) Log.v(TAG, "refreshData()");
+            refreshUser();
+            if (mUserId != null) refreshFeed();
+        }
+
+        public SortedList<Entry> getEntryList() {
+            return mEntryList;
+        }
+
+        @Nullable
+        public TlogInfo getUser() {
+            return mUser;
+        }
+
+        public boolean isLoading() {
+            return !mCurrentUserSubscription.isUnsubscribed() || mFeedLoader.isLoading();
+        }
+
+        public boolean isPendingIndicatorShown() {
+            return mFeedLoader.isPendingIndicatorShown();
+        }
+
+        public boolean isRefreshing() {
+            return mFeedLoader.isRefreshing();
+        }
+
+        public void onBindViewHolder(int feedLocation) {
+            mFeedLoader.onBindViewHolder(feedLocation);
+        }
+
+        public void refreshUser() {
+            mCurrentUserSubscription.unsubscribe();
+            Observable<TlogInfo> observableCurrentUser = mTlogService.getUserInfo(mUserId == null
+                    ? mUserSlug : mUserId.toString());
+
+            mCurrentUserSubscription = observableCurrentUser
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnUnsubscribe(new Action0() {
+                        @Override
+                        public void call() {
+                            callLoadingStateChanged("refreshUser() doOnUnsubscribe");
+                        }
+                    })
+                    .subscribe(mCurrentUserObserver);
+            callLoadingStateChanged("refreshUser start");
+        }
+
+        public void refreshFeed() {
+            int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+            Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries);
+            mFeedLoader.refreshFeed(observableFeed, requestEntries);
+            callLoadingStateChanged("refreshFeed() start");
+        }
+
+        void callLoadingStateChanged(String reason) {
+            if (DBG) Log.v(TAG, "callLoadingStateChanged: " + reason);
+            if (getMainFragment() != null) getMainFragment().onLoadingStateChanged(reason);
+        }
+
+        private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {
+
+            @Override
+            public void onCompleted() {
             }
-        }
 
-        @Override
-        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
-            super.onLoadError(isRefresh, entriesRequested, e);
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
-        }
+            @Override
+            public void onError(Throwable e) {
+                if (DBG) Log.e(TAG, "refresh author error", e);
+                // XXX
+                if (e instanceof NoSuchElementException) {
+                }
 
-        protected void onFeedIsUnsubscribed(boolean isRefresh) {
-            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
-            if (isRefresh) {
-                mStopRefreshingAction.call();
+                /*
+                if (e instanceof NoSuchElementException) { //TODO Исправить, когда сервер будет отдавать нормальную ошибку
+                    if (mListener != null) mListener.onNoSuchUser();
+                }
+                */
+            }
+
+            @Override
+            public void onNext(TlogInfo currentUser) {
+                if (Objects.equals(mUser, currentUser)) return;
+                mUser = currentUser;
+                if (mUserId == null) {
+                    mUserId = mUser.author.getId();
+                    refreshFeed();
+                }
+                if (getMainFragment() != null) getMainFragment().onCurrentUserChanged();
+            }
+        };
+
+        class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
+
+            public FeedLoader(SortedList<Entry> list) {
+                super(list);
+            }
+
+            @Override
+            protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
+                return WorkRetainedFragment.this.createObservable(sinceEntryId, limit);
+            }
+
+            @Override
+            protected void onKeepOnAppendingChanged(boolean newValue) {
+                if (DBG) Log.v(TAG, "onKeepOnAppendingChanged() keepOn: " + newValue);
+            }
+
+            @Override
+            protected void onShowPendingIndicatorChanged(boolean newValue) {
+                if (DBG) Log.v(TAG, "onShowPendingIndicatorChanged() show: " + newValue);
+                if (getMainFragment() != null) getMainFragment().onShowPendingIndicatorChanged(newValue);
+            }
+
+            @Override
+            protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
+                super.onLoadError(isRefresh, entriesRequested, e);
+                if (mListener != null)
+                    mListener.notifyError(getText(R.string.error_append_feed), e);
+            }
+
+            protected void onFeedIsUnsubscribed(boolean isRefresh) {
+                if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
+                callLoadingStateChanged("onFeedIsUnsubscribed refresh: " + isRefresh);
             }
         }
     }
-
-    private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {
-
-        @Override
-        public void onCompleted() {
-
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "refresh author error", e);
-            // XXX
-            if (e instanceof NoSuchElementException) { //TODO Исправить, когда сервер будет отдавать нормальную ошибку
-                if (mListener != null) mListener.onNoSuchUser();
-            }
-        }
-
-        @Override
-        public void onNext(TlogInfo info) {
-            mTlogInfo = info;
-            if (mUserId == null) {
-                mUserId = info.author.getId();
-                refreshFeed();
-            }
-            setupFeedDesign();
-            if (mAdapter != null) mAdapter.setUser(info.author);
-            if (mListener != null) mListener.onTlogInfoLoaded(info);
-        }
-    };
 
     /**
      * This interface must be implemented by activities that contain this
@@ -752,12 +949,12 @@ public class TlogFragment extends Fragment implements SwipeRefreshLayout.OnRefre
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void setFeedBackgroundColor(int color);
-        public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
-        public void onTlogInfoLoaded(TlogInfo info);
-        public void onSharePostMenuClicked(Entry entry);
-        public void onListClicked();
-        public void onNoSuchUser();
-        public boolean isOverlayVisible();
+        void setFeedBackgroundColor(int color);
+        void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
+        void onTlogInfoLoaded(TlogInfo info);
+        void onSharePostMenuClicked(Entry entry);
+        void onListClicked();
+        void onNoSuchUser();
+        boolean isOverlayVisible();
     }
 }

@@ -4,6 +4,8 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -54,6 +56,28 @@ public class DateIndicatorWidget extends ViewSwitcher {
     public DateIndicatorWidget(Context context, AttributeSet attrs) {
         super(context, attrs);
         initDateIndicator(getContext());
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.date = this.mDate;
+        ss.whichState = getDisplayedChild();
+        return ss;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        if(!(state instanceof SavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+
+        SavedState ss = (SavedState)state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        this.mDate = ss.date;
     }
 
     private void initDateIndicator(Context context) {
@@ -166,5 +190,39 @@ public class DateIndicatorWidget extends ViewSwitcher {
             public void onAnimationRepeat(Animator animation) {}
         });
         animator.start();
+    }
+
+    static class SavedState extends BaseSavedState {
+        int whichState;
+        Date date;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel in) {
+            super(in);
+            this.whichState = in.readInt();
+            Long dateInt = (Long)in.readValue(Long.class.getClassLoader());
+            this.date = dateInt == null ? null : new Date(dateInt);
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(whichState);
+            out.writeValue(date == null ? (Long)null : Long.valueOf(date.getTime()));
+        }
+
+        //required field that makes Parcelables from a Parcel
+        public static final Parcelable.Creator<SavedState> CREATOR =
+                new Parcelable.Creator<SavedState>() {
+                    public SavedState createFromParcel(Parcel in) {
+                        return new SavedState(in);
+                    }
+                    public SavedState[] newArray(int size) {
+                        return new SavedState[size];
+                    }
+                };
     }
 }

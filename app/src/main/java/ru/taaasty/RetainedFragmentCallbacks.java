@@ -8,5 +8,4 @@ public interface RetainedFragmentCallbacks {
     void onWorkFragmentActivityCreated();
     void onWorkFragmentResume();
 
-
 }

@@ -289,8 +289,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     private void refreshData() {
-        TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
-        if (fragment != null) fragment.refreshData(true);
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) ((IRereshable)fragment).refreshData(true);
     }
 
     void refreshFollowUnfollowView() {

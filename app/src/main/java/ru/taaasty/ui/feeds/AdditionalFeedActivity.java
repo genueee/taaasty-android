@@ -160,6 +160,6 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     void refreshData() {
         Fragment current = getFragmentManager().findFragmentById(R.id.container);
-        if (current != null) ((IRereshable)current).refreshData();
+        if (current != null) ((IRereshable)current).refreshData(true);
     }
 }

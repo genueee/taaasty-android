@@ -10,6 +10,7 @@ import android.view.ViewConfiguration;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.model.Entry;
+import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.SubscriptionsFeedFragment;
 import ru.taaasty.ui.post.SharePostActivity;
 
@@ -81,7 +82,7 @@ public class SubscriptionsActivity extends TabbarActivityBase implements Subscri
     }
 
     void refreshData() {
-        SubscriptionsFeedFragment fragment = (SubscriptionsFeedFragment)getFragmentManager().findFragmentById(R.id.container);
-        if (fragment != null) fragment.refreshData();
+        IRereshable fragment = (IRereshable)getFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null) fragment.refreshData(true);
     }
 }

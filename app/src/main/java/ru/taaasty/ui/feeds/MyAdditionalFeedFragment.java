@@ -2,13 +2,12 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
+import android.app.FragmentManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.os.Handler;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -24,14 +23,11 @@ import com.squareup.picasso.RequestCreator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -48,22 +44,16 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
 
 
-public class MyAdditionalFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
+public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
+        ListFeedWorkRetainedFragment.TargetFragmentInteraction{
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedFragment";
@@ -94,28 +84,21 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
 
     private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";
 
-    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.feed_items";
-    private static final String BUNDLE_KEY_CURRENT_USER = "ru.taaasty.ui.feeds.MyAdditionalFeedFragment.curremt_user";
-
     private OnFragmentInteractionListener mListener;
 
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mListView;
     private View mEmptyView;
 
-    private ApiMyFeeds mMyFeedsService;
     private Adapter mAdapter;
-    private MyFeedLoader mFeedLoader;
-
-    private Subscription mUserSubscription = Subscriptions.unsubscribed();
 
     private int mFeedType = FEED_TYPE_FAVORITES;
 
-    private boolean mForceShowRefreshingIndicator;
-
-    private User mCurrentUser;
-
     private DateIndicatorWidget mDateIndicatorView;
+
+    private WorkRetainedFragment mWorkFragment;
+
+    private Handler mHandler;
 
     public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
@@ -132,57 +115,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mMyFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
 
         Bundle args = getArguments();
         //noinspection ResourceType
         mFeedType = args.getInt(BUNDLE_ARG_FEED_TYPE, FEED_TYPE_FAVORITES);
-        if (savedInstanceState != null) {
-            mCurrentUser = savedInstanceState.getParcelable(BUNDLE_KEY_CURRENT_USER);
-        }
-        mForceShowRefreshingIndicator = false;
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
-        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-
-        mEmptyView = v.findViewById(R.id.empty_view);
-        mRefreshLayout.setOnRefreshListener(this);
-
-        boolean showUserAvatar = (mFeedType == FEED_TYPE_FRIENDS) || (mFeedType == FEED_TYPE_FAVORITES);
-
-        List<Entry> feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-        mAdapter = new Adapter(getActivity(), feed, showUserAvatar);
-        mAdapter.onCreate();
-
-        if (mCurrentUser != null && mCurrentUser.getDesign() != null) mAdapter.setFeedDesign(mCurrentUser.getDesign());
-
-        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
-        mListView.setHasFixedSize(true);
-        mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
-        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), showUserAvatar));
-        mListView.setAdapter(mAdapter);
-
-        setupEmptyView(v);
-
-        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                updateDateIndicator(dy > 0);
-            }
-        });
-
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-        mFeedLoader = new MyFeedLoader(mAdapter);
-
-        return v;
+        mHandler = new Handler();
     }
 
     @Override
@@ -197,20 +134,128 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (!isLoading()) refreshData(false);
-        updateDateIndicator(true);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
+        mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
+
+        mEmptyView = v.findViewById(R.id.empty_view);
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData(false);
+            }
+        });
+
+        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+        //mListView.setHasFixedSize(true);
+        mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
+        mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarShown()));
+
+        setupEmptyView(v);
+
+        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateDateIndicator(dy > 0);
+            }
+        });
+
+        return v;
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            List<Entry> feed = mAdapter.getFeed().getItems();
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<Parcelable>(feed));
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        FragmentManager fm = getFragmentManager();
+        mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("SubscriptionListWorkFragment");
+        if (mWorkFragment == null) {
+            mWorkFragment = new WorkRetainedFragment();
+            mWorkFragment.setTargetFragment(this, 0);
+            mWorkFragment.setArguments(new Bundle(getArguments()));
+            fm.beginTransaction().add(mWorkFragment, "SubscriptionListWorkFragment").commit();
+        } else {
+            mWorkFragment.setTargetFragment(this, 0);
         }
-        outState.putParcelable(BUNDLE_KEY_CURRENT_USER, mCurrentUser);
+    }
+
+    @Override
+    public void onWorkFragmentActivityCreated() {
+        mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarShown());
+        mAdapter.onCreate();
+        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+        mListView.setAdapter(mAdapter);
+
+        setupFeedDesign();
+        setupUser();
+        setupAdapterPendingIndicator();
+        onLoadingStateChanged("onWorkFragmentActivityCreated()");
+    }
+
+    @Override
+    public void onWorkFragmentResume() {
+        if (!mWorkFragment.isRefreshing()) refreshData(false);
+        updateDateIndicatorDelayed();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        mWorkFragment.setTargetFragment(null, 0);
+        mDateIndicatorView = null;
+        if (mAdapter != null) {
+            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
+            mAdapter.onDestroy(mListView);
+            mAdapter = null;
+        }
+        mListView = null;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    @Override
+    public void onShowPendingIndicatorChanged(boolean newValue) {
+        if (mAdapter != null) mAdapter.setLoading(newValue);
+    }
+
+    @Override
+    public void onLoadingStateChanged(String reason) {
+        mHandler.removeCallbacks(mRefreshLoadingState);
+        mHandler.postDelayed(mRefreshLoadingState, 16);
+    }
+
+    @Override
+    public void onDesignChanged() {
+        setupFeedDesign();
+    }
+
+    @Override
+    public void onCurrentUserChanged() {
+        setupUser();
+    }
+
+    @Override
+    public RecyclerView.Adapter getAdapter() {
+        return mAdapter;
+    }
+
+    @Override
+    public void refreshData(boolean forceShowRefreshingIndicator) {
+        if (!mRefreshLayout.isRefreshing()) {
+            mRefreshLayout.setRefreshing(mWorkFragment.getEntryList().isEmpty() || forceShowRefreshingIndicator);
+        }
+        mWorkFragment.refreshData();
+    }
+
+    private boolean isUserAvatarShown() {
+        return (mFeedType == FEED_TYPE_FRIENDS) || (mFeedType == FEED_TYPE_FAVORITES);
     }
 
     void setupEmptyView(View root) {
@@ -236,127 +281,69 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         ((TextView)root.findViewById(R.id.empty_view)).setText(textNoRecords);
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        mUserSubscription.unsubscribe();
-        mDateIndicatorView = null;
-        if (mFeedLoader != null) {
-            mFeedLoader.onDestroy();
-            mFeedLoader = null;
-        }
+    void setupUser() {
+        if (mWorkFragment == null || mWorkFragment.getCurrentUser() == null) return;
+        CurrentUser user = mWorkFragment.getCurrentUser();
+        String name = UiUtils.capitalize(user.getName());
         if (mAdapter != null) {
-            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
-            mAdapter.onDestroy(mListView);
-            mAdapter = null;
-        }
-        mListView = null;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    @Override
-    public void onRefresh() {
-        refreshData();
-    }
-
-    boolean isLoading() {
-        return mFeedLoader.isRefreshing() || !mUserSubscription.isUnsubscribed();
-    }
-
-    void setupRefreshingIndicator() {
-        if (mAdapter == null) return;
-        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
-        mRefreshLayout.setRefreshing(showIndicator && isLoading());
-
-        if (!isLoading()) mForceShowRefreshingIndicator = false;
-    }
-
-
-    public void refreshData() {
-        refreshData(true);
-    }
-
-    public void refreshData(boolean showIndicator) {
-        if (showIndicator) mForceShowRefreshingIndicator = true;
-        refreshUser();
-        refreshFeed();
-    }
-
-    void setupUser(CurrentUser user) {
-        if (user == null) {
-            // XXX
-        } else {
-            String name = UiUtils.capitalize(user.getName());
-            if (mAdapter != null) {
-                mAdapter.setTitleUser(name, user);
-            }
+            mAdapter.setTitleUser(name, user);
         }
     }
 
-    public void refreshUser() {
-        if (!mUserSubscription.isUnsubscribed()) {
-            mUserSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
-                UserManager.getInstance().getCurrentUser());
-
-        mUserSubscription = observableCurrentUser
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction)
-                .subscribe(mCurrentUserObserver);
-        setupRefreshingIndicator();
-    }
-
-    private void refreshFeed() {
-        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-        Observable<Feed> observableFeed = getFeedObservable(null, requestEntries)
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction);
-        mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setupRefreshingIndicator();
-    }
-
-    public Observable<Feed> getFeedObservable(@Nullable Long sinceEntryId, @Nullable Integer limit) {
-        Observable<Feed> ob = Observable.empty();
-        switch (mFeedType) {
-            case FEED_TYPE_MAIN:
-                ob = mMyFeedsService.getMyFeed(sinceEntryId, limit);
-                break;
-            case FEED_TYPE_FRIENDS:
-                ob = mMyFeedsService.getMyFriendsFeed(sinceEntryId, limit);
-                break;
-            case FEED_TYPE_FAVORITES:
-                ob = mMyFeedsService.getMyFavoritesFeed(sinceEntryId, limit);
-                break;
-            case FEED_TYPE_PRIVATE:
-                ob = mMyFeedsService.getMyPrivateFeed(sinceEntryId, limit);
-                break;
-        }
-        return AppObservable.bindFragment(this, ob);
-    }
-
-    private Action0 mStopRefreshingAction = new Action0() {
-        @Override
-        public void call() {
-            if (DBG) Log.v(TAG, "doOnTerminate()");
-            setupRefreshingIndicator();
-        }
-    };
-
-    void setupFeedDesign(TlogDesign design) {
-        mAdapter.setFeedDesign(design);
-        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+    void setupFeedDesign() {
+        if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
+        if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
+        mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
+        mListView.setBackgroundDrawable(new ColorDrawable(mWorkFragment.getTlogDesign().getFeedBackgroundColor(getResources())));
     }
 
     void updateDateIndicator(boolean animScrollUp) {
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
+
+    private void setupAdapterPendingIndicator() {
+        if (mAdapter == null) return;
+        boolean pendingIndicatorShown = mWorkFragment != null
+                && mWorkFragment.isPendingIndicatorShown();
+
+        if (DBG) Log.v(TAG, "setupAdapterPendingIndicator() shown: " + pendingIndicatorShown);
+
+        mAdapter.setLoading(pendingIndicatorShown);
+    }
+
+    public void setupLoadingState() {
+        if (mRefreshLayout == null) return;
+
+        if (DBG) Log.v(TAG, "setupLoadingState() work fragment != null: "
+                        + (mWorkFragment != null)
+                        + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
+                        + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
+                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.getEntryList().isEmpty())
+                        + " adapter != null: " + (mAdapter != null)
+        );
+
+        // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
+        // при свайпе вверх, либо если адаптер пустой. В другом месте.
+        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
+        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+
+        boolean listIsEmpty = mAdapter != null
+                && mWorkFragment != null
+                && !mWorkFragment.isLoading()
+                && mWorkFragment.getEntryList().isEmpty();
+
+        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        if (listIsEmpty) mDateIndicatorView.setVisibility(View.INVISIBLE);
+    }
+
+    private final Runnable mRefreshLoadingState = new Runnable() {
+        @Override
+        public void run() {
+            if (mListView == null) return;
+            setupLoadingState();
+            setupAdapterPendingIndicator();
+        }
+    };
 
     public class Adapter extends FeedItemAdapterLite {
         private String mTitle;
@@ -364,10 +351,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         private final int mFeedNameVisibility;
         private final int mFeedNameLeftDrawable;
 
-        private User mUser = User.DUMMY;
-
-        public Adapter(Context context, List<Entry> feed, boolean showUserAvatar) {
-            super(context, feed, showUserAvatar);
+        public Adapter(SortedList<Entry> feed, boolean showUserAvatar) {
+            super(feed, showUserAvatar);
 
             Bundle args = getArguments();
             //noinspection ResourceType
@@ -396,6 +381,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
                 default:
                     throw  new IllegalArgumentException();
             }
+            setInteractionListener(new InteractionListener() {
+                @Override
+                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+                    if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
+                }
+            });
         }
 
         @Override
@@ -439,9 +430,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         public void setTitleUser(String title, User user) {
-            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
+            if (!TextUtils.equals(mTitle, title)) {
                 mTitle = title;
-                mUser = user;
                 notifyItemChanged(0);
             }
         }
@@ -478,7 +468,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
 
         private void bindUser(HeaderHolder holder) {
-            ImageUtils.getInstance().loadAvatar(mUser.getUserpic(), mUser.getName(),
+            User user = mWorkFragment.getCurrentUser();
+            if (user == null) user = CurrentUser.DUMMY;
+            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                     holder.avatarView,
                     R.dimen.avatar_normal_diameter
             );
@@ -489,8 +481,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
             public void onClick(View v) {
                 switch (v.getId()) {
                     case R.id.avatar:
-                        if (mCurrentUser == null) return;
-                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mCurrentUser, mCurrentUser.getDesign());
+                        if (mWorkFragment.getCurrentUser() == null) return;
+                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v,
+                                mWorkFragment.getCurrentUser(), mWorkFragment.getTlogDesign());
                         break;
                 }
             }
@@ -525,36 +518,31 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
     }
 
     final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-        private Runnable mUpdateIndicatorRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateDateIndicator(true);
-            }
-        };
 
         @Override
         public void onChanged() {
-            if (DBG) Log.v(TAG, "onChanged");
-            updateIndicatorDelayed();
+            updateDateIndicatorDelayed();
         }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
-            if (DBG) Log.v(TAG, "onItemRangeInserted");
-            updateIndicatorDelayed();
-        }
-
-        private void updateIndicatorDelayed() {
-            if (mListView != null) {
-                mListView.removeCallbacks(mUpdateIndicatorRunnable);
-                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-            }
+            updateDateIndicatorDelayed();
         }
     };
 
-    public void onFeedItemClicked(View view, Entry entry) {
-
+    void updateDateIndicatorDelayed() {
+        if (mListView != null) {
+            mListView.removeCallbacks(mUpdateIndicatorRunnable);
+            mListView.postDelayed(mUpdateIndicatorRunnable, 64);
+        }
     }
+
+    private Runnable mUpdateIndicatorRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateDateIndicator(true);
+        }
+    };
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
@@ -574,7 +562,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
-            if (design == null && mCurrentUser != null) design = mCurrentUser.getDesign();
+            if (design == null && mWorkFragment.getTlogDesign() != null) design = mWorkFragment.getTlogDesign();
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
@@ -588,63 +576,39 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
         }
     };
 
-    class MyFeedLoader extends ru.taaasty.ui.feeds.FeedLoaderLite {
+    public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
 
-        public MyFeedLoader(FeedItemAdapterLite adapter) {
-            super(adapter);
+        private ApiMyFeeds mFeedsService;
+        private int mFeedType;
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+            mFeedType = getArguments().getInt(BUNDLE_ARG_FEED_TYPE);
+        }
+
+        @Override
+        protected String getKeysSuffix() {
+            return "MyAdditionalWorkFragment"+mFeedType;
         }
 
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return getFeedObservable(sinceEntryId, limit);
-        }
-
-        @Override
-        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
-            if (DBG) Log.v(TAG, "onCompleted()");
-            if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
-            }
-        }
-
-        @Override
-        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
-            super.onLoadError(isRefresh, entriesRequested, e);
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
-        }
-
-        protected void onFeedIsUnsubscribed(boolean isRefresh) {
-            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
-            if (isRefresh) {
-                mStopRefreshingAction.call();
+            switch (mFeedType) {
+                case FEED_TYPE_MAIN:
+                    return mFeedsService.getMyFeed(sinceEntryId, limit);
+                case FEED_TYPE_FRIENDS:
+                    return mFeedsService.getMyFriendsFeed(sinceEntryId, limit);
+                case FEED_TYPE_FAVORITES:
+                    return mFeedsService.getMyFavoritesFeed(sinceEntryId, limit);
+                case FEED_TYPE_PRIVATE:
+                    return mFeedsService.getMyPrivateFeed(sinceEntryId, limit);
+                default:
+                    throw new IllegalStateException();
             }
         }
     }
-
-    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
-
-        @Override
-        public void onCompleted() {
-
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.server_error), e);
-            // XXX
-            if (e instanceof NoSuchElementException) {
-                setupUser(null);
-            }
-        }
-
-        @Override
-        public void onNext(CurrentUser currentUser) {
-            mCurrentUser = currentUser;
-            setupFeedDesign(currentUser.getDesign());
-            setupUser(currentUser);
-        }
-    };
 
 
     /**
@@ -664,7 +628,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
          * @param user
          * @param design
          */
-        public void onAvatarClicked(View view, User user, TlogDesign design);
+        void onAvatarClicked(View view, User user, TlogDesign design);
 
         /**
          * Юзер ткнут на свою аватарку в заголовке списка
@@ -672,8 +636,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable, S
          * @param user
          * @param design
          */
-        public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
+        void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
 
-        public void onSharePostMenuClicked(Entry entry);
+        void onSharePostMenuClicked(Entry entry);
     }
 }

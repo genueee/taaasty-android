@@ -2,10 +2,11 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
+import android.app.FragmentManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -19,15 +20,10 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -44,24 +40,17 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
 
-public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefreshLayout.OnRefreshListener {
+public class MyFeedFragment extends Fragment implements IRereshable,
+        ListFeedWorkRetainedFragment.TargetFragmentInteraction {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
-
-    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.MyFeedFragment.feed_items";
 
     private OnFragmentInteractionListener mListener;
 
@@ -70,17 +59,12 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     private View mEmptyView;
 
     private Adapter mAdapter;
-    private MyFeedLoader mFeedLoader;
-
-    private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
-
-    private boolean mForceShowRefreshingIndicator;
-
-    private CurrentUser mCurrentUser;
 
     private DateIndicatorWidget mDateIndicatorView;
 
-    private int mRefreshCounter;
+    private WorkRetainedFragment mWorkFragment;
+
+    private Handler mHandler;
 
     /**
      * Use this factory method to create a new instance of
@@ -99,6 +83,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mHandler = new Handler();
     }
 
     @Override
@@ -108,10 +93,15 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
 
-        mRefreshLayout.setOnRefreshListener(this);
+        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshData(false);
+            }
+        });
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
-        mListView.setHasFixedSize(true);
+        //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.getItemAnimator().setSupportsChangeAnimations(false);
@@ -124,7 +114,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                 updateDateIndicator(dy > 0);
             }
         });
-        mForceShowRefreshingIndicator = false;
 
         return v;
     }
@@ -141,45 +130,43 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        if (!isLoading()) refreshData(false);
-        updateDateIndicator(true);
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            List<Entry> feed = mAdapter.getFeed().getItems();
-            outState.putParcelableArrayList(BUNDLE_KEY_FEED_ITEMS, new ArrayList<Entry>(feed));
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        FragmentManager fm = getFragmentManager();
+        mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("MyFeedWorkFragment");
+        if (mWorkFragment == null) {
+            mWorkFragment = new WorkRetainedFragment();
+            mWorkFragment.setTargetFragment(this, 0);
+            fm.beginTransaction().add(mWorkFragment, "MyFeedWorkFragment").commit();
+        } else {
+            mWorkFragment.setTargetFragment(this, 0);
         }
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        List<Entry> feed = null;
-        if (savedInstanceState != null) feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS);
-        mAdapter = new Adapter(getActivity(), feed);
+    public void onWorkFragmentActivityCreated() {
+        mAdapter = new Adapter(mWorkFragment.getEntryList());
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
-
         mListView.setAdapter(mAdapter);
-        mFeedLoader = new MyFeedLoader(mAdapter);
+
+        setupFeedDesign();
+        setupUser();
+        setupAdapterPendingIndicator();
+        onLoadingStateChanged("onWorkFragmentActivityCreated()");
     }
 
+    @Override
+    public void onWorkFragmentResume() {
+        if (!mWorkFragment.isRefreshing()) refreshData(false);
+        updateDateIndicatorDelayed();
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        mCurrentUserSubscription.unsubscribe();
         mDateIndicatorView = null;
-        if (mFeedLoader != null) {
-            mFeedLoader.onDestroy();
-            mFeedLoader = null;
-        }
+        mWorkFragment.setTargetFragment(null, 0);
         if (mAdapter != null) {
             mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy(mListView);
@@ -195,68 +182,118 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     }
 
     @Override
-    public void onRefresh() {
-        refreshData();
+    public void onShowPendingIndicatorChanged(boolean newValue) {
+        if (mAdapter != null) mAdapter.setLoading(newValue);
     }
 
-
-    boolean isLoading() {
-        return mFeedLoader.isRefreshing() || !mCurrentUserSubscription.isUnsubscribed();
+    @Override
+    public void onLoadingStateChanged(String reason) {
+        mHandler.removeCallbacks(mRefreshLoadingState);
+        mHandler.postDelayed(mRefreshLoadingState, 16);
     }
 
-    void setupRefreshingIndicator() {
-        if (mAdapter == null) return;
-        boolean showIndicator = mAdapter.getFeed().isEmpty() || mForceShowRefreshingIndicator;
-        mRefreshLayout.setRefreshing(showIndicator && isLoading());
-
-        if (!isLoading()) mForceShowRefreshingIndicator = false;
+    @Override
+    public void onDesignChanged() {
+        setupFeedDesign();
     }
 
-
-    public void refreshData() {
-        refreshData(true);
+    @Override
+    public void onCurrentUserChanged() {
+        setupUser();
     }
 
-    public void refreshData(boolean showIndicator) {
-        if (DBG) Log.v(TAG, "refreshData()");
-        if (showIndicator) mForceShowRefreshingIndicator = true;
-        refreshUser();
-        refreshFeed();
+    @Override
+    public RecyclerView.Adapter getAdapter() {
+        return mAdapter;
+    }
+
+    @Override
+    public void refreshData(boolean forceShowRefreshingIndicator) {
+        if (!mRefreshLayout.isRefreshing()) {
+            mRefreshLayout.setRefreshing(mWorkFragment.getEntryList().isEmpty() || forceShowRefreshingIndicator);
+        }
+        mWorkFragment.refreshData();
     }
 
     void onAdditionalMenuButtonClicked(View v) {
         if (mListener != null) mListener.onShowAdditionalMenuClicked();
     }
 
-    void setupUser(CurrentUser user) {
-        if (user == null) {
-            // XXX
-        } else {
-            String name = user.getName();
-            if (name == null) name = "";
-            name = name.substring(0,1).toUpperCase(Locale.getDefault()) + name.substring(1);
-            if (mAdapter != null) {
-                mAdapter.setTitleUser(name, user);
-            }
+    void setupUser() {
+        if (mWorkFragment == null || mWorkFragment.getCurrentUser() == null) return;
+        CurrentUser user = mWorkFragment.getCurrentUser();
+        String name = UiUtils.capitalize(user.getName());
+        if (mAdapter != null) {
+            mAdapter.setTitleUser(name, user);
         }
     }
 
-    void setupFeedDesign(TlogDesign design) {
-        if (DBG) Log.e(TAG, "Setup feed design " + design);
-        mAdapter.setFeedDesign(design);
-        mListView.setBackgroundDrawable(new ColorDrawable(design.getFeedBackgroundColor(getResources())));
+    void setupFeedDesign() {
+        if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
+        if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
+        mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
+        mListView.setBackgroundDrawable(new ColorDrawable(mWorkFragment.getTlogDesign().getFeedBackgroundColor(getResources())));
     }
 
     void updateDateIndicator(boolean animScrollUp) {
         FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
+    private void setupAdapterPendingIndicator() {
+        if (mAdapter == null) return;
+        boolean pendingIndicatorShown = mWorkFragment != null
+                && mWorkFragment.isPendingIndicatorShown();
+
+        if (DBG) Log.v(TAG, "setupAdapterPendingIndicator() shown: " + pendingIndicatorShown);
+
+        mAdapter.setLoading(pendingIndicatorShown);
+    }
+
+    public void setupLoadingState() {
+        if (mRefreshLayout == null) return;
+
+        if (DBG) Log.v(TAG, "setupLoadingState() work fragment != null: "
+                        + (mWorkFragment != null)
+                        + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
+                        + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
+                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.getEntryList().isEmpty())
+                        + " adapter != null: " + (mAdapter != null)
+        );
+
+        // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
+        // при свайпе вверх, либо если адаптер пустой. В другом месте.
+        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
+        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+
+        boolean listIsEmpty = mAdapter != null
+                && mWorkFragment != null
+                && !mWorkFragment.isLoading()
+                && mWorkFragment.getEntryList().isEmpty();
+
+        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        if (listIsEmpty) mDateIndicatorView.setVisibility(View.INVISIBLE);
+    }
+
+    private final Runnable mRefreshLoadingState = new Runnable() {
+        @Override
+        public void run() {
+            if (mListView == null) return;
+            setupLoadingState();
+            setupAdapterPendingIndicator();
+        }
+    };
+
     class Adapter extends FeedItemAdapterLite {
         private String mTitle;
-        private User mUser = User.DUMMY;
 
-        public Adapter(Context context, List<Entry> feed) {
-            super(context, feed, false);
+        public Adapter(SortedList<Entry> feed) {
+            super(feed, false);
+            setInteractionListener(new InteractionListener() {
+                @Override
+                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+                    if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
+                }
+            });
         }
 
         @Override
@@ -268,8 +305,6 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                 FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
                 return true;
             }
-
-
             return false;
         }
 
@@ -298,9 +333,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
 
         public void setTitleUser(String title, User user) {
-            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
+            if (!TextUtils.equals(mTitle, title)) {
                 mTitle = title;
-                mUser = user;
                 notifyItemChanged(0);
             }
         }
@@ -328,7 +362,9 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
 
         private void bindUser(HeaderHolder holder) {
-            ImageUtils.getInstance().loadAvatar(mUser.getUserpic(), mUser.getName(),
+            User user = mWorkFragment.getCurrentUser();
+            if (user == null) user = CurrentUser.DUMMY;
+            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                     holder.avatarView,
                     R.dimen.avatar_normal_diameter
             );
@@ -342,8 +378,9 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
                         onAdditionalMenuButtonClicked(v);
                         break;
                     case R.id.avatar:
-                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mCurrentUser,
-                                mCurrentUser == null ? null : mCurrentUser.getDesign());
+                        CurrentUser user = mWorkFragment.getCurrentUser();
+                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mWorkFragment.getCurrentUser(),
+                                mWorkFragment.getTlogDesign());
                         break;
                 }
             }
@@ -366,30 +403,32 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
     }
 
     final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-        private Runnable mUpdateIndicatorRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateDateIndicator(true);
-            }
-        };
 
         @Override
         public void onChanged() {
-            updateIndicatorDelayed();
+            updateDateIndicatorDelayed();
         }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
-            updateIndicatorDelayed();
-        }
-
-        private void updateIndicatorDelayed() {
-            if (mListView != null) {
-                mListView.removeCallbacks(mUpdateIndicatorRunnable);
-                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-            }
+            updateDateIndicatorDelayed();
         }
     };
+
+    void updateDateIndicatorDelayed() {
+        if (mListView != null) {
+            mListView.removeCallbacks(mUpdateIndicatorRunnable);
+            mListView.postDelayed(mUpdateIndicatorRunnable, 64);
+        }
+    }
+
+    private Runnable mUpdateIndicatorRunnable = new Runnable() {
+        @Override
+        public void run() {
+            updateDateIndicator(true);
+        }
+    };
+
 
     final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
@@ -408,7 +447,7 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
-            if (design == null && mCurrentUser != null) design = mCurrentUser.getDesign();
+            if (design == null && mWorkFragment.getTlogDesign() != null) design = mWorkFragment.getTlogDesign();
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
@@ -422,99 +461,27 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
         }
     };
 
-    public void refreshUser() {
-        if (!mCurrentUserSubscription.isUnsubscribed()) {
-            mCurrentUserSubscription.unsubscribe();
-            mStopRefreshingAction.call();
-        }
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
-                UserManager.getInstance().getCurrentUser());
+    public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
 
-        mCurrentUserSubscription = observableCurrentUser
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction)
-                .subscribe(mCurrentUserObserver);
-        setupRefreshingIndicator();
-    }
+        private ApiMyFeeds mFeedsService;
 
-    private void refreshFeed() {
-        int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-        Observable<Feed> observableFeed = mFeedLoader.createObservable(null, requestEntries)
-                .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(mStopRefreshingAction);
-        mFeedLoader.refreshFeed(observableFeed, requestEntries);
-        setupRefreshingIndicator();
-    }
-
-    private Action0 mStopRefreshingAction = new Action0() {
         @Override
-        public void call() {
-            if (DBG) Log.v(TAG, "doOnTerminate()");
-            setupRefreshingIndicator();
-        }
-    };
-
-    class MyFeedLoader extends FeedLoaderLite {
-
-        private final ApiMyFeeds mFeedsService;
-
-        public MyFeedLoader(FeedItemAdapterLite adapter) {
-            super(adapter);
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
             mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
         }
 
         @Override
+        protected String getKeysSuffix() {
+            return "MyFeedWorkFragment";
+        }
+
+        @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return AppObservable.bindFragment(MyFeedFragment.this,
-                    mFeedsService.getMyFeed(sinceEntryId, limit));
-        }
-
-        @Override
-        public void onLoadCompleted(boolean isRefresh, int entriesRequested) {
-            if (DBG) Log.v(TAG, "onCompleted()");
-            if (isRefresh) {
-                mEmptyView.setVisibility(mAdapter.getFeed().isEmpty() ? View.VISIBLE : View.GONE);
-                if (mAdapter.getFeed().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
-            }
-        }
-
-        @Override
-        protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
-            super.onLoadError(isRefresh, entriesRequested, e);
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
-        }
-
-        protected void onFeedIsUnsubscribed(boolean isRefresh) {
-            if (DBG) Log.v(TAG, "onFeedIsUnsubscribed()");
-            if (isRefresh) {
-                mStopRefreshingAction.call();
-            }
+            return mFeedsService.getMyFeed(sinceEntryId, limit);
         }
     }
 
-    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
-
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "refresh author error", e);
-            // XXX
-            if (e instanceof NoSuchElementException) {
-                setupUser(null);
-            }
-        }
-
-        @Override
-        public void onNext(CurrentUser currentUser) {
-            mCurrentUser = currentUser;
-            setupFeedDesign(currentUser.getDesign());
-            setupUser(currentUser);
-            if (mListener != null) mListener.onCurrentUserLoaded(currentUser, currentUser.getDesign());
-        }
-    };
 
     /**
      * This interface must be implemented by activities that contain this
@@ -527,9 +494,8 @@ public class MyFeedFragment extends Fragment implements IRereshable, SwipeRefres
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onShowAdditionalMenuClicked();
-        public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
-        public void onCurrentUserLoaded(CurrentUser user, TlogDesign design);
-        public void onSharePostMenuClicked(Entry entry);
+        void onShowAdditionalMenuClicked();
+        void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
+        void onSharePostMenuClicked(Entry entry);
     }
 }

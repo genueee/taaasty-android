@@ -38,7 +38,7 @@ public class UiUtils {
         return text == null || TextUtils.isEmpty(removeTrailingWhitespaces(text));
     }
 
-    public static String capitalize(String text) {
+    public static String capitalize(@Nullable String text) {
         if (text == null) return "";
         return text.substring(0,1).toUpperCase(Locale.getDefault()) + text.substring(1);
     }

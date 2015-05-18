@@ -65,9 +65,14 @@ public class FeedsHelper {
         if (listView == null || dateIndicator == null) return;
 
         int position = getAdapterPositionAtWidgetHeight(listView, dateIndicator);
-        Entry entry = adapter.getEntry(position);
-        if (entry != null) newDate = entry.getCreatedAt();
-        dateIndicator.setDate(newDate, animScrollUp);
+        if (!adapter.isPositionInFeed(position) && position != RecyclerView.NO_POSITION) {
+            // Если на хидере или на футере - не показываем индикатор
+            dateIndicator.setVisibility(View.INVISIBLE);
+        } else {
+            Entry entry = adapter.getEntry(position);
+            if (entry != null) newDate = entry.getCreatedAt();
+            dateIndicator.setDate(newDate, animScrollUp);
+        }
     }
 
     public static void setupListEntryClickListener(IFeedsHelper adapter, final ListEntryBase pHolder) {
