@@ -24,12 +24,12 @@ import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.ConversationChanged;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.UserInfoActivity;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -224,7 +224,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
-            mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+            mApiMessenger = RestClient.getAPiMessenger();
             mConversationList = new SortedList<>(Conversation.class, new android.support.v7.util.SortedList.Callback<Conversation>() {
                 @Override
                 public int compare(Conversation o1, Conversation o2) {

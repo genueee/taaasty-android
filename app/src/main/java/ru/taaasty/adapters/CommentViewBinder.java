@@ -22,9 +22,9 @@ import java.util.Locale;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.Comment;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Comment;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
 

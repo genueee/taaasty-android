@@ -1,7 +1,7 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.Comment;
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Comment;
+import ru.taaasty.rest.model.Entry;
 
 /**
  * Добавлен или обновлен комментарий

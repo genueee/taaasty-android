@@ -26,10 +26,10 @@ import java.util.List;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryChanged;
-import ru.taaasty.model.Entry;
-import ru.taaasty.service.ApiEntries;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.android.app.AppObservable;
@@ -206,7 +206,7 @@ public class PostActionActivity extends FragmentActivity implements CustomErrorV
     }
 
     public Observable<Object> createAddToFavoritesObservable() {
-        ApiEntries entriesApi = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+        ApiEntries entriesApi = RestClient.getAPiEntries();
 
         Observable<Object> addOrDelete = null;
 

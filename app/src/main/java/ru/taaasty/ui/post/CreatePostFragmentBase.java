@@ -5,7 +5,7 @@ import android.app.Fragment;
 import android.util.Log;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.model.PostForm;
+import ru.taaasty.rest.model.PostForm;
 
 public abstract class CreatePostFragmentBase extends Fragment {
     private static final String TAG = "CreatePostFragmentBase";

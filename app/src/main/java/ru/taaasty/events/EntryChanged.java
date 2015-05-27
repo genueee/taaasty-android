@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 
 /**
  * Обновился или добавился пост

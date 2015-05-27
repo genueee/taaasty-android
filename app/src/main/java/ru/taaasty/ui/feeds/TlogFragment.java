@@ -39,19 +39,19 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Feed;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.TlogInfo;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiTlog;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.TlogInfo;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
@@ -728,7 +728,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
-            mTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+            mTlogService = RestClient.getAPiTlog();
             Bundle args = getArguments();
             if (args.containsKey(ARG_USER_ID)) {
                 mUserId = args.getLong(ARG_USER_ID);

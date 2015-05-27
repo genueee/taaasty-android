@@ -6,8 +6,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.StatFs;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
-import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.FieldNamingPolicy;
@@ -29,19 +27,12 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
-import retrofit.ErrorHandler;
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.OkClient;
-import retrofit.client.Response;
-import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.StatusBarNotification;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
-import ru.taaasty.model.ResponseError;
+import ru.taaasty.rest.DateTypeAdapter;
 import ru.taaasty.ui.login.LoginActivity;
 
 public final class NetworkUtils {
@@ -50,24 +41,13 @@ public final class NetworkUtils {
 
     private static NetworkUtils mUtils;
 
-    private final Gson mGson;
-
-    private final GsonConverter mGsonConverter;
-
-    private UserManager mUserManager = UserManager.getInstance();
+    private static volatile Gson sGson; //XXX: отдельный класс?
 
     private OkHttpClient mOkHttpClient;
-
-    private OkClient mRetrofitClient;
 
     private LruCache mPicassoCache;
 
     private NetworkUtils() {
-        mGson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                .registerTypeAdapter(Date.class, new DateTypeAdapter())
-                .create();
-        mGsonConverter = new GsonConverter(mGson);
     }
 
     public static NetworkUtils getInstance() {
@@ -75,6 +55,20 @@ public final class NetworkUtils {
             mUtils = new NetworkUtils();
         }
         return mUtils;
+    }
+
+    public static Gson getGson() {
+        if (sGson == null) {
+            synchronized (Gson.class) {
+                if (sGson == null) {
+                    sGson = new GsonBuilder()
+                            .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                            .registerTypeAdapter(Date.class, new DateTypeAdapter())
+                            .create();
+                }
+            }
+        }
+        return sGson;
     }
 
     public void onAppInit(Context context) {
@@ -99,7 +93,6 @@ public final class NetworkUtils {
             mOkHttpClient.setCache(cache);
         }
         //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
-        mRetrofitClient = new OkClient(mOkHttpClient);
     }
 
     private void initLruMemoryCache(Context context) {
@@ -139,23 +132,6 @@ public final class NetworkUtils {
         mPicassoCache.clear();
     }
 
-    public Gson getGson() {
-        return mGson;
-    }
-
-    public RestAdapter createRestAdapter() {
-        RestAdapter.Builder b = new RestAdapter.Builder();
-
-        b.setLogLevel(Constants.RETROFIT_LOG_LEVEL);
-        b.setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
-                .setConverter(mGsonConverter)
-                .setRequestInterceptor(mRequestInterceptor)
-                .setErrorHandler(mErrorHandler)
-                .setClient(mRetrofitClient)
-        ;
-        return b.build();
-    }
-
     public OkHttpClient getOkHttpClient() {
         return mOkHttpClient;
     }
@@ -164,7 +140,7 @@ public final class NetworkUtils {
         GcmUtils.getInstance(context).onLogout();
         StatusBarNotification.getInstance().onLogout();
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
-        mUserManager.logout();
+        UserManager.getInstance().logout();
         LoginActivity.logout(context);
         try {
             mOkHttpClient.getCache().delete();
@@ -208,64 +184,6 @@ public final class NetworkUtils {
                 .filter(ThumborUrlBuilder.stripicc());
     }
 
-    private final RequestInterceptor mRequestInterceptor = new RequestInterceptor() {
-
-        final String mBasicAuth;
-
-        {
-            if (!TextUtils.isEmpty(BuildConfig.API_SERVER_LOGIN) && !TextUtils.isEmpty(BuildConfig.API_SERVER_PASSWORD)) {
-                final String credentials = BuildConfig.API_SERVER_LOGIN + ":" + BuildConfig.API_SERVER_PASSWORD;
-                mBasicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
-            } else {
-                mBasicAuth = null;
-            }
-        }
-
-        @Override
-        public void intercept(RequestFacade request) {
-            request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
-            request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, BuildConfig.VERSION_NAME);
-            String token = mUserManager.getCurrentUserToken();
-            if (token != null) {
-                request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
-            }
-            if (mBasicAuth != null) {
-                request.addHeader("Authorization", mBasicAuth);
-            }
-        }
-
-
-    };
-
-    public final ErrorHandler mErrorHandler = new ErrorHandler() {
-        @Override
-        public Throwable handleError(RetrofitError cause) {
-            ResponseError responseError = null;
-            try {
-                responseError = (ResponseError) cause.getBodyAs(ResponseError.class);
-            } catch (Exception ignore) {
-                if (DBG) Log.v(TAG, "ignore exception", ignore);
-            }
-
-            Response r = cause.getResponse();
-            if (r != null) {
-                switch (r.getStatus()) {
-                    case 401:
-                        return new UnauthorizedException(cause, responseError);
-                    case 417:
-                        if (responseError != null && "no_token".equals(responseError.errorCode)) {
-                            return new UnauthorizedException(cause, responseError);
-                        }
-                }
-            }
-            if (responseError != null) {
-                return new ResponseErrorException(cause, responseError);
-            } else {
-                return cause;
-            }
-        }
-    };
-
     public static long calculateDiskCacheSize(File dir) {
         long size = Constants.MIN_DISK_CACHE_SIZE;
 
@@ -290,43 +208,6 @@ public final class NetworkUtils {
         if (cacheDir == null) return null;
 
         return new File(cacheDir, "taaasty");
-    }
-
-    /**
-     * 401 код
-     */
-    public static class UnauthorizedException extends RuntimeException {
-
-        @Nullable
-        public final ResponseError error;
-
-        public UnauthorizedException(Throwable throwable, ResponseError error) {
-            super(throwable);
-            this.error = error;
-        }
-
-        @Nullable
-        public String getUserError() {
-            return error == null ? null : error.error;
-        }
-    }
-
-    /**
-     * Ошибка, которая парсится по ResponseError
-     */
-    public static class ResponseErrorException extends  RuntimeException {
-
-        public final ResponseError error;
-
-        public ResponseErrorException(Throwable throwable, ResponseError error) {
-            super(throwable);
-            this.error = error;
-        }
-
-        @Nullable
-        public String getUserError() {
-            return error == null ? null : error.error;
-        }
     }
 
     private class OkLoggingInterceptor implements Interceptor {

@@ -23,7 +23,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.events.MessagingStatusReceived;
-import ru.taaasty.model.MessagingStatus;
+import ru.taaasty.rest.model.MessagingStatus;
 
 
 public class TabbarFragment extends Fragment {

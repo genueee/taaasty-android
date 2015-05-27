@@ -5,10 +5,10 @@ import android.os.Bundle;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.RelationshipsAdapter;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.Relationships;
-import ru.taaasty.service.ApiRelationships;
-import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.Relationships;
+import ru.taaasty.rest.service.ApiRelationships;
 import rx.Observable;
 import rx.android.app.AppObservable;
 
@@ -38,7 +38,7 @@ public class FriendsFragment extends RelationshipListFragmentBase {
 
     @Override
     Observable<Relationships> createRelationshipsObservable() {
-        ApiRelationships api = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships api = RestClient.getAPiRelationships();
 
         return AppObservable.bindFragment(this,
                 api.getRelationshipsTo(Relationship.RELATIONSHIP_FRIEND, null, 200));

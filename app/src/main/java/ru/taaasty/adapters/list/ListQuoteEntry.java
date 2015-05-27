@@ -7,9 +7,9 @@ import android.view.View;
 import android.widget.TextView;
 
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.UiUtils;
 

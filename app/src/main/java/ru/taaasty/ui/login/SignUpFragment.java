@@ -30,10 +30,12 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.UnauthorizedException;
+import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
@@ -239,7 +241,7 @@ public class SignUpFragment extends Fragment {
             // Show a progress spinner, and kick off a background task to
             // perform the author login attempt.
             showProgress(true);
-            ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+            ApiUsers service = RestClient.getAPiUsers();
             mAuthTask = service.registerUser(email, password, slug);
             AppObservable.bindFragment(this, mAuthTask);
             mAuthTask
@@ -263,10 +265,10 @@ public class SignUpFragment extends Fragment {
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
                             CharSequence error = null;
-                            if (e instanceof NetworkUtils.ResponseErrorException) {
-                                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
-                            } else if (e instanceof NetworkUtils.UnauthorizedException) {
-                                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+                            if (e instanceof ResponseErrorException) {
+                                error = ((ResponseErrorException)e).getUserError();
+                            } else if (e instanceof UnauthorizedException) {
+                                error = ((UnauthorizedException)e).getUserError();
                             }
                             if (TextUtils.isEmpty(error)) {
                                 error = getText(R.string.error_invalid_email_or_password);

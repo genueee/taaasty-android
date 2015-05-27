@@ -12,7 +12,7 @@ import com.squareup.picasso.RequestCreator;
 
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.model.TlogDesign;
+import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.SmartTextSwitcher;

@@ -20,7 +20,7 @@ import ru.taaasty.R;
 import ru.taaasty.StatusBarNotification;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.ConversationChanged;
-import ru.taaasty.model.Conversation;
+import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.messages.ConversationsListFragment;
 import ru.taaasty.ui.messages.InitiateConversationFragment;

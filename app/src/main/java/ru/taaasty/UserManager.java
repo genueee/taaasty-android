@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.functions.Action1;
@@ -71,9 +71,7 @@ public class UserManager {
     }
 
     public Observable<CurrentUser> getCurrentUser() {
-        return NetworkUtils.getInstance()
-                .createRestAdapter()
-                .create(ApiUsers.class)
+        return RestClient.getAPiUsers()
                 .getMyInfo()
                 .doOnNext(new Action1<CurrentUser>() {
                     @Override
@@ -94,13 +92,13 @@ public class UserManager {
         mAuthtoken = prefs.getString(SHARED_PREFS_KEY_AUTHTOKEN, null);
         String userSerialized = prefs.getString(SHARED_PREFS_KEY_USER, null);
         if (userSerialized != null) {
-            mCurrentUser = NetworkUtils.getInstance().getGson().fromJson(userSerialized, CurrentUser.class);
+            mCurrentUser = NetworkUtils.getGson().fromJson(userSerialized, CurrentUser.class);
         }
     }
 
     private void persist() {
         SharedPreferences prefs = mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-        String userSerialized = NetworkUtils.getInstance().getGson().toJson(mCurrentUser);
+        String userSerialized = NetworkUtils.getGson().toJson(mCurrentUser);
         prefs.edit()
                 .putString(SHARED_PREFS_KEY_AUTHTOKEN, mAuthtoken)
                 .putString(SHARED_PREFS_KEY_USER, userSerialized)

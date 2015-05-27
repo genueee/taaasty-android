@@ -11,7 +11,7 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.GcmIntentService;
-import ru.taaasty.service.ApiDevice;
+import ru.taaasty.rest.RestClient;
 
 public class GcmUtils {
     private static final String TAG = "GcmUtils";
@@ -61,8 +61,7 @@ public class GcmUtils {
     public void onLogout() {
         if (mRegId == null) return;
         try {
-            NetworkUtils.getInstance().createRestAdapter().create(ApiDevice.class)
-                    .unregister(mRegId);
+            RestClient.getAPiDevice().unregister(mRegId);
         } catch (Throwable ignore) {
         } finally {
             mRegId = null;

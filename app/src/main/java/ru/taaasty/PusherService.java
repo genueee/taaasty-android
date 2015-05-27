@@ -30,12 +30,13 @@ import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.UpdateMessagesReceived;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.MessagingStatus;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.PusherEventUpdateNotifications;
-import ru.taaasty.model.UpdateMessages;
-import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.MessagingStatus;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.PusherEventUpdateNotifications;
+import ru.taaasty.rest.model.UpdateMessages;
+import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
@@ -49,38 +50,38 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     /**
      *  Кол-во активных и непрочитанных переписок и непрочитанных уведомлений
-     *  Тип: {@linkplain ru.taaasty.model.MessagingStatus}
+     *  Тип: {@linkplain ru.taaasty.rest.model.MessagingStatus}
      */
     public static final String EVENT_STATUS = "status";
 
 
     /**
      * Событие - активные переписки
-     * Тип: {@linkplain ru.taaasty.model.Conversations}
+     * Тип: {@linkplain ru.taaasty.rest.model.Conversations}
      */
     public static final String EVENT_ACTIVE_CONVERSATIONS = "active_conversations";
 
     /**
      * Событие - обновление переписки
-     * Тип: {@linkplain ru.taaasty.model.Notification}
+     * Тип: {@linkplain ru.taaasty.rest.model.Notification}
      */
     public static final String EVENT_UPDATE_CONVERSATION = "update_conversation";
 
     /**
      * Новое сообщение
-     * Тип: {@linkplain ru.taaasty.model.Conversation.Message}
+     * Тип: {@linkplain ru.taaasty.rest.model.Conversation.Message}
      */
     public static final String EVENT_PUSH_MESSAGE = "push_message";
 
     /**
      * Обновление статуса сообщений
-     * Тип: {@linkplain ru.taaasty.model.UpdateMessages}
+     * Тип: {@linkplain ru.taaasty.rest.model.UpdateMessages}
      */
     public static final String EVENT_UPDATE_MESSAGES = "update_messages";
 
     /**
      * push notification - пришло уведомление.
-     * Тип: {@linkplain ru.taaasty.model.Notification}
+     * Тип: {@linkplain ru.taaasty.rest.model.Notification}
      */
     public static final String EVENT_PUSH_NOTIFICATION = "push_notification";
 
@@ -136,8 +137,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
-        mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
-        mGson = NetworkUtils.getInstance().getGson();
+        mApiMessenger = RestClient.getAPiMessenger();
+        mGson = NetworkUtils.getGson();
     }
 
     @Override

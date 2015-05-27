@@ -8,9 +8,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Rating;
-import ru.taaasty.service.ApiEntries;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Rating;
+import ru.taaasty.rest.service.ApiEntries;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -37,7 +38,7 @@ public class LikesHelper {
 
     private LikesHelper() {
         mSubscriptions = new LongSparseArray<>(2);
-        mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+        mApiEntriesService = RestClient.getAPiEntries();
     }
 
     public boolean isRatingInUpdate(long entryId) {

@@ -20,15 +20,15 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Feed;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.service.ApiMyFeeds;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -387,7 +387,7 @@ public class SubscriptionsFeedFragment extends Fragment implements
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+            mFeedsService = RestClient.getAPiMyFeeds();
         }
 
         @Override

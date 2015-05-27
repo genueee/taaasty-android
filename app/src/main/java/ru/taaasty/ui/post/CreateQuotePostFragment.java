@@ -13,9 +13,9 @@ import android.widget.EditText;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.PostForm;
-import ru.taaasty.model.PostQuoteForm;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.rest.model.PostQuoteForm;
 import ru.taaasty.utils.UiUtils;
 
 public class CreateQuotePostFragment extends CreatePostFragmentBase {

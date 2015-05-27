@@ -18,7 +18,7 @@ import java.util.Collection;
 
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.PicassoDrawable;

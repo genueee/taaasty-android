@@ -31,7 +31,7 @@ import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 
 public class SharePostActivity extends ActivityBase {
 

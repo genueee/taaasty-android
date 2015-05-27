@@ -19,11 +19,11 @@ import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.events.ReportCommentSent;
-import ru.taaasty.model.Entry;
-import ru.taaasty.service.ApiComments;
-import ru.taaasty.service.ApiEntries;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.service.ApiComments;
+import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
@@ -220,7 +220,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public Observable<Object> createObservable() {
-            ApiEntries service = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+            ApiEntries service = RestClient.getAPiEntries();
             return service.deleteEntry(mPostId);
         }
 
@@ -256,7 +256,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public Observable<Object> createObservable() {
-            ApiEntries service = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+            ApiEntries service = RestClient.getAPiEntries();
             return service.reportEntry(mPostId);
         }
 
@@ -296,8 +296,8 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public Observable<Object> createObservable() {
-            ApiComments service = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
-            ApiEntries entriesApi = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+            ApiComments service = RestClient.getAPiComments();
+            ApiEntries entriesApi = RestClient.getAPiEntries();
 
             Observable<Object> delete = service.deleteComment(mCommentId);
             Observable<Entry> updateEntry = entriesApi.getEntry(mPostId, false);
@@ -342,7 +342,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public Observable<Object> createObservable() {
-            ApiComments service = NetworkUtils.getInstance().createRestAdapter().create(ApiComments.class);
+            ApiComments service = RestClient.getAPiComments();
             return service.reportComment(mCommentId);
         }
 

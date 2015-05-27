@@ -27,11 +27,11 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMessenger;
-import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
@@ -236,7 +236,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
 
     private void loadConversation(long recipientId) {
         mConversationSubscription.unsubscribe();
-        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
         Observable<Conversation> observable = AppObservable.bindActivity(this,
                 apiMessenger.createConversation(null, recipientId));

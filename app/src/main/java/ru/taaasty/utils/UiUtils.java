@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 import ru.taaasty.ui.ClickableNicknameSpan;
 import ru.taaasty.ui.CustomTypefaceSpan;
 import ru.taaasty.ui.TaaastyUrlSpan;

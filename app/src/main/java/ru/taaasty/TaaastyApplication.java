@@ -53,8 +53,8 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         super.onCreate();
 
         CalligraphyConfig.initDefault(FontManager.FONT_SYSTEM_DEFAULT_PATH, R.attr.fontPath);
-        UserManager.getInstance().onAppInit(this);
         NetworkUtils.getInstance().onAppInit(this);
+        UserManager.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
@@ -106,7 +106,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         return mAnalyticsTracker;
     }
 
-        private void resetLanguage() {
+    private void resetLanguage() {
         Configuration config = getBaseContext().getResources().getConfiguration();
 
         // Locale.US - это обычно юзеры, не меняющие язык. Подстраиваемся под них

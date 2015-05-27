@@ -43,21 +43,23 @@ import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.MarkNotificationsAsReadResponse;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.PostAnonymousTextForm;
-import ru.taaasty.model.PostEmbeddForm;
-import ru.taaasty.model.PostForm;
-import ru.taaasty.model.PostImageForm;
-import ru.taaasty.model.PostQuoteForm;
-import ru.taaasty.model.PostTextForm;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.Userpic;
-import ru.taaasty.service.ApiDesignSettings;
-import ru.taaasty.service.ApiEntries;
-import ru.taaasty.service.ApiMessenger;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.PostAnonymousTextForm;
+import ru.taaasty.rest.model.PostEmbeddForm;
+import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.rest.model.PostImageForm;
+import ru.taaasty.rest.model.PostQuoteForm;
+import ru.taaasty.rest.model.PostTextForm;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.service.ApiDesignSettings;
+import ru.taaasty.rest.service.ApiEntries;
+import ru.taaasty.rest.service.ApiMessenger;
+import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
@@ -166,9 +168,9 @@ public class IntentService extends android.app.IntentService {
 
     public IntentService() {
         super("IntentService");
-        mApiEntriesService = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
-        mApiUsersService = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
-        mApiDesignService = NetworkUtils.getInstance().createRestAdapter().create(ApiDesignSettings.class);
+        mApiEntriesService = RestClient.getAPiEntries();
+        mApiUsersService = RestClient.getAPiUsers();
+        mApiDesignService = RestClient.getAPiDesignSettings();
     }
 
     @Override
@@ -255,7 +257,7 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (NetworkUtils.ResponseErrorException ree) {
+        } catch (ResponseErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
             if (DBG) throw new IllegalStateException(ex);
@@ -303,7 +305,7 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (NetworkUtils.ResponseErrorException ree) {
+        } catch (ResponseErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
             if (DBG) throw new IllegalStateException(ex);
@@ -321,7 +323,7 @@ public class IntentService extends android.app.IntentService {
             Userpic response = mApiUsersService.uploadUserpicSync(new ContentTypedOutput(this, imageUri, null));
             status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (NetworkUtils.ResponseErrorException ree) {
+        }catch (ResponseErrorException ree) {
             status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;
@@ -338,7 +340,7 @@ public class IntentService extends android.app.IntentService {
                     new ContentTypedOutput(this, imageUri, null));
             status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (NetworkUtils.ResponseErrorException ree) {
+        }catch (ResponseErrorException ree) {
             status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;
@@ -415,7 +417,7 @@ public class IntentService extends android.app.IntentService {
 
     private void handleMarkNotificationsAsRead(long notificationIds[]) {
         if (DBG) Log.v(TAG, "handleMarkNotificationsAsRead ids: " + Arrays.toString(notificationIds));
-        ApiMessenger api = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger api = RestClient.getAPiMessenger();
         for (long notificationId: notificationIds) {
             try {
                 Notification notification = api.markNotificationAsRead(null, notificationId);
@@ -428,7 +430,7 @@ public class IntentService extends android.app.IntentService {
     }
 
     private void handleMarkAllNotificationsAsRead() {
-        ApiMessenger api = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger api = RestClient.getAPiMessenger();
         EventBus eventBus = EventBus.getDefault();
         try {
             List<MarkNotificationsAsReadResponse> response = api.markAllNotificationsAsRead(null, null);

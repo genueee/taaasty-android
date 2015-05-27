@@ -27,13 +27,13 @@ import android.widget.Toast;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.TlogInfo;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiRelationships;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.TlogInfo;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.post.SharePostActivity;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
@@ -335,7 +335,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     void doFollow() {
         if (getUserId() == null) return;
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindActivity(this,
                 relApi.follow(getUserId().toString()));
         mPerformSubscription = true;
@@ -348,7 +348,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     void doUnfollow() {
         if (getUserId() == null) return;
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindActivity(this,
                 relApi.unfollow(getUserId().toString()));
         mPerformSubscription = true;

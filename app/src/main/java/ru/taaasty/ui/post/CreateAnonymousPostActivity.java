@@ -21,7 +21,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.IntentService;
 import ru.taaasty.events.EntryUploadStatus;
-import ru.taaasty.model.PostForm;
+import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class CreateAnonymousPostActivity extends ActivityBase implements OnCreatePostInteractionListener {

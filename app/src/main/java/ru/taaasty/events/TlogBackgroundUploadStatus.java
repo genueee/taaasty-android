@@ -2,7 +2,7 @@ package ru.taaasty.events;
 
 import android.net.Uri;
 
-import ru.taaasty.model.TlogDesign;
+import ru.taaasty.rest.model.TlogDesign;
 
 /**
  * Created by alexey on 11.09.14.

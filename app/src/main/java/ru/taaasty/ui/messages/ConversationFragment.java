@@ -35,14 +35,14 @@ import ru.taaasty.UserManager;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.ConversationMessages;
-import ru.taaasty.model.Status;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.ConversationMessages;
+import ru.taaasty.rest.model.Status;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.ListScrollController;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -268,7 +268,7 @@ public class ConversationFragment extends Fragment {
 
         mPostMessageSubscription.unsubscribe();
 
-        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
         Observable<Conversation.Message> observablePost = AppObservable.bindFragment(this,
                 apiMessenger.postMessage(null, mConversationId, comment,
@@ -483,7 +483,7 @@ public class ConversationFragment extends Fragment {
         public MarkMessagesAsRead() {
             mHandler = new Handler();
             mPostIds = new HashSet<>(3);
-            mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+            mApiMessenger = RestClient.getAPiMessenger();
         }
 
         public void enqueueMarkAsRead(long messageId) {
@@ -576,7 +576,7 @@ public class ConversationFragment extends Fragment {
             mKeepOnAppending = new AtomicBoolean(true);
             mMessagesAppendSubscription = Subscriptions.unsubscribed();
             mMessagesRefreshSubscription = Subscriptions.unsubscribed();
-            mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+            mApiMessenger = RestClient.getAPiMessenger();
         }
 
         protected Observable<ConversationMessages> createObservable(Long sinceEntryId, Integer limit) {

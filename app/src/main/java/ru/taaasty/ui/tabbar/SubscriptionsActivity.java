@@ -9,7 +9,7 @@ import android.view.ViewConfiguration;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.SubscriptionsFeedFragment;
 import ru.taaasty.ui.post.SharePostActivity;

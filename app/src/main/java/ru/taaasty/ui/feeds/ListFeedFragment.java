@@ -26,19 +26,19 @@ import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.OnStatsLoaded;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Feed;
-import ru.taaasty.model.Stats;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiFeeds;
-import ru.taaasty.service.ApiTlog;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.Stats;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiFeeds;
+import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -615,9 +615,9 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             mFeedType = getArguments().getInt(ARG_FEED_TYPE);
             if (mFeedType == FEED_NEWS) {
                 mApiFeedsService = null;
-                mApiTlogService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+                mApiTlogService = RestClient.getAPiTlog();
             } else {
-                mApiFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiFeeds.class);
+                mApiFeedsService = RestClient.getAPiFeeds();
                 mApiTlogService = null;
             }
         }

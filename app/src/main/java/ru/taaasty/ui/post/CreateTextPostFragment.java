@@ -13,10 +13,10 @@ import android.widget.EditText;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.PostAnonymousTextForm;
-import ru.taaasty.model.PostForm;
-import ru.taaasty.model.PostTextForm;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.PostAnonymousTextForm;
+import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.rest.model.PostTextForm;
 import ru.taaasty.utils.UiUtils;
 
 public class CreateTextPostFragment extends CreatePostFragmentBase {

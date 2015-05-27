@@ -20,8 +20,8 @@ import java.util.Set;
 
 import ru.taaasty.R;
 import ru.taaasty.adapters.list.NotificationsListManaged;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;

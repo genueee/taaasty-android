@@ -5,7 +5,7 @@ import android.support.v4.util.LongSparseArray;
 import java.util.Collection;
 import java.util.Date;
 
-import ru.taaasty.model.MarkNotificationsAsReadResponse;
+import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
 
 public class NotificationMarkedAsRead {
 

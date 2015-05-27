@@ -30,11 +30,13 @@ import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.service.ApiSessions;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.UnauthorizedException;
+import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.rest.service.ApiSessions;
+import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -139,7 +141,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
     public void loginToTheServer(VKAccessToken token) {
         mAuthSubscription.unsubscribe();
 
-        ApiSessions sessionService = NetworkUtils.getInstance().createRestAdapter().create(ApiSessions.class);
+        ApiSessions sessionService = RestClient.getAPiSessions();
 
         Observable<CurrentUser> observableUser = AppObservable.bindFragment(this,
                 sessionService.signInVkontakte(token.userId, token.accessToken));
@@ -151,7 +153,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
     void signupVkontakte(VKAccessToken token, JSONObject data) {
         mSignupSubscription.unsubscribe();
-        ApiUsers usersService = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+        ApiUsers usersService = RestClient.getAPiUsers();
 
         String nickname = null;
         String avatarUrl = null;
@@ -252,10 +254,10 @@ public class SignViaVkontakteFragment extends DialogFragment {
         @Override
         public void onError(Throwable e) {
             CharSequence error = "";
-            if (e instanceof NetworkUtils.ResponseErrorException) {
-                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
-            } else if (e instanceof NetworkUtils.UnauthorizedException) {
-                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+            if (e instanceof ResponseErrorException) {
+                error = ((ResponseErrorException)e).getUserError();
+            } else if (e instanceof UnauthorizedException) {
+                error = ((UnauthorizedException)e).getUserError();
             }
             if (TextUtils.isEmpty(error)) {
                 error = getText(R.string.error_vkontakte_failed);
@@ -284,10 +286,10 @@ public class SignViaVkontakteFragment extends DialogFragment {
         @Override
         public void onError(Throwable e) {
             CharSequence error = "";
-            if (e instanceof NetworkUtils.ResponseErrorException) {
-                error = ((NetworkUtils.ResponseErrorException)e).getUserError();
-            } else if (e instanceof NetworkUtils.UnauthorizedException) {
-                error = ((NetworkUtils.UnauthorizedException)e).getUserError();
+            if (e instanceof ResponseErrorException) {
+                error = ((ResponseErrorException)e).getUserError();
+            } else if (e instanceof UnauthorizedException) {
+                error = ((UnauthorizedException)e).getUserError();
             }
             if (TextUtils.isEmpty(error)) {
                 error = getText(R.string.error_vkontakte_failed);

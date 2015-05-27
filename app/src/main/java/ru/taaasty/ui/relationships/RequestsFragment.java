@@ -19,11 +19,11 @@ import ru.taaasty.R;
 import ru.taaasty.adapters.FollowingRequestsAdapter;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.Relationships;
-import ru.taaasty.service.ApiRelationships;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.Relationships;
+import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -62,7 +62,7 @@ public class RequestsFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mApiRelationships = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        mApiRelationships = RestClient.getAPiRelationships();
     }
 
     @Override

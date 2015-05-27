@@ -11,9 +11,9 @@ import java.util.ArrayList;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;

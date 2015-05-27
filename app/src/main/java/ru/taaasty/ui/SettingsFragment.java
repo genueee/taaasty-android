@@ -15,9 +15,10 @@ import android.util.Log;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.service.ApiUsers;
-import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.rest.service.ApiUsers;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -80,7 +81,7 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mApiUsers = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+        mApiUsers = RestClient.getAPiUsers();
         mUsernamePref = (EditTextPreference) findPreference("preference_user_name");
         mTlogTitlePref = (EditTextPreference) findPreference("preference_tlog_title");
         mIsPrivacyPref = (SwitchPreference) findPreference("preference_is_privacy");
@@ -310,7 +311,7 @@ public class SettingsFragment extends PreferenceFragment {
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "refresh author error", e);
-            if (e instanceof NetworkUtils.ResponseErrorException) {
+            if (e instanceof ResponseErrorException) {
 
             }
             if (mListener != null) mListener.notifyError("update user error", e);

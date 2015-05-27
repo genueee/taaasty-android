@@ -11,8 +11,8 @@ import ru.taaasty.UserManager;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.Relationship;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.Relationship;
 
 public final class NotificationsListManaged extends SortedList<Notification> {
     private static final boolean DBG = BuildConfig.DEBUG;

@@ -21,13 +21,13 @@ import java.util.List;
 
 import ru.taaasty.R;
 import ru.taaasty.adapters.UsernameAdapter;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMessenger;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiMessenger;
+import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -70,7 +70,7 @@ public class InitiateConversationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mApiUsers = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+        mApiUsers = RestClient.getAPiUsers();
     }
 
     @Override
@@ -238,7 +238,7 @@ public class InitiateConversationFragment extends Fragment {
 
     private void startCreateConversation(long userId) {
         mCreatingConversationSubscription.unsubscribe();
-        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger apiMessenger = RestClient.getAPiMessenger();
         mCreatingConversation = true;
         Observable<Conversation> observable = AppObservable.bindFragment(this,
                 apiMessenger.createConversation(null, userId));

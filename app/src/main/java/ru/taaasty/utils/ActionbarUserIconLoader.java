@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import com.squareup.picasso.Picasso;
 
 import ru.taaasty.R;
-import ru.taaasty.model.Userpic;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.widgets.PicassoDrawable;
 
 public abstract class ActionbarUserIconLoader {

@@ -13,9 +13,9 @@ import android.widget.Toast;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.CurrentUser;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.ActionbarUserIconLoader;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
 /**
@@ -69,9 +69,9 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
         if (exception != null) Log.e(TAG, error.toString(), exception);
 
         CharSequence text;
-        if (exception != null && exception instanceof  NetworkUtils.ResponseErrorException) {
-            text = ((NetworkUtils.ResponseErrorException)exception).error.longMessage;
-            if (text == null) text = ((NetworkUtils.ResponseErrorException)exception).error.error;
+        if (exception != null && exception instanceof ResponseErrorException) {
+            text = ((ResponseErrorException)exception).error.longMessage;
+            if (text == null) text = ((ResponseErrorException)exception).error.error;
         } else {
             text = error;
         }

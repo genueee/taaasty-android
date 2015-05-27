@@ -22,8 +22,8 @@ import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.events.EntryRemoved;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.TlogDesign;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.ui.feeds.FeedsHelper;
 
 /**

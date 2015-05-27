@@ -29,15 +29,15 @@ import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Stats;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiApp;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Stats;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiApp;
 import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -69,7 +69,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         Intercom.client().openGCMMessage(getIntent().getData());
 
-        mApiStatsService = NetworkUtils.getInstance().createRestAdapter().create(ApiApp.class);
+        mApiStatsService = RestClient.getAPiApp();
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
 

@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.Relationship;
+import ru.taaasty.rest.model.Relationship;
 
 /**
  * Created by alexey on 23.03.15.

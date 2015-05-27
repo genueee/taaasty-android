@@ -22,10 +22,10 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.RecoveryPasswordResponse;
-import ru.taaasty.service.ApiUsers;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.RecoveryPasswordResponse;
+import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
@@ -154,7 +154,7 @@ public class RecoverPasswordFragment extends Fragment {
             // perform the author login attempt.
             showProgress(true);
 
-            ApiUsers service = NetworkUtils.getInstance().createRestAdapter().create(ApiUsers.class);
+            ApiUsers service = RestClient.getAPiUsers();
             mAuthTask = service.recoveryPassword(email);
             AppObservable.bindFragment(this, mAuthTask);
             mAuthTask

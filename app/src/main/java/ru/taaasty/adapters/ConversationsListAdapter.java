@@ -15,8 +15,8 @@ import java.util.List;
 
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;

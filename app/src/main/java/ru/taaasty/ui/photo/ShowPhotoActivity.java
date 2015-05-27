@@ -26,8 +26,8 @@ import java.util.List;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.PhotoScrollPositionIndicator;
 

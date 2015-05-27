@@ -13,7 +13,7 @@ import android.text.TextUtils;
 
 import java.util.Random;
 
-import ru.taaasty.model.Userpic;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.utils.FontManager;
 
 /**

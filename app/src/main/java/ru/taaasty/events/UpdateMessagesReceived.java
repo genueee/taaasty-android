@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.UpdateMessages;
+import ru.taaasty.rest.model.UpdateMessages;
 
 /**
  * Created by alexey on 04.12.14.

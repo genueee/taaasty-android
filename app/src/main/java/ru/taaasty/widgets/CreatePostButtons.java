@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import ru.taaasty.R;
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 
 public class CreatePostButtons extends LinearLayout {
 

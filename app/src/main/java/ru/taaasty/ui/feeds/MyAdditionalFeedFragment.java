@@ -32,18 +32,18 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
-import ru.taaasty.model.CurrentUser;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Feed;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMyFeeds;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -584,7 +584,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            mFeedsService = NetworkUtils.getInstance().createRestAdapter().create(ApiMyFeeds.class);
+            mFeedsService = RestClient.getAPiMyFeeds();
             mFeedType = getArguments().getInt(BUNDLE_ARG_FEED_TYPE);
         }
 

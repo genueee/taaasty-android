@@ -28,14 +28,13 @@ import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.NotificationList;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMessenger;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.NotificationList;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -199,9 +198,8 @@ public class StatusBarNotification {
 
         long fromMsgId = mLastSeenNewestNotificationId;
 
-        rx.Observable<NotificationList> observable = NetworkUtils.getInstance().createRestAdapter()
-                .create(ApiMessenger.class).getNotifications(null,
-                        (fromMsgId == 0 ? null : fromMsgId),
+        rx.Observable<NotificationList> observable = RestClient.getAPiMessenger()
+                .getNotifications(null, (fromMsgId == 0 ? null : fromMsgId),
                         null, 2, "desc")
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
@@ -264,8 +262,7 @@ public class StatusBarNotification {
             return;
         }
 
-        rx.Observable<List<Conversation>> observable = NetworkUtils.getInstance().createRestAdapter()
-                .create(ApiMessenger.class).getConversations(null)
+        rx.Observable<List<Conversation>> observable = RestClient.getAPiMessenger().getConversations(null)
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override

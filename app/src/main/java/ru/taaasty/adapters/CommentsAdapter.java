@@ -15,8 +15,8 @@ import java.util.List;
 
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.model.Comment;
-import ru.taaasty.model.TlogDesign;
+import ru.taaasty.rest.model.Comment;
+import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.Objects;
 
 public abstract class CommentsAdapter extends RecyclerView.Adapter {

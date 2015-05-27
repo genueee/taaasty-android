@@ -26,17 +26,17 @@ import ru.taaasty.UserManager;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
-import ru.taaasty.model.Conversation;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.RelationshipsSummary;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.TlogInfo;
-import ru.taaasty.model.User;
-import ru.taaasty.service.ApiMessenger;
-import ru.taaasty.service.ApiRelationships;
-import ru.taaasty.service.ApiTlog;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.RelationshipsSummary;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.TlogInfo;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiMessenger;
+import ru.taaasty.rest.service.ApiRelationships;
+import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
@@ -504,7 +504,7 @@ public class UserInfoFragment extends Fragment {
     public void refreshUser() {
         mUserInfoSubscription.unsubscribe();
 
-        ApiTlog userService = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+        ApiTlog userService = RestClient.getAPiTlog();
 
         Observable<TlogInfo> observableUser = AppObservable.bindFragment(this,
                 userService.getUserInfo(String.valueOf(mUserId)));
@@ -519,7 +519,7 @@ public class UserInfoFragment extends Fragment {
         if (Relationship.isMeSubscribed(mMyRelationship)) return;
 
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.follow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
@@ -533,7 +533,7 @@ public class UserInfoFragment extends Fragment {
         if (!Relationship.isMeSubscribed(mMyRelationship)) return;
 
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.unfollow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
@@ -545,7 +545,7 @@ public class UserInfoFragment extends Fragment {
     private void initiateConversation() {
         mCreateConversationSubscription.unsubscribe();
 
-        ApiMessenger apiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+        ApiMessenger apiMessenger = RestClient.getAPiMessenger();
         Observable<Conversation> observable = AppObservable.bindFragment(this,
                 apiMessenger.createConversation(null, mUserId));
         mCreateConversationSubscription = observable

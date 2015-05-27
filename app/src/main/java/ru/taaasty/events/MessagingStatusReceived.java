@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.MessagingStatus;
+import ru.taaasty.rest.model.MessagingStatus;
 
 /**
  * Created by alexey on 16.12.14.

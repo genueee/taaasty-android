@@ -24,8 +24,8 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.PostForm;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
 

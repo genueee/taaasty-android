@@ -21,7 +21,7 @@
 
 -dontwarn org.slf4j.**
 
--keep class ru.taaasty.model.** { *; }
+-keep class ru.taaasty.rest.model.** { *; }
 
 # Eventbus
 -keepclassmembers class ** {

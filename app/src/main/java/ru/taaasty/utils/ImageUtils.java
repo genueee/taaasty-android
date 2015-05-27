@@ -25,7 +25,6 @@ import android.util.Log;
 import android.util.TimingLogger;
 import android.widget.ImageView;
 
-import com.aviary.android.feather.sdk.AviaryIntent;
 import com.aviary.android.feather.sdk.FeatherActivity;
 import com.aviary.android.feather.sdk.internal.Constants;
 import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
@@ -43,8 +42,8 @@ import java.util.Locale;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.model.User;
-import ru.taaasty.model.Userpic;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.PicassoDrawable;
 

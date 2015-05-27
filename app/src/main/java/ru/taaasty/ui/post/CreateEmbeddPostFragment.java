@@ -30,13 +30,13 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.PostEmbeddForm;
-import ru.taaasty.model.PostForm;
-import ru.taaasty.model.iframely.IFramely;
-import ru.taaasty.model.iframely.Link;
-import ru.taaasty.service.ApiEntries;
-import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.PostEmbeddForm;
+import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.rest.model.iframely.IFramely;
+import ru.taaasty.rest.model.iframely.Link;
+import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Subscriber;
@@ -129,7 +129,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         }
 
         mPicasso = Picasso.with(getActivity());
-        mApiEntries = NetworkUtils.getInstance().createRestAdapter().create(ApiEntries.class);
+        mApiEntries = RestClient.getAPiEntries();
         mClipboardManager = (ClipboardManager)getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
 
         EventBus.getDefault().register(this);

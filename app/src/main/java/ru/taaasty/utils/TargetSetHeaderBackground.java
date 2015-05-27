@@ -15,7 +15,7 @@ import com.squareup.picasso.Target;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.model.TlogDesign;
+import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.widgets.BackgroundBitmapDrawable;
 
 /**

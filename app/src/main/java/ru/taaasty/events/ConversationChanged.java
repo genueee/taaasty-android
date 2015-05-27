@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.Conversation;
+import ru.taaasty.rest.model.Conversation;
 
 /**
  * Изменилась инфа по переписке

@@ -37,15 +37,15 @@ import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.RelationshipChanged;
-import ru.taaasty.model.Notification;
-import ru.taaasty.model.NotificationList;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.service.ApiMessenger;
-import ru.taaasty.service.ApiRelationships;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Notification;
+import ru.taaasty.rest.model.NotificationList;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.service.ApiMessenger;
+import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -282,7 +282,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     void follow(Notification notification) {
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.follow(String.valueOf(notification.sender.getId())));
         mFollowSubscription = observable
@@ -292,7 +292,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     void unfollow(Notification notification) {
         mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = NetworkUtils.getInstance().createRestAdapter().create(ApiRelationships.class);
+        ApiRelationships relApi = RestClient.getAPiRelationships();
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 relApi.unfollow(String.valueOf(notification.sender.getId())));
         mFollowSubscription = observable
@@ -531,7 +531,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 mKeepOnAppending = true;
                 mAppendSubscription = Subscriptions.unsubscribed();
                 mRefreshSubscription = Subscriptions.unsubscribed();
-                mApiMessenger = NetworkUtils.getInstance().createRestAdapter().create(ApiMessenger.class);
+                mApiMessenger = RestClient.getAPiMessenger();
             }
 
             protected Observable<NotificationList> createObservable(Long sinceEntryId, Integer limit) {

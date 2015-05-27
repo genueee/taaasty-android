@@ -18,10 +18,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.Rating;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Rating;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 

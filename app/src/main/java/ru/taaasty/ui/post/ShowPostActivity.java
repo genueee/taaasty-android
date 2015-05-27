@@ -29,14 +29,14 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryRemoved;
-import ru.taaasty.model.Entry;
-import ru.taaasty.model.TlogDesign;
-import ru.taaasty.model.User;
-import ru.taaasty.model.Userpic;
+import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener, ShowPostFragment.OnFragmentInteractionListener {
@@ -258,12 +258,12 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         String text = "";
         Integer iconId = null;
         // При ошибке загруи поста заменяем фрагмент на фрагмент с сообщением об ошибке
-        if (e instanceof NetworkUtils.ResponseErrorException && ((NetworkUtils.ResponseErrorException)e).error.responseCode == 403) {
+        if (e instanceof ResponseErrorException && ((ResponseErrorException)e).error.responseCode == 403) {
             text = getString(R.string.error_tlog_access_denied);
             iconId = R.drawable.post_load_error;
         } else {
-            if (e instanceof  NetworkUtils.ResponseErrorException) {
-                text = ((NetworkUtils.ResponseErrorException)e).error.error;
+            if (e instanceof  ResponseErrorException) {
+                text = ((ResponseErrorException)e).error.error;
             } else {
                 text = getString(R.string.error_post_comment);
             }

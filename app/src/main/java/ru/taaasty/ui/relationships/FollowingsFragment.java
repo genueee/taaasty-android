@@ -5,10 +5,10 @@ import android.os.Bundle;
 import ru.taaasty.R;
 import ru.taaasty.UserManager;
 import ru.taaasty.adapters.RelationshipsAdapter;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.Relationships;
-import ru.taaasty.service.ApiTlog;
-import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.Relationships;
+import ru.taaasty.rest.service.ApiTlog;
 import rx.Observable;
 import rx.android.app.AppObservable;
 
@@ -33,7 +33,7 @@ public class FollowingsFragment extends RelationshipListFragmentBase {
     }
 
     Observable<Relationships> createRelationshipsObservable() {
-        ApiTlog tlogApi = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+        ApiTlog tlogApi = RestClient.getAPiTlog();
         return AppObservable.bindFragment(this,
                 tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
     }

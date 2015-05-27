@@ -1,7 +1,7 @@
 package ru.taaasty.events;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.model.Notification;
+import ru.taaasty.rest.model.Notification;
 
 /**
  * Уведомление пришло изи изменилось

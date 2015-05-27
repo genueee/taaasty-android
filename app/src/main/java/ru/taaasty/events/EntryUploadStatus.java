@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.model.PostForm;
+import ru.taaasty.rest.model.PostForm;
 
 /**
  * Created by alexey on 04.09.14.

@@ -5,7 +5,7 @@ import android.support.v7.widget.RecyclerView;
 
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
-import ru.taaasty.model.Entry;
+import ru.taaasty.rest.model.Entry;
 
 /**
  * Created by alexey on 21.05.15.

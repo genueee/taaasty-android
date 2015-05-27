@@ -18,11 +18,11 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
-import ru.taaasty.model.Relationship;
-import ru.taaasty.model.Relationships;
-import ru.taaasty.service.ApiTlog;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.Relationships;
+import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -134,7 +134,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
     }
 
     Observable<Relationships> createRelationshipsObservable() {
-        ApiTlog tlogApi = NetworkUtils.getInstance().createRestAdapter().create(ApiTlog.class);
+        ApiTlog tlogApi = RestClient.getAPiTlog();
         return AppObservable.bindFragment(this,
                 tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
     }
