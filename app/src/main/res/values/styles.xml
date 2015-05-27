@@ -148,11 +148,13 @@
     </style>
 
 
-    <style name="LoginActivityTheme" parent="AppThemeDark">
+    <style name="LoginActivityBaseTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:textColorHint">@color/text_color_semi_semi_transparent_white</item>
         <item name="android:textCursorDrawable">@null</item>
     </style>
+
+    <style name="LoginActivityTheme" parent="LoginActivityBaseTheme"/>
 
     <style name="AdditionMenuActivityTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>

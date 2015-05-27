@@ -40,8 +40,10 @@
         <activity
             android:name="ru.taaasty.ui.tabbar.LiveFeedActivity"
             android:label="@string/app_name"
+            android:theme="@style/AppThemeDark"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

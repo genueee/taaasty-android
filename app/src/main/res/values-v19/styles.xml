@@ -4,8 +4,12 @@
 <style name="FullscreenTheme" parent="FullscreenThemeBase">
     <item name="android:windowTranslucentStatus">false</item>
     <item name="android:windowTranslucentNavigation">true</item>
+</style>
 
-
+<style name="LoginActivityTheme" parent="LoginActivityBaseTheme">
+    <item name="android:windowTranslucentStatus">true</item>
+    <item name="android:windowTranslucentNavigation">true</item>
+    <item name="android:windowContentOverlay">@null</item>
 </style>
 
 </resources>
