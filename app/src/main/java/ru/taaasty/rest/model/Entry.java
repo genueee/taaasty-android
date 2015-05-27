@@ -31,7 +31,7 @@ import ru.taaasty.utils.UiUtils;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-public class Entry implements Parcelable {
+public class Entry implements Parcelable, Cloneable {
 
     @Retention(SOURCE)
     @StringDef({
@@ -161,6 +161,17 @@ public class Entry implements Parcelable {
 
     private transient volatile Spanned mTitleSpanned = null;
 
+    public static Entry setRating(Entry entry, Rating rating) {
+        Entry dst = null;
+        try {
+            dst = entry.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new IllegalStateException(e);
+        }
+        dst.mRating = rating;
+        return dst;
+    }
+
     public long getId() {
         return mId;
     }
@@ -235,6 +246,11 @@ public class Entry implements Parcelable {
 
     public IFramely getIframely() {
         return mIframely;
+    }
+
+    @Override
+    protected Entry clone() throws CloneNotSupportedException {
+        return (Entry)super.clone();
     }
 
     /**
@@ -361,10 +377,6 @@ public class Entry implements Parcelable {
         return mRating != null ? mRating : Rating.DUMMY;
     }
 
-    public void setRating(Rating rating) {
-        mRating = rating;
-    }
-
     public boolean isMyEntry() {
         Long me = UserManager.getInstance().getCurrentUserId();
         return me != null && (mAuthor != null) && (me == mAuthor.getId());
@@ -399,10 +411,6 @@ public class Entry implements Parcelable {
     }
 
     public boolean isFavorited() { return mFavorited;  }
-
-    public void setFavorited(boolean value) {
-        mFavorited = value;
-    }
 
     @Nullable
     public Uri getFirstImageUri() {

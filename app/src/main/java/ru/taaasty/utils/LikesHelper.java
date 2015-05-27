@@ -85,6 +85,8 @@ public class LikesHelper {
 
         public final Entry mEntry;
 
+        private Rating mFinalRating;
+
         public UpdateRatingObserver(Entry entry) {
             this.mEntry = entry;
         }
@@ -94,7 +96,7 @@ public class LikesHelper {
             if (DBG) Log.v(TAG, "onCompleted()");
             mSubscriptions.delete(mEntry.getId());
             EventBus.getDefault().post(EntryRatingStatusChanged.updateDone(mEntry.getId()));
-            EventBus.getDefault().post(new EntryChanged(mEntry));
+            EventBus.getDefault().post(new EntryChanged(Entry.setRating(mEntry, mFinalRating)));
         }
 
         @Override
@@ -106,7 +108,7 @@ public class LikesHelper {
 
         @Override
         public void onNext(Rating rating) {
-            mEntry.setRating(rating);
+            mFinalRating = rating;
         }
     }
 }
