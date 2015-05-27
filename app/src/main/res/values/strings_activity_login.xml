@@ -7,6 +7,7 @@
     <string name="or_register">или зарегистрироваться</string>
     <string name="sign_via_email">Войти с помощью эл. почты</string>
     <string name="sign_via_vkontakte">Войти с помощью Вконтакте</string>
+    <string name="sign_via_facebook">Войти с помощью Facebook</string>
     <string name="not_ready_yet">Ещё не работает</string>
     <string name="btn_i_have_not_registered">Я ещё не зарегистрирован</string>
     <string name="btn_i_have_registered">Я уже зарегистрирован</string>
@@ -32,4 +33,5 @@
     <string name="error_email_field_required">Логин не указан</string>
 
     <string name="error_vkontakte_failed">Ошибка вконтакте</string>
+    <string name="error_facebook_failed">Ошибка facebook</string>
 </resources>

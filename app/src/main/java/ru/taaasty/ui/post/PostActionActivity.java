@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -10,20 +11,19 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookOperationCanceledException;
-import com.facebook.Session;
-import com.facebook.SessionLoginBehavior;
-import com.facebook.SessionState;
-import com.facebook.UiLifecycleHelper;
-import com.facebook.widget.FacebookDialog;
-import com.facebook.widget.WebDialog;
+import com.facebook.FacebookSdk;
+import com.facebook.share.Sharer;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 import com.vk.sdk.dialogs.VKShareDialog;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.rest.RestClient;
@@ -43,53 +43,25 @@ public class PostActionActivity extends FragmentActivity implements CustomErrorV
     public static final String ACTION_SHARE_VKONTAKTE_DIALOG = "ru.taaasty.ui.post.PostActionActivity.share_vkontakte_dialog";
     public static final String ACTION_ADD_TO_FAVORITES = "ru.taaasty.ui.post.PostActionActivity.add_to_favorites";
 
-
     private Entry mEntry;
-    private String mAction;
     private Entry mNewEntry = null;
 
     private static final String TAG = "PostActionActivity";
 
-    private UiLifecycleHelper mUiHelper;
-
-    private Session.StatusCallback mSessionStatusCallback;
-    private Session mCurrentSession = null;
+    private CallbackManager mCallbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_action);
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
-        mAction = getIntent().getAction();
+        String action = getIntent().getAction();
 
-        mUiHelper = new UiLifecycleHelper(this, null);
-        mUiHelper.onCreate(savedInstanceState);
-
-        if(ACTION_SHARE_FACEBOOK.equals(mAction)) {
-            if (FacebookDialog.canPresentShareDialog(getApplicationContext(),
-                    FacebookDialog.ShareDialogFeature.SHARE_DIALOG)) {
-                // Publish the post using the Share Dialog (есть Facebook клиент)
-                FacebookDialog shareDialog = new FacebookDialog.ShareDialogBuilder(this)
-                        .setLink(mEntry.getEntryUrl())
-                        .setDescription(getString(R.string.sharing_description))
-                        .build();
-                mUiHelper.trackPendingDialogCall(shareDialog.present());
-
-            } else {
-                // create instace for sessionStatusCallback
-                mSessionStatusCallback = new Session.StatusCallback() {
-
-                    @Override
-                    public void call(Session session, SessionState state, Exception exception) {
-                        onSessionStateChange(session, state, exception);
-
-                    }
-                };
-                connectToFB();
-            }
-        } else if (ACTION_SHARE_VKONTAKTE_DIALOG.equals(mAction)) {
+        if(ACTION_SHARE_FACEBOOK.equals(action)) {
+            showFacebookShareDialog(mEntry); // XXX: нахрена для фейсбука отдельная активность?
+        } else if (ACTION_SHARE_VKONTAKTE_DIALOG.equals(action)) {
             showVkontakteShareDialog(mEntry);
-        } else if(ACTION_ADD_TO_FAVORITES.equals(mAction)) {
+        } else if(ACTION_ADD_TO_FAVORITES.equals(action)) {
             Observable<Object> observable = AppObservable.bindActivity(this, createAddToFavoritesObservable());
             observable.observeOn(AndroidSchedulers.mainThread()).subscribe(mObserver);
         }
@@ -101,108 +73,9 @@ public class PostActionActivity extends FragmentActivity implements CustomErrorV
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mUiHelper.onResume();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        mUiHelper.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mUiHelper.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mUiHelper.onDestroy();
-    }
-
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if(mCurrentSession != null )
-            mCurrentSession.onActivityResult(this, requestCode, resultCode, data);
-
-        mUiHelper.onActivityResult(requestCode, resultCode, data, new FacebookDialog.Callback() {
-            @Override
-            public void onError(FacebookDialog.PendingCall pendingCall, Exception error, Bundle data) {
-                Toast.makeText(PostActionActivity.this, R.string.facebook_sharing_fail, Toast.LENGTH_LONG).show();
-                finish();
-            }
-
-            @Override
-            public void onComplete(FacebookDialog.PendingCall pendingCall, Bundle data) {
-                Toast.makeText(PostActionActivity.this, R.string.facebook_sharing_ok, Toast.LENGTH_LONG).show();
-                finish();
-            }
-        });
-    }
-
-    public void connectToFB() {
-
-        List<String> permissions = new ArrayList<String>();
-        permissions.add("publish_stream");
-
-        mCurrentSession = new Session.Builder(this).build();
-        mCurrentSession.addCallback(mSessionStatusCallback);
-
-        Session.OpenRequest openRequest = new Session.OpenRequest(this);
-        openRequest.setLoginBehavior(SessionLoginBehavior.SUPPRESS_SSO);
-        openRequest.setRequestCode(Session.DEFAULT_AUTHORIZE_ACTIVITY_CODE);
-        openRequest.setPermissions(permissions);
-        mCurrentSession.openForPublish(openRequest);
-
-    }
-
-    private void onSessionStateChange(Session session, SessionState state, Exception exception) {
-        if (session != mCurrentSession) {
-            return;
-        }
-
-        if (state.isOpened()) {
-            publishFeedDialog();
-        } else if (state.isClosed()) {
-        }
-    }
-
-    private void publishFeedDialog() {
-        Bundle params = new Bundle();
-        params.putString("link", mEntry.getEntryUrl());
-        params.putString("description", getString(R.string.sharing_description));
-
-        WebDialog feedDialog = (
-            new WebDialog.FeedDialogBuilder(this, mCurrentSession, params))
-            .setOnCompleteListener(new WebDialog.OnCompleteListener() {
-                @Override
-                public void onComplete(Bundle values, FacebookException error) {
-                    if (error == null) {
-                        // When the story is posted, echo the success
-                        // and the post Id.
-                        final String postId = values.getString("post_id");
-                        if (postId != null) {
-                            Toast.makeText(PostActionActivity.this, R.string.facebook_sharing_ok, Toast.LENGTH_LONG).show();
-                        } else {
-                            // User clicked the Cancel button
-                        }
-                    } else if (error instanceof FacebookOperationCanceledException) {
-                        // User clicked the "x" button
-                    } else {
-                        // Generic, ex: network error
-                        Toast.makeText(PostActionActivity.this, R.string.facebook_sharing_fail, Toast.LENGTH_LONG).show();
-                    }
-                    finish();
-                }
-            })
-            .build();
-        feedDialog.show();
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     public Observable<Object> createAddToFavoritesObservable() {
@@ -221,6 +94,44 @@ public class PostActionActivity extends FragmentActivity implements CustomErrorV
         return addOrDelete.concatWith(updateEntry);
     }
 
+    private void showFacebookShareDialog(Entry entry) {
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        mCallbackManager = CallbackManager.Factory.create();
+
+        ShareDialog shareDialog = new ShareDialog(this);
+        shareDialog.registerCallback(mCallbackManager, new FacebookCallback<Sharer.Result>() {
+            @Override
+            public void onSuccess(Sharer.Result result) {
+                finish();
+            }
+
+            @Override
+            public void onCancel() {
+                finish();
+            }
+
+            @Override
+            public void onError(FacebookException e) {
+                Log.e(TAG, "Facebook share", e);
+                finish();
+            }
+        });
+        if (ShareDialog.canShow(ShareLinkContent.class)) {
+            ShareLinkContent.Builder linkContent = new ShareLinkContent.Builder()
+                    .setContentUrl(Uri.parse(entry.getEntryUrl()))
+                    .setContentDescription(getString(R.string.sharing_description))
+                    ;
+            List<String> allImages = entry.getImageUrls(true);
+            if (!allImages.isEmpty()) {
+                linkContent.setImageUrl(Uri.parse(allImages.get(0)));
+            }
+
+            shareDialog.show(linkContent.build());
+        } else {
+            if (BuildConfig.DEBUG) throw new IllegalStateException("ShareDialog.canShow() returns false");
+            finish();
+        }
+    }
 
     private void showVkontakteShareDialog(Entry entry) {
         String title;

@@ -55,6 +55,22 @@ public interface ApiUsers {
                                          @Field("sex") Integer sex
                                          );
 
+    /**
+     * Регистрация пользователя facebook
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("/users/facebook.json")
+    Observable<CurrentUser> registerUserFacebook(@Field("token") String token,
+                                                  @Field("nickname") String nickname,
+                                                  @Field("avatar_url") String avatar_url,
+                                                  @Field("name") String name,
+                                                  @Field("first_name") String firstName,
+                                                  @Field("second_name") String secondName,
+                                                  @Field("email") String email,
+                                                  @Field("sex") Integer sex
+    );
+
     @FormUrlEncoded
     @PUT("/users.json")
     Observable<CurrentUser> setMySlug(@Field("slug") String slug);

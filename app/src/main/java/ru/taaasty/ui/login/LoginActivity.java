@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.app.DialogFragment;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -28,6 +29,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
+
 import java.util.Random;
 
 import ru.taaasty.ActivityBase;
@@ -49,6 +52,7 @@ public class LoginActivity extends ActivityBase implements
         RecoverPasswordFragment.OnFragmentInteractionListener,
         SignUpFragment.OnFragmentInteractionListener,
         SignViaVkontakteFragment.OnFragmentInteractionListener,
+        SignViaFacebookFragment.OnFragmentInteractionListener,
         CustomErrorView
 {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -61,7 +65,7 @@ public class LoginActivity extends ActivityBase implements
     public static final int PRIMARY_BACKGROUND_IN_SAMPLE_SIZE = 0;
     public static final int SECONDARY_BACKGROUND_IN_SAMPLE_SIZE = 1;
     public static final int SECONDARY_BACKGROUND_BLUR_KERNEL = 24;
-    private static final String DIALOG_LOGIN_VKONTAKTE = "dialog_login_vkontakte";
+    private static final String DIALOG_LOGIN_VKONTAKTE_FACEBOOK = "DIALOG_LOGIN_VKONTAKTE_FACEBOOK";
     private static final String PREFS_KEY_FIRST_RUN = "firstrun";
 
     private final Background mBackground = new Background();
@@ -79,7 +83,7 @@ public class LoginActivity extends ActivityBase implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        FacebookSdk.sdkInitialize(getApplicationContext());
 
         if (savedInstanceState == null) {
             mCurrentBackgroundId = choseRandomBackground();
@@ -114,6 +118,19 @@ public class LoginActivity extends ActivityBase implements
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (FacebookSdk.isFacebookRequestCode(requestCode)) {
+            Fragment facebookFragment = getFragmentManager().findFragmentByTag(DIALOG_LOGIN_VKONTAKTE_FACEBOOK);
+            if (facebookFragment != null) {
+                facebookFragment.onActivityResult(requestCode, resultCode, data);
+            } else {
+                if (DBG) Log.e(TAG, "onActivityResult with facebook requestCode but no fragment");
+            }
+        }
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(BUNDLE_CURRENT_BACKGROUND_ID, mCurrentBackgroundId);
@@ -139,9 +156,17 @@ public class LoginActivity extends ActivityBase implements
     @Override
     public void onSignViaVkontakteClicked() {
         FragmentManager fm = getFragmentManager();
-        if (fm.findFragmentByTag(DIALOG_LOGIN_VKONTAKTE) != null) return;
+        if (fm.findFragmentByTag(DIALOG_LOGIN_VKONTAKTE_FACEBOOK) != null) return;
         DialogFragment dialog = SignViaVkontakteFragment.createInstance();
-        dialog.show(getFragmentManager(), DIALOG_LOGIN_VKONTAKTE);
+        dialog.show(getFragmentManager(), DIALOG_LOGIN_VKONTAKTE_FACEBOOK);
+    }
+
+    @Override
+    public void onSignViaFacebookClicked() {
+        FragmentManager fm = getFragmentManager();
+        if (fm.findFragmentByTag(DIALOG_LOGIN_VKONTAKTE_FACEBOOK) != null) return;
+        DialogFragment dialog = SignViaFacebookFragment.createInstance();
+        dialog.show(getFragmentManager(), DIALOG_LOGIN_VKONTAKTE_FACEBOOK);
     }
 
     @Override
@@ -269,6 +294,10 @@ public class LoginActivity extends ActivityBase implements
         switchToMainScreen();
     }
 
+    @Override
+    public void onSignViaFacebookSuccess() {
+        switchToMainScreen();
+    }
 
     public class Background {
 

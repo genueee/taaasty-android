@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
+import com.facebook.FacebookSdk;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.nirhart.parallaxscroll.views.ParallaxedView;
@@ -66,6 +67,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
+
+        FacebookSdk.sdkInitialize(this.getApplicationContext());
+        ((TaaastyApplication)getApplicationContext()).startIntercomSession();
 
         Intercom.client().openGCMMessage(getIntent().getData());
 

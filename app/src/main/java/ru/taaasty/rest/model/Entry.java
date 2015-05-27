@@ -331,7 +331,18 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     /**
-     * Все картинки из поста.
+     * @return Первая ссылка на картинку из images.
+     */
+    @Nullable
+    public Uri getFirstImageUri() {
+        if (mImages == null || mImages.isEmpty()) return null;
+        String url = mImages.get(0).image.url;
+        if (TextUtils.isEmpty(url)) return null;
+        return Uri.parse(url);
+    }
+
+    /**
+     * Все картинки из поста: imageUrl, images, из iframely и из текста
      * Не отсортированные и могут встречаться одинаковые урлы.
      * @param includeAnimatedGifs Включать анимированные гифки
      * @return
@@ -411,14 +422,6 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     public boolean isFavorited() { return mFavorited;  }
-
-    @Nullable
-    public Uri getFirstImageUri() {
-        if (mImages == null || mImages.isEmpty()) return null;
-        String url = mImages.get(0).image.url;
-        if (TextUtils.isEmpty(url)) return null;
-        return Uri.parse(url);
-    }
 
     @Nullable
     public String getImageUrl() {

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.aviary.android.feather.sdk.IAviaryClientCredentials;
 import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
+import com.facebook.FacebookSdk;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Logger;
@@ -70,6 +71,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         }
         GcmUtils.getInstance(this).setupGcm();
         StatusBarNotification.onAppInit(this);
+        FacebookSdk.sdkInitialize(this);
     }
 
     @Override

@@ -78,7 +78,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_sign_up_vkontakte, container, false);
+        return inflater.inflate(R.layout.fragment_sign_up_vkontakte_facebook, container, false);
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.os.StatFs;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.facebook.login.LoginManager;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -142,6 +143,7 @@ public final class NetworkUtils {
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
         UserManager.getInstance().logout();
         LoginActivity.logout(context);
+        LoginManager.getInstance().logOut();
         try {
             mOkHttpClient.getCache().delete();
         } catch (Exception ignore) {}

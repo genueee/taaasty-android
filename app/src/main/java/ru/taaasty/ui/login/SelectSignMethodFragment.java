@@ -34,6 +34,7 @@ public class SelectSignMethodFragment extends Fragment {
         View root = inflater.inflate(R.layout.fragment_select_sign_method, container, false);
 
         root.findViewById(R.id.sign_via_vkontakte).setOnClickListener(mOnButtonClickListner);
+        root.findViewById(R.id.sign_via_facebook).setOnClickListener(mOnButtonClickListner);
         root.findViewById(R.id.sign_via_email).setOnClickListener(mOnButtonClickListner);
         root.findViewById(R.id.register_button).setOnClickListener(mOnButtonClickListner);
 
@@ -65,6 +66,9 @@ public class SelectSignMethodFragment extends Fragment {
                 case R.id.sign_via_vkontakte:
                     mListener.onSignViaVkontakteClicked();
                     break;
+                case R.id.sign_via_facebook:
+                    mListener.onSignViaFacebookClicked();
+                    break;
                 case R.id.sign_via_email:
                     mListener.onSignViaEmailClicked();
                     break;
@@ -88,9 +92,10 @@ public class SelectSignMethodFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        public void onSignViaVkontakteClicked();
-        public void onSignViaEmailClicked();
-        public void onRegisterClicked();
+        void onSignViaVkontakteClicked();
+        void onSignViaEmailClicked();
+        void onSignViaFacebookClicked();
+        void onRegisterClicked();
     }
 
 }
