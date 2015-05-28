@@ -63,10 +63,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
     protected abstract void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
 
-    public FeedItemAdapterLite(Context context, @Nullable List<Entry> feed, boolean showUserAvatar) {
-        this(null, feed, showUserAvatar, R.layout.endless_loading_indicator);
-    }
-
     public FeedItemAdapterLite(SortedList<Entry> list, boolean showUserAvatar) {
         this(list, null, showUserAvatar, R.layout.endless_loading_indicator);
     }

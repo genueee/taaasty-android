@@ -108,7 +108,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 updateDateIndicator(dy > 0);
