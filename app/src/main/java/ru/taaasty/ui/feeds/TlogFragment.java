@@ -462,7 +462,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             super(feed, false);
             setInteractionListener(new InteractionListener() {
                 @Override
-                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
                     if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
                 }
             });

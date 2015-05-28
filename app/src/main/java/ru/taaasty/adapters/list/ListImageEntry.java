@@ -80,7 +80,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         mContext = context;
         mPicasso = Picasso.with(context);
-        mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable);
+        mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable).mutate();
     }
 
     @Override
@@ -241,6 +241,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
             loadGif(mImageViewUrl, mImageView);
+            mPicasso.cancelRequest(mImageView);
         } else {
             mPicasso
                     .load(mImageViewUrl)

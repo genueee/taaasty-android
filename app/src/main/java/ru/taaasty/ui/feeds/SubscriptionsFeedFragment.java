@@ -265,7 +265,7 @@ public class SubscriptionsFeedFragment extends Fragment implements
             super(list, true);
             setInteractionListener(new InteractionListener() {
                 @Override
-                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize) {
+                public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
                     if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
                 }
             });

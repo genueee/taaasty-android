@@ -130,7 +130,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         ((ListEntryBase) viewHolder).setupEntry(entry, mFeedDesign);
 
         if (mInteractionListener != null)
-            mInteractionListener.onBindViewHolder(viewHolder,feedLocation, mEntries.size());
+            mInteractionListener.onBindViewHolder(viewHolder,feedLocation);
     }
 
     @Override
@@ -303,7 +303,12 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     public interface InteractionListener {
-        void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position, int feedSize);
+        /**
+         * Выполняется после onBindViewHolder(), по position - это индекс не в адаптере, а в списке
+         * @param viewHolder
+         * @param position
+         */
+        void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position);
     }
 
 
