@@ -3,10 +3,12 @@ package ru.taaasty.rest.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import java.util.Comparator;
 import java.util.Date;
 
+import ru.taaasty.UserManager;
 import ru.taaasty.utils.Objects;
 
 /**
@@ -62,7 +64,10 @@ public class Conversation implements Parcelable {
         public static Comparator<Message> SORT_BY_ID_COMPARATOR = new Comparator<Message>() {
             @Override
             public int compare(Message lhs, Message rhs) {
-                return Objects.unsignedCompare(lhs.id, rhs.id);
+                int compateIds =  Objects.unsignedCompare(lhs.id, rhs.id);
+                if (compateIds == 0) return 0;
+                if (!TextUtils.isEmpty(lhs.uuid) && lhs.uuid.equals(rhs.uuid)) return 0;
+                return compateIds;
             }
         };
 
@@ -84,50 +89,25 @@ public class Conversation implements Parcelable {
         @Nullable
         public Date readAt;
 
+        /**
+         * Контеткт в HTML
+         */
         public String contentHtml;
+
+
+        @Nullable
+        public Conversation conversation;
 
         public Message() {
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
+        public boolean isMarkedAsRead() {
+            return readAt != null;
         }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeLong(this.id);
-            dest.writeLong(this.userId);
-            dest.writeLong(this.conversationId);
-            dest.writeLong(this.recipientId);
-            dest.writeString(this.uuid);
-            dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
-            dest.writeLong(readAt != null ? readAt.getTime() : -1);
-            dest.writeString(this.contentHtml);
+        public boolean isFromMe() {
+            return UserManager.getInstance().isMe(userId);
         }
-
-        private Message(Parcel in) {
-            this.id = in.readLong();
-            this.userId = in.readLong();
-            this.conversationId = in.readLong();
-            this.recipientId = in.readLong();
-            this.uuid = in.readString();
-            long tmpCreatedAt = in.readLong();
-            this.createdAt = tmpCreatedAt == -1 ? null : new Date(tmpCreatedAt);
-            long tmpReadAt = in.readLong();
-            this.readAt = tmpReadAt == -1 ? null : new Date(tmpReadAt);
-            this.contentHtml = in.readString();
-        }
-
-        public static final Creator<Message> CREATOR = new Creator<Message>() {
-            public Message createFromParcel(Parcel source) {
-                return new Message(source);
-            }
-
-            public Message[] newArray(int size) {
-                return new Message[size];
-            }
-        };
 
         @Override
         public boolean equals(Object o) {
@@ -145,7 +125,9 @@ public class Conversation implements Parcelable {
                 return false;
             if (readAt != null ? !readAt.equals(message.readAt) : message.readAt != null)
                 return false;
-            return !(contentHtml != null ? !contentHtml.equals(message.contentHtml) : message.contentHtml != null);
+            if (contentHtml != null ? !contentHtml.equals(message.contentHtml) : message.contentHtml != null)
+                return false;
+            return !(conversation != null ? !conversation.equals(message.conversation) : message.conversation != null);
 
         }
 
@@ -159,8 +141,52 @@ public class Conversation implements Parcelable {
             result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
             result = 31 * result + (readAt != null ? readAt.hashCode() : 0);
             result = 31 * result + (contentHtml != null ? contentHtml.hashCode() : 0);
+            result = 31 * result + (conversation != null ? conversation.hashCode() : 0);
             return result;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeLong(this.id);
+            dest.writeLong(this.userId);
+            dest.writeLong(this.conversationId);
+            dest.writeLong(this.recipientId);
+            dest.writeString(this.uuid);
+            dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
+            dest.writeLong(readAt != null ? readAt.getTime() : -1);
+            dest.writeString(this.contentHtml);
+            dest.writeParcelable(this.conversation, 0);
+        }
+
+        private Message(Parcel in) {
+            this.id = in.readLong();
+            this.userId = in.readLong();
+            this.conversationId = in.readLong();
+            this.recipientId = in.readLong();
+            this.uuid = in.readString();
+            long tmpCreatedAt = in.readLong();
+            this.createdAt = tmpCreatedAt == -1 ? null : new Date(tmpCreatedAt);
+            long tmpReadAt = in.readLong();
+            this.readAt = tmpReadAt == -1 ? null : new Date(tmpReadAt);
+            this.contentHtml = in.readString();
+            this.conversation = in.readParcelable(Conversation.class.getClassLoader());
+        }
+
+        public static final Creator<Message> CREATOR = new Creator<Message>() {
+            public Message createFromParcel(Parcel source) {
+                return new Message(source);
+            }
+
+            public Message[] newArray(int size) {
+                return new Message[size];
+            }
+        };
     }
 
     @Override

@@ -91,6 +91,23 @@ public interface ApiMessenger {
                                                         @Query("uuid") String uuid,
                                                         @Query("recipient_id") Long recipientId);
 
+    /**
+     * Отправка сообщения в переписку
+     * @param socketId не обязателен
+     * @param conversationId ID переписки.
+     * @param content Содержимое собщения
+     * @param uuid UUID сообщения, сгенерированный на стороне клиента
+     * @param recipientId ID получателя. По умолчанию тот, что в беседе
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("/messenger/conversations/by_id/{id}/messages.json")
+    Conversation.Message postMessageSync(@Field("socket_id") String socketId,
+                                                 @Path("id") long conversationId,
+                                                 @Query("content") String content,
+                                                 @Query("uuid") String uuid,
+                                                 @Query("recipient_id") Long recipientId);
+
 
     /**
      * Отмечает как прочитанные указанные сообщения
@@ -105,5 +122,19 @@ public interface ApiMessenger {
                                                     @Path("id") long conversationId,
                                                     @Field("ids") String messageIds
                                                     );
+
+    /**
+     * Отмечает как прочитанные указанные сообщения
+     * @param socketId не обязателен
+     * @param conversationId ID переписки.
+     * @param messageIds ID сообщений. Строка, через запятую.
+     * @return
+     */
+    @FormUrlEncoded
+    @PUT("/messenger/conversations/by_id/{id}/messages/read.json")
+    Status.MarkMessagesAsRead markMessagesAsReadSync(@Field("socket_id") String socketId,
+                                                             @Path("id") long conversationId,
+                                                             @Field("ids") String messageIds
+    );
 
 }

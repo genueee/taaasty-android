@@ -299,4 +299,7 @@
     <string name="notification_action_title_new_comment">Новый комментарий</string>
     <string name="notification_action_title_new_mention">Вас упомянули</string>
 
+    <string name="notification_action_reply_label">Ответить</string>
+    <string name="notification_action_reply_title">Ответить</string>
+
 </resources>

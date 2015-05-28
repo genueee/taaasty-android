@@ -129,7 +129,14 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     public void addMessage(Conversation.Message message) {
-        mMessages.add(message);
+        if (!TextUtils.isEmpty(message.uuid)) {
+            mMessages.beginBatchedUpdates();
+            mMessages.removeUuids(Collections.singleton(message.uuid));
+            mMessages.add(message);
+            mMessages.endBatchedUpdates();
+        } else {
+            mMessages.add(message);
+        }
     }
 
     public void markMessagesAsRead(List<UpdateMessages.UpdateMessageInfo> messageInfos) {
@@ -137,13 +144,15 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         LongSparseArray<UpdateMessages.UpdateMessageInfo> infosHash = new LongSparseArray<>(messageInfos.size());
         for (UpdateMessages.UpdateMessageInfo info: messageInfos) infosHash.append(info.id, info);
 
-        mMessages.beginBatchedUpdates();
         int size = mMessages.size();
         for (int i = 0; i < size; ++i) {
             UpdateMessages.UpdateMessageInfo info = infosHash.get(mMessages.get(i).id);
             if (info != null) {
-                mMessages.get(i).readAt = info.readAt;
-                notifyItemChanged(getAdapterPosition(i));
+                if ((mMessages.get(i).readAt == null)
+                        || (Math.abs(mMessages.get(i).readAt.getTime() - info.readAt.getTime()) > 5000)) {
+                    mMessages.get(i).readAt = info.readAt;
+                    notifyItemChanged(getAdapterPosition(i));
+                }
             }
         }
     }
@@ -152,8 +161,12 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         int size = mMessages.size();
         for (int i = 0; i < size; ++i) {
             if (messageIds.contains(mMessages.get(i).id)) {
-                mMessages.get(i).readAt = readAt;
-                notifyItemChanged(getAdapterPosition(i));
+                long date1 = mMessages.get(i).readAt == null ? 0 : mMessages.get(i).readAt.getTime();
+                long date2 = readAt == null ? 0 : readAt.getDate();
+                if (Math.abs(date1 - date2) > 5000) {
+                    mMessages.get(i).readAt = readAt;
+                    notifyItemChanged(getAdapterPosition(i));
+                }
             }
         }
     }
@@ -309,12 +322,26 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
                 @Override
                 public boolean areContentsTheSame(Conversation.Message oldItem, Conversation.Message newItem) {
-                    return oldItem.equals(newItem);
+                    // Тут огромное количество левых полей, которые не нужно сравнивать, поэтому сравниваем вручную
+                    // Пропускаем: uuid, recipient, userId
+                    //if (oldItem.id != newItem.id) return false;
+                    //if (oldItem.userId != newItem.userId) return false;
+                    if (oldItem.conversationId != newItem.conversationId) return false;
+                    if (oldItem.recipientId != newItem.recipientId) return false;
+                    if (oldItem.createdAt != null ? !oldItem.createdAt.equals(newItem.createdAt) : newItem.createdAt != null)
+                        return false;
+                    if (oldItem.readAt != null ? !oldItem.readAt.equals(newItem.readAt) : newItem.readAt != null)
+                        return false;
+                    if (oldItem.contentHtml != null ? !oldItem.contentHtml.equals(newItem.contentHtml) : newItem.contentHtml != null)
+                        return false;
+                    return true;
                 }
 
                 @Override
                 public boolean areItemsTheSame(Conversation.Message item1, Conversation.Message item2) {
-                    return item1.id == item2.id;
+                    if (item1.id == item2.id) return true;
+                    if (item1.uuid != null && !item1.uuid.isEmpty() && item1.uuid.equals(item2.uuid)) return true;
+                    return false;
                 }
             });
         }
@@ -324,18 +351,26 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
          * Удаляем сообщения, uuid которых уже есть в списке. Используем последнее пришедшее
          * В основном, нужно, чтобы отфильтровать сообщения при диалоге самим с собой.
          */
-        private void removeUuids(Set<String> uuids) {
-
+        public void removeUuids(Set<String> uuids) {
+            /*
             for (int i = size() - 1; i >= 0; --i) {
                 if (uuids.contains(get(i).uuid)) super.removeItemAt(i);
             }
+            */
         }
 
         @Override
         public int add(Conversation.Message item) {
+            /**
             if (!TextUtils.isEmpty(item.uuid)) {
-                removeUuids(Collections.singleton(item.uuid));
-            }
+                if (DBG) {
+                    for (int i = size() - 1; i >= 0; --i) {
+                        if (item.uuid.equals(get(i).uuid)) {
+                            throw new IllegalStateException("Элементы с uuid должны быть удалены до add()");
+                        }
+                    }
+                }
+            } */
             return super.add(item);
         }
 
@@ -356,8 +391,14 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 }
             }
             itemsFiltered.addAll(msgByUuid.values());
-            if (!uuids.isEmpty()) removeUuids(uuids);
-            super.insertItems(itemsFiltered);
+            if (!uuids.isEmpty()) {
+                beginBatchedUpdates();
+                removeUuids(uuids);
+                for (Conversation.Message message: itemsFiltered) add(message);
+                endBatchedUpdates();
+            } else {
+                super.insertItems(itemsFiltered);
+            }
         }
     }
 

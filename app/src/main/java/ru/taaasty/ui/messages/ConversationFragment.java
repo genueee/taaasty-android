@@ -42,6 +42,7 @@ import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.DebugAdapterDataObserver;
 import ru.taaasty.utils.ListScrollController;
 import rx.Observable;
 import rx.Observer;
@@ -58,8 +59,6 @@ public class ConversationFragment extends Fragment {
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.messages.ConversationFragment.conversation";
 
     private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.messages.ConversationFragment.conversation_id";
-
-    public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
 
     private OnFragmentInteractionListener mListener;
 
@@ -135,7 +134,9 @@ public class ConversationFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setAddDuration(0);
+        mListView.getItemAnimator().setRemoveDuration(0);
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
@@ -146,6 +147,7 @@ public class ConversationFragment extends Fragment {
         mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
         mAdapter = new Adapter(getActivity());
+        mAdapter.registerAdapterDataObserver(new DebugAdapterDataObserver("CNV"));
         mListView.setAdapter(mAdapter);
 
         initSendMessageForm();
@@ -436,7 +438,7 @@ public class ConversationFragment extends Fragment {
                     && !((ViewHolderMessage) holder).isMyMessage
                     &&  mMessagesLoader != null) {
                 Conversation.Message msg = getMessage((ViewHolderMessage)holder);
-                if (msg != null && msg.readAt == null) {
+                if (msg != null && !msg.isMarkedAsRead()) {
                     markMessagesAsRead.enqueueMarkAsRead(msg.id);
                 }
             }

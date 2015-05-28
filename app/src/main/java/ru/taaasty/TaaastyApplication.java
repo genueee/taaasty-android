@@ -69,7 +69,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             }
         }
         GcmUtils.getInstance(this).setupGcm();
-        StatusBarNotification.onAppInit(this);
+        StatusBarNotifications.onAppInit(this);
     }
 
     @Override

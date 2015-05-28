@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.StatusBarNotification;
+import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.rest.DateTypeAdapter;
@@ -138,7 +138,7 @@ public final class NetworkUtils {
 
     public void factoryReset(Context context) {
         GcmUtils.getInstance(context).onLogout();
-        StatusBarNotification.getInstance().onLogout();
+        StatusBarNotifications.getInstance().onLogout();
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
         UserManager.getInstance().logout();
         LoginActivity.logout(context);

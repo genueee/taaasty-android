@@ -31,7 +31,7 @@ import ru.taaasty.IntentService;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
-import ru.taaasty.StatusBarNotification;
+import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.adapters.NotificationListAdapter;
 import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
@@ -634,7 +634,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                         if (!mIsRefresh && mEntriesRequested != 0 && sizeBefore == mNotificationList.size())
                             keepOnAppending = false;
                         if (!mNotificationList.isEmpty()) {
-                            StatusBarNotification.getInstance().onNewNotificationIdSeen(mNotificationList.get(0).id);
+                            StatusBarNotifications.getInstance().onNewNotificationIdSeen(mNotificationList.get(0).id);
                         }
                     }
                     setKeepOnAppending(keepOnAppending);

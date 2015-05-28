@@ -17,7 +17,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
-import ru.taaasty.StatusBarNotification;
+import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.rest.model.Conversation;
@@ -78,13 +78,13 @@ public class NotificationsActivity extends TabbarActivityBase implements
     @Override
     protected void onStart() {
         super.onStart();
-        StatusBarNotification.getInstance().disableStatusBarNotifications();
+        StatusBarNotifications.getInstance().disableStatusBarNotifications();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        StatusBarNotification.getInstance().enableStatusBarNotifications();
+        StatusBarNotifications.getInstance().enableStatusBarNotifications();
     }
 
     @Override

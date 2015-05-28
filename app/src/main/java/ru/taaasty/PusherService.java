@@ -332,12 +332,12 @@ public class PusherService extends Service implements PrivateChannelEventListene
         } else {
             String messageType = GcmUtils.getGcmNotificationType(intent.getExtras());
             if (GcmUtils.GCM_NOTIFICATION_TYPE_PUSH_NOTIFICATION.equals(messageType)) {
-                StatusBarNotification ssb = StatusBarNotification.getInstance();
+                StatusBarNotifications ssb = StatusBarNotifications.getInstance();
                 ssb.onGcmPushNotificationReceived(intent);
                 stopSelf();
                 //pusherConnect();
             } else if (GcmUtils.GCM_NOTIFICATION_TYPE_PUSH_MESSAGE.equals(messageType)) {
-                StatusBarNotification ssb = StatusBarNotification.getInstance();
+                StatusBarNotifications ssb = StatusBarNotifications.getInstance();
                 ssb.onGcmPushConversationReceived(intent);
                 pusherConnect();
             } else {

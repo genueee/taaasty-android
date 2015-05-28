@@ -7,9 +7,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.app.RemoteInput;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,12 +42,14 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
+import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.rest.model.Notification;
@@ -75,6 +80,8 @@ public class IntentService extends android.app.IntentService {
     private static final String ACTION_POST_ENTRY = "ru.taaasty.IntentService.action.POST_ENTRY";
     private static final String ACTION_EDIT_ENTRY = "ru.taaasty.IntentService.action.EDIT_ENTRY";
 
+    private static final String ACTION_VOICE_REPLY_TO_CONVERSATION = "ru.taaasty.IntentService.action.ACTION_VOICE_REPLY_TO_CONVERSATION";
+
     private static final String ACTION_UPLOAD_USERPIC = "ru.taaasty.IntentService.action.UPLOAD_USERPIC";
     private static final String ACTION_UPLOAD_BACKGROUND = "ru.taaasty.IntentService.action.UPLOAD_BACKGROUND";
 
@@ -92,6 +99,9 @@ public class IntentService extends android.app.IntentService {
     private static final String EXTRA_IMAGE_URI = "ru.taaasty.extra.IMAGE_URI";
     private static final String EXTRA_IMAGE_URL_LIST = "ru.taaasty.extra.IMAGE_URL_LIST";
     private static final String EXTRA_NOTIFY_NOTIFICATION_HELPER = "ru.taaasty.IntentService.extra.EXRA_NOTIFY_NOTIFICATION_HELPER";
+    public static final String EXTRA_CONVERSATION_VOICE_REPLY_CONTENT = "ru.taaasty.extra.EXTRA_CONVERSATION_VOICE_REPLY_CONTENT";
+    private static final String EXTRA_CONVERSATION_ID = "ru.taaasty.extra.EXTRA_CONVERSATION_ID";
+    private static final String EXTRA_CONVERSATION_MESSAGE_IDS = "ru.taaasty.extra.EXTRA_CONVERSATION_MESSAGE_IDS";
 
     private static final String EXTRA_NOTIFICATION_IDS = "ru.taaasty.extra.EXTRA_NOTIFICATION_IDS";
 
@@ -155,6 +165,14 @@ public class IntentService extends android.app.IntentService {
         return intent;
     }
 
+    public static Intent getVoiceReplyToConversationIntent(Context context, long conversationId, long messageIds[]) {
+        Intent intent = new Intent(context, IntentService.class);
+        intent.setAction(ACTION_VOICE_REPLY_TO_CONVERSATION);
+        intent.putExtra(EXTRA_CONVERSATION_ID, conversationId);
+        intent.putExtra(EXTRA_CONVERSATION_MESSAGE_IDS, messageIds);
+        return intent;
+    }
+
     public static void markNotificationAsRead(Context context, long id) {
         Intent intent = getMarkNotificationAsReadIntent(context, new long[] {id}, false);
         context.startService(intent);
@@ -212,12 +230,27 @@ public class IntentService extends android.app.IntentService {
                 long ids[] = intent.getLongArrayExtra(EXTRA_NOTIFICATION_IDS);
                 if (ids != null) handleMarkNotificationsAsRead(ids);
                 if (intent.getBooleanExtra(EXTRA_NOTIFY_NOTIFICATION_HELPER, false)) {
-                    StatusBarNotification.getInstance().onNotificationsMarkedAsRead();
+                    StatusBarNotifications.getInstance().onNotificationsMarkedAsRead();
                 }
             } else if (ACTION_MARK_ALL_NOTIFICATIONS_AS_READ.equals(action)) {
                 handleMarkAllNotificationsAsRead();
             } else if (ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED.equals(action)) {
-                StatusBarNotification.getInstance().onConversationNotificationCancelled();
+                StatusBarNotifications.getInstance().onConversationNotificationCancelled();
+            } else if (ACTION_VOICE_REPLY_TO_CONVERSATION.equals(action)) {
+                long conversationId = intent.getLongExtra(EXTRA_CONVERSATION_ID, -1);
+                long messageIds[] = intent.getLongArrayExtra(EXTRA_CONVERSATION_MESSAGE_IDS);
+                Bundle remoteInput = RemoteInput.getResultsFromIntent(intent);
+                CharSequence replyContent = null;
+                if (remoteInput != null) {
+                    replyContent = remoteInput.getCharSequence(EXTRA_CONVERSATION_VOICE_REPLY_CONTENT);
+                }
+                try {
+                    handleVoiceReplyToConversation(conversationId, messageIds, replyContent);
+                }finally {
+                    StatusBarNotifications.getInstance().onConversationNotificationCancelled();
+                    ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS,
+                            "Ответ в диалог голосом", null);
+                }
             }
         }
     }
@@ -315,6 +348,35 @@ public class IntentService extends android.app.IntentService {
         if (DBG) Log.v(TAG, "status: " + status);
         EventBus.getDefault().post(status);
         if (response != null) EventBus.getDefault().post(new EntryChanged(response));
+    }
+
+    private void handleVoiceReplyToConversation(long conversationId, long messageIds[], CharSequence replyContent) {
+        if (conversationId == -1 || TextUtils.isEmpty(replyContent)) {
+            if (DBG) Log.e(TAG, "empty content or conversation id");
+            return;
+        }
+
+        // TODO Как-то уведомлять, что идет загрузка и при ошибке
+        try {
+            ApiMessenger api = RestClient.getAPiMessenger();
+            if (messageIds != null) {
+                try {
+                    ArrayList<Long> idsArray = new ArrayList<>(messageIds.length);
+                    for (long id: messageIds) idsArray.add(id);
+                    String ids = TextUtils.join(",", idsArray);
+                    api.markMessagesAsReadSync(null, conversationId, ids);
+                } catch (ResponseErrorException ignore) {
+                    if (DBG) Log.v(TAG, "markMessagesAsReadSync() error");
+                }
+            }
+            Conversation.Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
+                    UUID.randomUUID().toString(), null);
+            EventBus.getDefault().post(new MessageChanged(message));
+        } catch (ResponseErrorException ree) {
+            if (DBG) Log.i(TAG, "handleVoiceReplyToConversation() error", ree);
+        } catch (Throwable ex) {
+            if (DBG) throw new IllegalStateException(ex);
+        }
     }
 
     private void handleUploadUserpic(long userId, Uri imageUri) {
@@ -422,7 +484,7 @@ public class IntentService extends android.app.IntentService {
             try {
                 Notification notification = api.markNotificationAsRead(null, notificationId);
                 EventBus.getDefault().post(new NotificationReceived(notification));
-                StatusBarNotification.getInstance().onNewNotificationIdSeen(notificationId); // На всякий случай, иначе может и не дойти
+                StatusBarNotifications.getInstance().onNewNotificationIdSeen(notificationId); // На всякий случай, иначе может и не дойти
             } catch (Throwable e) {
                 Log.e(TAG, "markNotificationAsRead error", e);
             }
@@ -439,7 +501,7 @@ public class IntentService extends android.app.IntentService {
 
             long maxId = 0;
             for (MarkNotificationsAsReadResponse item: response) maxId = Math.max(maxId, item.id);
-            StatusBarNotification.getInstance().onNewNotificationIdSeen(maxId); // На всякий случай, иначе может и не дойти
+            StatusBarNotifications.getInstance().onNewNotificationIdSeen(maxId); // На всякий случай, иначе может и не дойти
         } catch (Throwable e) {
             Log.e(TAG, "markNotificationAsRead error", e);
             EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(e));
