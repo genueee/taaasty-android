@@ -267,7 +267,7 @@
 
         <service android:name=".GcmIntentService" />
 
-        <provider android:authorities="com.facebook.app.FacebookContentProvider${facebook_app_id}"
+        <provider android:authorities="com.facebook.app.FacebookContentProvider${facebook_app_id_forprovider}"
             android:name="com.facebook.FacebookContentProvider"
             android:exported="true" />
 

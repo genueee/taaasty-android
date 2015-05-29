@@ -82,7 +82,7 @@ android {
             abiFilters "armeabi-v7a", "armeabi", "x86"
         }
 
-        manifestPlaceholders = [ facebook_app_id:"731919696901929"]
+        manifestPlaceholders = [ facebook_app_id_forprovider:"731919696901929"]
 
         compileOptions {
             sourceCompatibility JavaVersion.VERSION_1_7
@@ -107,6 +107,7 @@ android {
             applicationIdSuffix ".debug"
             versionNameSuffix "dbg-" + getRevision()
             resValue "string", "app_name", "Тейсти dbg" + getRevision()
+            manifestPlaceholders = [ facebook_app_id_forprovider:"debug7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
         }
         release {
             minifyEnabled true
@@ -120,6 +121,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-aviary.pro'
             signingConfig signingConfigs.beta
+            manifestPlaceholders = [ facebook_app_id_forprovider:"beta7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
         }
     }
 
