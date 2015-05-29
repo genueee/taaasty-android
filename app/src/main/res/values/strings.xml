@@ -179,6 +179,7 @@
     <string name="logout">Выйти</string>
     <string name="clean_cache">Очистка кэша</string>
     <string name="sign_up_using_vkontakte_title">Вход с помощью Вконтакте…</string>
+    <string name="sign_up_using_facebook_title">Вход с помощью Facebook…</string>
     <string name="sign_up_success">Регистрация успешно завершена!</string>
     <string name="action_back_content_description">назад</string>
     <string name="action_make_photo_content_description">Выбрать фотографию</string>
@@ -206,8 +207,6 @@
     <string name="error_append_feed">Ошибка подгрузки записей</string>
     <string name="error_load_notifications">Ошибка загрузки уведомлений</string>
     <string name="sharing_description">Пост на тейсти</string>
-    <string name="facebook_sharing_ok">Ссылка размещена на вашей страничке в facebook</string>
-    <string name="facebook_sharing_fail">Упс, что то не получилось…</string>
     <string name="menu_follow">Подписаться</string>
     <string name="menu_unfollow">Отписаться</string>
     <string name="menu_change_avatar">Сменить аватар</string>

@@ -65,6 +65,30 @@
                 android:textColor="@android:color/white" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/sign_via_facebook"
+            style="@style/LoginButtonContainer"
+            android:background="@drawable/login_facebook_background"
+            android:layout_width="match_parent">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_sign_facebook"
+                tools:ignore="ContentDescription"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:src="@drawable/login_button_divider"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                style="@style/LoginButton"
+                android:text="@string/sign_via_facebook"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/sign_via_email"

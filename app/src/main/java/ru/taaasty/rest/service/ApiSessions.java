@@ -25,4 +25,8 @@ public interface ApiSessions {
     @POST("/sessions/vkontakte.json")
     Observable<CurrentUser> signInVkontakte(@Field("user_id") String userId, @Field("token") String token);
 
+    @FormUrlEncoded
+    @POST("/sessions/facebook.json")
+    Observable<CurrentUser> signInFacebook(@Field("user_id") String userId, @Field("token") String token);
+
 }
