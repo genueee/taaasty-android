@@ -81,7 +81,7 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
     }
 
     public void setRelationship(Relationship relationship) {
-        mRelationships.add(relationship);
+        mRelationships.addOrUpdate(relationship);
     }
 
     public void deleteRelationship(long id) {

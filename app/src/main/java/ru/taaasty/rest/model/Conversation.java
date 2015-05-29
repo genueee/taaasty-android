@@ -63,10 +63,9 @@ public class Conversation implements Parcelable {
         public static Comparator<Message> SORT_BY_ID_COMPARATOR = new Comparator<Message>() {
             @Override
             public int compare(Message lhs, Message rhs) {
-                int compateIds =  Objects.unsignedCompare(lhs.id, rhs.id);
-                if (compateIds == 0) return 0;
+                // В диалоге с самим собой на каждое сообщение приходит 2 сообщения с разными ID и одним и тем же UUID
                 if (!TextUtils.isEmpty(lhs.uuid) && lhs.uuid.equals(rhs.uuid)) return 0;
-                return compateIds;
+                return Objects.unsignedCompare(lhs.id, rhs.id);
             }
         };
 

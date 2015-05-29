@@ -57,10 +57,8 @@ public class Comment implements Parcelable {
             } else if (rhs == null) {
                 return -1;
             } else {
-                int compareIds = Objects.compare(lhs.getId(), rhs.getId());
-                if (compareIds == 0) return 0;
                 int compareDates = lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
-                return compareDates != 0 ? compareDates : compareIds;
+                return compareDates != 0 ? compareDates : Objects.compare(lhs.getId(), rhs.getId());
             }
         }
     };

@@ -89,10 +89,8 @@ public class Notification implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
-                int compareIds = Objects.compare(rhs.id, lhs.id);
-                if (compareIds == 0) return 0;
                 int compareDates = rhs.createdAt.compareTo(lhs.createdAt);
-                return compareDates != 0 ? compareDates : compareIds;
+                return compareDates != 0 ? compareDates : Objects.compare(rhs.id, lhs.id);
             }
         }
     };

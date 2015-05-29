@@ -230,7 +230,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     public void addEntry(Entry entry) {
-        mEntries.add(entry);
+        mEntries.addOrUpdate(entry);
     }
 
     public void setInteractionListener(InteractionListener listener) {

@@ -32,7 +32,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
 
     public void onEventMainThread(NotificationReceived event) {
         if (DBG) Log.v(TAG, "NotificationReceived " + event);
-        add(event.notification);
+        addOrUpdate(event.notification);
     }
 
     /**
@@ -54,7 +54,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
                 if (!notification.isTypeRelationship()) return;
                 if (notification.sender.getId() == him) {
                     Notification newNotification = Notification.changeSenderRelation(notification, newRelationship);
-                    add(newNotification);
+                    addOrUpdate(newNotification);
                 }
             }
         }
@@ -70,7 +70,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
                     Date readDate = event.itemMap.get(notification.id);
                     if (readDate != null) {
                         Notification newNotification = Notification.markAsRead(notification, readDate);
-                        add(newNotification);
+                        addOrUpdate(newNotification);
                     }
                 }
             }

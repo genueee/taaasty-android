@@ -73,10 +73,8 @@ public class Entry implements Parcelable, Cloneable {
             } else if (rhs == null) {
                 return 1;
             } else {
-                int compareIds = Objects.compare(rhs.getId(), lhs.getId());
-                if (compareIds == 0) return 0;
                 int compareDates = rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
-                return compareDates != 0 ? compareDates : compareIds;
+                return compareDates != 0 ? compareDates : Objects.compare(rhs.getId(), lhs.getId());
             }
         }
     };

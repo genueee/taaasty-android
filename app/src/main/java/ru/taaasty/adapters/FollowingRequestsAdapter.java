@@ -78,7 +78,7 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
     }
 
     public void setRelationship(Relationship relationship) {
-        mRelationships.add(relationship);
+        mRelationships.addOrUpdate(relationship);
     }
 
     public void deleteRelationship(long id) {
