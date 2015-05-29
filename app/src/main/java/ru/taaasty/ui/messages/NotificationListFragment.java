@@ -630,7 +630,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
                     if (list != null) {
                         int sizeBefore = mNotificationList.size();
-                        mNotificationList.insertItems(list.notifications);
+                        mNotificationList.addOrUpdateItems(list.notifications);
                         if (!mIsRefresh && mEntriesRequested != 0 && sizeBefore == mNotificationList.size())
                             keepOnAppending = false;
                         if (!mNotificationList.isEmpty()) {

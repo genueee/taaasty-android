@@ -13,14 +13,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -125,18 +120,11 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     public void addMessages(List<Conversation.Message> messages) {
-        mMessages.insertItems(messages);
+        mMessages.addOrUpdateItems(messages);
     }
 
     public void addMessage(Conversation.Message message) {
-        if (!TextUtils.isEmpty(message.uuid)) {
-            mMessages.beginBatchedUpdates();
-            mMessages.removeUuids(Collections.singleton(message.uuid));
-            mMessages.add(message);
-            mMessages.endBatchedUpdates();
-        } else {
-            mMessages.add(message);
-        }
+        mMessages.addOrUpdate(message);
     }
 
     public void markMessagesAsRead(List<UpdateMessages.UpdateMessageInfo> messageInfos) {
@@ -340,65 +328,11 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 @Override
                 public boolean areItemsTheSame(Conversation.Message item1, Conversation.Message item2) {
                     if (item1.id == item2.id) return true;
-                    if (item1.uuid != null && !item1.uuid.isEmpty() && item1.uuid.equals(item2.uuid)) return true;
+                    if (item1.uuid != null && !item1.uuid.isEmpty() && item1.uuid.equals(item2.uuid))
+                        return true;
                     return false;
                 }
             });
-        }
-
-
-        /**
-         * Удаляем сообщения, uuid которых уже есть в списке. Используем последнее пришедшее
-         * В основном, нужно, чтобы отфильтровать сообщения при диалоге самим с собой.
-         */
-        public void removeUuids(Set<String> uuids) {
-            /*
-            for (int i = size() - 1; i >= 0; --i) {
-                if (uuids.contains(get(i).uuid)) super.removeItemAt(i);
-            }
-            */
-        }
-
-        @Override
-        public int add(Conversation.Message item) {
-            /**
-            if (!TextUtils.isEmpty(item.uuid)) {
-                if (DBG) {
-                    for (int i = size() - 1; i >= 0; --i) {
-                        if (item.uuid.equals(get(i).uuid)) {
-                            throw new IllegalStateException("Элементы с uuid должны быть удалены до add()");
-                        }
-                    }
-                }
-            } */
-            return super.add(item);
-        }
-
-        @Override
-        public void insertItems(Collection<Conversation.Message> items) {
-            Set<String> uuids = new HashSet<>();
-            for (Conversation.Message item: items) if (!TextUtils.isEmpty(item.uuid)) uuids.add(item.uuid);
-
-            // Удаляем сообщения с одинаковым uuid в списке. Используем всегда последнее.
-            List<Conversation.Message> itemsFiltered = new ArrayList<>(items.size());
-            HashMap<String, Conversation.Message> msgByUuid = new HashMap<>();
-
-            for (Conversation.Message msg: items) {
-                if (TextUtils.isEmpty(msg.uuid)) {
-                    itemsFiltered.add(msg);
-                } else {
-                    msgByUuid.put(msg.uuid, msg);
-                }
-            }
-            itemsFiltered.addAll(msgByUuid.values());
-            if (!uuids.isEmpty()) {
-                beginBatchedUpdates();
-                removeUuids(uuids);
-                for (Conversation.Message message: itemsFiltered) add(message);
-                endBatchedUpdates();
-            } else {
-                super.insertItems(itemsFiltered);
-            }
         }
     }
 

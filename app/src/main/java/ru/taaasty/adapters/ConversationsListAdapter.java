@@ -11,8 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.List;
-
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.Conversation;
@@ -61,14 +59,6 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     @Override
     public long getItemId(int position) {
         return mConversations.get(position).id;
-    }
-
-    public void setConversations(List<Conversation> conversations) {
-        mConversations.resetItems(conversations);
-    }
-
-    public void addConversation(Conversation conversation) {
-        mConversations.add(conversation);
     }
 
     @Nullable

@@ -146,7 +146,7 @@ public abstract class FeedLoader {
         if (feed != null) {
             // XXX Сравнивать lastEntry?
             int sizeBefore = mList.size();
-            mList.insertItems(feed.entries);
+            mList.addOrUpdateItems(feed.entries);
             if (!isRefresh && entriesRequested != 0 && sizeBefore == mList.size())
                 keepOnAppending = false;
         }

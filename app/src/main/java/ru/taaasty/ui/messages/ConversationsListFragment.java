@@ -334,7 +334,8 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         }
 
         public void onEventMainThread(ConversationChanged event) {
-            if (event.conversation.messagesCount > 0) mConversationList.add(event.conversation);
+            if (event.conversation.messagesCount <= 0) return;
+            mConversationList.addOrUpdate(event.conversation);
         }
 
         @Nullable

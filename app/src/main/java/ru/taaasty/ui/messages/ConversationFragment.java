@@ -42,7 +42,6 @@ import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.DebugAdapterDataObserver;
 import ru.taaasty.utils.ListScrollController;
 import rx.Observable;
 import rx.Observer;
@@ -147,7 +146,6 @@ public class ConversationFragment extends Fragment {
         mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
         mAdapter = new Adapter(getActivity());
-        mAdapter.registerAdapterDataObserver(new DebugAdapterDataObserver("CNV"));
         mListView.setAdapter(mAdapter);
 
         initSendMessageForm();
