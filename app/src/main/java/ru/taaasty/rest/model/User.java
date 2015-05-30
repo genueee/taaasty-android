@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
 
+import ru.taaasty.Constants;
+
 /**
 * Created by alexey on 01.08.14.
 */
@@ -110,6 +112,13 @@ public class User implements Parcelable {
 
     public String getName() {
         return mName;
+    }
+
+    /**
+     * @return ~username
+     */
+    public String getNameWithPrefix() {
+        return Constants.USER_PREFIX + mName;
     }
 
     /**

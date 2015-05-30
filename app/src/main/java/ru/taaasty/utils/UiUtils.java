@@ -163,6 +163,13 @@ public class UiUtils {
         stringBuilder.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
+    public static void appendStyled(SpannableStringBuilder builder, String str, Object... spans) {
+        builder.append(str);
+        for (Object span : spans) {
+            builder.setSpan(span, builder.length() - str.length(), builder.length(), 0);
+        }
+    }
+
     /**
      * Заменяет все UrlSpan'ы с ссылками на taasty.ru (слаги, тэги) на {linkto  android.text.TaaastyUrlSpan}
      * ведущими на страницы внутри приложения

@@ -12,6 +12,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -257,6 +258,7 @@ public class StatusBarNotificationNotification {
                 .setContentIntent(resulIntent)
                 .setDeleteIntent(deleteIntent)
                 .setWhen(notification.createdAt.getTime())
+                .setColor(mContext.getResources().getColor(R.color.green_background_normal))
                 .setShowWhen(true)
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true)
@@ -299,11 +301,10 @@ public class StatusBarNotificationNotification {
 
     private Spanned getNotificationText(Notification notification, boolean allowLongText) {
         User author = notification.sender;
-        SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getName());
+        SpannableStringBuilder ssb = new SpannableStringBuilder();
+        UiUtils.appendStyled(ssb, author.getNameWithPrefix(),
+                new ForegroundColorSpan(mContext.getResources().getColor(R.color.text_color_green)));
 
-        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext,
-                R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');
         ssb.append(notification.actionText);
         if (!TextUtils.isEmpty(notification.text) && allowLongText) {

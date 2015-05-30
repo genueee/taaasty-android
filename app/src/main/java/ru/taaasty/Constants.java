@@ -23,6 +23,8 @@ public interface Constants {
 
     public static final int IMAGE_FADE_IN_DURATION = 300;
 
+    Character USER_PREFIX = '~';
+
     /**
      * Кол-во комментарииев, которые показывать на странице при первоначальном открытии поста
      */

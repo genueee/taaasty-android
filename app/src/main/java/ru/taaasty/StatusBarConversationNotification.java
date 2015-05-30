@@ -3,9 +3,8 @@ package ru.taaasty;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -14,8 +13,12 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.util.LongSparseArray;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
+import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
@@ -24,8 +27,11 @@ import ru.taaasty.events.MessageChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
+import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -58,6 +64,8 @@ public class StatusBarConversationNotification {
 
     private Subscription mLoadConversationsSubscription = Subscriptions.unsubscribed();
 
+    private LoadNotificationDataTask mLoadImagesTask = null;
+
     StatusBarConversationNotification(TaaastyApplication application) {
         mContext = application;
         mNotificationManager = NotificationManagerCompat.from(application);
@@ -71,6 +79,10 @@ public class StatusBarConversationNotification {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         mLoadConversationsSubscription.unsubscribe();
+        if (mLoadImagesTask != null) {
+            mLoadImagesTask.cancel(true);
+            mLoadImagesTask = null;
+        }
     }
 
     public void onLogout() {
@@ -215,48 +227,37 @@ public class StatusBarConversationNotification {
             return;
         }
 
-        PendingIntent resultPendingIntent;
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+        if (mLoadImagesTask != null) mLoadImagesTask.cancel(true);
+        mLoadImagesTask = new LoadNotificationDataTask(mLastMessage);
+        mLoadImagesTask.execute();
+    }
 
-        // NotificationsActivity intent
-        Intent firstIntent = new Intent(mContext, NotificationsActivity.class);
-        firstIntent.putExtra(NotificationsActivity.ARG_KEY_SHOW_SECTION, NotificationsActivity.SECTION_CONVERSATIONS);
-        stackBuilder.addNextIntent(firstIntent);
+    private void refreshNotification(Bitmap largeIcon, Bitmap wearableBackground) {
+        NotificationCompat.Builder notificationBuilder;
+        NotificationCompat.Action voiceReplyAction = null;
 
-        // Conversation intent
-        if (!mSeveralConversations) {
-            long recipient;
-            if (UserManager.getInstance().isMe(mLastMessage.recipientId)) {
-                recipient = mLastMessage.userId;
-            } else {
-                recipient = mLastMessage.recipientId;
-            }
-            Intent conversationIntent = ConversationActivity.createIntent(mContext, mLastMessage.conversationId, recipient);
-            stackBuilder.addNextIntent(conversationIntent);
+        if (mConversationMessagesCount == 0) {
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_CONVERSATION);
+            return;
         }
 
-        resultPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+        if (mIsPaused || mLastMessage == null) {
+            return;
+        }
 
-        Intent deleteIntent = new Intent(mContext, IntentService.class);
-        deleteIntent.setAction(IntentService.ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED);
-        PendingIntent deletePendingIntent = PendingIntent.getService(mContext, 0,
-                deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        PendingIntent resultPendingIntent = createContentPendingIntent(mLastMessage, !mSeveralConversations);
 
         String title = mContext.getResources().getQuantityString(R.plurals.conversation_received_title,
                 mConversationMessagesCount, mConversationMessagesCount);
 
-        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.ic_launcher);
-
         notificationBuilder = new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.drawable.ic_notification)
-                .setLargeIcon(largeIcon)
                 .setContentTitle(title)
                 .setContentText(getMessageText(mLastMessage))
                 .setWhen(mLastMessage.createdAt.getTime())
                 .setContentIntent(resultPendingIntent)
-                .setDeleteIntent(deletePendingIntent)
-                .setColor(Color.YELLOW)
+                .setDeleteIntent(createDeletePendingIntent())
+                .setColor(mContext.getResources().getColor(R.color.unread_conversations_count_background))
                 .setDefaults(NotificationCompat.DEFAULT_VIBRATE | NotificationCompat.DEFAULT_LIGHTS)
                 .setSound(Uri.parse("android.resource://"
                         + mContext.getPackageName() + "/" + R.raw.incoming_message))
@@ -269,29 +270,66 @@ public class StatusBarConversationNotification {
         bigStyle.bigText(getMessageText(mLastMessage));
         notificationBuilder.setStyle(bigStyle);
 
-        if (!mSeveralConversations) addRemoteInput(notificationBuilder);
+        if (largeIcon != null) {
+            notificationBuilder.setLargeIcon(largeIcon);
+        }
+        if (!mSeveralConversations) voiceReplyAction = createVoiceReplyAction(mLastMessage);
+
+        if (wearableBackground != null || voiceReplyAction != null) {
+            NotificationCompat.WearableExtender extender = new NotificationCompat.WearableExtender();
+            if (wearableBackground != null) extender.setBackground(wearableBackground);
+            if (voiceReplyAction != null) extender.addAction(voiceReplyAction);
+            notificationBuilder.extend(extender);
+        }
 
         mNotificationManager.notify(Constants.NOTIFICATION_ID_CONVERSATION, notificationBuilder.build());
         mContext.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS, "Показано уведомление о новом сообщении", null);
     }
 
-    private void addRemoteInput(NotificationCompat.Builder builder) {
+    private PendingIntent createContentPendingIntent(Conversation.Message message, boolean showConversation) {
+        // NotificationsActivity intent
+        Intent firstIntent = new Intent(mContext, NotificationsActivity.class);
+        firstIntent.putExtra(NotificationsActivity.ARG_KEY_SHOW_SECTION, NotificationsActivity.SECTION_CONVERSATIONS);
+
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+        stackBuilder.addNextIntent(firstIntent);
+
+        // Conversation intent
+        if (showConversation) {
+            long recipient;
+            if (UserManager.getInstance().isMe(message.recipientId)) {
+                recipient = message.userId;
+            } else {
+                recipient = message.recipientId;
+            }
+            Intent conversationIntent = ConversationActivity.createIntent(mContext, message.conversationId, recipient);
+            stackBuilder.addNextIntent(conversationIntent);
+        }
+
+        return stackBuilder.getPendingIntent(0, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private PendingIntent createDeletePendingIntent() {
+        Intent deleteIntent = new Intent(mContext, IntentService.class);
+        deleteIntent.setAction(IntentService.ACTION_NOTIFY_CONVERSATION_NOTIFICATION_CANCELLED);
+        return PendingIntent.getService(mContext, 0,
+                deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private NotificationCompat.Action createVoiceReplyAction(Conversation.Message message) {
         RemoteInput remoteInput = new RemoteInput.Builder(IntentService.EXTRA_CONVERSATION_VOICE_REPLY_CONTENT)
                 .setLabel(mContext.getText(R.string.notification_action_reply_label))
                 .build();
 
-        Intent replyIntent = IntentService.getVoiceReplyToConversationIntent(mContext, mLastMessage.conversationId, new long[] {mLastMessage.id});
-        PendingIntent replyPendingIntent =
-                PendingIntent.getService(mContext, 0, replyIntent,
+        Intent replyIntent = IntentService.getVoiceReplyToConversationIntent(mContext,
+                message.conversationId, new long[] {message.id});
+        PendingIntent replyPendingIntent = PendingIntent.getService(mContext, 0, replyIntent,
                         PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Action action =
-                new NotificationCompat.Action.Builder(R.drawable.ic_full_reply,
-                        mContext.getString(R.string.notification_action_reply_title), replyPendingIntent)
-                        .addRemoteInput(remoteInput)
-                        .build();
-
-        builder.extend(new NotificationCompat.WearableExtender().addAction(action));
+        return new NotificationCompat.Action.Builder(R.drawable.ic_full_reply,
+                mContext.getString(R.string.notification_action_reply_title), replyPendingIntent)
+                .addRemoteInput(remoteInput)
+                .build();
     }
 
     private CharSequence getMessageText(Conversation.Message message) {
@@ -301,14 +339,92 @@ public class StatusBarConversationNotification {
             && message.conversation.recipient != null
                 && !UserManager.getInstance().isMe(message.conversation.recipient.getId())) {
             User author = message.conversation.recipient;
-            ssb.append('@');
-            ssb.append(author.getName());
-            UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext, R.style.TextAppearanceSlugInlineGreen);
+            // wearable не поддерживает CustomTypefaceSpan/TextAppearanceSpan, поэтому ставим так
+            UiUtils.appendStyled(ssb, author.getNameWithPrefix(),
+                    new ForegroundColorSpan(mContext.getResources().getColor(R.color.text_color_green)));
             if (!TextUtils.isEmpty(message.contentHtml)) {
                 ssb.append(' ');
             }
         }
         ssb.append(UiUtils.safeFromHtml(message.contentHtml));
         return ssb;
+    }
+
+    private class LoadNotificationDataTask extends AsyncTask<Void, Void, Void> {
+
+        private volatile Bitmap mBigIcon;
+
+        private volatile Bitmap mBackground;
+
+        private int mBigIconWidth;
+
+        private final int wearableBackgroundWidth = 400;
+
+        private String mUrl;
+
+        public LoadNotificationDataTask(Conversation.Message message) {
+            mBigIcon = null;
+            mBackground = null;
+            mUrl = null;
+            Userpic userpic;
+            int largestWidth;
+
+            if ((message.conversation == null)
+                || (message.conversation.recipient == null)
+                    || (message.conversation.recipient.getUserpic() == null)
+                    ) {
+                // Облом, не будет у нас нормальной иконки, геморно грузить
+                return;
+            } else {
+                userpic = message.conversation.recipient.getUserpic();
+            }
+
+            mBigIconWidth = mContext.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+            largestWidth = Math.max(mBigIconWidth, wearableBackgroundWidth); // Тут, в принципе, всегда 400
+
+            if (!TextUtils.isEmpty(userpic.thumborPath)) {
+                mUrl = NetworkUtils.createThumborUrlFromPath(userpic.thumborPath)
+                        .resize(largestWidth, largestWidth)
+                        .filter("no_upscale()")
+                        .toUrl();
+            } else {
+                mUrl = userpic.largeUrl;
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            if (TextUtils.isEmpty(mUrl)) {
+                return null;
+            }
+            int largestWidth = Math.max(mBigIconWidth, wearableBackgroundWidth);
+            try {
+                Bitmap bitmap = Picasso.with(mContext)
+                        .load(mUrl)
+                        .resize(largestWidth, largestWidth)
+                        .get();
+
+                mBigIcon = Bitmap.createScaledBitmap(bitmap, mBigIconWidth, mBigIconWidth, true);
+                mBigIcon = new CircleTransformation().transform(mBigIcon);
+                mBackground = Bitmap.createScaledBitmap(bitmap, wearableBackgroundWidth, wearableBackgroundWidth, true);
+            } catch (IOException e) {
+                if (DBG) Log.i(TAG, "bitmap load error", e);
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mLoadImagesTask = null;
+            refreshNotification(mBigIcon, mBackground);
+        }
+
     }
 }

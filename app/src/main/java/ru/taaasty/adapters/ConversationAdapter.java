@@ -30,7 +30,6 @@ import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
-//  TODO првоерять что мы получаем сообщения от pusher'а
 public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final boolean DBG = BuildConfig.DEBUG;
