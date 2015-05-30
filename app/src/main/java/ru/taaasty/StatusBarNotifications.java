@@ -1,6 +1,18 @@
 package ru.taaasty;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.squareup.picasso.Picasso;
+
+import java.io.IOException;
+
+import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.NetworkUtils;
 
 /**
  * Created by alexey on 28.10.14.
@@ -9,7 +21,7 @@ public class StatusBarNotifications {
     public static final boolean DBG = BuildConfig.DEBUG;
     public static final String TAG = "StatusBarNotifications";
 
-    private static final String PREFS_STATUS_BAR_NOTIFICATIONS = "statusbarnotification";
+    static final int WEARABLE_NOTIFICATION_BACKGROUND_WIDTH = 400;
 
     private static volatile StatusBarNotifications sInstance;
 
@@ -88,6 +100,82 @@ public class StatusBarNotifications {
     public synchronized void onLogout() {
         mNotificationsHandler.onLogout();
         mConversationHandler.onLogout();
+    }
+
+    /**
+     * AsyncTask для загрузки изображений для нотификации.
+     * В execute() передавать url и thumbor path
+     */
+    public static class LoadNotificationDataTask extends AsyncTask<String, Void, Void> {
+
+        private final Picasso mPicasso;
+
+        private final boolean mRoundCorners;
+
+        /**
+         * Иконка для setBigIcon() в нотификации
+         */
+        protected volatile Bitmap bigIcon;
+
+        /**
+         * background для wearable
+         */
+        protected volatile Bitmap wearableBackground;
+
+
+        private int mBigIconWidth;
+
+        private final int mWearableBackgroundWidth = StatusBarNotifications.WEARABLE_NOTIFICATION_BACKGROUND_WIDTH;
+
+        public LoadNotificationDataTask(Context context, boolean roundCorners) {
+            mBigIconWidth = context.getResources().getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+            mPicasso = Picasso.with(context);
+            mRoundCorners = roundCorners;
+        }
+
+        /**
+         *
+         * @param params: url, thumbor path
+         * @return
+         */
+        @Override
+        protected Void doInBackground(String... params) {
+            String url;
+            String pUrl = params[0];
+            String pThumborPath = params[1];
+
+            int largestWidth = Math.max(mBigIconWidth, mWearableBackgroundWidth); // Тут, в принципе, всегда 400
+
+            if (!TextUtils.isEmpty(pThumborPath)) {
+                url = NetworkUtils.createThumborUrlFromPath(pThumborPath)
+                        .resize(largestWidth, largestWidth)
+                        .filter("no_upscale()")
+                        .toUrl();
+            } else {
+                url = pUrl;
+            }
+
+            if (TextUtils.isEmpty(url)) {
+                return null;
+            }
+
+            try {
+                Bitmap bitmap = mPicasso
+                        .load(url)
+                        .resize(largestWidth, largestWidth)
+                        .get();
+
+                bigIcon = Bitmap.createScaledBitmap(bitmap, mBigIconWidth, mBigIconWidth, true);
+                if (mRoundCorners) {
+                    bigIcon = new CircleTransformation().transform(bigIcon);
+                }
+                wearableBackground = Bitmap.createScaledBitmap(bitmap, mWearableBackgroundWidth, mWearableBackgroundWidth, true);
+            } catch (IOException e) {
+                if (DBG) Log.i(TAG, "bitmap load error", e);
+            }
+
+            return null;
+        }
     }
 
 }

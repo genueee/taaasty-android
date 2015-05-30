@@ -1,10 +1,10 @@
 package ru.taaasty;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -27,6 +27,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
@@ -65,6 +66,8 @@ public class StatusBarNotificationNotification {
 
     private Subscription mLoadNotificationsSubscription = Subscriptions.unsubscribed();
 
+    private LoadNotificationDataTask mLoadImagesTask;
+
     StatusBarNotificationNotification(TaaastyApplication appContext) {
         mContext = appContext;
         mNotificationManager = NotificationManagerCompat.from(appContext);
@@ -79,11 +82,19 @@ public class StatusBarNotificationNotification {
     public void onDestroy() {
         mLoadNotificationsSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
+        if (mLoadImagesTask != null) {
+            mLoadImagesTask.cancel(true);
+            mLoadImagesTask = null;
+        }
     }
 
     public void onLogout() {
         mLastSeenNewestNotificationId = 0;
         mContext.getSharedPreferences(PREFS_STATUS_BAR_NOTIFICATIONS, 0).edit().clear().commit();
+        if (mLoadImagesTask != null) {
+            mLoadImagesTask.cancel(true);
+            mLoadImagesTask = null;
+        }
         cancelNotification();
     }
 
@@ -207,10 +218,40 @@ public class StatusBarNotificationNotification {
         refreshNotification();
     }
 
+    private void refreshNotification() {
+        if (mLoadImagesTask != null) {
+            mLoadImagesTask.cancel(true);
+            mLoadImagesTask = null;
+        }
+
+        if (mNotifications.isEmpty()) {
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
+            return;
+        }
+        if (mIsPaused) {
+            return;
+        }
+
+        Notification lastNotification = mNotifications.get(mNotifications.size() - 1);
+        // Есть картинка - показываем её
+        if (lastNotification.hasImage()) {
+            mLoadImagesTask = new LoadNotificationDataTask(mContext, false);
+            mLoadImagesTask.execute(lastNotification.image.url, lastNotification.image.path);
+        } else if (lastNotification.sender != null && lastNotification.sender.getUserpic() != null) {
+            // Есть юзерпик - отлично
+            Userpic userpic = lastNotification.sender.getUserpic();
+            mLoadImagesTask = new LoadNotificationDataTask(mContext, true);
+            mLoadImagesTask.execute(userpic.largeUrl, userpic.thumborPath);
+        } else {
+            // Ничего нет. Ну нет так нет.
+            refreshNotification(null, null);
+        }
+    }
+
     /**
-     * Обновление уведомления в статусбаре
+     * Обновление уведомления в статусбаре после загрузки картинок
      */
-    public void refreshNotification() {
+    private void refreshNotification(@Nullable Bitmap largeIcon, @Nullable Bitmap wearableBackground) {
         NotificationCompat.Builder notificationBuilder;
 
         if (mNotifications.isEmpty()) {
@@ -221,7 +262,8 @@ public class StatusBarNotificationNotification {
         if (mIsPaused) return;
 
         Notification lastNotification = mNotifications.get(mNotifications.size() - 1);
-        notificationBuilder = createNotification(lastNotification, mNotifications.size() > 1);
+        notificationBuilder = createNotification(lastNotification, mNotifications.size() > 1,
+                largeIcon, wearableBackground);
 
         mContext.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS, "Показано уведомление о новом уведомлении", null);
         mNotificationManager.notify(Constants.NOTIFICATION_ID_POST, notificationBuilder.build());
@@ -232,13 +274,13 @@ public class StatusBarNotificationNotification {
         mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
     }
 
-    private NotificationCompat.Builder createNotification(Notification notification, boolean isCollapsed) {
+    private NotificationCompat.Builder createNotification(Notification notification,
+                                                          boolean isCollapsed,
+                                                          Bitmap largeIcon,
+                                                          Bitmap wearableBackground) {
         NotificationCompat.Builder notificationBuilder;
         PendingIntent resulIntent, deleteIntent;
         int title;
-
-        // TODO largeIcon - нормальный, если есть в нотификации
-        Bitmap largeIcon = BitmapFactory.decodeResource(mContext.getResources(), R.mipmap.ic_launcher);
 
         if (isCollapsed) {
             title = R.string.notifications_received_title;
@@ -254,7 +296,7 @@ public class StatusBarNotificationNotification {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(largeIcon)
                 .setContentTitle(mContext.getText(title))
-                .setContentText(getNotificationText(notification, false))
+                .setContentText(getNotificationText(notification, true))
                 .setContentIntent(resulIntent)
                 .setDeleteIntent(deleteIntent)
                 .setWhen(notification.createdAt.getTime())
@@ -269,6 +311,12 @@ public class StatusBarNotificationNotification {
             NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
             bigStyle.bigText(getNotificationText(notification, true));
             notificationBuilder.setStyle(bigStyle);
+        }
+
+        if (wearableBackground != null) {
+            NotificationCompat.WearableExtender extender = new NotificationCompat.WearableExtender();
+            extender.setBackground(wearableBackground);
+            notificationBuilder.extend(extender);
         }
 
         return notificationBuilder;
@@ -334,4 +382,17 @@ public class StatusBarNotificationNotification {
         }
     }
 
+    private class LoadNotificationDataTask extends StatusBarNotifications.LoadNotificationDataTask {
+
+        public LoadNotificationDataTask(Context context, boolean roundCorners) {
+            super(context, roundCorners);
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            mLoadImagesTask = null;
+            refreshNotification(bigIcon, wearableBackground);
+        }
+    }
 }
