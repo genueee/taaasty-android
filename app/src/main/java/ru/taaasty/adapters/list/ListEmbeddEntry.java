@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -38,7 +37,6 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
     private final TextView mTitle;
 
     private final Context mContext;
-    private final Picasso mPicasso;
     private ImageLoadingGetter mImageGetter;
 
     private TextViewImgLoader mTitleImgLoader;
@@ -54,7 +52,6 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
 
         mContext = context;
-        mPicasso = Picasso.with(context);
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
@@ -80,7 +77,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
     @Override
     public void recycle() {
-        mPicasso.cancelRequest(mImageView);
+        picasso.cancelRequest(mImageView);
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
     }
 
@@ -93,7 +90,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         Link imageLink;
         final int imgViewHeight;
 
-        mPicasso.cancelRequest(mImageView);
+        picasso.cancelRequest(mImageView);
 
         if (parentWidth == 0) {
             imageLink = item.getIframely().getImageLink();
@@ -129,7 +126,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mImagePlaceholderDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImagePlaceholderDrawable);
         mImageView.requestLayout();
-        mPicasso
+        picasso
                 .load(url)
                 .placeholder(mImagePlaceholderDrawable)
                 .error(R.drawable.image_load_error)

@@ -29,6 +29,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     private final boolean mShowUserAvatar;
 
     protected int mParentWidth;
+    protected final Picasso picasso;
 
     public ListEntryBase(Context context, View v, boolean showUserAvatar) {
         super(v);
@@ -36,6 +37,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         mShowUserAvatar = showUserAvatar;
         mAvatarAuthor = (TextView) v.findViewById(R.id.avatar_author);
         mEntryActionBar = new EntryBottomActionBar(v.findViewById(R.id.entry_bottom_action_bar), true);
+        picasso = Picasso.with(context);
 
         if (!showUserAvatar) {
             mAvatarAuthor.setVisibility(View.GONE);
@@ -82,7 +84,9 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     public TextView getAvatarAuthorView() { return mAvatarAuthor; }
 
-    public abstract void recycle();
+    public void recycle() {
+        picasso.cancelRequest(mAvatarTarget);
+    };
 
     private final ImageUtils.DrawableTarget mAvatarTarget = new ImageUtils.DrawableTarget() {
 

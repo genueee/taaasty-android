@@ -18,7 +18,6 @@ import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.IOException;
@@ -50,7 +49,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     private final TextView mTitle;
 
     private Context mContext;
-    private final Picasso mPicasso;
     private final Drawable mImageLoadingDrawable;
     private ImageLoadingGetter mImageGetter;
 
@@ -79,7 +77,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
 
         mContext = context;
-        mPicasso = Picasso.with(context);
         mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable).mutate();
     }
 
@@ -106,7 +103,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
     @Override
     public void recycle() {
-        mPicasso.cancelRequest(mImageView);
+        picasso.cancelRequest(mImageView);
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
         mTitle.setText(null);
         if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag);
@@ -219,7 +216,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         if (image.isAnimatedGif()) {
             loadGif(mImageViewUrl, mImageView);
         } else {
-                mPicasso
+                picasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)
@@ -241,9 +238,9 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
         if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
             loadGif(mImageViewUrl, mImageView);
-            mPicasso.cancelRequest(mImageView);
+            picasso.cancelRequest(mImageView);
         } else {
-            mPicasso
+            picasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)
