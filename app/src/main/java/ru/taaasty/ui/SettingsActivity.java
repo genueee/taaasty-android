@@ -76,7 +76,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
             text = error;
         }
 
-        ert.setError(text);
+        ert.setError(text, exception);
 
     }
 

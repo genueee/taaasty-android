@@ -6,8 +6,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
-import com.squareup.picasso.Picasso;
-
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
@@ -100,9 +98,9 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));
+            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error);
+            ert.setError(error, exception);
         }
     }
 

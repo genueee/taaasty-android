@@ -174,9 +174,9 @@ public class LoginActivity extends ActivityBase implements
         ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()));
+            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error);
+            ert.setError(error, exception);
         }
     }
 

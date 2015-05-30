@@ -2,6 +2,7 @@ package ru.taaasty.widgets;
 
 import android.content.Context;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -9,9 +10,17 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
+
+import ru.taaasty.TaaastyApplication;
+
 public class ErrorTextView extends TextView {
 
-    private static final int HIDE_DELAY_MS = 5000;
+    private static final int HIDE_DELAY_MIN_MS = 5000;
+
+    private static final int HIDE_DELAY_MS_PER_CHARACTER = 200;
 
     private Handler mHideErrorViewDelayerHandler;
 
@@ -28,7 +37,12 @@ public class ErrorTextView extends TextView {
         mHideErrorViewDelayerHandler = new Handler();
     }
 
-    public void setError(CharSequence error) {
+    /**
+     * Установка ошибки
+     * @param error Текст ошибки
+     * @param ex Исключение, если есть, для аналитики
+     */
+    public void setError(CharSequence error, @Nullable Throwable exception) {
         mHideErrorViewDelayerHandler.removeCallbacks(mHideErrorViewDelayed);
         if (TextUtils.isEmpty(error)) {
             hideErrorView();
@@ -38,6 +52,19 @@ public class ErrorTextView extends TextView {
             } else {
                 setText(error);
                 showErrorView();
+            }
+        }
+
+        if (exception != null) {
+            if (getContext().getApplicationContext() instanceof TaaastyApplication) {
+                Tracker t = ((TaaastyApplication) getContext().getApplicationContext()).getTracker();
+                t.send(new HitBuilders.ExceptionBuilder()
+                                .setDescription(
+                                        new StandardExceptionParser(getContext(), null)
+                                                .getDescription(Thread.currentThread().getName(), exception))
+                                .setFatal(false)
+                                .build()
+                );
             }
         }
     }
@@ -84,7 +111,7 @@ public class ErrorTextView extends TextView {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, HIDE_DELAY_MS);
+                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, getHideDelay());
             }
 
             @Override
@@ -94,6 +121,10 @@ public class ErrorTextView extends TextView {
         });
 
         startAnimation(fadeInAnim);
+    }
+
+    private int getHideDelay() {
+        return HIDE_DELAY_MIN_MS + getText().length() * HIDE_DELAY_MS_PER_CHARACTER;
     }
 
     private void updateErrorView(final CharSequence newText) {
@@ -133,7 +164,7 @@ public class ErrorTextView extends TextView {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, HIDE_DELAY_MS);
+                mHideErrorViewDelayerHandler.postDelayed(mHideErrorViewDelayed, getHideDelay());
             }
 
             @Override
