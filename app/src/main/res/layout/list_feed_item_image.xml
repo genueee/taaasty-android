@@ -17,7 +17,6 @@
 
         <ru.taaasty.widgets.ExtendedImageView
             android:id="@+id/image"
-            android:foreground="?android:selectableItemBackground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:cropToPadding="false"
