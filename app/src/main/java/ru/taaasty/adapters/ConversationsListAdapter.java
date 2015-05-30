@@ -79,8 +79,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindText(ViewHolder holder, Conversation conversation) {
         User author = conversation.recipient;
-        SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getName());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(author.getNameWithPrefix());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');
         if (conversation.lastMessage != null && !TextUtils.isEmpty(conversation.lastMessage.contentHtml)) {

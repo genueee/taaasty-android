@@ -248,9 +248,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         CharSequence text;
 
         if (author != null) {
-            SpannableStringBuilder ssb = new SpannableStringBuilder();
-            ssb.append("@");
-            ssb.append(author.getName());
+            SpannableStringBuilder ssb = new SpannableStringBuilder(author.getNameWithPrefix());
             UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
             ssb.append(' ');
             if (!TextUtils.isEmpty(message.contentHtml)) {

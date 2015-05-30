@@ -162,8 +162,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
     private void bindNotificationText(ViewHolderItem holder, Notification notification) {
         User author = notification.sender;
-        SpannableStringBuilder ssb = new SpannableStringBuilder("@");
-        ssb.append(author.getName());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(author.getNameWithPrefix());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), mContext, R.style.TextAppearanceSlugInlineGreen);
         ssb.append(' ');
         ssb.append(notification.actionText);

@@ -405,7 +405,7 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     private void appendUserSlugToReplyComment(String slug) {
-        String message = "@" + slug +  ", ";
+        String message = Constants.USER_PREFIX + slug +  ", ";
         mReplyToCommentText.append(message);
         mReplyToCommentText.requestFocus();
     }
