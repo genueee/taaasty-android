@@ -217,6 +217,15 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(Gravity.RIGHT)) {
+            mDrawerLayout.closeDrawer(Gravity.RIGHT);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     void openSettings() {
         Intent intent = new Intent(this, SettingsActivity.class);
         startActivity(intent);
