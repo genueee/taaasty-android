@@ -151,10 +151,6 @@ public class CurrentUser extends User implements android.os.Parcelable {
         return mIsConfirmed || TextUtils.isEmpty(mConfirmationEmail) ? mEmail : mConfirmationEmail;
     }
 
-    public boolean isPrivacy() {
-        return mIsPrivacy;
-    }
-
     public boolean areNotificationsAvailable() {
         return mAvailableNotifications;
     }

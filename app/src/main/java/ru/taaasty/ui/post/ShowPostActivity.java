@@ -258,7 +258,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         String text = "";
         Integer iconId = null;
         // При ошибке загруи поста заменяем фрагмент на фрагмент с сообщением об ошибке
-        if (e instanceof ResponseErrorException && ((ResponseErrorException)e).error.responseCode == 403) {
+        if (e instanceof ResponseErrorException && ((ResponseErrorException)e).getStatus() == 403) {
             text = getString(R.string.error_tlog_access_denied);
             iconId = R.drawable.post_load_error;
         } else {

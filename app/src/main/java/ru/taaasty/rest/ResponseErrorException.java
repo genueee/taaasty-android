@@ -2,6 +2,7 @@ package ru.taaasty.rest;
 
 import android.support.annotation.Nullable;
 
+import retrofit.RetrofitError;
 import ru.taaasty.rest.model.ResponseError;
 
 /**
@@ -19,5 +20,14 @@ public class ResponseErrorException extends  RuntimeException {
     @Nullable
     public String getUserError() {
         return error == null ? null : error.error;
+    }
+
+    /**
+     * @return Код ошибки. -1 при не сетевой ошибке
+     */
+    public int getStatus() {
+        RetrofitError ree = (RetrofitError)getCause();
+        if (ree.getKind() != RetrofitError.Kind.HTTP) return -1;
+        return ree.getResponse().getStatus();
     }
 }

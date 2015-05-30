@@ -28,7 +28,6 @@ import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
 import java.util.Locale;
-import java.util.NoSuchElementException;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -39,6 +38,7 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
+import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -76,7 +76,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mListView;
-    private View mEmptyView;
+    private TextView mEmptyView;
     private DateIndicatorWidget mDateIndicatorView;
 
     private Adapter mAdapter;
@@ -142,7 +142,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
-        mEmptyView = v.findViewById(R.id.empty_view);
+        mEmptyView = (TextView)v.findViewById(R.id.empty_view);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -296,8 +296,9 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     @Override
     public void onCurrentUserChanged() {
         if (mListener != null) mListener.onTlogInfoLoaded(mWorkFragment.getUser());
-        setupFeedDesign();
+        setupFeedDesign(); // TODO проверить. Возможно, здесь не нужно.
         if (mAdapter != null) mAdapter.setUser(mWorkFragment.getUser().author);
+        if (mWorkFragment.getUser().author.isPrivacy()) setupLoadingState();
     }
 
     @Override
@@ -429,7 +430,16 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 && !mWorkFragment.isLoading()
                 && mWorkFragment.getEntryList().isEmpty();
 
-        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        boolean isPrivacy = mWorkFragment != null && mWorkFragment.isTlogForbidden();
+
+        mEmptyView.setVisibility(listIsEmpty || isPrivacy ? View.VISIBLE : View.GONE);
+        if (isPrivacy) {
+            mEmptyView.setText(R.string.error_tlog_access_denied);
+            mEmptyView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_private_post_indicator_activated, 0, 0);
+        } else {
+            mEmptyView.setText(R.string.user_have_not_written_anything);
+            mEmptyView.setCompoundDrawables(null, null, null, null);
+        }
         updateDateIndicatorVisibility();
     }
 
@@ -708,7 +718,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         private TlogInfo mUser;
 
-        private CustomErrorView mListener;
+        private OnFragmentInteractionListener mListener;
 
         private SortedList<Entry> mEntryList;
 
@@ -717,10 +727,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         public void onAttach(Activity activity) {
             super.onAttach(activity);
             try {
-                mListener = (CustomErrorView) activity;
+                mListener = (OnFragmentInteractionListener) activity;
             } catch (ClassCastException e) {
                 throw new ClassCastException(activity.toString()
-                        + " must implement CustomErrorView");
+                        + " must implement OnFragmentInteractionListener");
             }
         }
 
@@ -801,6 +811,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             return "TlogFeed";
         }
 
+        public boolean isTlogForbidden() {
+            return (mFeedLoader != null)
+                    && ((mFeedLoader.isLastErrorForbidden())
+                        || (mUser != null && mUser.author.isPrivacy()));
+        }
+
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             return mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit);
         }
@@ -877,17 +893,14 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             }
 
             @Override
-            public void onError(Throwable e) {
-                if (DBG) Log.e(TAG, "refresh author error", e);
-                // XXX
-                if (e instanceof NoSuchElementException) {
-                }
-
-                /*
-                if (e instanceof NoSuchElementException) { //TODO Исправить, когда сервер будет отдавать нормальную ошибку
+            public void onError(Throwable exception) {
+                if (DBG) Log.e(TAG, "refresh author error", exception);
+                if (exception instanceof ResponseErrorException
+                    && ((ResponseErrorException)exception).getStatus() == 404) {
                     if (mListener != null) mListener.onNoSuchUser();
+                } else {
+                    if (mListener != null) mListener.notifyError(getText(R.string.error_loading_user), exception);
                 }
-                */
             }
 
             @Override
@@ -896,7 +909,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 mUser = currentUser;
                 if (mUserId == null) {
                     mUserId = mUser.author.getId();
-                    refreshFeed();
+                    if (!mUser.author.isPrivacy())  refreshFeed();
                 }
                 if (getMainFragment() != null) getMainFragment().onCurrentUserChanged();
             }
@@ -904,8 +917,20 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
 
+            private boolean mLastErrorForbidden = false;
+
             public FeedLoader(SortedList<Entry> list) {
                 super(list);
+            }
+
+            public boolean isLastErrorForbidden() {
+                return mLastErrorForbidden;
+            }
+
+            @Override
+            public void refreshFeed(Observable<Feed> observable, int entriesRequested) {
+                mLastErrorForbidden = false;
+                super.refreshFeed(observable, entriesRequested);
             }
 
             @Override
@@ -925,10 +950,22 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             }
 
             @Override
-            protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
-                super.onLoadError(isRefresh, entriesRequested, e);
-                if (mListener != null)
-                    mListener.notifyError(getText(R.string.error_append_feed), e);
+            protected void onLoadNext(boolean isRefresh, int entriesRequested, Feed feed) {
+                mLastErrorForbidden = false;
+                super.onLoadNext(isRefresh, entriesRequested, feed);
+            }
+
+            @Override
+            protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable exception) {
+                super.onLoadError(isRefresh, entriesRequested, exception);
+                if (exception instanceof ResponseErrorException
+                        && ((ResponseErrorException)exception).getStatus() == 403) {
+                    // тлог закрыт.
+                    mLastErrorForbidden = true;
+                } else {
+                    if (mListener != null)
+                        mListener.notifyError(getText(R.string.error_append_feed), exception);
+                }
             }
 
             protected void onFeedIsUnsubscribed(boolean isRefresh) {
