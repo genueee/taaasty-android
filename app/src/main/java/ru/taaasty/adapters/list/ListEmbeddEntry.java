@@ -119,7 +119,11 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
         mImageView.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
         mImageLayout.setVisibility(View.VISIBLE);
-        mImageLayout.setForeground(mEmbeddForegroundDrawable);
+        if (item.getIframely().isContentLooksLikeImage()) {
+            mImageLayout.setForeground(null);
+        } else {
+            mImageLayout.setForeground(mEmbeddForegroundDrawable);
+        }
 
         final String url = imageLink.getHref();
 

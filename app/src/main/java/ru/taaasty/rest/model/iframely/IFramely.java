@@ -60,6 +60,13 @@ public class IFramely implements Parcelable {
         return bestLink;
     }
 
+    /**
+     * @return основной контент - картинка. Поверх обычно не нужно показывать кнопку play
+     */
+    public boolean isContentLooksLikeImage() {
+        return !links.image.isEmpty();
+    }
+
     private boolean isBetterWidth(@Nullable Link link, @Nullable Link currentBestLink, int dstWidth) {
         if (currentBestLink == null) return true;
         if (link == null) return false;

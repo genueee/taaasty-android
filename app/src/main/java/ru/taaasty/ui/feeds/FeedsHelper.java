@@ -19,7 +19,6 @@ import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.rest.model.Entry;
-import ru.taaasty.rest.model.iframely.Link;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -124,16 +123,7 @@ public class FeedsHelper {
             }
 
             if (entry.isEmbedd()) {
-                Link link = entry.getIframely().getHtmlLink();
-                if (link == null) {
-                    List<Link> links = entry.getIframely().links.getMergedList();
-                    if (links.isEmpty()) {
-                        return;
-                    } else {
-                        link = links.get(0);
-                    }
-                }
-                Uri uri = Uri.parse(link.getHref());
+                Uri uri = Uri.parse(entry.getIframely().url);
                 Intent intent = new Intent(Intent.ACTION_VIEW, uri);
                 PackageManager manager = context.getPackageManager();
                 List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
