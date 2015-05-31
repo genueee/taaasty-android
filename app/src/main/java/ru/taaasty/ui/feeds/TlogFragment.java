@@ -171,6 +171,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                             UiUtils.clamp(firstVisibleFract, 0f, 0.99f), visibleItemCount, totalItemCount);
 
                 }
+
             }
         });
 

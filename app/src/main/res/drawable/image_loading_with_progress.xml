@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/progress_background"
+        android:drawable="@drawable/image_loading_drawable" />
+
+    <item
+        android:id="@+id/progress_indicator"
+        android:drawable="@drawable/progress_image_loading" />
+
+</layer-list>
+

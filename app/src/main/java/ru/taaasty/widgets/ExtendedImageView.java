@@ -100,6 +100,10 @@ public class ExtendedImageView extends ImageView {
         setForeground(getContext().getResources().getDrawable(drawableResId));
     }
 
+    public Drawable getForeground() {
+        return foreground;
+    }
+
     /**
      * Supply a Drawable that is to be rendered on top of all of the child
      * views in the frame layout.

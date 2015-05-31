@@ -3,14 +3,13 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.squareup.okhttp.OkHttpClient;
@@ -27,6 +26,7 @@ import java.util.Locale;
 
 import pl.droidsonroids.gif.AnimationListener;
 import pl.droidsonroids.gif.GifDrawable;
+import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
@@ -40,16 +40,20 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.ExtendedImageView;
 
 public class ListImageEntry extends ListEntryBase implements Callback {
-    private final FrameLayout mImageLayout;
-    private final ProgressBar mImageProgressBar;
-    private final ImageView mImageView;
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "ListImageEntry";
+
+    private final ExtendedImageView mImageView;
     private final TextView mMoreImagesWidget;
     private final TextView mTitle;
 
     private Context mContext;
-    private final Drawable mImageLoadingDrawable;
+    private final LayerDrawable mImageLoadingDrawable;
+    private final Drawable mImageLoadingBackgroundDrawable;
+    private final Drawable mImageLoadingProgressIndicatorDrawable;
     private ImageLoadingGetter mImageGetter;
 
     private String mImageViewUrl;
@@ -68,16 +72,16 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     public ListImageEntry(final Context context, View v, boolean showAuthorAvatar) {
         super(context, v, showAuthorAvatar);
 
-        mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
-        mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
-        mImageProgressBar = (ProgressBar)mImageLayout.findViewById(R.id.image_progress);
+        mImageView = (ExtendedImageView) v.findViewById(R.id.image);
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mMoreImagesWidget = (TextView)v.findViewById(R.id.more_photos_indicator);
 
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
 
         mContext = context;
-        mImageLoadingDrawable = context.getResources().getDrawable(R.drawable.image_loading_drawable).mutate();
+        mImageLoadingDrawable = (LayerDrawable)context.getResources().getDrawable(R.drawable.image_loading_with_progress);
+        mImageLoadingBackgroundDrawable = mImageLoadingDrawable.findDrawableByLayerId(R.id.progress_background);
+        mImageLoadingProgressIndicatorDrawable = mImageLoadingDrawable.findDrawableByLayerId(R.id.progress_indicator);
     }
 
     @Override
@@ -158,14 +162,13 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         boolean fitMaxTextureSize = false;
 
         recycleGifDrawable();
-        mImageProgressBar.setVisibility(View.GONE);
 
         if (item.getImages().isEmpty()) {
             if (!TextUtils.isEmpty(item.getImageUrl())) {
                 setupImageByUrl(item, parentWidth);
             } else {
-                mImageLayout.setVisibility(View.GONE);
                 mImageView.setImageDrawable(null);
+                mImageView.setVisibility(View.GONE);
             }
             return;
         }
@@ -185,7 +188,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         }
 
         mImageView.setAdjustViewBounds(true);
-        mImageLayout.setVisibility(View.VISIBLE);
+        mImageView.setVisibility(View.VISIBLE);
 
         // XXX: У некоторых картинок может не быть image.image.path
         ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
@@ -207,15 +210,15 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                     fitMaxTextureSize ? thumborHeight : 0).fitIn();
         }
 
-        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, imgViewHeight);
+        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingBackgroundDrawable, parentWidth, imgViewHeight);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageView.requestLayout();  //Иначе иногда ImageView не принимает новые размеры
-
         mImageViewUrl = b.toUrl();
 
         if (image.isAnimatedGif()) {
             loadGif(mImageViewUrl, mImageView);
         } else {
+                mImageLoadingProgressIndicatorDrawable.setLevel(0);
                 picasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
@@ -229,9 +232,9 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         assert imageUrl != null;
         int height = (int)Math.ceil((float)parentWidth / Constants.DEFAULT_IMAGE_ASPECT_RATIO);
 
-        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingDrawable, parentWidth, height);
+        ImageUtils.changeDrawableIntristicSizeAndBounds(mImageLoadingBackgroundDrawable, parentWidth, height);
         mImageView.setAdjustViewBounds(true);
-        mImageLayout.setVisibility(View.VISIBLE);
+        mImageView.setVisibility(View.VISIBLE);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageView.requestLayout();
         mImageViewUrl = imageUrl;
@@ -240,6 +243,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
             loadGif(mImageViewUrl, mImageView);
             picasso.cancelRequest(mImageView);
         } else {
+            mImageLoadingProgressIndicatorDrawable.setLevel(0);
             picasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
@@ -310,6 +314,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                 .url(url)
                 .build();
 
+        mImageLoadingProgressIndicatorDrawable.setLevel(0);
         mImageView.setImageDrawable(mImageLoadingDrawable);
         mOkHttpClient
                 .newCall(request)
@@ -339,10 +344,31 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                                 public void run() {
                                     imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                                     imageView.setImageDrawable(drawable);
+                                    mImageLoadingProgressIndicatorDrawable.setLevel(0);
                                 }
                             });
                         } catch (Throwable e) {
                             reportError(e);
+                        }
+                    }
+
+                    class SetProgressRunnable  implements Runnable {
+                        private final Drawable mDrawable;
+                        private final int mLevel;
+
+                        public SetProgressRunnable(Drawable drawable, long progress, long max) {
+                            mDrawable = drawable;
+                            if (max == 0) {
+                                mLevel = 0;
+                            } else {
+                                if (progress > max) progress = max;
+                                mLevel = (int) ((float) progress * 10000f / (float) max);
+                            }
+                        }
+
+                        @Override
+                        public void run() {
+                            mDrawable.setLevel(mLevel);
                         }
                     }
 
@@ -357,14 +383,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                             throw new IOException("Cannot buffer entire body for content length: " + contentLength);
                         }
 
-                        mImageProgressBar.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mImageProgressBar.setVisibility(View.VISIBLE);
-                                mImageProgressBar.setMax((int) contentLength);
-                                mImageProgressBar.setProgress(0);
-                            }
-                        });
+                        mImageView.post(new SetProgressRunnable(mImageLoadingProgressIndicatorDrawable, 0, contentLength));
                         InputStream source = response.body().byteStream();
 
                         bytes = new byte[(int)contentLength];
@@ -379,24 +398,13 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                                 if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
                                     lastTs = newTs;
                                     lastPos = pos;
-                                    final int finalPos = pos;
-                                    mImageProgressBar.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mImageProgressBar.setProgress(finalPos);
-                                        }
-                                    });
+                                    mImageView.post(new SetProgressRunnable(mImageLoadingProgressIndicatorDrawable, pos, contentLength));
                                 }
                                 if (pos == bytes.length) break;
                             }
                         } finally {
                             Util.closeQuietly(source);
-                            mImageProgressBar.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    mImageProgressBar.setVisibility(View.GONE);
-                                }
-                            });
+                            mImageView.post(new SetProgressRunnable(mImageLoadingProgressIndicatorDrawable, 0, 0));
                         }
 
                         if (contentLength != -1 && contentLength != bytes.length) {

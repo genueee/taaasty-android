@@ -22,7 +22,7 @@ public class GcmUtils {
 
     private static final String PREFS_GCM_DETAILS = "gcmdetails";
 
-    private static GcmUtils sInstance;
+    private static volatile GcmUtils sInstance;
 
     private final Context mContext;
 
@@ -34,9 +34,11 @@ public class GcmUtils {
     @Nullable
     private String mRegId;
 
-    public static synchronized GcmUtils getInstance(Context context) {
+    public static GcmUtils getInstance(Context context) {
         if (sInstance == null) {
-            sInstance = new GcmUtils(context);
+            synchronized (GcmUtils.class) {
+                if (sInstance == null) sInstance = new GcmUtils(context);
+            }
         }
         return sInstance;
     }

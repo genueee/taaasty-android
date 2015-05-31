@@ -6,7 +6,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,13 +24,13 @@ import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.ExtendedImageView;
 
 /**
  * Created by alexey on 28.09.14.
  */
 public class ListEmbeddEntry extends ListEntryBase implements Callback {
-    private final FrameLayout mImageLayout;
-    private final ImageView mImageView;
+    private final ExtendedImageView mImageView;
     private final Drawable mImagePlaceholderDrawable;
     private final Drawable mEmbeddForegroundDrawable;
     private final TextView mTitle;
@@ -45,8 +44,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
     public ListEmbeddEntry(Context context, View v, boolean showUserAvatar) {
         super(context, v, showUserAvatar);
-        mImageLayout = (FrameLayout)v.findViewById(R.id.image_layout);
-        mImageView = (ImageView) mImageLayout.findViewById(R.id.image);
+        mImageView = (ExtendedImageView) v.findViewById(R.id.image);
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
 
         mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
@@ -55,6 +53,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         Resources resources = context.getResources();
         mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
+        mImageView.setForeground(null);
     }
 
     @Override
@@ -98,8 +97,8 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
             imageLink = item.getIframely().getImageLink(parentWidth);
         }
         if (imageLink == null) {
-            mImageLayout.setVisibility(View.VISIBLE);
-            mImageLayout.setForeground(mEmbeddForegroundDrawable);
+            mImageView.setForeground(mEmbeddForegroundDrawable);
+            mImageView.setVisibility(View.VISIBLE);
             return;
         }
 
@@ -118,11 +117,11 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         }
 
         mImageView.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
-        mImageLayout.setVisibility(View.VISIBLE);
+        mImageView.setVisibility(View.VISIBLE);
         if (item.getIframely().isContentLooksLikeImage()) {
-            mImageLayout.setForeground(null);
+            mImageView.setForeground(null);
         } else {
-            mImageLayout.setForeground(mEmbeddForegroundDrawable);
+            mImageView.setForeground(mEmbeddForegroundDrawable);
         }
 
         final String url = imageLink.getHref();
