@@ -608,6 +608,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                     throw new IllegalStateException();
             }
         }
+
+        @Override
+        protected boolean isUserRefreshEnabled() {
+            return true;
+        }
     }
 
 

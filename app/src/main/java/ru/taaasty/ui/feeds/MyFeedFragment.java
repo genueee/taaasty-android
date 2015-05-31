@@ -480,6 +480,11 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             return mFeedsService.getMyFeed(sinceEntryId, limit);
         }
+
+        @Override
+        protected boolean isUserRefreshEnabled() {
+            return true;
+        }
     }
 
 

@@ -170,8 +170,11 @@ public class TlogDesign implements Parcelable {
         return !isLightTheme();
     }
 
-    public void setIsLightTheme(boolean isLightTheme) {
-        mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
+    public static TlogDesign createLightTheme(TlogDesign src) {
+        if (src.isLightTheme()) return src;
+        TlogDesign res = new TlogDesign(src);
+        res.mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
+        return res;
     }
 
     public void setFontTypeface(boolean serif) {

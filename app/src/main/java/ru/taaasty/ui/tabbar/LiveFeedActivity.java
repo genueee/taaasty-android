@@ -21,6 +21,7 @@ import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import de.greenrobot.event.EventBus;
 import io.intercom.android.sdk.Intercom;
@@ -28,9 +29,11 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
+import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
@@ -39,6 +42,7 @@ import ru.taaasty.rest.service.ApiApp;
 import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
+import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -56,7 +60,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     CirclePageIndicator mCircleIndicator;
     ParallaxedView mCircleIndicatorParallaxedView;
 
-    private ApiApp mApiStatsService;
+    private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
 
     private Subscription mStatsSubscription = Subscriptions.unsubscribed();
 
@@ -72,8 +76,6 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         ((TaaastyApplication)getApplicationContext()).startIntercomSession();
 
         Intercom.client().openGCMMessage(getIntent().getData());
-
-        mApiStatsService = RestClient.getAPiApp();
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
 
@@ -119,6 +121,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     protected void onResume() {
         super.onResume();
         startRefreshStats();
+        startRefreshCurrentUser();
     }
 
     @Override
@@ -158,6 +161,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     protected void onDestroy() {
         super.onDestroy();
         mStatsSubscription.unsubscribe();
+        mCurrentUserSubscription.unsubscribe();
     }
 
     @Override
@@ -181,7 +185,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     public void startRefreshStats() {
         if (mStatsSubscription.isUnsubscribed()) {
             if (DBG) Log.v(TAG, "startRefreshStats");
-            mStatsSubscription = AppObservable.bindActivity(this, mApiStatsService.getStats()).observeOn(AndroidSchedulers.mainThread())
+            ApiApp api = RestClient.getAPiApp();
+            mStatsSubscription = AppObservable.bindActivity(this, api.getStats())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(mStatsObserver);
         }
     }
@@ -190,6 +196,19 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     @Override
     public Stats getStats() {
         return mStats;
+    }
+
+    @Override
+    public void startRefreshCurrentUser() {
+        // Выводим пока сюда, чтобы если уже загружаем - не загружать снова
+        if (!mCurrentUserSubscription.isUnsubscribed()) return;
+        if (DBG) Log.v(TAG, "startRefreshCurrentUser()");
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindActivity(this,
+                UserManager.getInstance().getCurrentUser());
+
+        mCurrentUserSubscription = observableCurrentUser
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mCurrentUserObserver);
     }
 
     /**
@@ -322,6 +341,25 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         @Override
         public void onNext(Stats st) {
             mStats = st;
+        }
+    };
+
+    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
+
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            if (DBG) Log.e(TAG, "refresh author error", e);
+            // TODO делать что-нибудь если юзера нет
+            if (e instanceof NoSuchElementException) {
+            }
+        }
+
+        @Override
+        public void onNext(CurrentUser currentUser) {
         }
     };
 

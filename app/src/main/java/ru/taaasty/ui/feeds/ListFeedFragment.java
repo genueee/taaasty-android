@@ -19,14 +19,17 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.TaaastyApplication;
+import ru.taaasty.UserManager;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.OnCurrentUserChanged;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.Stats;
@@ -291,6 +294,10 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         }
     }
 
+    public void onEventMainThread(OnCurrentUserChanged event) {
+        setupFeedDesign();
+    }
+
     boolean isUserAvatarVisibleOnPost() {
         return mFeedType != FEED_ANONYMOUS;
     }
@@ -303,10 +310,19 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mWorkFragment.refreshData();
     }
 
+    @Nullable
+    private TlogDesign getDesign() {
+        CurrentUser user = UserManager.getInstance().getCachedCurrentUser();
+        if (user == null) return null;
+        return user.getDesign();
+    }
+
     void setupFeedDesign() {
-        if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
-        if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
-        mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
+        TlogDesign design = getDesign();
+        if (mWorkFragment == null || design == null) return;
+        if (DBG) Log.e(TAG, "Setup feed design " + design);
+        design = TlogDesign.createLightTheme(design); // Подписки всегда светлые
+        mAdapter.setFeedDesign(design);
     }
 
     void updateDateIndicator(boolean animScrollUp) {
@@ -323,12 +339,10 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     }
 
     @Override
-    public void onDesignChanged() {
-        setupFeedDesign();
-    }
+    public void onDesignChanged() { throw new IllegalStateException(); }
 
     @Override
-    public void onCurrentUserChanged() {}
+    public void onCurrentUserChanged() { throw new IllegalStateException(); }
 
     @Override
     public RecyclerView.Adapter getAdapter() {
@@ -592,7 +606,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
-                    .setDesign(entry.getDesign() != null ? entry.getDesign() : mWorkFragment.getTlogDesign())
+                    .setDesign(entry.getDesign() != null ? entry.getDesign() : getDesign())
                     .startActivity();
         }
 
@@ -644,10 +658,13 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         }
 
         @Override
+        protected boolean isUserRefreshEnabled() {
+            return false;
+        }
+
+        @Override
         public TlogDesign getTlogDesign() {
-            TlogDesign design = super.getTlogDesign();
-            if (design != null) design.setIsLightTheme(true); // Подписки всегда светлые
-            return design;
+            throw new IllegalStateException();
         }
     }
 
@@ -673,6 +690,8 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         void onSharePostMenuClicked(Entry entry);
 
         void startRefreshStats();
+
+        void startRefreshCurrentUser();
 
         public @Nullable
         Stats getStats();

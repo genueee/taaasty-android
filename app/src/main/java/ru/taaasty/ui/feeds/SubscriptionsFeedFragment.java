@@ -401,9 +401,14 @@ public class SubscriptionsFeedFragment extends Fragment implements
         }
 
         @Override
+        protected boolean isUserRefreshEnabled() {
+            return true;
+        }
+
+        @Override
         public TlogDesign getTlogDesign() {
             TlogDesign design = super.getTlogDesign();
-            if (design != null) design.setIsLightTheme(true); // Подписки всегда светлые
+            if (design != null) design = TlogDesign.createLightTheme(design); // Подписки всегда светлые
             return design;
         }
     }

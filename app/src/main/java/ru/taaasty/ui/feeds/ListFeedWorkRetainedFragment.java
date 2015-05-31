@@ -57,6 +57,8 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
     protected abstract Observable<Feed> createObservable(Long sinceEntryId, Integer limit);
 
+    protected abstract boolean isUserRefreshEnabled();
+
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -141,7 +143,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
     public void refreshData() {
         if (DBG) Log.v(TAG, "refreshData()");
-        refreshUser();
+        if (isUserRefreshEnabled()) refreshUser();
         refreshFeed();
     }
 
@@ -151,10 +153,12 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
     @Nullable
     public TlogDesign getTlogDesign() {
+        if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         return mTlogDesign;
     }
 
     public CurrentUser getCurrentUser() {
+        if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         return mCurrentUser;
     }
 
@@ -175,6 +179,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
     }
 
     public void refreshUser() {
+        if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         mCurrentUserSubscription.unsubscribe();
         Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
                 UserManager.getInstance().getCurrentUser());

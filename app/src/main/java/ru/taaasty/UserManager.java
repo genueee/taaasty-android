@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.Nullable;
 
+import de.greenrobot.event.EventBus;
+import ru.taaasty.events.OnCurrentUserChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
@@ -76,7 +78,9 @@ public class UserManager {
                 .doOnNext(new Action1<CurrentUser>() {
                     @Override
                     public void call(CurrentUser currentUser) {
+                        boolean changed = currentUser.equals(mCurrentUser);
                         mCurrentUser = currentUser;
+                        if (changed) EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
                     }
                 });
         // return Observable.from(mCurrentUser);
