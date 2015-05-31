@@ -298,7 +298,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         if (mListener != null) mListener.onTlogInfoLoaded(mWorkFragment.getUser());
         setupFeedDesign(); // TODO проверить. Возможно, здесь не нужно.
         if (mAdapter != null) mAdapter.setUser(mWorkFragment.getUser().author);
-        if (mWorkFragment.getUser().author.isPrivacy()) setupLoadingState();
+        setupLoadingState();
     }
 
     @Override
@@ -430,10 +430,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 && !mWorkFragment.isLoading()
                 && mWorkFragment.getEntryList().isEmpty();
 
-        boolean isPrivacy = mWorkFragment != null && mWorkFragment.isTlogForbidden();
+        boolean isTlogForbidden = listIsEmpty && (mWorkFragment != null) && mWorkFragment.isTlogForbidden();
 
-        mEmptyView.setVisibility(listIsEmpty || isPrivacy ? View.VISIBLE : View.GONE);
-        if (isPrivacy) {
+        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        if (isTlogForbidden) {
             mEmptyView.setText(R.string.error_tlog_access_denied);
             mEmptyView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_private_post_indicator_activated, 0, 0);
         } else {
@@ -813,8 +813,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         public boolean isTlogForbidden() {
             return (mFeedLoader != null)
-                    && ((mFeedLoader.isLastErrorForbidden())
-                        || (mUser != null && mUser.author.isPrivacy()));
+                    && (mFeedLoader.isLastErrorForbidden());
         }
 
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
@@ -909,7 +908,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 mUser = currentUser;
                 if (mUserId == null) {
                     mUserId = mUser.author.getId();
-                    if (!mUser.author.isPrivacy())  refreshFeed();
+                    refreshFeed();
                 }
                 if (getMainFragment() != null) getMainFragment().onCurrentUserChanged();
             }
