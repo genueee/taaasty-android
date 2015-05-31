@@ -42,6 +42,7 @@ import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ListScrollController;
 import rx.Observable;
 import rx.Observer;
@@ -133,8 +134,7 @@ public class ConversationFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
-        mListView.getItemAnimator().setAddDuration(0);
-        mListView.getItemAnimator().setRemoveDuration(0);
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -398,16 +398,36 @@ public class ConversationFragment extends Fragment {
         }
 
         @Override
-        public void initClickListeners(RecyclerView.ViewHolder holder) {
-            if (holder instanceof LoadMoreButtonHeaderHolder) {
-                ((LoadMoreButtonHeaderHolder) holder).loadButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (mMessagesLoader != null) mMessagesLoader.activateCacheInBackground();
+        public void initClickListeners(final RecyclerView.ViewHolder pHolder) {
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+
+                RecyclerView.ViewHolder holder = pHolder;
+
+                @Override
+                public void onClick(View v) {
+                    switch (v.getId()) {
+                        case R.id.messages_load_more:
+                            if (mMessagesLoader != null) mMessagesLoader.activateCacheInBackground();
+                            break;
+                        case R.id.avatar:
+                            int position = pHolder.getAdapterPosition();
+                            Conversation.Message message = getMessage(position);
+                            if (message != null) {
+                                TlogActivity.startTlogActivity(getActivity(), message.userId, v,
+                                        R.dimen.avatar_small_diameter);
+                            }
+                            break;
                     }
-                });
+                }
+            };
+
+            if (pHolder instanceof LoadMoreButtonHeaderHolder) {
+                ((LoadMoreButtonHeaderHolder) pHolder).loadButton.setOnClickListener(onClickListener);
+            } else if (pHolder instanceof  ViewHolderMessage) {
+                ((ViewHolderMessage) pHolder).avatar.setOnClickListener(onClickListener);
             }
         }
+
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {

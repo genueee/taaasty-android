@@ -6,8 +6,6 @@
     android:paddingTop="4dp"
     android:paddingBottom="4dp"
     android:layout_marginRight="32dp"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
     xmlns:tools="http://schemas.android.com/tools">
 
     <ru.taaasty.widgets.HintedExtendedImageView
@@ -16,12 +14,9 @@
         android:layout_height="@dimen/avatar_small_diameter_42dp"
         android:contentDescription="@string/open_user_tlog"
         android:clickable="true"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
         android:layout_marginLeft="8dp"
         android:foreground="@drawable/clickable_item_circle_background"
         android:src="@drawable/avatar_dummy" />
-
 
     <LinearLayout
         android:layout_width="0dp"
@@ -42,6 +37,7 @@
             android:background="@drawable/msg_in"
             android:textColor="#1b1b1b"
             tools:text="text блаблабла"
+            android:textIsSelectable="true"
             android:gravity="center_vertical"
             android:layout_marginLeft="-4dp"
             android:minWidth="150dp"

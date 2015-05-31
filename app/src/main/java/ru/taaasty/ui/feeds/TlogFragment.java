@@ -350,6 +350,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     void updateDateIndicatorVisibility() {
+        if (mListener == null) return;
         updateDateIndicatorVisibility(mListener.isOverlayVisible());
     }
 

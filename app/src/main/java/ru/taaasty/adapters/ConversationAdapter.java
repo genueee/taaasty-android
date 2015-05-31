@@ -26,6 +26,7 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
@@ -115,7 +116,14 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public long getItemId(int position) {
-        return isPositionInFeed(position) ? mMessages.get(getFeedLocation(position)).id : RecyclerView.NO_ID;
+        Conversation.Message message = getMessage(position);
+        return message != null ? message.id : RecyclerView.NO_ID;
+    }
+
+    @Nullable
+    public Conversation.Message getMessage(int adapterPosition) {
+        if (!isPositionInFeed(adapterPosition)) return null;
+        return mMessages.get(getFeedLocation(adapterPosition));
     }
 
     public void addMessages(List<Conversation.Message> messages) {
@@ -356,6 +364,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             this.isMyMessage = isMyMessage;
             avatar = (ImageView)v.findViewById(R.id.avatar);
             text = (TextView)v.findViewById(R.id.message);
+            text.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
             relativeDate = (RelativeDateTextSwitcher)v.findViewById(R.id.relative_date);
         }
     }

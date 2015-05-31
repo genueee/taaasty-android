@@ -29,7 +29,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
-import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.feeds.TlogActivity;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -137,12 +137,10 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
                 holder.avatar.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        int position = holder.getPosition();
+                        int position = holder.getAdapterPosition();
                         Conversation conversation = getConversation(position);
-                        new UserInfoActivity.Builder(getActivity())
-                                .set(conversation.recipient, v, conversation.recipient.getDesign())
-                                .setPreloadAvatarThumbnail(R.dimen.avatar_small_diameter)
-                                .startActivity();
+                        TlogActivity.startTlogActivity(getActivity(),
+                                conversation.recipientId, v, R.dimen.avatar_small_diameter);
                     }
                 });
             }
