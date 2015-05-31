@@ -133,6 +133,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
                 .load(url)
                 .placeholder(mImagePlaceholderDrawable)
                 .error(R.drawable.image_load_error)
+                .noFade()
                 .into(mImageView, this);
     }
 

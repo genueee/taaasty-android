@@ -218,11 +218,12 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         if (image.isAnimatedGif()) {
             loadGif(mImageViewUrl, mImageView);
         } else {
-                mImageLoadingProgressIndicatorDrawable.setLevel(0);
-                picasso
+            mImageLoadingProgressIndicatorDrawable.setLevel(0);
+            picasso
                     .load(mImageViewUrl)
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)
+                    .noFade()
                     .into(mImageView, this);
         }
     }
@@ -249,6 +250,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                     .placeholder(mImageLoadingDrawable)
                     .error(R.drawable.image_load_error)
                     .resize(parentWidth, 0)
+                    .noFade()
                     .into(mImageView, this);
         }
     }
