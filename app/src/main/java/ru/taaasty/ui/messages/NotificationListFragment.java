@@ -113,12 +113,14 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mListener == null) return;
                 boolean atTop = !mListView.canScrollVertically(-1);
                 mListener.onListScrolled(dy, atTop);
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (mListener == null) return;
                 mListener.onListScrollStateChanged(newState);
             }
         });

@@ -157,10 +157,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mListener == null) return;
                 View child = recyclerView.getChildAt(0);
                 float firstVisibleFract;
                 updateDateIndicator(dy > 0);
-                if (mListener == null) return;
                 if (child == null) {
                     mListener.onListScroll(dy, 0, 0, 0, 0);
                 } else {
