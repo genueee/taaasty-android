@@ -66,18 +66,11 @@ public class LoginActivity extends ActivityBase implements
     public static final int SECONDARY_BACKGROUND_IN_SAMPLE_SIZE = 1;
     public static final int SECONDARY_BACKGROUND_BLUR_KERNEL = 24;
     private static final String DIALOG_LOGIN_VKONTAKTE_FACEBOOK = "DIALOG_LOGIN_VKONTAKTE_FACEBOOK";
-    private static final String PREFS_KEY_FIRST_RUN = "firstrun";
 
     private final Background mBackground = new Background();
 
-    private static final String SHARED_PREFS_NAME = "LoginActivity";
-
     @DrawableRes
     private int mCurrentBackgroundId;
-
-    public static void logout(Context context) {
-        context.getSharedPreferences(SHARED_PREFS_NAME, 0).edit().clear().apply();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,15 +88,6 @@ public class LoginActivity extends ActivityBase implements
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction()
                     .add(R.id.container, SelectSignMethodFragment.newInstance())
-                    .commit();
-        }
-
-        SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
-        if (prefs.getBoolean(PREFS_KEY_FIRST_RUN, true)) {
-            prefs.edit().putBoolean(PREFS_KEY_FIRST_RUN, false).apply();
-            getFragmentManager().beginTransaction()
-                    .replace(R.id.container, FirstRunFragment.newInstance())
-                    .addToBackStack(FRAGMENT_BACK_STACK_TAG1)
                     .commit();
         }
 

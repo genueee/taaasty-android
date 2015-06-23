@@ -142,7 +142,6 @@ public final class NetworkUtils {
         StatusBarNotifications.getInstance().onLogout();
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
         UserManager.getInstance().logout();
-        LoginActivity.logout(context);
         LoginManager.getInstance().logOut();
         try {
             mOkHttpClient.getCache().delete();
