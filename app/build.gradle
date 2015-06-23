@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        maven { url 'https://www.testfairy.com/maven' }
-    }
-
-    dependencies {
-        classpath 'com.testfairy.plugins.gradle:testfairy:1.+'
-    }
-}
-
 apply plugin: 'com.android.application'
 apply plugin: 'testfairy'
 
