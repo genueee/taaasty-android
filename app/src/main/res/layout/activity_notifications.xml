@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/container"
-    tools:context=".MainActivity"
+    tools:context="ru.taaasty.ui.tabbar.NotificationsActivity"
     tools:ignore="MergeRootFrame">
 
     <fragment
@@ -11,65 +10,15 @@
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
-        android:layout_above="@id/tabbar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
+        android:layout_alignParentBottom="true"
+        tools:layout="@layout/tabbar" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/notifications_conversations_container"
-        android:paddingTop="8dp"
-        android:paddingBottom="1dp"
-        android:background="#e0ffffff">
-
-        <LinearLayout
-            android:id="@+id/notifications_conversations_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:background="@drawable/following_followers_indicator_stroke"
-            android:baselineAligned="true"
-            android:minHeight="32dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/notifications_title"
-                style="@style/FollowingFollowersIndicatorItem"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:background="@drawable/following_followers_indicator_item_left"
-                android:gravity="center_vertical|center_horizontal"
-                android:text="@string/title_notifications"
-                android:textAllCaps="true"
-                tools:textColor="#24b166" />
-
-            <TextView
-                android:id="@+id/conversations_title"
-                style="@style/FollowingFollowersIndicatorItem"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:background="@drawable/following_followers_indicator_item_right"
-                android:gravity="center_vertical|center_horizontal"
-                android:text="@string/title_conversations"
-                android:textAllCaps="true"
-                tools:textColor="#24b166" />
-
-        </LinearLayout>
-    </FrameLayout>
-
-    <FrameLayout
-        android:id="@+id/initiate_conversation_container"
+        android:layout_below="@id/title"
         android:layout_above="@id/tabbar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:id="@+id/container"/>
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
@@ -77,6 +26,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:text="Мазафака какая-то с сайтом"
-        tools:visibility="visible" />
+        tools:visibility="invisible" />
 
 </RelativeLayout>

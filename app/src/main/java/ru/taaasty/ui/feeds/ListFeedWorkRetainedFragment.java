@@ -57,6 +57,10 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
     protected abstract Observable<Feed> createObservable(Long sinceEntryId, Integer limit);
 
+    /**
+     * Обновлять ли текущего юзера при загрузке.
+     * @return
+     */
     protected abstract boolean isUserRefreshEnabled();
 
     @Override

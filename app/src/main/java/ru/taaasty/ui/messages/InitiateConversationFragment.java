@@ -122,6 +122,16 @@ public class InitiateConversationFragment extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        if (imm != null && mNameView != null) {
+            imm.hideSoftInputFromWindow(mNameView.getWindowToken(), 0);
+        }
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;

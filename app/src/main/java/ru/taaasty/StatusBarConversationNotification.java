@@ -26,7 +26,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.messages.ConversationActivity;
-import ru.taaasty.ui.tabbar.NotificationsActivity;
+import ru.taaasty.ui.tabbar.ConversationsActivity;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -296,9 +296,8 @@ public class StatusBarConversationNotification {
     }
 
     private PendingIntent createContentPendingIntent(Conversation.Message message, boolean showConversation) {
-        // NotificationsActivity intent
-        Intent firstIntent = new Intent(mContext, NotificationsActivity.class);
-        firstIntent.putExtra(NotificationsActivity.ARG_KEY_SHOW_SECTION, NotificationsActivity.SECTION_CONVERSATIONS);
+        // ConversationsActivity intent
+        Intent firstIntent = new Intent(mContext, ConversationsActivity.class);
 
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
         stackBuilder.addNextIntent(firstIntent);

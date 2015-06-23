@@ -37,8 +37,8 @@ public class TabbarFragment extends Fragment {
     private static final String BUNDLE_ARG_CONVERSATIONS_COUNT = "ru.taaasty.ui.tabbar.BUNDLE_ARG_CONVERSATIONS_COUNT";
 
     private static final int[] sItemIds = new int[] {
-            R.id.btn_tabbar_subscriptions,
             R.id.btn_tabbar_live,
+            R.id.btn_tabbar_conversations,
             R.id.btn_tabbar_post,
             R.id.btn_tabbar_notifications,
             R.id.btn_tabbar_my_feed

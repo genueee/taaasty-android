@@ -79,14 +79,14 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
             case R.id.btn_tabbar_my_feed:
                 switchToMyFeed();
                 break;
-            case R.id.btn_tabbar_subscriptions:
-                switchToSubscriptions();
-                break;
             case R.id.btn_tabbar_post:
                 openCreatePost();
                 break;
             case R.id.btn_tabbar_notifications:
                 switchToNotifications();
+                break;
+            case R.id.btn_tabbar_conversations:
+                switchToConversations();
                 break;
             default:
                 throw new IllegalStateException();
@@ -115,44 +115,22 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         }
     }
 
-    void switchToLiveFeed() {
-        Intent i = new Intent(this, LiveFeedActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
+    protected void openHidden() {
+        AdditionalFeedActivity.startPrivateFeedActivity(this, null);
     }
 
-    void switchToLoginForm() {
-        Intent i = new Intent(this, LoginActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
+    protected void switchToLoginForm() { switchToTab(LoginActivity.class); }
 
-    void switchToSubscriptions() {
-        Intent i = new Intent(this, SubscriptionsActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
+    protected void switchToLiveFeed() { switchToTab(LiveFeedActivity.class); }
 
-    void switchToMyFeed() {
-        Intent i = new Intent(this, MyFeedActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-        overridePendingTransition(0, 0);
-    }
+    protected void switchToConversations() { switchToTab(ConversationsActivity.class); }
 
-    void openHidden() {
-        AdditionalFeedActivity.startHiddenRecordsActivity(this, null);
-    }
+    protected void switchToNotifications() { switchToTab(NotificationsActivity.class);}
 
-    void switchToNotifications() {
-        Intent i = new Intent(this, NotificationsActivity.class);
+    protected void switchToMyFeed() { switchToTab(MyFeedActivity.class); }
+
+    private void switchToTab( Class cls) {
+        Intent i = new Intent(this, cls);
         i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         startActivity(i);
         finish();
@@ -160,9 +138,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     }
 
     void openCreatePost() {
-        Intent i = new Intent(this,     CreatePostActivity.class);
+        Intent i = new Intent(this, CreatePostActivity.class);
         startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
     }
-
-
 }

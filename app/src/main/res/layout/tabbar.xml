@@ -7,16 +7,43 @@
     tools:context=".widgets.Tabbar">
 
     <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/btn_tabbar_subscriptions"
-        style="@style/TabbarButton.First"
-        android:contentDescription="@string/btn_tabbar_action_subscriptions"
-        android:src="@drawable/btn_tabbar_subscriptions" />
-
-    <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_live"
-        style="@style/TabbarButton"
+        style="@style/TabbarButton.First"
         android:contentDescription="@string/btn_tabbar_live_description"
         android:src="@drawable/btn_tabbar_live" />
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:clickable="false"
+        android:layout_weight="1">
+        <ImageView
+            android:id="@+id/btn_tabbar_conversations"
+            style="@style/TabbarButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/btn_tabbar_action_notifications"
+            android:src="@drawable/btn_tabbar_conversations"
+            android:clickable="false" />
+
+        <ru.taaasty.widgets.SquareTextView
+            android:id="@+id/unread_conversations_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/unread_conversations_count"
+            android:gravity="center"
+            android:padding="4dp"
+            android:textSize="10sp"
+            android:singleLine="true"
+            android:textColor="@android:color/black"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            tools:text="100"
+            android:layout_marginLeft="17dp"
+            android:layout_marginBottom="10dp"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/btn_tabbar_post"
@@ -56,25 +83,6 @@
             android:layout_marginLeft="17dp"
             android:layout_marginBottom="10dp"
             tools:ignore="ContentDescription" />
-
-        <ru.taaasty.widgets.SquareTextView
-            android:id="@+id/unread_conversations_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/unread_conversations_count"
-            android:gravity="center"
-            android:padding="4dp"
-            android:textSize="10sp"
-            android:singleLine="true"
-            android:textColor="@android:color/black"
-            android:visibility="invisible"
-            tools:text="100"
-            tools:visibility="visible"
-            android:layout_marginRight="17dp"
-            android:layout_marginBottom="10dp"
-            tools:ignore="ContentDescription" />
-
 
     </FrameLayout>
 

@@ -42,11 +42,11 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
 
-    public static void startFavoritesActivity(Context source, View animateFrom) {
+    public static void startFavoriteFeedActivity(Context source, View animateFrom) {
         startAdditionalFeedActivity(source, SECTION_FAVORITES, animateFrom);
     }
 
-    public static void startHiddenRecordsActivity(Context source, View animateFrom) {
+    public static void startPrivateFeedActivity(Context source, View animateFrom) {
         startAdditionalFeedActivity(source, SECTION_HIDDEN, animateFrom);
     }
 

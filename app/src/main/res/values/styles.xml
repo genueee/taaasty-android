@@ -28,6 +28,10 @@
         <item name="android:selectableItemBackground">@drawable/list_selector_holo_light</item>
     </style>
 
+    <style name="AppThemeOverlayingGreenActionBar" parent="AppThemeGreenActionBar">
+        <item name="android:windowActionBarOverlay">true</item>
+    </style>
+
     <style name="AppThemeOverlayingActionBar" parent="AppThemeLightActionBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowActionBarOverlay">true</item>
@@ -433,6 +437,24 @@
         <item name="android:paddingBottom">6dp</item>
         <item name="android:textScaleX">0.95</item>
     </style>
+
+    <style name="GreenTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/green_background_normal</item>
+        <item name="android:gravity">center_vertical|center_horizontal</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:minHeight">32dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:paddingLeft">4dp</item>
+        <item name="android:paddingRight">4dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:textScaleX">0.95</item>
+    </style>
+
 
     <style name="GridFeedText">
         <item name="android:layout_width">match_parent</item>

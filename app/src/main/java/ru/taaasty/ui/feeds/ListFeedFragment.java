@@ -59,8 +59,9 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     static final int FEED_BEST = 1;
     static final int FEED_NEWS = 2;
     static final int FEED_ANONYMOUS = 3;
+    static final int FEED_MY_SUBSCRIPTIONS = 4;
 
-    private int mFeedType = FEED_LIVE;
+    private int mFeedType;
 
     private OnFragmentInteractionListener mListener;
 
@@ -80,45 +81,31 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     private Handler mHandler;
 
     public static ListFeedFragment createLiveFeedInstance() {
-        ListFeedFragment fragment = new ListFeedFragment();
-        Bundle args = new Bundle(1);
-        args.putInt(ARG_FEED_TYPE, FEED_LIVE);
-        fragment.setArguments(args);
-        return fragment;
+        return newInstance(FEED_LIVE);
     }
 
     public static ListFeedFragment createBestFeedInstance() {
-        ListFeedFragment fragment = new ListFeedFragment();
-        Bundle args = new Bundle(1);
-        args.putInt(ARG_FEED_TYPE, FEED_BEST);
-        fragment.setArguments(args);
-        return fragment;
+        return newInstance(FEED_BEST);
     }
 
     public static ListFeedFragment createAnonymousFeedInstance() {
-        ListFeedFragment fragment = new ListFeedFragment();
-        Bundle args = new Bundle(1);
-        args.putInt(ARG_FEED_TYPE, FEED_ANONYMOUS);
-        fragment.setArguments(args);
-        return fragment;
+        return newInstance(FEED_ANONYMOUS);
     }
 
     public static ListFeedFragment createNewsFeedInstance() {
-        ListFeedFragment fragment = new ListFeedFragment();
-        Bundle args = new Bundle(1);
-        args.putInt(ARG_FEED_TYPE, FEED_NEWS);
-        fragment.setArguments(args);
-        return fragment;
+        return newInstance(FEED_NEWS);
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment LiveFeedFragment.
-     */
-    public static SubscriptionsFeedFragment newInstance() {
-        return new SubscriptionsFeedFragment();
+    public static ListFeedFragment createMySubscriptionsFeedInstance() {
+        return newInstance(FEED_MY_SUBSCRIPTIONS);
+    }
+
+    private static ListFeedFragment newInstance(int type) {
+        ListFeedFragment fragment = new ListFeedFragment();
+        Bundle args = new Bundle(1);
+        args.putInt(ARG_FEED_TYPE, type);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     public ListFeedFragment() {
@@ -128,7 +115,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mFeedType = getArguments().getInt(ARG_FEED_TYPE);
+        mFeedType = getArguments().getInt(ARG_FEED_TYPE, FEED_LIVE);
         mPendingForceShowRefreshingIndicator = false;
         mHandler = new Handler();
     }
@@ -287,6 +274,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                     mAdapter.notifyItemChanged(0);
                 }
                 break;
+            case FEED_MY_SUBSCRIPTIONS:
             case FEED_NEWS:
                 break;
             default:
@@ -478,6 +466,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                             subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mlastAnonymousEntriesCount, mlastAnonymousEntriesCount);
                         }
                         break;
+                    case FEED_MY_SUBSCRIPTIONS:
                     case FEED_NEWS:
                         break;
                     default:
@@ -534,6 +523,8 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                     return R.string.title_news;
                 case FEED_ANONYMOUS:
                     return R.string.title_anonymous_feed;
+                case FEED_MY_SUBSCRIPTIONS:
+                    return R.string.title_my_subscriptions;
                 default:
                     throw new IllegalStateException();
             }
@@ -620,20 +611,11 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
 
         private int mFeedType = FEED_LIVE;
-        private ApiFeeds mApiFeedsService;
-        private ApiTlog mApiTlogService;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             mFeedType = getArguments().getInt(ARG_FEED_TYPE);
-            if (mFeedType == FEED_NEWS) {
-                mApiFeedsService = null;
-                mApiTlogService = RestClient.getAPiTlog();
-            } else {
-                mApiFeedsService = RestClient.getAPiFeeds();
-                mApiTlogService = null;
-            }
         }
 
         @Override
@@ -645,13 +627,15 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             switch (mFeedType) {
                 case FEED_LIVE:
-                    return mApiFeedsService.getLiveFeed(sinceEntryId, limit);
+                    return RestClient.getAPiFeeds().getLiveFeed(sinceEntryId, limit);
                 case FEED_BEST:
-                    return mApiFeedsService.getBestFeed(sinceEntryId, limit, null, null,null, null);
+                    return RestClient.getAPiFeeds().getBestFeed(sinceEntryId, limit, null, null, null, null);
                 case FEED_ANONYMOUS:
-                    return mApiFeedsService.getAnonymousFeed(sinceEntryId, limit);
+                    return RestClient.getAPiFeeds().getAnonymousFeed(sinceEntryId, limit);
                 case FEED_NEWS:
-                    return mApiTlogService.getEntries(Constants.TLOG_NEWS, sinceEntryId, limit);
+                    return  RestClient.getAPiTlog().getEntries(Constants.TLOG_NEWS, sinceEntryId, limit);
+                case FEED_MY_SUBSCRIPTIONS:
+                    return RestClient.getAPiMyFeeds().getMyFriendsFeed(sinceEntryId, limit);
                 default:
                     throw new IllegalStateException();
             }

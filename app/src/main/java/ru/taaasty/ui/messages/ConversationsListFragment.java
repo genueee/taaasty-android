@@ -77,20 +77,15 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                boolean atTop = !mListView.canScrollVertically(-1);
-                mListener.onListScrolled(dy, atTop);
+                if (mListener != null) {
+                    boolean atTop = !mListView.canScrollVertically(-1);
+                    mListener.onListScrolled(dy, atTop);
+                }
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                mListener.onListScrollStateChanged(newState);
-            }
-        });
-
-        root.findViewById(R.id.initiate_conversation).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) mListener.onInitiateConversationClicked(v);
+                if (mListener != null) mListener.onListScrollStateChanged(newState);
             }
         });
 
@@ -123,6 +118,14 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     }
 
     @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (mWorkFragment.isResumed() && mAdapter == null) {
+            onWorkFragmentActivityCreated();
+        }
+    }
+
+    @Override
     public void onWorkFragmentActivityCreated() {
         mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList()) {
             public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
@@ -146,6 +149,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             }
         };
         mListView.setAdapter(mAdapter);
+        setupLoadingState();
     }
 
     @Override
@@ -167,6 +171,15 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         mListView = null;
         mListener = null;
         mProgressView = null;
+        mAdapter = null;
+    }
+
+    private void setupLoadingState() {
+        if (mWorkFragment.isRefreshing()) {
+            setStatusLoading();
+        } else {
+            setStatusReady();
+        }
     }
 
     private void setStatusLoading() {
@@ -206,6 +219,8 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         private Subscription mConversationsSubscription = Subscriptions.unsubscribed();
 
         private SortedList<Conversation> mConversationList;
+
+        private boolean mIsInitialized;
 
         @Override
         public void onAttach(Activity activity) {
@@ -286,11 +301,13 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentActivityCreated();
         }
 
+
         @Override
         public void onResume() {
             super.onResume();
             ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentResume();
         }
+
 
         @Override
         public void onDestroy() {
@@ -382,7 +399,6 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        void onInitiateConversationClicked(View view);
         void onListScrolled(int dy, boolean atTop);
         void onListScrollStateChanged(int state);
     }

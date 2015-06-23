@@ -18,6 +18,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -65,7 +68,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     private View mProgressView;
 
-    private View mMarkAsReadButton;
+    private MenuItem mMarkAsReadButton;
 
     PusherService mPusherService;
 
@@ -90,19 +93,18 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_notifications, container, false);
         mListView = (RecyclerView)root.findViewById(R.id.list);
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
-        mMarkAsReadButton = root.findViewById(R.id.mark_all_as_read);
-        mMarkAsReadButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                markAsReadClicked();
-            }
-        });
 
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
@@ -160,6 +162,32 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         EventBus.getDefault().register(this);
         Intent intent = new Intent(getActivity(), PusherService.class);
         getActivity().bindService(intent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_notification_list, menu);
+        mMarkAsReadButton = menu.findItem(R.id.mark_all_as_read);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        mMarkAsReadButton = menu.findItem(R.id.mark_all_as_read);
+        setupMarkAsReadButtonStatus();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.mark_all_as_read:
+                markAsReadClicked();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     public void onWorkFragmentActivityCreated() {
@@ -279,7 +307,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     void setupMarkAsReadButtonStatus() {
         if (mMarkAsReadButton == null) return;
         boolean isVisible = !mWaitingMessagingStatus && mBound && mPusherService.hasUnreadNotifications();
-        mMarkAsReadButton.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        if (mMarkAsReadButton != null) mMarkAsReadButton.setVisible(isVisible);
     }
 
     void follow(Notification notification) {

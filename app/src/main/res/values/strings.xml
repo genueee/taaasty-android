@@ -6,7 +6,6 @@
     <string name="btn_tabbar_live_description">Прямой эфир</string>
     <string name="btn_tabbar_action_post">Написать</string>
     <string name="btn_tabbar_action_notifications">Оповещения</string>
-    <string name="btn_tabbar_action_subscriptions">Подписки</string>
     <string name="feed_item_image_content_description">Открыть на весь экран</string>
     <string name="feed_item_more_content_description">Еще действия</string>
     <string name="title_live_feed">Прямой эфир</string>
@@ -74,7 +73,7 @@
     <string name="title_activity_comments">Прокомментируйте</string>
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
-    <string name="my_subscriptions">Мои подписки</string>
+    <string name="title_my_subscriptions">Мои подписки</string>
 
     <plurals name="posts_title">
         <item quantity="one">пост</item>
@@ -280,7 +279,6 @@
     <string name="mark_all_as_read">Отметить все прочитанными</string>
     <string name="approve_following_request_content_description">Подтвердить</string>
     <string name="disapprove_following_request_content_description">Отклонить</string>
-    <string name="unsubscripe_content_description">Отписать</string>
 
     <plurals name="more_images">
         <item quantity="one">Eщё 1 фотография…</item>

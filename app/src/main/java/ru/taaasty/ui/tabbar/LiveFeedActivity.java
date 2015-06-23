@@ -208,7 +208,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mCurrentUserObserver);
+                .subscribe();
     }
 
     /**
@@ -268,13 +268,13 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return ListFeedFragment.createLiveFeedInstance();
+                    return ListFeedFragment.createMySubscriptionsFeedInstance();
                 case 1:
-                    return ListFeedFragment.createBestFeedInstance();
+                    return ListFeedFragment.createLiveFeedInstance();
                 case 2:
-                    return ListFeedFragment.createAnonymousFeedInstance();
+                    return ListFeedFragment.createBestFeedInstance();
                 case 3:
-                    return ListFeedFragment.createNewsFeedInstance();
+                    return ListFeedFragment.createAnonymousFeedInstance();
                 default:
                     throw new IllegalArgumentException();
             }
@@ -299,11 +299,11 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             Locale l = Locale.getDefault();
             switch (position) {
                 case 0:
-                    return getString(R.string.title_live_feed).toUpperCase(l);
+                    return getString(R.string.title_my_subscriptions).toUpperCase(l);
                 case 1:
-                    return getString(R.string.title_best_feed).toUpperCase(l);
+                    return getString(R.string.title_live_feed).toUpperCase(l);
                 case 2:
-                    return getString(R.string.title_news).toUpperCase(l);
+                    return getString(R.string.title_best_feed).toUpperCase(l);
                 case 3:
                     return getString(R.string.title_anonymous_feed).toUpperCase(l);
             }
@@ -313,12 +313,14 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         public String getScreenName(int position) {
             switch (position) {
                 case 0:
-                    return "Прямой эфир";
+                    return "Мои подписки";
                 case 1:
-                    return "Лучшее";
+                    return "Прямой эфир";
                 case 2:
-                    return "Новости";
+                    return "Лучшее";
                 case 3:
+                    return "Новости";
+                case 4:
                     return "Анонимки";
                 default:
                     throw new IllegalStateException();
@@ -343,25 +345,4 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             mStats = st;
         }
     };
-
-    private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
-
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "refresh author error", e);
-            // TODO делать что-нибудь если юзера нет
-            if (e instanceof NoSuchElementException) {
-            }
-        }
-
-        @Override
-        public void onNext(CurrentUser currentUser) {
-        }
-    };
-
-
 }

@@ -241,11 +241,11 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openFavorites() {
-        AdditionalFeedActivity.startFavoritesActivity(this, null);
+        AdditionalFeedActivity.startFavoriteFeedActivity(this, null);
     }
 
-    void openHidden() {
-        AdditionalFeedActivity.startHiddenRecordsActivity(this, null);
+    protected void openHidden() {
+        AdditionalFeedActivity.startPrivateFeedActivity(this, null);
     }
 
     void openSupport() {
