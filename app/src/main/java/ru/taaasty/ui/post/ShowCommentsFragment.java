@@ -216,6 +216,13 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) { imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT); }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         mListScrollController.checkScroll();
