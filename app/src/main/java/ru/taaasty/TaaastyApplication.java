@@ -53,7 +53,11 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         }
         super.onCreate();
 
-        CalligraphyConfig.initDefault(FontManager.FONT_SYSTEM_DEFAULT_PATH, R.attr.fontPath);
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                        .setDefaultFontPath(FontManager.FONT_SYSTEM_DEFAULT_PATH)
+                        .setFontAttrId(R.attr.fontPath)
+                        .build()
+        );
         NetworkUtils.getInstance().onAppInit(this);
         UserManager.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
