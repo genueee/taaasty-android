@@ -16,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -26,6 +27,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -84,6 +87,8 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     private WorkRetainedFragment mWorkFragment;
 
+    private int mMaxVisiblePosition;
+
     public static NotificationListFragment newInstance() {
         return new NotificationListFragment();
     }
@@ -127,6 +132,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             }
         });
         mWaitingMessagingStatus = false;
+        mMaxVisiblePosition = -1;
 
         return root;
     }
@@ -197,6 +203,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             public void onBindViewHolder(ViewHolder viewHolder, int position) {
                 super.onBindViewHolder(viewHolder, position);
                 if (viewHolder instanceof ViewHolderItem) mWorkFragment.onBindViewHolder(viewHolder, position);
+                mMaxVisiblePosition = Math.max(position, mMaxVisiblePosition);
             }
         };
         mListView.setAdapter(mAdapter);
@@ -224,6 +231,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     @Override
     public void onStop() {
         super.onStop();
+        markAllVisibleAsRead();
         EventBus.getDefault().unregister(this);
         if (mBound) {
             getActivity().unbindService(this);
@@ -337,6 +345,24 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         // Ждем его, чтобы не мелькать кнопкой.
         mWaitingMessagingStatus = true;
         setupMarkAsReadButtonStatus();
+    }
+
+    private void markAllVisibleAsRead() {
+        if (mListView == null || mWorkFragment == null) return;
+        NotificationsListManaged list = mWorkFragment.getNotificationList();
+        Set<Long> ids = new HashSet<>();
+        for (int i = Math.max(list.size(), mMaxVisiblePosition + 1) - 1; i >= 0; --i) {
+            Notification n = list.get(i);
+            if (!n.isMarkedAsRead()) ids.add(n.id);
+        }
+        if (DBG) Log.v(TAG, "markAllVisibleAsRead() maxVisiblePosition: " + mMaxVisiblePosition + " ids: " +
+                TextUtils.join(",", ids));
+        if (!ids.isEmpty()) {
+            long idsArray[] = new long[ids.size()];
+            int i = 0;
+            for (Long id: ids) { idsArray[i++] = id;}
+            IntentService.markNotificationsAsRead(getActivity(), idsArray);
+        }
     }
 
     public class FollowerObserver implements Observer<Relationship> {

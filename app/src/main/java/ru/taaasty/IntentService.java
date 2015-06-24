@@ -157,6 +157,13 @@ public class IntentService extends android.app.IntentService {
         context.startService(intent);
     }
 
+    /**
+     * Intent для отметки прочитанными нотификаций
+     * @param context контекст
+     * @param notificationIds ID нотификаций
+     * @param notifyNotificationHelper true, если нужно будет убрать все уведомления из статусбара.
+     * @return intent
+     */
     public static Intent getMarkNotificationAsReadIntent(Context context, long notificationIds[], boolean notifyNotificationHelper) {
         Intent intent = new Intent(context, IntentService.class);
         intent.setAction(ACTION_MARK_NOTIFICATION_AS_READ);
@@ -175,6 +182,11 @@ public class IntentService extends android.app.IntentService {
 
     public static void markNotificationAsRead(Context context, long id) {
         Intent intent = getMarkNotificationAsReadIntent(context, new long[] {id}, false);
+        context.startService(intent);
+    }
+
+    public static void markNotificationsAsRead(Context context, long ids[]) {
+        Intent intent = getMarkNotificationAsReadIntent(context, ids, false);
         context.startService(intent);
     }
 
