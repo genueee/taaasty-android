@@ -3,6 +3,7 @@ package ru.taaasty;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.annotation.Nullable;
@@ -34,6 +35,12 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
+import static ru.taaasty.PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_LIGHTS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_SOUND;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_VIBRATE;
+
 /**
  * Уведомления в статусбаре о диалогах
  */
@@ -45,6 +52,8 @@ public class StatusBarConversationNotification {
     private final TaaastyApplication mContext;
 
     private final NotificationManagerCompat mNotificationManager;
+
+    private final SharedPreferences mSharedPreferences;
 
     private volatile boolean mIsPaused;
 
@@ -64,15 +73,18 @@ public class StatusBarConversationNotification {
     StatusBarConversationNotification(TaaastyApplication application) {
         mContext = application;
         mNotificationManager = NotificationManagerCompat.from(application);
+        mSharedPreferences = mContext.getSharedPreferences(PreferenceHelper.PREFS_NAME, 0);
         mIsPaused = false;
     }
 
     public void onCreate() {
         EventBus.getDefault().register(this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
     }
 
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
         mLoadConversationsSubscription.unsubscribe();
         if (mLoadImagesTask != null) {
             mLoadImagesTask.cancel(true);
@@ -138,6 +150,11 @@ public class StatusBarConversationNotification {
     // XXX абсолютно неверно. Нотификации могут быть левые и могут задалбывать звуком
     public void onGcmConversationReceived(final Intent intent) {
         if (!mLoadConversationsSubscription.isUnsubscribed()) {
+            GcmBroadcastReceiver.completeWakefulIntent(intent);
+            return;
+        }
+
+        if (!isNotificationsTurnedOn()) {
             GcmBroadcastReceiver.completeWakefulIntent(intent);
             return;
         }
@@ -221,7 +238,8 @@ public class StatusBarConversationNotification {
             mLoadImagesTask = null;
         }
 
-        if (mConversationMessagesCount == 0) {
+        if (mConversationMessagesCount == 0
+                || !isNotificationsTurnedOn()) {
             mNotificationManager.cancel(Constants.NOTIFICATION_ID_CONVERSATION);
             return;
         }
@@ -270,13 +288,19 @@ public class StatusBarConversationNotification {
                 .setContentIntent(resultPendingIntent)
                 .setDeleteIntent(createDeletePendingIntent())
                 .setColor(mContext.getResources().getColor(R.color.unread_conversations_count_background))
-                .setDefaults(NotificationCompat.DEFAULT_VIBRATE | NotificationCompat.DEFAULT_LIGHTS)
-                .setSound(Uri.parse("android.resource://"
-                        + mContext.getPackageName() + "/" + R.raw.incoming_message))
                 .setOnlyAlertOnce(true)
                 .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
         ;
+
+        int defaults = 0;
+        if (isVibrateTurnedOn()) defaults |= NotificationCompat.DEFAULT_VIBRATE;
+        if (isLightsTurnedOn()) defaults |= NotificationCompat.DEFAULT_LIGHTS;
+        if (defaults != 0) notificationBuilder.setDefaults(defaults);
+
+        if (isSoundTurnedOn()) notificationBuilder.setSound(Uri.parse("android.resource://"
+                + mContext.getPackageName() + "/" + R.raw.incoming_message));
 
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
         bigStyle.bigText(getMessageText(mLastMessage));
@@ -357,6 +381,48 @@ public class StatusBarConversationNotification {
         ssb.append(UiUtils.safeFromHtml(message.contentHtml));
         return ssb;
     }
+
+    private boolean isNotificationsTurnedOn() {
+        if (!PreferenceHelper.getBooleanValue(mSharedPreferences, PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS))
+            return false;
+
+        if (!PreferenceHelper.getBooleanValue(mSharedPreferences, PREF_KEY_ENABLE_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS))
+            return false;
+
+        return true;
+    }
+
+    private boolean isVibrateTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_VIBRATE);
+    }
+
+    private boolean isSoundTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_SOUND);
+    }
+
+    private boolean isLightsTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_LIGHTS);
+    }
+
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mSharedPrefsChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key == null) return;
+            switch (key) {
+                case PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS:
+                case PREF_KEY_ENABLE_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS:
+                case PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_VIBRATE:
+                case PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_SOUND:
+                case PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_LIGHTS:
+                    refreshNotification();
+                    break;
+            }
+        }
+    };
 
     private class LoadNotificationDataTask extends StatusBarNotifications.LoadNotificationDataTask {
 

@@ -83,7 +83,7 @@
 
     <style name="ActionBar.Taaasty.Green" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
         <item name="android:background">@color/green_background_normal</item>
-        <item name="android:icon">@drawable/avatar_dummy</item>
+        <item name="android:icon">@drawable/avatar_dummy_placeholder</item>
     </style>
 
     <style name="ActionBar.Taaasty.Transparent" parent="android:Widget.Holo.Light.ActionBar">

@@ -74,6 +74,8 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             }
         }
         GcmUtils.getInstance(this).setupGcm();
+        PreferenceHelper.setDefaultValues(this, false);
+
         StatusBarNotifications.onAppInit(this);
         FacebookSdk.sdkInitialize(this);
     }

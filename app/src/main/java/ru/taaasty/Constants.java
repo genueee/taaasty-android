@@ -89,4 +89,8 @@ public interface Constants {
     String ANALYTICS_CATEGORY_FEEDS = "Ленты";
 
     String ANALYTICS_CATEGORY_NOTIFICATIONS = "Уведомления";
+
+    String ANALYTICS_CATEGORY_PREFERENCES_PROFILE = "Настройки профиля";
+
+    String ANALYTICS_CATEGORY_PREFERENCES_APP = "Настройки приложения";
 }

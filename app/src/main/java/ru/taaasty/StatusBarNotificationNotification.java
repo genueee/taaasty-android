@@ -36,6 +36,18 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
+import static ru.taaasty.PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_APPROVE;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_REQUEST;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_MENTIONS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_NEW_COMMENTS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_VOTES_FAVORITES;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_LIGHTS;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_SOUND;
+import static ru.taaasty.PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_VIBRATE;
+
 /**
  * Уведомления в статусбаре об уведомлениях
  */
@@ -52,6 +64,8 @@ public class StatusBarNotificationNotification {
 
     private final NotificationManagerCompat mNotificationManager;
 
+    private final SharedPreferences mSharedPreferences;
+
     /* Нотификации, которые мы показываем в статусбаре */
     private volatile ArrayList<Notification> mNotifications = new ArrayList<>(2);
 
@@ -67,20 +81,24 @@ public class StatusBarNotificationNotification {
     private Subscription mLoadNotificationsSubscription = Subscriptions.unsubscribed();
 
     private LoadNotificationDataTask mLoadImagesTask;
+    private List<Notification> notificationsFiltered;
 
     StatusBarNotificationNotification(TaaastyApplication appContext) {
         mContext = appContext;
         mNotificationManager = NotificationManagerCompat.from(appContext);
+        mSharedPreferences = mContext.getSharedPreferences(PreferenceHelper.PREFS_NAME, 0);
         mIsPaused = false;
     }
 
     public void onCreate() {
         loadState();
         EventBus.getDefault().register(this);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
     }
 
     public void onDestroy() {
         mLoadNotificationsSubscription.unsubscribe();
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
         EventBus.getDefault().unregister(this);
         if (mLoadImagesTask != null) {
             mLoadImagesTask.cancel(true);
@@ -157,6 +175,11 @@ public class StatusBarNotificationNotification {
             return;
         }
 
+        if (!isNotificationsTurnedOn()) {
+            GcmBroadcastReceiver.completeWakefulIntent(intent);
+            return;
+        }
+
         long fromMsgId = mLastSeenNewestNotificationId;
 
         rx.Observable<NotificationList> observable = RestClient.getAPiMessenger()
@@ -224,45 +247,63 @@ public class StatusBarNotificationNotification {
             mLoadImagesTask = null;
         }
 
-        if (mNotifications.isEmpty()) {
-            mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
-            return;
-        }
         if (mIsPaused) {
             return;
         }
 
-        Notification lastNotification = mNotifications.get(mNotifications.size() - 1);
+        if (!isNotificationsTurnedOn()) {
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
+            return;
+        }
+
+        Notification lastNotification = null;
+        boolean isCollapsed = false;
+
+        for (int i = mNotifications.size() - 1; i >= 0; --i) {
+            Notification notification = mNotifications.get(i);
+            if (isNotificationEventDisabled(notification)) continue;
+            if (lastNotification == null) {
+                lastNotification = notification;
+            } else {
+                isCollapsed = true;
+                break;
+            }
+        }
+
+        if (lastNotification == null) {
+            mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
+            return;
+        }
+
         // Есть картинка - показываем её
         if (lastNotification.hasImage()) {
-            mLoadImagesTask = new LoadNotificationDataTask(mContext, false);
+            mLoadImagesTask = new LoadNotificationDataTask(lastNotification, isCollapsed , mContext, false);
             mLoadImagesTask.execute(lastNotification.image.url, lastNotification.image.path);
         } else if (lastNotification.sender != null && lastNotification.sender.getUserpic() != null) {
             // Есть юзерпик - отлично
             Userpic userpic = lastNotification.sender.getUserpic();
-            mLoadImagesTask = new LoadNotificationDataTask(mContext, true);
+            mLoadImagesTask = new LoadNotificationDataTask(lastNotification, isCollapsed, mContext, true);
             mLoadImagesTask.execute(userpic.largeUrl, userpic.thumborPath);
         } else {
             // Ничего нет. Ну нет так нет.
-            refreshNotification(null, null);
+            refreshNotification(lastNotification, isCollapsed, null, null);
         }
     }
 
     /**
      * Обновление уведомления в статусбаре после загрузки картинок
      */
-    private void refreshNotification(@Nullable Bitmap largeIcon, @Nullable Bitmap wearableBackground) {
+    private void refreshNotification(Notification lastNotification, boolean isCollapsed, @Nullable Bitmap largeIcon, @Nullable Bitmap wearableBackground) {
         NotificationCompat.Builder notificationBuilder;
 
-        if (mNotifications.isEmpty()) {
+        if (lastNotification == null) {
             mNotificationManager.cancel(Constants.NOTIFICATION_ID_POST);
             return;
         }
 
         if (mIsPaused) return;
 
-        Notification lastNotification = mNotifications.get(mNotifications.size() - 1);
-        notificationBuilder = createNotification(lastNotification, mNotifications.size() > 1,
+        notificationBuilder = createNotification(lastNotification, isCollapsed,
                 largeIcon, wearableBackground);
 
         mContext.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS, "Показано уведомление о новом уведомлении", null);
@@ -279,7 +320,7 @@ public class StatusBarNotificationNotification {
                                                           Bitmap largeIcon,
                                                           Bitmap wearableBackground) {
         NotificationCompat.Builder notificationBuilder;
-        PendingIntent resulIntent, deleteIntent;
+        PendingIntent resultIntent, deleteIntent;
         int title;
 
         if (isCollapsed) {
@@ -289,7 +330,7 @@ public class StatusBarNotificationNotification {
             if (title == 0) title = R.string.notification_received_title;
         }
 
-        resulIntent = createOpenNotificationsPendingIntent(notification);
+        resultIntent = createOpenNotificationsPendingIntent(notification);
         deleteIntent = createMarkAsReadPendingIntent(isCollapsed ? null : new long[]{notification.id});
 
         notificationBuilder = new NotificationCompat.Builder(mContext)
@@ -297,15 +338,21 @@ public class StatusBarNotificationNotification {
                 .setLargeIcon(largeIcon)
                 .setContentTitle(mContext.getText(title))
                 .setContentText(getNotificationText(notification, true))
-                .setContentIntent(resulIntent)
+                .setContentIntent(resultIntent)
                 .setDeleteIntent(deleteIntent)
                 .setWhen(notification.createdAt.getTime())
                 .setColor(mContext.getResources().getColor(R.color.green_background_normal))
+                .setCategory(NotificationCompat.CATEGORY_SOCIAL)
                 .setShowWhen(true)
                 .setAutoCancel(true)
                 .setOnlyAlertOnce(true)
-                .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
         ;
+
+        int defaults = 0;
+        if (isVibrateTurnedOn()) defaults |= NotificationCompat.DEFAULT_VIBRATE;
+        if (isLightsTurnedOn()) defaults |= NotificationCompat.DEFAULT_LIGHTS;
+        if (isSoundTurnedOn()) defaults |= NotificationCompat.DEFAULT_SOUND;
+        if (defaults != 0) notificationBuilder.setDefaults(defaults);
 
         if (!TextUtils.isEmpty(notification.text)) {
             NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
@@ -382,17 +429,94 @@ public class StatusBarNotificationNotification {
         }
     }
 
+    private boolean isNotificationsTurnedOn() {
+        if (!PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS)) return false;
+
+        return PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS);
+
+
+    }
+
+    private boolean isVibrateTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences,
+                PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_VIBRATE);
+    }
+
+    private boolean isSoundTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences, PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_SOUND);
+    }
+
+    private boolean isLightsTurnedOn() {
+        return PreferenceHelper.getBooleanValue(mSharedPreferences, PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_LIGHTS);
+    }
+
+    private boolean isNotificationEventDisabled(Notification notification) {
+        if (notification.action == null) return true;
+        switch (notification.action) {
+            case Notification.ACTION_VOTE:
+            case Notification.ACTION_FAVORITE:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_VOTES_FAVORITES);
+            case Notification.ACTION_FOLLOWING_APPROVE:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_APPROVE);
+            case Notification.ACTION_FOLLOWING_REQUEST:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_REQUEST);
+            case Notification.ACTION_FOLLOWING:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING);
+            case Notification.ACTION_NEW_COMMENT:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_NEW_COMMENTS);
+            case Notification.ACTION_NEW_MENTION:
+                return !PreferenceHelper.getBooleanValue(mSharedPreferences,
+                        PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_MENTIONS);
+            default:
+                return false;
+        }
+    }
+
+    private final SharedPreferences.OnSharedPreferenceChangeListener mSharedPrefsChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            if (key == null) return;
+            switch (key) {
+                case PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS:
+                case PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_VIBRATE:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_SOUND:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_LIGHTS:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_VOTES_FAVORITES:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_NEW_COMMENTS:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_REQUEST:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_APPROVE:
+                case PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_MENTIONS:
+                    refreshNotification();
+                    break;
+            }
+        }
+    };
+
     private class LoadNotificationDataTask extends StatusBarNotifications.LoadNotificationDataTask {
 
-        public LoadNotificationDataTask(Context context, boolean roundCorners) {
+        private final Notification mLastNotification;
+        private final boolean mIsCollapsed;
+
+        public LoadNotificationDataTask(Notification lastNotification, boolean isCollapsed, Context context, boolean roundCorners) {
             super(context, roundCorners);
+            mLastNotification = lastNotification;
+            mIsCollapsed = isCollapsed;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             mLoadImagesTask = null;
-            refreshNotification(bigIcon, wearableBackground);
+            refreshNotification(mLastNotification, mIsCollapsed, bigIcon, wearableBackground);
         }
     }
 }

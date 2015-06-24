@@ -298,5 +298,32 @@
 
     <string name="notification_action_reply_label">Ответить</string>
     <string name="notification_action_reply_title">Ответить</string>
+    <string name="status_bar_notifications">Уведомления в статус баре</string>
+    <string name="status_bar_notifications_turned_on">Включены</string>
+
+    <string name="status_bar_conversations_settings">Переписки</string>
+    <string name="setup_notifications_on_new_messages">Настройка оповещений о новых сообщениях в переписках</string>
+
+    <string name="status_bar_notifications_settings">Прочие события</string>
+    <string name="setup_notifications_on_new_notifications">Настройка оповещений о прочих событиях</string>
+    <string name="status_bar_notifications_vibrate">Вибрация</string>
+    <string name="status_bar_notifications_sound">Звук</string>
+    <string name="status_bar_notifications_lights">Световой индикатор</string>
+    <string name="reset_preferences">Сбросить</string>
+    <string name="reset_preferences_summary">Восстановить значения по умолчанию</string>
+    <string name="notifications_category_title_events">События</string>
+    <string name="notifications_events_title_votes_and_favorites">«Мне нравится»</string>
+    <string name="notifications_events_summary_votes_and_favorites">Когда кто-то проголосовал за вашу запись, либо добавил себе в избранное</string>
+    <string name="notifications_events_title_comments">Новые комментарии</string>
+    <string name="notifications_events_summary_comments">Появились новые комментарии в ваших статьях, либо статьях, на которые вы подписаны</string>
+    <string name="notifications_events_title_followings">Подписки</string>
+    <string name="notifications_events_summary_followings">Кто-то подписался на ваш тлог</string>
+    <string name="notifications_events_title_following_request">Запросы на дружбу</string>
+    <string name="notifications_events_summary_following_request">Кто-то спрашивает разрешение на чтение вашего тлога</string>
+    <string name="notifications_events_title_following_approve">Одобрение дружбы</string>
+    <string name="notifications_events_summary_following_approve">Кто-то разрешил вам читать тлог</string>
+    <string name="notifications_events_title_mentions">Упоминания</string>
+    <string name="notifications_events_summary_mentions">Вас упомянули в статье или комментарии</string>
+
 
 </resources>

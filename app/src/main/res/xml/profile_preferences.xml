@@ -50,4 +50,122 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="@string/status_bar_notifications">
+
+        <SwitchPreference
+            android:key="pref_key_enable_status_bar_notifications"
+            android:title="@string/status_bar_notifications_turned_on" />
+
+        <PreferenceScreen
+            android:key="status_bar_conversations_settings"
+            android:title="@string/status_bar_conversations_settings"
+            android:summary="@string/setup_notifications_on_new_messages"
+            android:dependency="pref_key_enable_status_bar_notifications">
+
+            <SwitchPreference
+                android:key="pref_key_enable_status_bar_conversations_notifications"
+                android:title="@string/status_bar_notifications_turned_on" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_conversations_notifications_vibrate"
+                android:dependency="pref_key_enable_status_bar_conversations_notifications"
+                android:title="@string/status_bar_notifications_vibrate" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_conversations_notifications_sound"
+                android:dependency="pref_key_enable_status_bar_conversations_notifications"
+                android:title="@string/status_bar_notifications_sound" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_conversations_notifications_lights"
+                android:dependency="pref_key_enable_status_bar_conversations_notifications"
+                android:title="@string/status_bar_notifications_lights" />
+
+            <Preference
+                android:key="reset_conversations_notifications_preferences"
+                android:title="@string/reset_preferences"
+                android:persistent="false"
+                android:summary="@string/reset_preferences_summary"/>
+
+        </PreferenceScreen>
+
+        <PreferenceScreen
+            android:key="status_bar_notifications_settings"
+            android:title="@string/status_bar_notifications_settings"
+            android:summary="@string/setup_notifications_on_new_notifications"
+            android:dependency="pref_key_enable_status_bar_notifications">
+
+            <SwitchPreference
+                android:key="pref_key_enable_status_bar_notifications_notifications"
+                android:title="@string/status_bar_notifications_turned_on" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_notifications_notifications_vibrate"
+                android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                android:title="@string/status_bar_notifications_vibrate" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_notifications_notifications_sound"
+                android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                android:title="@string/status_bar_notifications_sound" />
+
+            <CheckBoxPreference
+                android:key="pref_key_status_bar_notifications_notifications_lights"
+                android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                android:title="@string/status_bar_notifications_lights" />
+
+            <PreferenceCategory
+                android:title="@string/notifications_category_title_events"
+                android:dependency="pref_key_enable_status_bar_notifications_notifications">
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_votes_favorites"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_votes_and_favorites"
+                    android:summary="@string/notifications_events_summary_votes_and_favorites"/>
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_new_comments"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_comments"
+                    android:summary="@string/notifications_events_summary_comments"/>
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_following"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_followings"
+                    android:summary="@string/notifications_events_summary_followings"/>
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_following_request"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_following_request"
+                    android:summary="@string/notifications_events_summary_following_request" />
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_following_approve"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_following_approve"
+                    android:summary="@string/notifications_events_summary_following_approve"/>
+
+                <CheckBoxPreference
+                    android:key="pref_key_status_bar_notifications_notifications_events_mentions"
+                    android:dependency="pref_key_enable_status_bar_notifications_notifications"
+                    android:title="@string/notifications_events_title_mentions"
+                    android:summary="@string/notifications_events_summary_mentions"/>
+
+            </PreferenceCategory>
+
+            <Preference
+                android:key="reset_notifications_notifications_preferences"
+                android:title="@string/reset_preferences"
+                android:persistent="false"
+                android:summary="@string/reset_preferences_summary"/>
+
+        </PreferenceScreen>
+
+    </PreferenceCategory>
+
+
 </PreferenceScreen>
