@@ -151,12 +151,12 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     @Override
     public String getClientID() {
-        return getResources().getString(R.string.adobe_client_id);
+        return BuildConfig.ADOBE_CLIENT_ID;
     }
 
     @Override
     public String getClientSecret() {
-        return getResources().getString(R.string.adobe_client_secret);
+        return BuildConfig.ADOBE_CLIENT_SECRET;
     }
 
     @Override

@@ -12,7 +12,7 @@ def getRevision = { ->
         commandLine 'git', 'describe'
         standardOutput = stdout
     }
-    return stdout.toString().trim()
+    return stdout.toString().trim().replace('-', '–');
 }
 
 repositories {
@@ -60,9 +60,11 @@ android {
                 project.ext.private.getProperty("default.IntercomAppId", "\"ef4ce706c805fcdd3cb11255f0c3d8b41f46ba15\"")
         buildConfigField "String", "GOOGLE_APP_ID",
                 project.ext.private.getProperty("default.GoogleAppId", "\"73588603634\"")
+        buildConfigField "String", "ADOBE_CLIENT_ID",
+                project.ext.private.getProperty("default.AdobeClientId", "\"a28b7e7fa93c49c98c0caf1438ec3d53\"")
+        buildConfigField "String", "ADOBE_CLIENT_SECRET",
+                project.ext.private.getProperty("default.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
 
-        resValue "string", "adobe_client_id", "a28b7e7fa93c49c98c0caf1438ec3d53"
-        resValue "string", "adobe_client_secret", "6102b00a-823c-4ab9-8af8-8e5799961774"
         resValue "string", "facebook_app_id", "\"731919696901929\""
 
         resConfigs "en", "ru" // Выносим неиспользуемые языки
@@ -152,7 +154,7 @@ dependencies {
     compile 'com.android.support:support-v13:22.2.0'
     compile 'com.android.support:support-v4:22.2.0'
     compile 'com.android.support:recyclerview-v7:22.2.0'
-    compile 'com.facebook.android:facebook-android-sdk:4.1.2'
+    compile 'com.facebook.android:facebook-android-sdk:4.3.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'com.google.android.gms:play-services-analytics:7.3.0'
     compile 'com.google.android.gms:play-services-gcm:7.3.0'
@@ -206,6 +208,10 @@ dependencies {
             project.ext.private.getProperty("${typeName}.IntercomAppId", "\"ef4ce706c805fcdd3cb11255f0c3d8b41f46ba15\"")
     bt.buildConfigField "String", "GOOGLE_APP_ID",
             project.ext.private.getProperty("${typeName}.GoogleAppId", "\"73588603634\"")
+    bt.buildConfigField "String", "ADOBE_CLIENT_ID",
+            project.ext.private.getProperty("${typeName}.AdobeClientId", "\"a28b7e7fa93c49c98c0caf1438ec3d53\"")
+    bt.buildConfigField "String", "ADOBE_CLIENT_SECRET",
+            project.ext.private.getProperty("${typeName}.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
 }
 
 if (ext.private.getProperty('release.StoreFile') != null) {

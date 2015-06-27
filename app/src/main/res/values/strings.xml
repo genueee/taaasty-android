@@ -199,12 +199,11 @@
     <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_conversations">Сообщения</string>
-    <string name="error_loading_notifications">Ошибка получения списка подписок</string>
     <string name="no_conversations">Здесь будут отображаться ваши переписки</string>
     <string name="no_notifications">Здесь будут отображаться ваши уведомления</string>
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
-    <string name="error_load_notifications">Ошибка загрузки уведомлений</string>
+    <string name="error_loading_notifications">Ошибка загрузки уведомлений</string>
     <string name="sharing_description">Пост на тейсти</string>
     <string name="menu_follow">Подписаться</string>
     <string name="menu_unfollow">Отписаться</string>
@@ -250,7 +249,6 @@
     <string name="messages_will_be_displayed_here">Здесь будут отображаться сообщения</string>
     <string name="partner">Собеседник</string>
     <string name="error_user_with_this_name_not_found">Пользователь с таким именем не найден</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="profile_category_title">Профиль</string>
     <string name="title_user_name">Имя</string>
     <string name="title_tlog_title">Описание тлога</string>

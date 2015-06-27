@@ -160,8 +160,9 @@ public class EditPostActivity extends ActivityBase implements
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
         if (status.successfully) {
-            // Переходим на страницу, в зависимости от статуса блокировки
-            Toast.makeText(this, R.string.post_edited, Toast.LENGTH_LONG).show();
+            Toast.makeText(this,
+                    (status.entry instanceof PostAnonymousTextForm.AsHtml ? R.string.anonymous_post_edited
+                            : R.string.post_edited), Toast.LENGTH_LONG).show();
             finish();
         } else {
             // Сообщаем об ошибке

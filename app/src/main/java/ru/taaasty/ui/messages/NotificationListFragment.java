@@ -677,7 +677,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                     if (DBG) Log.e(TAG, "onError", e);
                     onNewListPendingIndicatorStatus(false);
                     if (mListener != null)
-                        mListener.notifyError(getText(R.string.error_append_feed), e);
+                        mListener.notifyError(getText(R.string.error_loading_notifications  ), e);
                 }
 
                 @Override

@@ -1,5 +1,6 @@
 package ru.taaasty;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -415,6 +416,7 @@ public class StatusBarNotificationNotification {
         if (DBG) Log.v(TAG, "loadState() lastSeenNotification: " + mLastSeenNewestNotificationId);
     }
 
+    @SuppressLint("CommitPrefEdits")
     private synchronized void storeState(boolean sync) {
         if (DBG) Log.v(TAG, "storeState() lastSeenNotification: " + mLastSeenNewestNotificationId);
 

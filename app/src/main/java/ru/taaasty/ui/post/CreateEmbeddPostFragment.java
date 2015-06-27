@@ -1,5 +1,6 @@
 package ru.taaasty.ui.post;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -444,6 +445,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
                 .commit();
     }
 
+    @SuppressLint("InlinedApi")
     private boolean isClipboardHasText() {
         return  (mClipboardManager.hasPrimaryClip()
                 && (mClipboardManager.getPrimaryClipDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)

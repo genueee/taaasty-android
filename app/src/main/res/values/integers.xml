@@ -2,8 +2,4 @@
 <resources>
     <integer name="shortAnimTime">150</integer>
     <integer name="longAnimTime">300</integer>
-
-
-    <!-- Кол-во столбцов в life ленте -->
-    <integer name="live_feed_column_count">2</integer>
 </resources>
