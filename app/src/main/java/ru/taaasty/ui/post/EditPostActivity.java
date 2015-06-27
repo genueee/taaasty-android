@@ -1,16 +1,16 @@
 package ru.taaasty.ui.post;
 
-import android.app.ActionBar;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -24,8 +24,8 @@ import junit.framework.Assert;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.R;
 import ru.taaasty.IntentService;
+import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostAnonymousTextForm;
@@ -93,7 +93,7 @@ public class EditPostActivity extends ActivityBase implements
             }
 
             fragment.setUserVisibleHint(true);
-            getFragmentManager()
+            getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment, TAG_FRAGMENT_EDIT_POST)
                     .commit();
@@ -130,7 +130,7 @@ public class EditPostActivity extends ActivityBase implements
     @Override
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
-        dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
+        dialog.show(getSupportFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
     @Override
@@ -188,7 +188,7 @@ public class EditPostActivity extends ActivityBase implements
 
     private void setupActionBar() {
         Page currentItem = getEntryPageType();
-        final ActionBar ab = getActionBar();
+        final ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
@@ -222,7 +222,7 @@ public class EditPostActivity extends ActivityBase implements
         PostForm post, originalPost;
         CreatePostFragmentBase fragment;
 
-        fragment = (CreatePostFragmentBase)getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        fragment = (CreatePostFragmentBase)getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
         if (!fragment.isFormValid()) {
             // XXX: предупреждать юзера?
             return;
@@ -376,13 +376,13 @@ public class EditPostActivity extends ActivityBase implements
     }
 
     private CreateImagePostFragment getCurrentImagePostFragment() {
-        Fragment fragment = getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
         return (CreateImagePostFragment)fragment;
     }
 
     @Override
     public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
         FragmentTransaction ft = fm.beginTransaction();
         if (old != null) ft.remove(old);
@@ -392,13 +392,13 @@ public class EditPostActivity extends ActivityBase implements
     @Override
     public void onEmbeddMenuDialogItemSelected(DialogInterface dialog, int resId) {
 
-        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
         if (fragment != null) fragment.onEmbeddMenuDialogItemSelected(dialog, resId);
     }
 
     @Override
     public void onEmbeddMenuDialogDismissed(DialogInterface dialog) {
-        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT_EDIT_POST);
         if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
     }
 }

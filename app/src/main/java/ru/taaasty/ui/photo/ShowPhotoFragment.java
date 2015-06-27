@@ -2,7 +2,6 @@ package ru.taaasty.ui.photo;
 
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
@@ -12,6 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;

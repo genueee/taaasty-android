@@ -13,7 +13,7 @@
         android:divider="@null"
         android:dividerHeight="0dp"
         android:overScrollHeader="@android:color/black"
-        android:paddingTop="?android:actionBarSize"
+        android:paddingTop="?actionBarSize"
         android:paddingBottom="90dp"
         tools:listitem="@layout/post_item" />
 

@@ -22,14 +22,13 @@ public class FollowingsFragment extends RelationshipListFragmentBase {
         return fragment;
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setEmptyText(getResources().getText(R.string.no_subscriptions));
-    }
-
     public IRelationshipAdapter createRelationshipsAdapter() {
         return new RelationshipsAdapter(getActivity(), false);
+    }
+
+    @Override
+    public int getListIsEmptyText() {
+        return R.string.no_subscriptions;
     }
 
     Observable<Relationships> createRelationshipsObservable() {

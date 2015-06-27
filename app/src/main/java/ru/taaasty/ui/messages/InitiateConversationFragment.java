@@ -2,9 +2,9 @@ package ru.taaasty.ui.messages;
 
 import android.animation.LayoutTransition;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -86,7 +86,7 @@ public class InitiateConversationFragment extends Fragment {
         root.findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                getActivity().getFragmentManager().popBackStack();
+                getActivity().getSupportFragmentManager().popBackStack();
             }
         });
         LayoutTransition transition = ((ViewGroup) root).getLayoutTransition();
@@ -319,7 +319,7 @@ public class InitiateConversationFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onConversationCreated(Conversation conversation);
+        void onConversationCreated(Conversation conversation);
     }
 
 }

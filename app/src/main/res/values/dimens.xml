@@ -56,4 +56,6 @@
 
     <dimen name="notification_picture_height">192dp</dimen>
 
+    <dimen name="ab_icon_size">32dp</dimen>
+
 </resources>

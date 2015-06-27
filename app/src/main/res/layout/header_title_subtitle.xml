@@ -18,8 +18,8 @@
         tools:visibility="visible"
         android:visibility="gone"
         android:clickable="true"
-        android:layout_width="?android:actionBarSize"
-        android:background="?android:selectableItemBackground"
+        android:layout_width="?actionBarSize"
+        android:background="?selectableItemBackground"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|right|top"
         android:padding="4dp" />

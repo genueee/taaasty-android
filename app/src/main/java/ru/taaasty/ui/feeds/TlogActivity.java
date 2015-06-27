@@ -1,9 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -14,6 +12,8 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.util.Log;
@@ -134,7 +134,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             mAbBackgroundDrawable.setAlpha(0);
         }
 
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_tlog);
@@ -166,7 +166,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                 tlogFragment = TlogFragment.newInstance(userIdOrSlug);
             }
 
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, tlogFragment)
                     .commit();
         }
@@ -292,13 +292,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             mAbBackgroundDrawable.setAlpha(intAlpha);
             if (mAbTitle != null) {
                 mAlphaForegroundColorSpan.setAlpha(abAlpha);
-                getActionBar().setTitle(mAbTitle);
+                getSupportActionBar().setTitle(mAbTitle);
             }
         }
     }
 
     private void refreshData() {
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) ((IRereshable)fragment).refreshData(true);
     }
 
@@ -325,7 +325,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Nullable
     private Long getUserId() {
-        TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
+        TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) {
             return ((TlogFragment)fragment).getUserId();
         }
@@ -370,7 +370,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
 
         public void onResume() {
-            mNavigationHidden = !getActionBar().isShowing();
+            mNavigationHidden = !getSupportActionBar().isShowing();
             runHideActionBarTimer();
         }
 
@@ -400,7 +400,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
         void onVisibilityChanged(boolean shown) {
             mNavigationHidden = !shown;
-            TlogFragment fragment = (TlogFragment)getFragmentManager().findFragmentById(R.id.container);
+            TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
             if (fragment != null) fragment.onOverlayVisibilityChanged(shown);
         }
 
@@ -414,10 +414,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         @SuppressLint("InlinedApi")
         private void toggleShowOrHideHideyBarMode() {
             if (!mNavigationHidden) {
-                getActionBar().hide();
+                getSupportActionBar().hide();
                 onVisibilityChanged(false);
             } else {
-                getActionBar().show();
+                getSupportActionBar().show();
                 userForcedToShowInterface = false;
                 onVisibilityChanged(true);
                 runHideActionBarTimer();

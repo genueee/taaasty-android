@@ -1,8 +1,6 @@
 package ru.taaasty.ui.messages;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -12,6 +10,8 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -24,6 +24,7 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
@@ -41,7 +42,7 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class ConversationActivity extends Activity implements ConversationFragment.OnFragmentInteractionListener {
+public class ConversationActivity extends ActivityBase implements ConversationFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationActivity";
 
@@ -114,7 +115,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
             } else {
                 conversationFragment = ConversationFragment.newInstance(conversationId);
             }
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, conversationFragment)
                     .commit();
         }
@@ -192,7 +193,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
             mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
         } else {
             mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-            ActionBar ab = getActionBar();
+            ActionBar ab = getSupportActionBar();
             if (ab != null) ab.show();
         }
     }
@@ -208,12 +209,12 @@ public class ConversationActivity extends Activity implements ConversationFragme
         mConversation = conversation;
         setupActionBar(conversation.recipient);
         bindDesign(conversation.recipient.getDesign());
-        ConversationFragment fragment = (ConversationFragment)getFragmentManager().findFragmentById(R.id.container);
+        ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onConversationLoaded(conversation);
     }
 
     void onImeKeyboardShown() {
-        ConversationFragment fragment = (ConversationFragment)getFragmentManager().findFragmentById(R.id.container);
+        ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onImeKeyboardShown();
     }
 
@@ -222,7 +223,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
     }
 
     private void setupActionBar(User recipient) {
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab == null) return;
         ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
         ab.setDisplayHomeAsUpEnabled(true);
@@ -281,7 +282,7 @@ public class ConversationActivity extends Activity implements ConversationFragme
     private Runnable mHideActionBarRunnable = new Runnable() {
         @Override
         public void run() {
-            ActionBar ab = getActionBar();
+            ActionBar ab = getSupportActionBar();
             if (ab != null) ab.hide();
         }
     };

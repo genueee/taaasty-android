@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,6 +22,7 @@ import com.vk.sdk.dialogs.VKShareDialog;
 import java.util.List;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryChanged;
@@ -35,7 +35,7 @@ import rx.Observer;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class PostActionActivity extends FragmentActivity implements CustomErrorView {
+public class PostActionActivity extends ActivityBase implements CustomErrorView {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.PostActionActivity.entry";
 

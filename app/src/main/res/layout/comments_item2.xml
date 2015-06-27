@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingRight="@dimen/feed_item_padding_right"
-        android:background="?android:selectableItemBackground"
+        android:background="?selectableItemBackground"
         android:baselineAligned="true"
         android:minHeight="48dp"
         android:paddingTop="4dp"

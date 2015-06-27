@@ -1,9 +1,6 @@
 package ru.taaasty.ui;
 
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,6 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -198,7 +198,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         if (savedInstanceState == null) {
             Fragment userInfoFragment = UserInfoFragment.newInstance(mUserId, user, design, avatarThumbnailRes, backgroundThumbnailKey);
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment, FRAGMENT_TAG_USER_INFO_FRAGMENT)
                     .commit();
         } else {
@@ -308,12 +308,12 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
                 action = "Открыта смена фона из сист. меню";
                 break;
             case R.id.menu_follow:
-                fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+                fragment = (UserInfoFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
                 if (fragment != null) fragment.follow();
                 action = "Подписка из сист. меню";
                 break;
             case R.id.menu_unfollow:
-                fragment = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+                fragment = (UserInfoFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
                 if (fragment != null) fragment.unfollow();
                 action = "Отписка из сист. меню";
                 break;
@@ -436,41 +436,41 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     private @Nullable TlogDesign getDesign() {
-        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        UserInfoFragment uf = (UserInfoFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
         if (uf != null) return uf.getDesign();
         return null;
     }
 
     private @Nullable User getUser() {
-        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        UserInfoFragment uf = (UserInfoFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
         if (uf != null) return uf.getUser();
         return null;
     }
 
     private @Nullable String getMyRelationship() {
-        UserInfoFragment uf = (UserInfoFragment)getFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
+        UserInfoFragment uf = (UserInfoFragment)getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG_USER_INFO_FRAGMENT);
         if (uf != null) return uf.getMyRelationship();
         return null;
     }
 
     private void showChangeBackgroundDialog() {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
                 | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
             return;
         }
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
-        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_BACKGROUND);
+        dialog.show(getSupportFragmentManager(), DIALOG_TAG_SELECT_BACKGROUND);
     }
 
     private void showChangeAvatarDialog() {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         if (fm.findFragmentByTag(DIALOG_TAG_SELECT_BACKGROUND) != null
                 | fm.findFragmentByTag(DIALOG_TAG_SELECT_AVATAR) != null) {
             return;
         }
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
-        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
+        dialog.show(getSupportFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
     }
 
     private void startFeatherPhoto(boolean isBackground, Uri photoUri) {

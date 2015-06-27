@@ -3,10 +3,11 @@ package ru.taaasty.ui.post;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 
 import ru.taaasty.R;
 
@@ -58,6 +59,7 @@ public class SelectPhotoSourceDialogFragment extends DialogFragment {
         mListener = null;
     }
 
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle arguments = getArguments();

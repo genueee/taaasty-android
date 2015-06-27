@@ -2,11 +2,12 @@ package ru.taaasty.utils;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.os.Build;
+import android.support.v7.app.ActionBar;
 import android.view.View;
 import android.view.WindowManager;
+
+import ru.taaasty.ActivityBase;
 
 /**
  * An API 11+ implementation of {@link SystemUiHider}. Uses APIs available in
@@ -45,7 +46,7 @@ public class SystemUiHiderHoneycomb extends SystemUiHiderBase {
      * {@link SystemUiHider#getInstance} to obtain an instance.
      */
     @SuppressLint("InlinedApi")
-    protected SystemUiHiderHoneycomb(Activity activity, View anchorView, int flags) {
+    protected SystemUiHiderHoneycomb(ActivityBase activity, View anchorView, int flags) {
         super(activity, anchorView, flags);
 
         mShowFlags = View.SYSTEM_UI_FLAG_VISIBLE;
@@ -101,7 +102,7 @@ public class SystemUiHiderHoneycomb extends SystemUiHiderBase {
         public void onSystemUiVisibilityChange(int vis) {
             // Test against mTestFlags to see if the system UI is visible.
             if ((vis & mTestFlags) != 0) {
-                ActionBar ab = mActivity.getActionBar();
+                ActionBar ab = mActivity.getSupportActionBar();
                 if (ab != null) ab.hide();
 
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
@@ -119,7 +120,7 @@ public class SystemUiHiderHoneycomb extends SystemUiHiderBase {
 
             } else {
                 mAnchorView.setSystemUiVisibility(mShowFlags);
-                ActionBar ab = mActivity.getActionBar();
+                ActionBar ab = mActivity.getSupportActionBar();
                 if (ab != null) ab.show();
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
                     // Pre-Jelly Bean, we must manually show the action bar

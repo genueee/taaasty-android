@@ -1,12 +1,7 @@
 package ru.taaasty.ui.post;
 
 import android.annotation.TargetApi;
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +10,11 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,8 +24,8 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.R;
 import ru.taaasty.IntentService;
+import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.utils.UiUtils;
@@ -81,7 +81,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
                 fragment = CreateEmbeddPostFragment.newInstance(null);
             }
 
-            getFragmentManager()
+            getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
@@ -89,7 +89,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
         }
         EventBus.getDefault().register(this);
 
-        final ActionBar ab = getActionBar();
+        final ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
@@ -128,7 +128,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
         PostForm post;
         CreatePostFragmentBase fragment;
 
-        fragment = (CreatePostFragmentBase)getFragmentManager().findFragmentById(R.id.container);
+        fragment = (CreatePostFragmentBase)getSupportFragmentManager().findFragmentById(R.id.container);
         post = fragment.getForm();
         IntentService.startPostEntry(this, post);
         setUploadingStatus(true);
@@ -170,7 +170,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
 
     @Override
     public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
         FragmentTransaction ft = fm.beginTransaction();
         if (old != null) ft.remove(old);
@@ -179,27 +179,27 @@ public class CreateSharedPostActivity extends ActivityBase implements
 
     @Override
     public void onEmbeddMenuDialogItemSelected(DialogInterface dialog, int resId) {
-        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onEmbeddMenuDialogItemSelected(dialog, resId);
     }
 
     @Override
     public void onEmbeddMenuDialogDismissed(DialogInterface dialog) {
-        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        CreateEmbeddPostFragment fragment = (CreateEmbeddPostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
     }
 
     @Override
     public void onPickPhotoSelected(Fragment fragment) {
         if (DBG) Log.v(TAG, "onPickPhotoSelected");
-        CreateImagePostFragment f = (CreateImagePostFragment)getFragmentManager().findFragmentById(R.id.container);
+        CreateImagePostFragment f = (CreateImagePostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (f != null) f.onPickPhotoSelected();
     }
 
     @Override
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
-        dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
+        dialog.show(getSupportFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
 
@@ -223,6 +223,6 @@ public class CreateSharedPostActivity extends ActivityBase implements
     }
 
     CreateImagePostFragment getCurrentImagePostFragment() {
-        return (CreateImagePostFragment)getFragmentManager().findFragmentById(R.id.container);
+        return (CreateImagePostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
     }
 }

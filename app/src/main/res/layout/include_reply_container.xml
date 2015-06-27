@@ -40,7 +40,7 @@
             android:id="@+id/reply_to_comment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="?android:selectableItemBackground"
+            android:background="?selectableItemBackground"
             android:clickable="true"
             android:minHeight="48dp"
             android:padding="16dp"

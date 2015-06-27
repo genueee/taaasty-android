@@ -1,14 +1,19 @@
 package ru.taaasty.ui.relationships;
 
 import android.app.Activity;
-import android.app.ListFragment;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +35,7 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public abstract class RelationshipListFragmentBase extends ListFragment{
+public abstract class RelationshipListFragmentBase extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "RelListFragmentBase";
     static final String ARG_USER_ID = "user_id";
@@ -40,9 +45,18 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
 
     long mUserId;
 
+    private ListView mListView;
+
+    private View mProgressBar;
+
     IRelationshipAdapter mRelationshipsAdapter;
     OnFragmentInteractionListener mListener;
     Subscription mRelationshipsSubscription = Subscriptions.unsubscribed();
+
+
+    public abstract IRelationshipAdapter createRelationshipsAdapter();
+
+    public abstract @StringRes int getListIsEmptyText();
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -71,7 +85,23 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
         }
     }
 
-    public abstract IRelationshipAdapter createRelationshipsAdapter();
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_relationship_list, container, false);
+        mListView = (ListView)root.findViewById(R.id.list);
+        mProgressBar = root.findViewById(R.id.progress);
+
+        ((TextView)root.findViewById(R.id.empty_text)).setText(getListIsEmptyText());
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                onListItemClick(mListView, view, position, id);
+            }
+        });
+
+        return root;
+    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -83,18 +113,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
             mRelationshipsAdapter.setRelationships(relationships);
         }
 
-        setListAdapter(mRelationshipsAdapter);
-
-        Drawable divider = getResources().getDrawable(R.drawable.followings_list_divider);
-        getListView().setDivider(divider);
-        //getListView().setVerticalFadingEdgeEnabled(false);
-        //getListView().setOverScrollMode(View.OVER_SCROLL_NEVER);
-        getListView().setClipToPadding(false);
-        getListView().setPadding(0,
-                getResources().getDimensionPixelSize(R.dimen.following_followers_list_padding_top),
-                0, 0);
-        setEmptyText(getResources().getText(R.string.no_subscribers));
-
+        mListView.setAdapter(mRelationshipsAdapter);
         refreshRelationships();
         EventBus.getDefault().register(this);
     }
@@ -115,6 +134,8 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
         super.onDestroyView();
         mRelationshipsSubscription.unsubscribe();
         EventBus.getDefault().unregister(this);
+        mListView = null;
+        mProgressBar = null;
     }
 
     @Override
@@ -123,9 +144,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
         mListener = null;
     }
 
-    @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
         if (DBG) Log.v(TAG, " onListItemClick: " + id);
 
         if (null != mListener) {
@@ -145,11 +164,7 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
         // XXX
         Observable<Relationships> observable = createRelationshipsObservable();
 
-        if (isResumed()) {
-            setListShownNoAnimation(false);
-        } else {
-            setListShown(false);
-        }
+        mProgressBar.setVisibility(View.VISIBLE);
 
         mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -176,12 +191,12 @@ public abstract class RelationshipListFragmentBase extends ListFragment{
 
         @Override
         public void onCompleted() {
-            setListShown(true);
+            if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
         }
 
         @Override
         public void onError(Throwable e) {
-            setListShown(true);
+            if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
             mListener.notifyError(getString(R.string.error_loading_relationships), e);
         }
 

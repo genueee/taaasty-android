@@ -9,7 +9,7 @@
     android:paddingLeft="4dp"
     android:paddingRight="4dp"
     android:gravity="center_vertical"
-    android:background="?android:selectableItemBackground"
+    android:background="?selectableItemBackground"
     tools:ignore="UseCompoundDrawables">
 
     <ImageView
@@ -98,7 +98,7 @@
             android:contentDescription="@string/unsubscribe_content_description"
             android:padding="4dp"
             android:layout_marginRight="4dp"
-            android:background="?android:selectableItemBackground"
+            android:background="?selectableItemBackground"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="center" />
@@ -109,7 +109,7 @@
             tools:visibility="invisible"
             android:padding="4dp"
             android:layout_marginRight="4dp"
-            android:background="?android:selectableItemBackground"
+            android:background="?selectableItemBackground"
             android:contentDescription="@string/subscribe_content_description"
             android:layout_width="40dp"
             android:layout_height="40dp"

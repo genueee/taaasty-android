@@ -1,8 +1,6 @@
 package ru.taaasty.ui.post;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -15,6 +13,8 @@ import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -35,7 +35,6 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
@@ -51,8 +50,6 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
-
-    private ActionbarUserIconLoader mAbIconLoader;
 
     private Handler mHideActionBarHandler;
 
@@ -163,12 +160,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_post);
 
-        mAbIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                notifyError(getText(R.string.error_loading_image), null);
-            }
-        };
+        //noinspection ConstantConditions
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         mHideActionBarHandler = new Handler();
 
@@ -195,7 +188,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
                 fragment = ShowCommentsFragment.newInstance(mPostId, entry, design);
             }
 
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
         }
@@ -270,8 +263,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         }
 
         ErrorLoadingPostFragment newFragment = ErrorLoadingPostFragment.newInstance(text, iconId);
-        getFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
-        ActionBar ab = getActionBar();
+        getSupportFragmentManager().beginTransaction().replace(R.id.container, newFragment).commit();
+        ActionBar ab = getSupportActionBar();
         if (ab != null) ab.show();
     }
 
@@ -290,7 +283,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
         if (!atTop) return;
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab != null) ab.show();
     }
 
@@ -324,13 +317,13 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     private Runnable mHideActionBarRunnable = new Runnable() {
         @Override
         public void run() {
-            ActionBar ab = getActionBar();
+            ActionBar ab = getSupportActionBar();
             if (ab != null) ab.hide();
         }
     };
 
     private Entry getCurrentEntry() {
-        Fragment fragment = getFragmentManager().findFragmentById(R.id.container);
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
 
         if (fragment == null) return null;
         if (fragment instanceof  ShowCommentsFragment) {
@@ -351,17 +344,13 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     void setupActionbar(Userpic userpic, String username, TlogDesign design) {
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab == null) return;
 
         SpannableString title = new SpannableString(getText(
                 mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
 
         ab.setDisplayHomeAsUpEnabled(true);
-        ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
-        if (userpic != null) {
-            mAbIconLoader.loadIcon(userpic, username);
-        }
         if (design != null && design.isDarkTheme()) {
             ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
             ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);

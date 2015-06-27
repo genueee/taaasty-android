@@ -1,9 +1,9 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.ActionBar;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -28,8 +28,8 @@ public class ConversationsActivity extends TabbarActivityBase implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversations);
-        getActionBar().setIcon(android.R.color.transparent);
-        getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+        getSupportActionBar().setIcon(android.R.color.transparent);
+        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
             @Override
             public void onBackStackChanged() {
                 refreshAb();
@@ -38,7 +38,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
 
         if (savedInstanceState == null) {
             Fragment fragment = ConversationsListFragment.newInstance();
-            getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         }
         refreshAb();
     }
@@ -60,7 +60,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                getFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack();
                 break;
             case R.id.create_conversation:
                 onInitiateConversationClicked();
@@ -87,12 +87,12 @@ public class ConversationsActivity extends TabbarActivityBase implements
     }
 
     public void onInitiateConversationClicked() {
-        if (getFragmentManager().findFragmentByTag(TAG_INITIATE_CONVERSATION_DIALOG) != null) {
+        if (getSupportFragmentManager().findFragmentByTag(TAG_INITIATE_CONVERSATION_DIALOG) != null) {
             return;
         }
 
         Fragment initiateConversationFragment = new InitiateConversationFragment();
-        getFragmentManager()
+        getSupportFragmentManager()
                 .beginTransaction()
                 .addToBackStack(null)
                 .replace(R.id.container, initiateConversationFragment, TAG_INITIATE_CONVERSATION_DIALOG)
@@ -101,7 +101,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
 
     @Override
     public void onListScrolled(int dy, boolean atTop) {
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab == null) return;
         if (!atTop) {
             ab.hide();
@@ -116,14 +116,14 @@ public class ConversationsActivity extends TabbarActivityBase implements
 
     @Override
     public void onConversationCreated(Conversation conversation) {
-        getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         EventBus.getDefault().post(new ConversationChanged(conversation));
         ConversationActivity.startConversationActivity(this, conversation, null);
     }
 
     private void refreshAb() {
-        boolean canback = getFragmentManager().getBackStackEntryCount()>0;
-        getActionBar().setDisplayHomeAsUpEnabled(canback);
+        boolean canback = getSupportFragmentManager().getBackStackEntryCount()>0;
+        getSupportActionBar().setDisplayHomeAsUpEnabled(canback);
         if (mCreateConversationMenuItem != null) mCreateConversationMenuItem.setVisible(!canback);
     }
 }

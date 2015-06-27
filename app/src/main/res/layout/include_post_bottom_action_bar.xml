@@ -49,7 +49,7 @@
         android:id="@+id/more"
         style="@style/PostButtonsItem"
         android:layout_gravity="right"
-        android:background="?android:selectableItemBackground"
+        android:background="?selectableItemBackground"
         android:contentDescription="@string/feed_item_more_content_description"
         android:src="@drawable/ic_more_light" />
 

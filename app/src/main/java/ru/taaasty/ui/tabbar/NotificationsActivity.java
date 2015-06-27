@@ -1,9 +1,9 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.ActionBar;
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
@@ -27,12 +27,12 @@ public class NotificationsActivity extends TabbarActivityBase implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        getActionBar().setIcon(android.R.color.transparent);
+        getSupportActionBar().setIcon(android.R.color.transparent);
 
 
         if (savedInstanceState == null) {
             Fragment fragment = NotificationListFragment.newInstance();
-            getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
             if (getIntent().hasExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ)) {
                 long ids[] = getIntent().getLongArrayExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
                 if (ids.length != 0) {
@@ -66,7 +66,7 @@ public class NotificationsActivity extends TabbarActivityBase implements
 
     @Override
     public void onListScrolled(int scrollY, boolean atTop) {
-        ActionBar ab = getActionBar();
+        ActionBar ab = getSupportActionBar();
         if (ab == null) return;
         if (!atTop) {
             ab.hide();

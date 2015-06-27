@@ -1,10 +1,10 @@
 package ru.taaasty.ui.tabbar;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -21,7 +21,6 @@ import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.Locale;
-import java.util.NoSuchElementException;
 
 import de.greenrobot.event.EventBus;
 import io.intercom.android.sdk.Intercom;
@@ -77,7 +76,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         Intercom.client().openGCMMessage(getIntent().getData());
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         if (savedInstanceState != null) {
             mStats = savedInstanceState.getParcelable(BUNDLE_KEY_FEED_STATS);

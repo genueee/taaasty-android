@@ -30,11 +30,9 @@ public class FriendsFragment extends RelationshipListFragmentBase {
     }
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        setEmptyText(getResources().getText(R.string.no_friends));
+    public int getListIsEmptyText() {
+        return R.string.no_friends;
     }
-
 
     @Override
     Observable<Relationships> createRelationshipsObservable() {

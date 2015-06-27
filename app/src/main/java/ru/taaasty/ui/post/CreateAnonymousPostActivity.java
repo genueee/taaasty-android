@@ -1,14 +1,14 @@
 package ru.taaasty.ui.post;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,8 +18,8 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.R;
 import ru.taaasty.IntentService;
+import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.widgets.ErrorTextView;
@@ -48,7 +48,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         setContentView(R.layout.activity_create_anonyous_post);
         if (savedInstanceState == null) {
             Fragment fragment = CreateTextPostFragment.newCreateAnonymousInstance();
-            getFragmentManager()
+            getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
@@ -56,7 +56,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         }
         EventBus.getDefault().register(this);
 
-        final ActionBar ab = getActionBar();
+        final ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
@@ -95,7 +95,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         PostForm post;
         CreateTextPostFragment fragment;
 
-        fragment = (CreateTextPostFragment)getFragmentManager().findFragmentById(R.id.container);
+        fragment = (CreateTextPostFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         post = fragment.getForm();
         IntentService.startPostEntry(this, post);
         setUploadingStatus(true);

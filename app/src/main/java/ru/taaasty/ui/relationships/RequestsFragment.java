@@ -1,15 +1,18 @@
 package ru.taaasty.ui.relationships;
 
 import android.app.Activity;
-import android.app.ListFragment;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -32,11 +35,15 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
-public class RequestsFragment extends ListFragment {
+public class RequestsFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "RequestsFragment";
 
     private static final String KEY_RELATIONSHIPS = "ru.taaasty.ui.relationships.RequestsFragment.relationships";
+
+    private ListView mListView;
+
+    private View mProgressBar;
 
     RequestsAdapter mAdapter;
     OnFragmentInteractionListener mListener;
@@ -65,31 +72,36 @@ public class RequestsFragment extends ListFragment {
         mApiRelationships = RestClient.getAPiRelationships();
     }
 
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = inflater.inflate(R.layout.fragment_relationship_list, container, false);
+        mListView = (ListView)root.findViewById(R.id.list);
+        mProgressBar = root.findViewById(R.id.progress);
+
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (null != mListener) {
+                    mListener.onRelationshipClicked(view, (Relationship) parent.getItemAtPosition(position));
+                }
+            }
+        });
+        ((TextView)root.findViewById(R.id.empty_text)).setText(R.string.no_requests);
+
+        return root;
+    }
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mAdapter = new RequestsAdapter(getActivity());
-
         if (savedInstanceState != null) {
             ArrayList<Relationship> relationships = savedInstanceState.getParcelableArrayList(KEY_RELATIONSHIPS);
             mAdapter.setRelationships(relationships);
         }
-
-        setListAdapter(mAdapter);
-
-        Drawable divider = getResources().getDrawable(R.drawable.followings_list_divider);
-        getListView().setDivider(divider);
-        //getListView().setVerticalFadingEdgeEnabled(false);
-        //getListView().setOverScrollMode(View.OVER_SCROLL_NEVER);
-        getListView().setClipToPadding(false);
-        getListView().setPadding(0,
-                getResources().getDimensionPixelSize(R.dimen.following_followers_list_padding_top),
-                0, 0);
-        setEmptyText(getResources().getText(R.string.no_subscribers));
-
+        mListView.setAdapter(mAdapter);
         refreshRelationships();
-        setEmptyText(getResources().getText(R.string.no_requests));
-
         EventBus.getDefault().register(this);
     }
 
@@ -117,16 +129,6 @@ public class RequestsFragment extends ListFragment {
         mListener = null;
     }
 
-    @Override
-    public void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        if (DBG) Log.v(TAG, " onListItemClick: " + id);
-
-        if (null != mListener) {
-            mListener.onRelationshipClicked(v, (Relationship) l.getItemAtPosition(position));
-        }
-    }
-
     public void onEventMainThread(RelationshipChanged relationshipChanged) {
         if (mAdapter == null) return;
         if (Relationship.RELATIONSHIP_REQUESTED.equals(relationshipChanged.relationship.getState())) {
@@ -144,11 +146,7 @@ public class RequestsFragment extends ListFragment {
     void refreshRelationships() {
         mRelationshipsSubscription.unsubscribe();
 
-        if (isResumed()) {
-            setListShownNoAnimation(false);
-        } else {
-            setListShown(false);
-        }
+        if (mProgressBar != null) mProgressBar.setVisibility(View.VISIBLE);
 
         Observable<Relationships> observable = AppObservable.bindFragment(this,
                 mApiRelationships.getRelationshipsRequested(null, 200, false));
@@ -166,7 +164,7 @@ public class RequestsFragment extends ListFragment {
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 mApiRelationships.approveTlogRelationship(String.valueOf(relationship.getReaderId())));
 
-        getListView().setEnabled(false);
+        mListView.setEnabled(false);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mSetListEnabledAction0)
@@ -177,7 +175,7 @@ public class RequestsFragment extends ListFragment {
         Observable<Relationship> observable = AppObservable.bindFragment(this,
                 mApiRelationships.disapproveTlogRelationship(String.valueOf(relationship.getReaderId())));
 
-        getListView().setEnabled(false);
+        mListView.setEnabled(false);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mSetListEnabledAction0)
@@ -188,12 +186,12 @@ public class RequestsFragment extends ListFragment {
 
         @Override
         public void onCompleted() {
-            setListShown(true);
+            if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
         }
 
         @Override
         public void onError(Throwable e) {
-            setListShown(true);
+            if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
             mListener.notifyError(getString(R.string.error_loading_relationships), e);
         }
 
@@ -208,7 +206,7 @@ public class RequestsFragment extends ListFragment {
     private final Action0 mSetListEnabledAction0 = new Action0() {
         @Override
         public void call() {
-            getListView().setEnabled(true);
+            if (mListView != null) mListView.setEnabled(true);
         }
     };
 

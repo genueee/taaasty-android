@@ -22,7 +22,7 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list"
         android:scrollbars="vertical"
-        android:paddingTop="?android:actionBarSize"
+        android:paddingTop="?actionBarSize"
         android:paddingBottom="8dp"
         android:paddingRight="4dp"
         android:divider="@drawable/followings_list_divider"

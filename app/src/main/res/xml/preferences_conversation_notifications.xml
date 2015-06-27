@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:summary="@string/setup_notifications_on_new_messages"
+    android:title="@string/status_bar_conversations_settings">
+
+    <SwitchPreference
+        android:key="pref_key_enable_status_bar_conversations_notifications"
+        android:title="@string/status_bar_notifications_turned_on" />
+
+    <CheckBoxPreference
+        android:dependency="pref_key_enable_status_bar_conversations_notifications"
+        android:key="pref_key_status_bar_conversations_notifications_vibrate"
+        android:title="@string/status_bar_notifications_vibrate" />
+
+    <CheckBoxPreference
+        android:dependency="pref_key_enable_status_bar_conversations_notifications"
+        android:key="pref_key_status_bar_conversations_notifications_sound"
+        android:title="@string/status_bar_notifications_sound" />
+
+    <CheckBoxPreference
+        android:dependency="pref_key_enable_status_bar_conversations_notifications"
+        android:key="pref_key_status_bar_conversations_notifications_lights"
+        android:title="@string/status_bar_notifications_lights" />
+
+    <Preference
+        android:key="reset_conversations_notifications_preferences"
+        android:persistent="false"
+        android:summary="@string/reset_preferences_summary"
+        android:title="@string/reset_preferences" />
+
+</PreferenceScreen>

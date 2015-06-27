@@ -1,13 +1,13 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -85,7 +85,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
                 default:
                     throw new IllegalArgumentException("incorrect current section");
             }
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
                     .commit();
         }
@@ -159,7 +159,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     }
 
     void refreshData() {
-        Fragment current = getFragmentManager().findFragmentById(R.id.container);
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
         if (current != null) ((IRereshable)current).refreshData(true);
     }
 }

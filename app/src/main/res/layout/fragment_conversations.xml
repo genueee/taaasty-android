@@ -25,7 +25,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        android:paddingTop="?android:actionBarSize"
+        android:paddingTop="?actionBarSize"
         android:paddingBottom="8dp"
         android:paddingRight="4dp"
         android:divider="@drawable/followings_list_divider"

@@ -13,7 +13,7 @@
         android:divider="@null"
         android:dividerHeight="0dp"
         android:overScrollHeader="@android:color/black"
-        android:paddingTop="?android:actionBarSize"
+        android:paddingTop="?actionBarSize"
         android:paddingBottom="8dp"
         android:layout_above="@+id/reply_to_comment_container"
         tools:listitem="@layout/comments_item2"

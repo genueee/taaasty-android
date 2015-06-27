@@ -2,20 +2,19 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.preference.TwoStatePreference;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
 
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
@@ -72,7 +71,6 @@ public class SettingsFragment extends PreferenceFragment {
 
     private SwitchPreference mAvailableNotificationsPref;
 
-
     public SettingsFragment() {
         // Required empty public constructor
     }
@@ -85,7 +83,6 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.profile_preferences);
-
     }
 
     @Override
@@ -99,21 +96,22 @@ public class SettingsFragment extends PreferenceFragment {
         mEmailPref = (EditTextPreference) findPreference("preference_email");
         mAvailableNotificationsPref = (SwitchPreference) findPreference("preference_available_notifications");
 
-        findPreference("reset_conversations_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+        Preference.OnPreferenceClickListener nestedClickListener = new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                resetToDefaults((PreferenceScreen)findPreference("status_bar_conversations_settings"));
-                return true;
+                if (mListener != null) {
+                    mListener.onNestedPreferenceSelected(preference.getKey());
+                    return true;
+                } else {
+                    return false;
+                }
             }
-        });
+        };
 
-        findPreference("reset_notifications_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                resetToDefaults((PreferenceScreen)findPreference("status_bar_notifications_settings"));
-                return true;
-            }
-        });
+        findPreference("pref_key_conversation_notifications").setOnPreferenceClickListener(nestedClickListener);
+        findPreference("pref_key_notification_notifications").setOnPreferenceClickListener(nestedClickListener);
+        mCurrentUser = UserManager.getInstance().getCachedCurrentUser();
+        setupUser();
     }
 
     @Override
@@ -136,13 +134,8 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onResume() {
         super.onResume();
-        getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
+        //noinspection ConstantConditions
+        ((ActivityBase)getActivity()).getSupportActionBar().setTitle(getPreferenceScreen().getTitle());
     }
 
     @Override
@@ -258,27 +251,6 @@ public class SettingsFragment extends PreferenceFragment {
         setupRefreshingIndicator();
     }
 
-    void resetToDefaults(PreferenceGroup root) {
-        for (int i = root.getPreferenceCount() - 1; i >= 0; --i) {
-            Preference preference = root.getPreference(i);
-            if (preference instanceof PreferenceGroup) {
-                resetToDefaults((PreferenceGroup) preference);
-                continue;
-            }
-
-            if (!preference.isPersistent()) continue;
-
-            if (preference instanceof TwoStatePreference) {
-                Boolean defVal = (Boolean) PreferenceHelper.getDefaultValue(preference.getKey());
-                if (defVal == null) continue;
-                ((TwoStatePreference) preference).setChecked(defVal);
-            } else {
-                throw new IllegalStateException("Unknown preference type");
-            }
-        }
-
-    }
-
     private final Preference.OnPreferenceChangeListener mOnPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
 
         Observable<CurrentUser> observable;
@@ -362,72 +334,6 @@ public class SettingsFragment extends PreferenceFragment {
         };
     }
 
-    /**
-     * Listener для отправки аналитики для persistent настроек
-     */
-    private final SharedPreferences.OnSharedPreferenceChangeListener mSharedPrefsChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            switch (key) {
-                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS:
-                    sendAnalyticsAppEvent("все пуши", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS:
-                    sendAnalyticsAppEvent("пуши о переписках", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_VIBRATE:
-                    sendAnalyticsAppEvent("вибрация (пуши о переписках)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_SOUND:
-                    sendAnalyticsAppEvent("звук (пуши о переписках)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_LIGHTS:
-                    sendAnalyticsAppEvent("световой индикатор (пуши о переписках)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS:
-                    sendAnalyticsAppEvent("пуши об уведомлениях", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_VIBRATE:
-                    sendAnalyticsAppEvent("вибрация (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_SOUND:
-                    sendAnalyticsAppEvent("звук (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_LIGHTS:
-                    sendAnalyticsAppEvent("световой индикатор (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_VOTES_FAVORITES:
-                    sendAnalyticsAppEvent("соб. голоса и избранное (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_NEW_COMMENTS:
-                    sendAnalyticsAppEvent("соб. новые комментарии (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING:
-                    sendAnalyticsAppEvent("соб. подписки (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_REQUEST:
-                    sendAnalyticsAppEvent("соб. запросы на дружбу (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_APPROVE:
-                    sendAnalyticsAppEvent("соб. одобрение дружбы (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_MENTIONS:
-                    sendAnalyticsAppEvent("соб. упоминания (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
-                    break;
-                default:
-                    if (DBG) throw new IllegalStateException("unhandled preference key" + key);
-            }
-        }
-
-        private void sendAnalyticsAppEvent(String action, boolean switchedOn) {
-            if (getActivity() == null) return;
-            String mainAction = switchedOn ? "Вкл. " : "Выкл. ";
-            TaaastyApplication app = (TaaastyApplication)getActivity().getApplication();
-            app.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_PREFERENCES_APP, mainAction + action,
-                    null);
-        }
-    };
-
     private final Observer<CurrentUser> mCurrentUserObserver = new Observer<CurrentUser>() {
 
         @Override
@@ -475,9 +381,82 @@ public class SettingsFragment extends PreferenceFragment {
     };
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onErrorRefreshUser(Throwable e);
-        public void onCurrentUserLoaded(CurrentUser user);
+        void onErrorRefreshUser(Throwable e);
+        void onCurrentUserLoaded(CurrentUser user);
+
+        void onNestedPreferenceSelected(String key);
     }
 
+    public static class NotificationsSettingsNestedFragment extends PreferenceFragment {
+        private static final String TAG_KEY = "TAG_KEY";
+
+        public static NotificationsSettingsNestedFragment newInstance(String key) {
+            NotificationsSettingsNestedFragment fragment = new NotificationsSettingsNestedFragment();
+            // supply arguments to bundle.
+            Bundle args = new Bundle();
+            args.putString(TAG_KEY, key);
+            fragment.setArguments(args);
+            return fragment;
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            getPreferenceManager().setSharedPreferencesName(PreferenceHelper.PREFS_NAME);
+
+            String key = getArguments().getString(TAG_KEY);
+            switch (key) {
+                case "pref_key_conversation_notifications":
+                    addPreferencesFromResource(R.xml.preferences_conversation_notifications);
+                    findPreference("reset_conversations_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            resetToDefaults(getPreferenceScreen());
+                            return true;
+                        }
+                    });
+                    break;
+                case "pref_key_notification_notifications":
+                    addPreferencesFromResource(R.xml.preferences_notification_notifications);
+                    findPreference("reset_notifications_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                        @Override
+                        public boolean onPreferenceClick(Preference preference) {
+                            resetToDefaults(getPreferenceScreen());
+                            return true;
+                        }
+                    });
+                    break;
+                default:
+                    throw new IllegalArgumentException("unknown key " + key);
+            }
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            //noinspection ConstantConditions
+            ((ActivityBase)getActivity()).getSupportActionBar().setTitle(getPreferenceScreen().getTitle());
+        }
+
+        private static void resetToDefaults(PreferenceGroup root) {
+            for (int i = root.getPreferenceCount() - 1; i >= 0; --i) {
+                Preference preference = root.getPreference(i);
+                if (preference instanceof PreferenceGroup) {
+                    resetToDefaults((PreferenceGroup) preference);
+                    continue;
+                }
+
+                if (!preference.isPersistent()) continue;
+
+                if (preference instanceof TwoStatePreference) {
+                    Boolean defVal = (Boolean) PreferenceHelper.getDefaultValue(preference.getKey());
+                    if (defVal == null) continue;
+                    ((TwoStatePreference) preference).setChecked(defVal);
+                } else {
+                    throw new IllegalStateException("Unknown preference type");
+                }
+            }
+        }
+    }
 
 }

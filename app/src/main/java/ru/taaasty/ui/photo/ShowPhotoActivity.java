@@ -1,21 +1,20 @@
 package ru.taaasty.ui.photo;
 
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v13.app.FragmentStatePagerAdapter;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,7 +27,6 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.PhotoScrollPositionIndicator;
 
 public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment.OnFragmentInteractionListener {
@@ -45,7 +43,6 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
     private PhotoAdapter mAdapter;
     private PhotoScrollPositionIndicator mIndicator;
-    private ActionbarUserIconLoader mAbIconLoader; // Anti picasso weak ref
     private boolean mIndicatorVisible = false;
 
     public static void startShowPhotoActivity(Context context,
@@ -104,26 +101,16 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         }
 
         mIndicator = (PhotoScrollPositionIndicator)findViewById(R.id.photo_position_indicator);
-        mAdapter = new PhotoAdapter(getFragmentManager(), images, previewUrl);
+        mAdapter = new PhotoAdapter(getSupportFragmentManager(), images, previewUrl);
         ViewPager viewPager = (ViewPager) findViewById(R.id.PhotoViewPager);
 
         viewPager.setAdapter(mAdapter);
 
-        if (getActionBar() != null) {
-            ActionBar ab = getActionBar();
+        if (getSupportActionBar() != null) {
+            ActionBar ab = getSupportActionBar();
             ab.setTitle(title == null ?  "" : Html.fromHtml(title));
+            ab.setDisplayShowHomeEnabled(true);
             ab.setDisplayHomeAsUpEnabled(true);
-
-            Drawable dummyAvatar = getResources().getDrawable(R.drawable.ic_user_stub);
-            ab.setIcon(dummyAvatar);
-
-            mAbIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-                    Toast.makeText(ShowPhotoActivity.this, R.string.error_loading_image, Toast.LENGTH_SHORT).show();
-                }
-            };
-            mAbIconLoader.loadIcon(author.getUserpic(), author.getName());
         }
     }
 
@@ -173,14 +160,14 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
             } else {
                 newUiOptions = View.SYSTEM_UI_FLAG_LOW_PROFILE;
             }
-            getActionBar().hide();
+            getSupportActionBar().hide();
             if (mIndicatorVisible) mIndicator.hide();
             isNavigationHidden = true;
         } else {
             if (Build.VERSION.SDK_INT < 19) {
                 newUiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
             }
-            getActionBar().show();
+            getSupportActionBar().show();
             isNavigationHidden = false;
             userForcedToChangeOverlayMode = false;
             if (mIndicatorVisible) mIndicator.show();

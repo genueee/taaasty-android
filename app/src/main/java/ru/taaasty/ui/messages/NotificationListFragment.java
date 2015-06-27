@@ -2,8 +2,6 @@ package ru.taaasty.ui.messages;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +12,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -351,7 +351,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         if (mListView == null || mWorkFragment == null) return;
         NotificationsListManaged list = mWorkFragment.getNotificationList();
         Set<Long> ids = new HashSet<>();
-        for (int i = Math.max(list.size(), mMaxVisiblePosition + 1) - 1; i >= 0; --i) {
+        for (int i = Math.min(list.size(), mMaxVisiblePosition + 1) - 1; i >= 0; --i) {
             Notification n = list.get(i);
             if (!n.isMarkedAsRead()) ids.add(n.id);
         }
@@ -408,7 +408,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 Bundle options = ActivityOptionsCompat.makeScaleUpAnimation(
                         v, 0, 0, v.getWidth(), v.getHeight()).toBundle();
                 if ((Build.VERSION.SDK_INT >= 16) && (options != null)) {
-                    startActivity(intent, options);
+                    getActivity().startActivity(intent, options);
                 } else {
                     startActivity(intent);
                 }

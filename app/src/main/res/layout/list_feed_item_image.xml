@@ -19,7 +19,7 @@
         android:contentDescription="@string/feed_item_image_content_description" />
 
     <info.piwai.android.JellyBeanSpanFixTextView
-        android:background="?android:selectableItemBackground"
+        android:background="?selectableItemBackground"
         android:id="@+id/more_photos_indicator"
         android:visibility="gone"
         tools:visibility="visible"

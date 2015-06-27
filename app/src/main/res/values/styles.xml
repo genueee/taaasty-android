@@ -2,59 +2,88 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.NoActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimaryLight</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/feed_light_background_color</item>
         <item name="android:colorBackground">@color/feed_light_background_color</item>
         <item name="android:colorBackgroundCacheHint">@color/feed_light_background_color</item>
         <item name="vpiCirclePageIndicatorStyle">@style/LiveFeedCirclePageIndicator</item>
-        <item name="android:selectableItemBackground">@drawable/list_selector_holo_light</item>
+        <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
+        <item name="actionBarSize">52dp</item>
     </style>
 
     <style name="AppThemeDark" parent="AppTheme">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/feed_dark_background_color</item>
         <item name="android:colorBackground">@color/feed_dark_background_color</item>
         <item name="android:colorBackgroundCacheHint">@color/feed_dark_background_color</item>
     </style>
 
-    <style name="AppThemeLightActionBar" parent="android:Theme.Holo.Light">
-        <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
-        <item name="android:actionBarStyle">@style/ActionBar.Taaasty</item>
-        <item name="android:selectableItemBackground">@drawable/list_selector_holo_light</item>
+    <style name="AppThemeLightActionBar" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimaryLight</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="homeAsUpIndicator">@drawable/ic_back</item>
+        <item name="actionBarStyle">@style/ActionBar.Taaasty</item>
+        <item name="actionBarSize">52dp</item>
+        <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
     </style>
 
-    <style name="AppThemeGreenActionBar" parent="android:Theme.Holo.Light.DarkActionBar">
-        <item name="android:homeAsUpIndicator">@drawable/ic_back_white</item>
-        <item name="android:actionBarStyle">@style/ActionBar.Taaasty.Green</item>
-        <item name="android:selectableItemBackground">@drawable/list_selector_holo_light</item>
+    <style name="AppThemeGreenActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="homeAsUpIndicator">@drawable/ic_back_white</item>
+        <item name="actionBarStyle">@style/ActionBar.Taaasty.Green</item>
+        <item name="actionBarSize">52dp</item>
+        <item name="android:listViewStyle">@style/ListViewStyle</item> <!-- списки в настройках -->
+        <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
     </style>
 
     <style name="AppThemeOverlayingGreenActionBar" parent="AppThemeGreenActionBar">
         <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
     </style>
 
     <style name="AppThemeOverlayingActionBar" parent="AppThemeLightActionBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
     </style>
 
-    <style name="FullscreenThemeBase" parent="android:Theme.Holo">
-        <item name="android:homeAsUpIndicator">@drawable/ic_back</item>
-        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
+    <style name="TranslucentTheme" parent="AppTheme">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="FullscreenThemeBase" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="homeAsUpIndicator">@drawable/ic_back</item>
+        <item name="actionBarStyle">@style/FullscreenActionBarStyle</item>
         <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
         <item name="android:windowBackground">@android:color/background_dark</item>
         <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
         <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
-        <item name="android:selectableItemBackground">@drawable/list_selector_holo_light</item>
+        <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
     </style>
 
     <style name="FullscreenTheme" parent="FullscreenThemeBase"/>
 
-    <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
-        <item name="android:background">@color/black_overlay</item>
+    <style name="FullscreenActionBarStyle" parent="Widget.AppCompat.ActionBar">
+        <item name="background">@color/black_overlay</item>
     </style>
 
     <style name="CreatePostTheme" parent="AppThemeLightActionBar">
-
     </style>
 
     <style name="ShowPostTheme" parent="AppThemeOverlayingActionBar">
@@ -67,32 +96,34 @@
     </style>
 
     <style name="TlogActivityBase" parent="FullscreenThemeBase">
-        <item name="android:actionBarStyle">@style/ActionBar.Taaasty.Transparent</item>>
+        <item name="actionBarStyle">@style/ActionBar.Taaasty.Transparent</item>>
     </style>
 
     <style name="TlogActivity" parent="TlogActivityBase">
-        <item name="android:homeAsUpIndicator">@drawable/ic_back_white</item>
+        <item name="homeAsUpIndicator">@drawable/ic_back_white</item>
     </style>
 
     <style name="UserInfoActivity" parent="AppThemeDark">
     </style>
 
-    <style name="ActionBar.Taaasty" parent="android:Widget.Holo.Light.ActionBar">
-        <item name="android:background">@android:color/white</item>
+    <style name="ActionBar.Taaasty" parent="Widget.AppCompat.Light.ActionBar">
+        <item name="background">@android:color/white</item>
+        <item name="contentInsetEnd">0dp</item>
     </style>
 
-    <style name="ActionBar.Taaasty.Green" parent="android:Widget.Holo.Light.ActionBar.Solid.Inverse">
-        <item name="android:background">@color/green_background_normal</item>
-        <item name="android:icon">@drawable/avatar_dummy_placeholder</item>
-    </style>
-
-    <style name="ActionBar.Taaasty.Transparent" parent="android:Widget.Holo.Light.ActionBar">
-        <item name="android:background">@android:color/transparent</item>
+    <style name="ActionBar.Taaasty.Transparent" parent="ActionBar.Taaasty">
+        <item name="background">@android:color/transparent</item>
         <item name="android:displayOptions">showHome|homeAsUp|showTitle</item>
         <item name="android:icon">@android:color/transparent</item>
     </style>
 
-    <style name="NoFrameFloatingDialog" parent="android:style/Theme.Holo.Dialog.NoActionBar">
+    <style name="ActionBar.Taaasty.Green" parent="Widget.AppCompat.Light.ActionBar.Solid.Inverse">
+        <item name="background">@color/green_background_normal</item>
+        <item name="android:icon">@drawable/avatar_dummy_placeholder</item>
+        <item name="contentInsetEnd">0dp</item>
+    </style>
+
+    <style name="PostCommentActionActivityTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:backgroundDimEnabled">true</item>
         <item name="android:backgroundDimAmount">0.85</item>
@@ -102,15 +133,12 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
-    </style>
-
-    <style name="NoFrameDialog" parent="android:style/Theme.Holo.Dialog.NoActionBar">
-        <item name="android:windowBackground">@color/no_frame_dialog_background</item>
-        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowIsFloating">false</item>
     </style>
 
-    <style name="PostCommentActionActivityTheme" parent="NoFrameFloatingDialog">
+    <style name="NoFrameDialog" parent="Theme.AppCompat.Dialog">
+        <item name="android:windowBackground">@color/no_frame_dialog_background</item>
+        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowIsFloating">false</item>
     </style>
 
@@ -222,7 +250,7 @@
         <item name="android:textSize">22sp</item>
         <item name="android:textColor">@drawable/additional_menu_item_text_color</item>
         <item name="android:clickable">true</item>
-        <item name="android:background">?android:selectableItemBackground</item>
+        <item name="android:background">?selectableItemBackground</item>
     </style>
 
     <style name="UserInfoContentColumn">
@@ -393,7 +421,7 @@
         <item name="android:clickable">true</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textColor">@android:color/black</item>
-        <item name="android:background">?android:selectableItemBackground</item>
+        <item name="android:background">?selectableItemBackground</item>
         <item name="android:minWidth">42dp</item>
         <item name="android:minHeight">42dp</item>
         <item name="android:gravity">center_vertical</item>
@@ -495,6 +523,14 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_centerInParent">true</item>
+    </style>
+
+    <style name="ListViewStyle" parent="Widget.AppCompat.ListView">
+        <item name="android:divider">@drawable/followings_list_divider_line</item>
+    </style>
+
+    <style name="ToolbarNavigationButton" parent="@style/Widget.AppCompat.Toolbar.Button.Navigation">
+        <item name="android:minWidth">24dp</item>
     </style>
 
 </resources>

@@ -1,11 +1,11 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -35,8 +35,6 @@ import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.service.ApiFeeds;
-import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.CreateAnonymousPostActivity;

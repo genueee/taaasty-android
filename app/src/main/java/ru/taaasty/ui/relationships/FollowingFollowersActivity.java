@@ -1,11 +1,10 @@
 package ru.taaasty.ui.relationships;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
@@ -19,7 +18,6 @@ import ru.taaasty.R;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class FollowingFollowersActivity extends ActivityBase implements
@@ -66,7 +64,7 @@ public class FollowingFollowersActivity extends ActivityBase implements
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
@@ -81,15 +79,7 @@ public class FollowingFollowersActivity extends ActivityBase implements
         if (initialSection == SECTION_REQUESTS && !showRequests) initialSection = SECTION_FOLLOWERS;
         indicator.setSection(initialSection);
 
-        ActionbarUserIconLoader abIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                notifyError(getText(R.string.error_loading_image), null);
-            }
-        };
-
-        abIconLoader.loadIcon(mUser.getUserpic(), mUser.getName());
-
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
     @Override

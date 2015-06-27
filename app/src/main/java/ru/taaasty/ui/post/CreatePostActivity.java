@@ -1,17 +1,17 @@
 package ru.taaasty.ui.post;
 
-import android.app.ActionBar;
 import android.app.Activity;
-import android.app.DialogFragment;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -58,7 +58,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         @Entry.EntryPrivacy
         String postPrivacy = Entry.PRIVACY_PUBLIC;
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getFragmentManager());
+        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
 
         if (savedInstanceState == null) {
             // Восстанавливаем значения последнего поста
@@ -87,7 +87,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
         mCreatePostButtons.setPrivacy(postPrivacy);
 
-        final ActionBar ab = getActionBar();
+        final ActionBar ab = getSupportActionBar();
         if (ab != null) {
             ab.setDisplayHomeAsUpEnabled(true);
             ab.setDisplayShowCustomEnabled(true);
@@ -206,7 +206,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         public void onPageSelected(int i) {
             Page selected = Page.values()[i];
             mCreatePostButtons.setActivated(selected.buttonViewId);
-            getActionBar().setTitle(selected.titleViewId);
+            getSupportActionBar().setTitle(selected.titleViewId);
         }
 
         @Override
@@ -224,7 +224,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Override
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(hasPicture);
-        dialog.show(getFragmentManager(), "SelectPhotoSourceDialogFragment");
+        dialog.show(getSupportFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
     @Override
@@ -289,7 +289,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     @Override
     public void doShowEmbeddMenuDialog(EmbeddMenuDialogFragment fragment) {
-        FragmentManager fm = getFragmentManager();
+        FragmentManager fm = getSupportFragmentManager();
         Fragment old = fm.findFragmentByTag("EmbeddMenuDialogFragment");
         FragmentTransaction ft = fm.beginTransaction();
         if (old != null) ft.remove(old);

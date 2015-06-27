@@ -1,21 +1,23 @@
 package ru.taaasty.ui;
 
-import android.app.ActionBar;
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.Window;
 import android.widget.Toast;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
+import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.model.CurrentUser;
-import ru.taaasty.utils.ActionbarUserIconLoader;
 import ru.taaasty.widgets.ErrorTextView;
 
 /**
@@ -25,13 +27,9 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
     private static final String TAG = "SettingsActivity";
     private static final boolean DBG = BuildConfig.DEBUG;
 
-    private ActionbarUserIconLoader mAbIconLoader; // Anti picasso weakref
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        requestWindowFeature(Window.FEATURE_PROGRESS);
 
         setContentView(R.layout.activity_settings);
 
@@ -42,8 +40,8 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
                     .commit();
         }
 
-        if (getActionBar() != null) {
-            ActionBar ab = getActionBar();
+        if (getSupportActionBar() != null) {
+            ActionBar ab = getSupportActionBar();
             ab.setDisplayHomeAsUpEnabled(true);
 
             Drawable dummyAvatar = getResources().getDrawable(R.drawable.ic_user_stub);
@@ -52,10 +50,32 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        getSharedPreferences(PreferenceHelper.PREFS_NAME, 0).registerOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getSharedPreferences(PreferenceHelper.PREFS_NAME, 0).unregisterOnSharedPreferenceChangeListener(mSharedPrefsChangedListener);
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                onBackPressed();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -77,7 +97,6 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
         }
 
         ert.setError(text, exception);
-
     }
 
     @Override
@@ -88,14 +107,77 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
     @Override
     public void onCurrentUserLoaded(CurrentUser user) {
-        if (getActionBar() != null) {
-            mAbIconLoader = new ActionbarUserIconLoader(this, getActionBar()) {
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-                    notifyError(getString(R.string.error_loading_image), null);
-                }
-            };
-            mAbIconLoader.loadIcon(user.getUserpic(), user.getName());
-        }
     }
+
+    @Override
+    public void onNestedPreferenceSelected(String key) {
+        getFragmentManager().beginTransaction().replace(R.id.container,
+                SettingsFragment.NotificationsSettingsNestedFragment.newInstance(key))
+                        .addToBackStack(null).commit();
+    }
+
+    /**
+     * Listener для отправки аналитики для persistent настроек
+     */
+    private final SharedPreferences.OnSharedPreferenceChangeListener mSharedPrefsChangedListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+            switch (key) {
+                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS:
+                    sendAnalyticsAppEvent("все пуши", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS:
+                    sendAnalyticsAppEvent("пуши о переписках", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_VIBRATE:
+                    sendAnalyticsAppEvent("вибрация (пуши о переписках)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_SOUND:
+                    sendAnalyticsAppEvent("звук (пуши о переписках)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_CONVERSATIONS_NOTIFICATIONS_LIGHTS:
+                    sendAnalyticsAppEvent("световой индикатор (пуши о переписках)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS:
+                    sendAnalyticsAppEvent("пуши об уведомлениях", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_VIBRATE:
+                    sendAnalyticsAppEvent("вибрация (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_SOUND:
+                    sendAnalyticsAppEvent("звук (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_NOTIFICATIONS_LIGHTS:
+                    sendAnalyticsAppEvent("световой индикатор (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_VOTES_FAVORITES:
+                    sendAnalyticsAppEvent("соб. голоса и избранное (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_NEW_COMMENTS:
+                    sendAnalyticsAppEvent("соб. новые комментарии (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING:
+                    sendAnalyticsAppEvent("соб. подписки (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_REQUEST:
+                    sendAnalyticsAppEvent("соб. запросы на дружбу (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_FOLLOWING_APPROVE:
+                    sendAnalyticsAppEvent("соб. одобрение дружбы (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                case PreferenceHelper.PREF_KEY_STATUS_BAR_NOTIFICATIONS_EVENTS_MENTIONS:
+                    sendAnalyticsAppEvent("соб. упоминания (пуши об уведомлениях)", sharedPreferences.getBoolean(key, true));
+                    break;
+                default:
+                    if (DBG) throw new IllegalStateException("unhandled preference key" + key);
+            }
+        }
+
+        private void sendAnalyticsAppEvent(String action, boolean switchedOn) {
+            String mainAction = switchedOn ? "Вкл. " : "Выкл. ";
+            TaaastyApplication app = (TaaastyApplication)getApplication();
+            app.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_PREFERENCES_APP, mainAction + action,
+                    null);
+        }
+    };
 }

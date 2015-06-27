@@ -23,7 +23,7 @@
         android:minWidth="42dp"
         android:scaleType="center"
         android:clickable="true"
-        android:background="?android:selectableItemBackground"
+        android:background="?selectableItemBackground"
         android:src="@drawable/ic_magick_wand" />
 
 
@@ -140,7 +140,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_marginTop="28dp"
-                android:background="?android:selectableItemBackground"
+                android:background="?selectableItemBackground"
                 android:foreground="@drawable/register_btn_background"
                 android:contentDescription="@string/initiate_conversation"
                 android:padding="12dp"
@@ -160,7 +160,7 @@
 
         <LinearLayout
             android:id="@+id/entries_count"
-            android:background="?android:selectableItemBackground"
+            android:background="?selectableItemBackground"
             style="@style/UserInfoContentColumn">
 
             <TextView

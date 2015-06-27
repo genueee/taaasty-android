@@ -35,7 +35,7 @@
             tools:ignore="contentDescription"
             android:src="@drawable/ic_disapprove"
             android:contentDescription="@string/disapprove_following_request_content_description"
-            android:background="?android:selectableItemBackground"
+            android:background="?selectableItemBackground"
             android:padding="4dp"
             android:layout_marginRight="8dp"
             android:layout_gravity="center"

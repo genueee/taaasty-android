@@ -45,7 +45,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
 
     protected void onPostCreate (Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        mTabbar = (TabbarFragment) getFragmentManager().findFragmentById(R.id.tabbar);
+        mTabbar = (TabbarFragment) getSupportFragmentManager().findFragmentById(R.id.tabbar);
         mTabbar.setActivated(getCurrentTabId());
     }
 

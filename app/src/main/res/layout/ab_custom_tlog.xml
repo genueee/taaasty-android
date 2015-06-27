@@ -3,7 +3,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
-    android:layout_height="?android:actionBarSize"
+    android:layout_height="?actionBarSize"
     android:layout_gravity="right">
 
     <ru.taaasty.widgets.HintedExtendedImageView
@@ -14,7 +14,7 @@
         android:contentDescription="@string/unsubscribe_content_description"
         android:scaleType="centerInside"
         android:clickable="true"
-        android:layout_width="?android:actionBarSize"
+        android:layout_width="?actionBarSize"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:padding="11dp" />
@@ -26,14 +26,14 @@
         android:scaleType="centerInside"
         tools:visibility="visible"
         android:clickable="true"
-        android:layout_width="?android:actionBarSize"
+        android:layout_width="?actionBarSize"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:padding="4dp" />
 
     <ProgressBar
         android:id="@+id/follow_unfollow_progress"
-        android:layout_width="?android:actionBarSize"
+        android:layout_width="?actionBarSize"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:padding="11dp" />

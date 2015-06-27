@@ -1,12 +1,12 @@
 package ru.taaasty.ui;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
