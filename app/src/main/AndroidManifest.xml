@@ -57,7 +57,7 @@
 
                 <data
                     android:host="taaasty.com"
-                    android:path=""
+                    android:path="/"
                     android:scheme="http" />
             </intent-filter>
         </activity>
@@ -111,13 +111,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".ui.UserInfoActivity"
