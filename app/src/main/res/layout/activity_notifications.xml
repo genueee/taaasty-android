@@ -1,4 +1,4 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,14 +10,13 @@
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         tools:layout="@layout/tabbar" />
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/title"
-        android:layout_above="@id/tabbar"
+        android:layout_marginBottom="@dimen/tabbarSize"
         android:id="@+id/container"/>
 
     <ru.taaasty.widgets.ErrorTextView
@@ -28,4 +27,4 @@
         tools:text="Мазафака какая-то с сайтом"
         tools:visibility="invisible" />
 
-</RelativeLayout>
+</FrameLayout>

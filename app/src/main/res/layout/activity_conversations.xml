@@ -1,23 +1,23 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.tabbar.ConversationsActivity"
     tools:ignore="MergeRootFrame">
 
+    <FrameLayout
+        android:id="@+id/container"
+        android:layout_marginBottom="@dimen/tabbarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <fragment
         android:id="@+id/tabbar"
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         tools:layout="@layout/tabbar" />
-
-    <FrameLayout
-        android:id="@+id/container"
-        android:layout_above="@id/tabbar"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
@@ -27,4 +27,4 @@
         tools:text="Мазафака какая-то с сайтом"
         tools:visibility="visible" />
 
-</RelativeLayout>
+</FrameLayout>

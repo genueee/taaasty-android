@@ -1,4 +1,4 @@
-<RelativeLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -6,18 +6,11 @@
     tools:context=".LiveFeedActivity"
     tools:ignore="MergeRootFrame">
 
-    <fragment android:id="@+id/tabbar"
-        android:name="ru.taaasty.ui.tabbar.TabbarFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        tools:layout="@layout/tabbar" />
-
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
-        android:layout_above="@id/tabbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/tabbarSize"
         tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
     <ru.taaasty.widgets.ErrorTextView
@@ -35,7 +28,14 @@
         android:padding="4dp"
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/live_feed_pager_indicator_top" />
 
-</RelativeLayout>
+    <fragment android:id="@+id/tabbar"
+        android:name="ru.taaasty.ui.tabbar.TabbarFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        tools:layout="@layout/tabbar" />
+
+</FrameLayout>
