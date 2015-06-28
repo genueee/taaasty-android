@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -119,6 +120,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     @Override
     protected void onResume() {
         super.onResume();
+        mTabbar.showFab(false);
         startRefreshStats();
         startRefreshCurrentUser();
     }
@@ -178,6 +180,17 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     public void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int viewTop) {
         if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
         updateCircleIndicatorPosition(headerVisible, viewTop);
+    }
+
+    @Override
+    public void onListScrolled(RecyclerView recyclerView, int dx, int dy) {
+        /* TODO
+        if (dy > 0 ) {
+            mTabbar.hideFab(true);
+        } else if (dy < 0) {
+            mTabbar.showFab(true);
+        }
+        */
     }
 
     @Override

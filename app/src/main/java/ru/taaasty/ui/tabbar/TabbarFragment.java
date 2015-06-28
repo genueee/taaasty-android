@@ -7,11 +7,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +49,10 @@ public class TabbarFragment extends Fragment {
     private TextView mNotificationsCountView;
     private TextView mConversationsCountView;
 
+    private View mCreatePostView;
+
+    private int mCreatePostViewLocation[] = new int[2];
+
     private onTabbarButtonListener mListener;
 
     private int mActivatedElement;
@@ -56,6 +62,9 @@ public class TabbarFragment extends Fragment {
 
     PusherService mPusherService;
     boolean mBound = false;
+
+    @Nullable
+    private ObjectAnimator mShowFabAnimator, mHideFabAnimator;
 
     public TabbarFragment() {
     }
@@ -92,6 +101,13 @@ public class TabbarFragment extends Fragment {
         View view = inflater.inflate(R.layout.tabbar, container, false);
         mNotificationsCountView = (TextView)view.findViewById(R.id.unread_notifications_count);
         mConversationsCountView = (TextView)view.findViewById(R.id.unread_conversations_count);
+        mCreatePostView = view.findViewById(R.id.btn_tabbar_post);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) mCreatePostView.getLayoutParams();
+            // get rid of margins since shadow area is now the margin
+            p.setMargins(0, 0, 0, (int)mCreatePostView.getContext().getResources().getDimension(R.dimen.tabbarSize));
+            mCreatePostView.setLayoutParams(p);
+        }
         for (int id: sItemIds) {
             View v = view.findViewById(id);
             v.setOnClickListener(mOnClickListener);
@@ -106,6 +122,13 @@ public class TabbarFragment extends Fragment {
         Intent intent = new Intent(getActivity(), PusherService.class);
         getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
         refreshActivated();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mShowFabAnimator != null) mShowFabAnimator.cancel();
+        if (mHideFabAnimator != null) mHideFabAnimator.cancel();
     }
 
     @Override
@@ -130,6 +153,9 @@ public class TabbarFragment extends Fragment {
         super.onDestroyView();
         mNotificationsCountView = null;
         mConversationsCountView = null;
+        mCreatePostView = null;
+        mShowFabAnimator = null;
+        mHideFabAnimator = null;
     }
 
     @Override
@@ -179,6 +205,32 @@ public class TabbarFragment extends Fragment {
         for (int id : sItemIds) {
             View v = getView().findViewById(id);
             v.setActivated(mActivatedElement == v.getId());
+        }
+    }
+
+    public void showFab(boolean animate) {
+        if (mCreatePostView == null) return;
+        if (mCreatePostView.getVisibility() == View.VISIBLE) return;
+        if (!animate) {
+            if (mHideFabAnimator != null) mHideFabAnimator.cancel();
+            if (mShowFabAnimator != null) mShowFabAnimator.cancel();
+            mCreatePostView.setVisibility(View.VISIBLE);
+            mCreatePostView.setTranslationY(0);
+        } else {
+            showFabSmoothly();
+        }
+    }
+
+    public void hideFab(boolean animate) {
+        if (mCreatePostView == null) return;
+        if (mCreatePostView.getVisibility() != View.VISIBLE) return;
+        if (!animate) {
+            if (mHideFabAnimator != null) mHideFabAnimator.cancel();
+            if (mShowFabAnimator != null) mShowFabAnimator.cancel();
+            mCreatePostView.setVisibility(View.INVISIBLE);
+            mCreatePostView.setTranslationY(0);
+        } else {
+            hideFabSmoothly();
         }
     }
 
@@ -273,7 +325,80 @@ public class TabbarFragment extends Fragment {
             @Override
             public void onAnimationRepeat(Animator animation) {}
         });
+
+
         animator.start();
+    }
+
+    private void hideFabSmoothly() {
+        if (mHideFabAnimator != null && mHideFabAnimator.isStarted()) return;
+        if (mShowFabAnimator != null) mShowFabAnimator.cancel();
+        float dy = getCreatePostViewTopToOffscreen();
+        mHideFabAnimator = ObjectAnimator.ofFloat(mCreatePostView, "translationY",
+                0f, dy)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime));
+        mHideFabAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+        mHideFabAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mCreatePostView != null) {
+                    mCreatePostView.setVisibility(View.INVISIBLE);
+                    mCreatePostView.setTranslationY(0);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                onAnimationEnd(animation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+        mHideFabAnimator.start();
+    }
+
+    private int getCreatePostViewTopToOffscreen() {
+        return mCreatePostView.getHeight() + ((ViewGroup.MarginLayoutParams)mCreatePostView.getLayoutParams()).bottomMargin;
+    }
+
+    private void showFabSmoothly() {
+        if (mShowFabAnimator != null && mShowFabAnimator.isStarted()) return;
+        if (mHideFabAnimator != null) mHideFabAnimator.cancel();
+        mCreatePostView.getLocationInWindow(mCreatePostViewLocation);
+        final int dy = getCreatePostViewTopToOffscreen();
+        mShowFabAnimator = ObjectAnimator.ofFloat(mCreatePostView, "translationY",
+                dy, 0f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime));
+        mShowFabAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+        mShowFabAnimator.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mCreatePostView.setVisibility(View.VISIBLE);
+                mCreatePostView.setTranslationY(dy);
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mCreatePostView != null) {
+                    mCreatePostView.setVisibility(View.VISIBLE);
+                    mCreatePostView.setTranslationY(0);
+                }
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                onAnimationEnd(animation);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+        mShowFabAnimator.start();
     }
 
     private final ServiceConnection mPusherServiceConnection = new ServiceConnection() {

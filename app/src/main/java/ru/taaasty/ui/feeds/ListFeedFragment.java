@@ -155,6 +155,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 updateDateIndicator(dy > 0);
+                if (mListener != null) mListener.onListScrolled(recyclerView, dx, dy);
             }
 
             @Override
@@ -679,6 +680,8 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         Stats getStats();
 
         void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int headerTop);
+
+        void onListScrolled(RecyclerView recyclerView, int dx, int dy);
 
     }
 }
