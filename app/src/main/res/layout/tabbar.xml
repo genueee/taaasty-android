@@ -1,95 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="@dimen/tabbarSize"
-    tools:context=".widgets.Tabbar">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/btn_tabbar_live"
-        style="@style/TabbarButton.First"
-        android:contentDescription="@string/btn_tabbar_live_description"
-        android:src="@drawable/btn_tabbar_live" />
-
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:clickable="false"
-        android:layout_weight="1">
-        <ImageView
-            android:id="@+id/btn_tabbar_conversations"
-            style="@style/TabbarButton"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/btn_tabbar_action_notifications"
-            android:src="@drawable/btn_tabbar_conversations"
-            android:clickable="false" />
-
-        <ru.taaasty.widgets.SquareTextView
-            android:id="@+id/unread_conversations_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/unread_conversations_count"
-            android:gravity="center"
-            android:padding="4dp"
-            android:textSize="10sp"
-            android:singleLine="true"
-            android:textColor="@android:color/black"
-            android:visibility="invisible"
-            tools:visibility="visible"
-            tools:text="100"
-            android:layout_marginLeft="17dp"
-            android:layout_marginBottom="10dp"
-            tools:ignore="ContentDescription,SmallSp" />
-    </FrameLayout>
-
-    <ru.taaasty.widgets.HintedExtendedImageView
+    <android.support.design.widget.FloatingActionButton
         android:id="@+id/btn_tabbar_post"
-        style="@style/TabbarButton.Action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:borderWidth="0dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="66dp"
         android:contentDescription="@string/btn_tabbar_action_post"
         android:src="@drawable/btn_tabbar_post" />
 
-    <FrameLayout
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:clickable="false"
-        android:layout_weight="1">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tabbarSize"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        tools:context=".widgets.Tabbar">
 
-        <ImageView
-            android:id="@+id/btn_tabbar_notifications"
-            style="@style/TabbarButton"
-            android:layout_width="match_parent"
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/btn_tabbar_live"
+            style="@style/TabbarButton.First"
+            android:contentDescription="@string/btn_tabbar_live_description"
+            android:src="@drawable/btn_tabbar_live" />
+
+        <FrameLayout
+            android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:contentDescription="@string/btn_tabbar_action_notifications"
-            android:src="@drawable/btn_tabbar_notifications"
-            android:clickable="false" />
+            android:layout_weight="1"
+            android:clickable="false">
 
-        <ru.taaasty.widgets.SquareTextView
-            android:id="@+id/unread_notifications_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/conversations_list_unread_messages_background"
-            android:gravity="center"
-            android:padding="4dp"
-            android:textSize="10sp"
-            android:singleLine="true"
-            android:textColor="@android:color/white"
-            android:visibility="invisible"
-            tools:visibility="visible"
-            tools:text="100"
-            android:layout_marginLeft="17dp"
-            android:layout_marginBottom="10dp"
-            tools:ignore="ContentDescription,SmallSp" />
+            <ImageView
+                android:id="@+id/btn_tabbar_conversations"
+                style="@style/TabbarButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:contentDescription="@string/btn_tabbar_action_notifications"
+                android:src="@drawable/btn_tabbar_conversations" />
 
-    </FrameLayout>
+            <ru.taaasty.widgets.SquareTextView
+                android:id="@+id/unread_conversations_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="17dp"
+                android:background="@drawable/unread_conversations_count"
+                android:gravity="center"
+                android:padding="4dp"
+                android:singleLine="true"
+                android:textColor="@android:color/black"
+                android:textSize="10sp"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription,SmallSp"
+                tools:text="100"
+                tools:visibility="visible" />
+        </FrameLayout>
 
-    <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/btn_tabbar_my_feed"
-        style="@style/TabbarButton.Last"
-        android:contentDescription="@string/tabbar_my_feed_content_description"
-        android:src="@drawable/btn_tabbar_myfeed" />
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:clickable="false">
 
-</LinearLayout>
+            <ImageView
+                android:id="@+id/btn_tabbar_notifications"
+                style="@style/TabbarButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:contentDescription="@string/btn_tabbar_action_notifications"
+                android:src="@drawable/btn_tabbar_notifications" />
+
+            <ru.taaasty.widgets.SquareTextView
+                android:id="@+id/unread_notifications_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="17dp"
+                android:background="@drawable/conversations_list_unread_messages_background"
+                android:gravity="center"
+                android:padding="4dp"
+                android:singleLine="true"
+                android:textColor="@android:color/white"
+                android:textSize="10sp"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription,SmallSp"
+                tools:text="100"
+                tools:visibility="visible" />
+
+        </FrameLayout>
+
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/btn_tabbar_my_feed"
+            style="@style/TabbarButton.Last"
+            android:contentDescription="@string/tabbar_my_feed_content_description"
+            android:src="@drawable/btn_tabbar_myfeed" />
+
+    </LinearLayout>
+</FrameLayout>

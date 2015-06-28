@@ -16,8 +16,6 @@
     <color name="green_background_normal">#24b166</color>
     <color name="tabbar_button_background_normal">#2f2f2f</color>
     <color name="tabbar_button_background_activated">#000000</color>
-    <color name="tabbar_action_button_background_normal">@color/green_background_normal</color>
-    <color name="tabbar_action_button_background_pressed">#37be72</color>
     <color name="text_color_feed_item_gray">#80939393</color>
 
     <color name="text_color_feed_actions_dark_theme">#595959</color>

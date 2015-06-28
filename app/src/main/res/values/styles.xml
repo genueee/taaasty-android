@@ -175,11 +175,6 @@
     <style name="TabbarButton.Last">
     </style>
 
-    <style name="TabbarButton.Action">
-        <item name="android:background">@drawable/btn_tabbar_background_action</item>
-    </style>
-
-
     <style name="LoginActivityBaseTheme" parent="AppThemeDark">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:textColorHint">@color/text_color_semi_semi_transparent_white</item>

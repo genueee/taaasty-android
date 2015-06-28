@@ -5,6 +5,12 @@
     tools:context="ru.taaasty.ui.tabbar.NotificationsActivity"
     tools:ignore="MergeRootFrame">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/tabbarSize"
+        android:id="@+id/container"/>
+
     <fragment
         android:id="@+id/tabbar"
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
@@ -12,12 +18,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         tools:layout="@layout/tabbar" />
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/tabbarSize"
-        android:id="@+id/container"/>
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
