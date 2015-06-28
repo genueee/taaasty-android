@@ -2,6 +2,7 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.view.View;
 import android.widget.TextView;
 
@@ -40,6 +41,12 @@ public class ListTextEntry extends ListEntryBase {
 
         mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
         mText.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
+
+        if (Build.VERSION.SDK_INT <= 16) {
+            // Оно там глючное, текст в списке съезжает вправо иногда
+            mText.setTextIsSelectable(false);
+            mTitle.setTextIsSelectable(false);
+        }
     }
 
     @Override

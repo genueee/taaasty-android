@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
@@ -77,6 +78,10 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         mMoreImagesWidget = (TextView)v.findViewById(R.id.more_photos_indicator);
 
         mTitle.setMovementMethod(LinkMovementMethod.getInstance());
+        if (Build.VERSION.SDK_INT <= 16) {
+            // Оно там глючное, текст в списке съезжает вправо иногда
+            mTitle.setTextIsSelectable(false);
+        }
 
         mContext = context;
         mImageLoadingDrawable = (LayerDrawable)context.getResources().getDrawable(R.drawable.image_loading_with_progress);

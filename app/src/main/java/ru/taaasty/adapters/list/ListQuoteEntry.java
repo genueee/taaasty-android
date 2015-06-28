@@ -2,6 +2,7 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.text.Spanned;
 import android.view.View;
 import android.widget.TextView;
@@ -26,6 +27,12 @@ public class ListQuoteEntry extends  ListEntryBase {
 
         mText.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
         mSource.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
+
+        if (Build.VERSION.SDK_INT <= 16) {
+            // Оно там глючное, текст в списке съезжает вправо иногда
+            mText.setTextIsSelectable(false);
+            mSource.setTextIsSelectable(false);
+        }
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -48,6 +49,10 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
 
         mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
+        if (Build.VERSION.SDK_INT <= 16) {
+            // Оно там глючное, текст в списке съезжает вправо иногда
+            mTitle.setTextIsSelectable(false);
+        }
 
         mContext = context;
         Resources resources = context.getResources();

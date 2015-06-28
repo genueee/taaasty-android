@@ -332,6 +332,7 @@
         <item name="android:textSize">18sp</item>
         <item name="android:textAppearance">@style/TextAppearance.PostSans</item>
         <item name="android:lineSpacingMultiplier">1.1</item>
+        <item name="android:includeFontPadding">false</item>
         <item name="android:paddingLeft">@dimen/feed_item_padding_left</item>
         <item name="android:paddingRight">@dimen/feed_item_padding_right</item>
         <item name="android:textIsSelectable">true</item>
