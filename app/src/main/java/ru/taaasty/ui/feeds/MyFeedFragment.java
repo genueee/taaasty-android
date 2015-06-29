@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -24,7 +25,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
-import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.rest.RestClient;
@@ -57,6 +57,8 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mListView;
     private View mEmptyView;
+
+    private HeaderHelper mHeaderHelper;
 
     private Adapter mAdapter;
 
@@ -94,6 +96,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
+        mHeaderHelper = new HeaderHelper(v.findViewById(R.id.header_my_feed));
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -108,6 +111,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
+        mListView.setNestedScrollingEnabled(true);
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
 
@@ -225,17 +229,20 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     void setupUser() {
         if (mWorkFragment == null || mWorkFragment.getCurrentUser() == null) return;
         CurrentUser user = mWorkFragment.getCurrentUser();
-        String name = UiUtils.capitalize(user.getName());
-        if (mAdapter != null) {
-            mAdapter.setTitleUser(name, user);
-        }
+        if (mHeaderHelper != null) mHeaderHelper.setupUser(user);
     }
 
     void setupFeedDesign() {
         if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
+
         mListView.setBackgroundResource(mWorkFragment.getTlogDesign().getFeedBackgroundDrawable());
+        mHeaderHelper.setupDesign(mWorkFragment.getTlogDesign());
+    }
+
+    void updateDateIndicator(boolean animScrollUp) {
+        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
     private void setupAdapterPendingIndicator() {
@@ -282,8 +289,81 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         }
     };
 
+    private class HeaderHelper {
+        View rootView;
+        TextView titleView;
+        ImageView avatarView;
+        public String backgroundUrl = null;
+
+        // XXX: anti picasso weak ref
+        private TargetSetHeaderBackground feedDesignTarget;
+
+        public HeaderHelper(View root) {
+            rootView = root;
+            avatarView = (ImageView)root.findViewById(R.id.avatar);
+            titleView = (TextView)root.findViewById(R.id.user_name);
+            View.OnClickListener onClickListener = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switch (v.getId()) {
+                        case R.id.additional_menu:
+                            onAdditionalMenuButtonClicked(v);
+                            break;
+                        case R.id.avatar:
+                            if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mWorkFragment.getCurrentUser(),
+                                    mWorkFragment.getTlogDesign());
+                            break;
+                    }
+                }
+            };
+            avatarView.setOnClickListener(onClickListener);
+            root.findViewById(R.id.additional_menu).setOnClickListener(onClickListener);
+        }
+
+        public void setupDesign(@Nullable TlogDesign design) {
+            if (design == null) return;
+            String backgroudUrl = design.getBackgroundUrl();
+            if (TextUtils.equals(backgroundUrl, backgroudUrl)) return;
+            feedDesignTarget = new TargetSetHeaderBackground(rootView,
+                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES,
+                    Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
+                @Override
+                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                    super.onBitmapLoaded(bitmap, from);
+                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
+                }
+            };
+            backgroundUrl = backgroudUrl;
+            RequestCreator rq =  Picasso.with(rootView.getContext())
+                    .load(backgroudUrl);
+            if (rootView.getWidth() > 1 && rootView.getHeight() > 1) {
+                rq.resize(rootView.getWidth() / 2, rootView.getHeight() / 2)
+                        .centerCrop();
+            }
+            rq.into(feedDesignTarget);
+        }
+
+        public void setupUser(User user) {
+            bindTitle(user);
+            bindUser(user);
+        }
+
+        private void bindTitle(User user) {
+            if (user == null) return;
+            String name = UiUtils.capitalize(user.getName());
+            titleView.setText(name);
+        }
+
+        private void bindUser(User user) {
+            if (user == null) user = CurrentUser.DUMMY;
+            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
+                    avatarView,
+                    R.dimen.feed_header_avatar_normal_diameter
+            );
+        }
+    }
+
     class Adapter extends FeedItemAdapterLite {
-        private String mTitle;
 
         public Adapter(SortedList<Entry> feed) {
             super(feed, false);
@@ -306,20 +386,14 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                 @Override
                 public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
                     if (DBG) Log.v(TAG, "onCreateHeaderViewHolder");
-                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_my_feed, mListView, false);
-                    HeaderHolder holder = new HeaderHolder(child);
-                    holder.avatarView.setOnClickListener(mOnClickListener);
-                    child.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
-                    return holder;
+                    View root = new View(parent.getContext());
+                    root.setVisibility(View.GONE);
+                    return new RecyclerView.ViewHolder(root) {
+                    };
                 }
 
                 @Override
                 public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-                    if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
-                    HeaderHolder holder = (HeaderHolder) viewHolder;
-                    holder.titleView.setText(mTitle);
-                    bindDesign(holder);
-                    bindUser(holder);
                 }
 
                 @Override
@@ -327,75 +401,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                     addEntry(event.postEntry);
                 }
             });
-        }
-
-        public void setTitleUser(String title, User user) {
-            if (!TextUtils.equals(mTitle, title)) {
-                mTitle = title;
-                notifyItemChanged(0);
-            }
-        }
-
-        private void bindDesign(HeaderHolder holder) {
-            if (mFeedDesign == null) return;
-            String backgroudUrl = mFeedDesign.getBackgroundUrl();
-            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
-            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
-                }
-            };
-            holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq =  Picasso.with(holder.itemView.getContext())
-                    .load(backgroudUrl);
-            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
-                        .centerCrop();
-            }
-            rq.into(holder.feedDesignTarget);
-        }
-
-        private void bindUser(HeaderHolder holder) {
-            User user = mWorkFragment.getCurrentUser();
-            if (user == null) user = CurrentUser.DUMMY;
-            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                    holder.avatarView,
-                    R.dimen.feed_header_avatar_normal_diameter
-            );
-        }
-
-        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.additional_menu:
-                        onAdditionalMenuButtonClicked(v);
-                        break;
-                    case R.id.avatar:
-                        CurrentUser user = mWorkFragment.getCurrentUser();
-                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mWorkFragment.getCurrentUser(),
-                                mWorkFragment.getTlogDesign());
-                        break;
-                }
-            }
-        };
-    }
-
-    static class HeaderHolder extends ParallaxedHeaderHolder {
-        TextView titleView;
-        ImageView avatarView;
-        public String backgroundUrl = null;
-
-        // XXX: anti picasso weak ref
-        private TargetSetHeaderBackground feedDesignTarget;
-
-        public HeaderHolder(View itemView) {
-            super(itemView, itemView.findViewById(R.id.avatar_user_name));
-            avatarView = (ImageView)itemView.findViewById(R.id.avatar);
-            titleView = (TextView)itemView.findViewById(R.id.user_name);
         }
     }
 

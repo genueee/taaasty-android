@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     tools:context=".LiveFeedActivity">
 
-    <FrameLayout
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -32,7 +32,7 @@
             tools:text="Мазафака какая-то с сайтом"
             tools:visibility="visible" />
 
-    </FrameLayout>
+    </android.support.design.widget.CoordinatorLayout>
 
     <ScrollView
         android:layout_width="290dp"
