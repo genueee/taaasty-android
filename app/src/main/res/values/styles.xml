@@ -21,6 +21,7 @@
         <item name="android:windowBackground">@color/feed_dark_background_color</item>
         <item name="android:colorBackground">@color/feed_dark_background_color</item>
         <item name="android:colorBackgroundCacheHint">@color/feed_dark_background_color</item>
+        <item name="actionModeBackground">@android:color/white</item>
     </style>
 
     <style name="AppThemeLightActionBar" parent="Theme.AppCompat.Light">
