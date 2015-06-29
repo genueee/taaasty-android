@@ -52,6 +52,7 @@ import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.tabbar.TabbarFragment;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -149,6 +150,12 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         } else {
             mWorkFragment.setTargetFragment(this, 0);
         }
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
     }
 
     @Override
@@ -713,6 +720,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onListScrolled(int dy, boolean atTop);
         void onListScrollStateChanged(int state);
+        TabbarFragment getTabbar();
     }
 
 }

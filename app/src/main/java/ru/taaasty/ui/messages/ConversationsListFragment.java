@@ -30,6 +30,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.tabbar.TabbarFragment;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -95,6 +96,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        if (DBG) Log.v(TAG, "onAttach " + this);
         try {
             mListener = (OnFragmentInteractionListener) activity;
         } catch (ClassCastException e) {
@@ -120,6 +122,9 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        if (DBG) Log.v(TAG, this + " onActivityCreated bundle not null: " + (savedInstanceState != null)
+                + " listener not null: " + (mListener != null));
+        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
         if (mWorkFragment.isResumed() && mAdapter == null) {
             onWorkFragmentActivityCreated();
         }
@@ -160,6 +165,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     @Override
     public void onDetach() {
         super.onDetach();
+        if (DBG) Log.v(TAG, this + "onDetach");
         mListener = null;
     }
 
@@ -169,7 +175,6 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         mWorkFragment.setTargetFragment(null, 0);
         mWorkFragment = null;
         mListView = null;
-        mListener = null;
         mProgressView = null;
         mAdapter = null;
     }
@@ -298,16 +303,22 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
-            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentActivityCreated();
+            if (getTargetFragment() != null) {
+                ((RetainedFragmentCallbacks) getTargetFragment()).onWorkFragmentActivityCreated();
+            } else {
+                if (DBG) Log.i(TAG, "onActivityCreated target fragment is null");
+            }
         }
-
 
         @Override
         public void onResume() {
             super.onResume();
-            ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentResume();
+            if (getTargetFragment() != null) {
+                ((RetainedFragmentCallbacks) getTargetFragment()).onWorkFragmentResume();
+            } else {
+                if (DBG) Log.i(TAG, "onResume target fragment is null");
+            }
         }
-
 
         @Override
         public void onDestroy() {
@@ -401,6 +412,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onListScrolled(int dy, boolean atTop);
         void onListScrollStateChanged(int state);
+        TabbarFragment getTabbar();
     }
 
 }

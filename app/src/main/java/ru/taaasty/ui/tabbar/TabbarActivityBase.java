@@ -2,6 +2,7 @@ package ru.taaasty.ui.tabbar;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
@@ -39,14 +40,20 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         PusherService.startPusher(this);
     }
 
+    @Override
+    public void setContentView(@LayoutRes int layoutResID) {
+        super.setContentView(layoutResID);
+        initTabbar();
+    }
+
     abstract int getCurrentTabId();
 
     abstract void onCurrentTabButtonClicked();
 
-    protected void onPostCreate (Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mTabbar = (TabbarFragment) getSupportFragmentManager().findFragmentById(R.id.tabbar);
-        mTabbar.setActivated(getCurrentTabId());
+    @Override
+    protected void onStart() {
+        super.onStart();
+        initTabbar();
     }
 
     @Override
@@ -113,6 +120,17 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
                 openHidden();
                 break;
         }
+    }
+
+    public TabbarFragment getTabbar() {
+        if (mTabbar == null) initTabbar();
+        return mTabbar;
+    }
+
+    void initTabbar() {
+        if (mTabbar != null) return;
+        mTabbar = (TabbarFragment) getSupportFragmentManager().findFragmentById(R.id.tabbar);
+        mTabbar.setActivated(getCurrentTabId());
     }
 
     protected void openHidden() {

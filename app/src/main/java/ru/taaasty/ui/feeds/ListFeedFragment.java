@@ -39,6 +39,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -77,6 +78,8 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     private Integer mlastAnonymousEntriesCount;
 
     private Handler mHandler;
+
+    private TabbarFragment.AutoHideScrollListener mHideTabbarListener;
 
     public static ListFeedFragment createLiveFeedInstance() {
         return newInstance(FEED_LIVE);
@@ -155,7 +158,6 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 updateDateIndicator(dy > 0);
-                if (mListener != null) mListener.onListScrolled(recyclerView, dx, dy);
             }
 
             @Override
@@ -176,6 +178,9 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                 }
             }
         });
+
+        mHideTabbarListener = new TabbarFragment.AutoHideScrollListener(mListener.getTabbar());
+        mListView.addOnScrollListener(mHideTabbarListener);
 
         return v;
     }
@@ -229,6 +234,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
+        mHideTabbarListener = null;
         mListView = null;
     }
 
@@ -681,7 +687,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
         void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int headerTop);
 
-        void onListScrolled(RecyclerView recyclerView, int dx, int dy);
+        TabbarFragment getTabbar();
 
     }
 }

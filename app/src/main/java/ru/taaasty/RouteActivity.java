@@ -1,5 +1,6 @@
 package ru.taaasty;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -14,7 +15,7 @@ import java.util.regex.Pattern;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 
-public class RouteActivity extends ActivityBase {
+public class RouteActivity extends Activity {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "RouteActivity";
 

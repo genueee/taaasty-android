@@ -38,6 +38,7 @@ import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.TargetSetHeaderBackground;
@@ -149,6 +150,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         mAdapter.onCreate();
         mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
         mListView.setAdapter(mAdapter);
+        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
 
         setupFeedDesign();
         setupUser();
@@ -502,5 +504,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         void onShowAdditionalMenuClicked();
         void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
         void onSharePostMenuClicked(Entry entry);
+        TabbarFragment getTabbar();
     }
 }

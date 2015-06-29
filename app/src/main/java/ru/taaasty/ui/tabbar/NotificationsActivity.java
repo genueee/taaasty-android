@@ -29,7 +29,6 @@ public class NotificationsActivity extends TabbarActivityBase implements
 
         getSupportActionBar().setIcon(android.R.color.transparent);
 
-
         if (savedInstanceState == null) {
             Fragment fragment = NotificationListFragment.newInstance();
             getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
