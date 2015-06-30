@@ -26,7 +26,9 @@ import java.util.Random;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
@@ -124,6 +126,12 @@ public class SignViaVkontakteFragment extends DialogFragment {
                         errorText = event.vkError.errorMessage;
                     }
                     if (mListener != null) mListener.notifyError(errorText, null);
+                    if (getActivity() != null) {
+                        ((TaaastyApplication)getActivity().getApplication())
+                                .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                                        "Ошибка Вконтакте",
+                                        event.vkError.toString());
+                    }
                 }
                 getDialog().dismiss();
                 break;

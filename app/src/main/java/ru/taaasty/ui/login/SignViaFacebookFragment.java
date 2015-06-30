@@ -27,7 +27,9 @@ import java.util.Arrays;
 import java.util.Random;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
@@ -172,6 +174,13 @@ public class SignViaFacebookFragment extends DialogFragment {
                                 String msg = response.getError().getErrorUserMessage();
                                 if (msg == null) msg = getString(R.string.error_facebook_failed);
                                 if (mListener != null) mListener.notifyError(msg, response.getError().getException());
+                                if (getActivity() != null) {
+                                    ((TaaastyApplication)getActivity().getApplication())
+                                            .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                                                    "Ошибка Facebook",
+                                                    response.getError().getErrorType() + " code/subcode:" + response.getError().getErrorCode()
+                                                    + "/" + response.getError().getSubErrorCode());
+                                }
                                 getDialog().dismiss();
                             } else {
                                 if (DBG) Log.v(TAG, "response: " + me);
