@@ -82,7 +82,6 @@ public class StatusBarNotificationNotification {
     private Subscription mLoadNotificationsSubscription = Subscriptions.unsubscribed();
 
     private LoadNotificationDataTask mLoadImagesTask;
-    private List<Notification> notificationsFiltered;
 
     StatusBarNotificationNotification(TaaastyApplication appContext) {
         mContext = appContext;

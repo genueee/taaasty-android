@@ -494,11 +494,11 @@ public class IntentService extends android.app.IntentService {
         ApiMessenger api = RestClient.getAPiMessenger();
         for (long notificationId: notificationIds) {
             try {
-                Notification notification = api.markNotificationAsRead(null, notificationId);
+                Notification notification = api.markNotificationAsReadSync(null, notificationId);
                 EventBus.getDefault().post(new NotificationReceived(notification));
                 StatusBarNotifications.getInstance().onNewNotificationIdSeen(notificationId); // На всякий случай, иначе может и не дойти
             } catch (Throwable e) {
-                Log.e(TAG, "markNotificationAsRead error", e);
+                Log.e(TAG, "markNotificationAsReadSync error", e);
             }
         }
     }
@@ -515,7 +515,7 @@ public class IntentService extends android.app.IntentService {
             for (MarkNotificationsAsReadResponse item: response) maxId = Math.max(maxId, item.id);
             StatusBarNotifications.getInstance().onNewNotificationIdSeen(maxId); // На всякий случай, иначе может и не дойти
         } catch (Throwable e) {
-            Log.e(TAG, "markNotificationAsRead error", e);
+            Log.e(TAG, "markNotificationAsReadSync error", e);
             EventBus.getDefault().post(new MarkAllAsReadRequestCompleted(e));
         }
     }

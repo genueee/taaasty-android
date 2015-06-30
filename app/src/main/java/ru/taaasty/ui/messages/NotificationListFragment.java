@@ -27,7 +27,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import de.greenrobot.event.EventBus;
@@ -58,11 +60,21 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action0;
+import rx.functions.Func1;
+import rx.functions.FuncN;
 import rx.subscriptions.Subscriptions;
 
 public class NotificationListFragment extends Fragment implements ServiceConnection, RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "NotificationListFrgmnt";
+
+    /**
+     * При открытии, пометить уведомление как прочитанное
+     */
+    private static final String ARK_KEY_MARK_NOTIFICATIONS_AS_READ = "ru.taaasty.ui.messages.NotificationListFragment.ARK_KEY_MARK_NOTIFICATIONS_AS_READ";
+
+    private static final String BUNDLE_KEY_NOTIFICATIONS_MARKED_AS_READ = "ru.taaasty.ui.messages.NotificationListFragment.BUNDLE_KEY_NOTIFICATIONS_MARKED_AS_READ";
 
     private OnFragmentInteractionListener mListener;
 
@@ -90,8 +102,21 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     private int mMaxVisiblePosition;
 
+    private long mMarkNotificationsAsRead[];
+
+    private boolean mNotificationsMarkedAsRead = false;
+
     public static NotificationListFragment newInstance() {
         return new NotificationListFragment();
+    }
+
+    public static NotificationListFragment newInstance(long markAsReadIds[]) {
+        NotificationListFragment fragment = new NotificationListFragment();
+        if (markAsReadIds == null || markAsReadIds.length == 0) return fragment;
+        Bundle bundle = new Bundle(1);
+        bundle.putLongArray(ARK_KEY_MARK_NOTIFICATIONS_AS_READ, markAsReadIds);
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     public NotificationListFragment() {
@@ -102,6 +127,17 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+        if (getArguments() != null) {
+            mMarkNotificationsAsRead = getArguments().getLongArray(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
+        } else {
+            mMarkNotificationsAsRead = null;
+        }
+
+        if (savedInstanceState == null) {
+            mNotificationsMarkedAsRead = mMarkNotificationsAsRead == null || mMarkNotificationsAsRead.length == 0;
+        } else {
+            mNotificationsMarkedAsRead = savedInstanceState.getBoolean(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
+        }
     }
 
     @Override
@@ -231,7 +267,11 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
     public void onWorkFragmentResume() {
         if (DBG) Log.v(TAG, "onWorkFragmentResume");
-        mWorkFragment.refreshFeed();
+        if (!mNotificationsMarkedAsRead) {
+            mWorkFragment.markNotificationsReadRefreshFeed(mMarkNotificationsAsRead);
+        } else {
+            mWorkFragment.refreshFeed();
+        }
         setupLoadingState();
     }
 
@@ -244,6 +284,12 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             getActivity().unbindService(this);
             mBound = false;
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(BUNDLE_KEY_NOTIFICATIONS_MARKED_AS_READ, mNotificationsMarkedAsRead);
     }
 
     @Override
@@ -542,6 +588,10 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             return mNotificationList;
         }
 
+        public void markNotificationsReadRefreshFeed(long ids[]) {
+            mLoader.markNotificationsReadRefreshFeed(ids);
+        }
+
         public void refreshFeed() {
             mLoader.refreshFeed();
         }
@@ -601,6 +651,44 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 return mApiMessenger.getNotifications(null, null, sinceEntryId, limit, null);
             }
 
+            // Сначала помечаем сообщения как прочитанные, затем обновляем список.
+            // Если отправить запросы одновременно, то можно сначала получить результат пометки,
+            // а затем перезаписать его устаревшим результатом - списком.
+            public void markNotificationsReadRefreshFeed(long ids[]) {
+                if (!mRefreshSubscription.isUnsubscribed()) {
+                    mRefreshSubscription.unsubscribe();
+                }
+
+                ApiMessenger api = RestClient.getAPiMessenger();
+                List<Observable<Notification>> observables = new ArrayList<>(ids.length);
+                for (int i = 0; i < ids.length; ++i) {
+                    observables.add(api.markNotificationAsRead(null, ids[i]));
+                }
+
+                final int entriesRequested = Constants.LIST_FEED_INITIAL_LENGTH;
+
+                Observable<NotificationList> observable = Observable.zip(observables, new FuncN<List<Notification>>() {
+                    @Override
+                    public List<Notification> call(Object... args) {
+                        if (args.length == 0) return Collections.emptyList();
+                        List<Notification> notifications = new ArrayList<Notification>(args.length);
+                        for (Object o: args) notifications.add((Notification)o);
+                        return notifications;
+                    }
+                }).flatMap(new Func1<List<Notification>, Observable<NotificationList>>() {
+                    @Override
+                    public Observable<NotificationList> call(List<Notification> notifications) {
+                        return createObservable(null, entriesRequested);
+                    }
+                });
+
+                mRefreshSubscription = observable
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .finallyDo(mFinallySetupLoadingState)
+                        .subscribe(new LoadObserver(true, entriesRequested));
+            }
+
             public void refreshFeed() {
                 if (!mRefreshSubscription.isUnsubscribed()) {
                     return;
@@ -609,6 +697,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 Observable<NotificationList> observable = createObservable(null, entriesRequested);
                 mRefreshSubscription = observable
                         .observeOn(AndroidSchedulers.mainThread())
+                        .finallyDo(mFinallySetupLoadingState)
                         .subscribe(new LoadObserver(true, entriesRequested));
             }
 
@@ -647,6 +736,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
                         mAppendSubscription = createObservable(lastEntry.id, requestEntries)
                                 .observeOn(AndroidSchedulers.mainThread())
+                                .finallyDo(mFinallySetupLoadingState)
                                 .subscribe(new LoadObserver(false, requestEntries));
                     }
                 });
@@ -658,6 +748,17 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                         || isLoading()) return;
                 if (position >= feedSize - ENTRIES_TO_TRIGGER_APPEND) activateCacheInBackground();
             }
+
+            private Action0 mFinallySetupLoadingState = new Action0() {
+                @Override
+                public void call() {
+                    NotificationListFragment target = (NotificationListFragment)getTargetFragment();
+                    if (target != null) {
+                        target.setupMarkAsReadButtonStatus();
+                        target.setupLoadingState();
+                    }
+                }
+            };
 
             public class LoadObserver implements Observer<NotificationList> {
 
@@ -672,11 +773,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 @Override
                 public void onCompleted() {
                     if (DBG) Log.v(TAG, "onCompleted()");
-                    NotificationListFragment target = (NotificationListFragment)getTargetFragment();
-                    if (target != null) {
-                        target.setupMarkAsReadButtonStatus();
-                        target.setupLoadingState();
-                    }
+
                 }
 
                 @Override

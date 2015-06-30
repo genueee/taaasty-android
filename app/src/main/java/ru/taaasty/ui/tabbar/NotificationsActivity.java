@@ -1,12 +1,10 @@
 package ru.taaasty.ui.tabbar;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.ui.messages.NotificationListFragment;
@@ -30,15 +28,12 @@ public class NotificationsActivity extends TabbarActivityBase implements
         getSupportActionBar().setIcon(android.R.color.transparent);
 
         if (savedInstanceState == null) {
-            Fragment fragment = NotificationListFragment.newInstance();
-            getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+            long markArReadIds[] = null;
             if (getIntent().hasExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ)) {
-                long ids[] = getIntent().getLongArrayExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
-                if (ids.length != 0) {
-                    Intent intent = IntentService.getMarkNotificationAsReadIntent(this, ids, false);
-                    startService(intent);
-                }
+                markArReadIds = getIntent().getLongArrayExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
             }
+            Fragment fragment = NotificationListFragment.newInstance(markArReadIds);
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         }
     }
 
