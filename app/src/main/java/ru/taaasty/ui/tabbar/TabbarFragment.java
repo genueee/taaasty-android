@@ -460,7 +460,6 @@ public class TabbarFragment extends Fragment {
             } else if (mDy < THRESHOLD_LO) {
                 mTabbar.showFab(true);
             }
-            if (DBG) Log.v(TAG, "runShowOrHide() dy: " + mDy);
             mRunning = false;
             mDy = 0;
             mStartActionTime = 0;
