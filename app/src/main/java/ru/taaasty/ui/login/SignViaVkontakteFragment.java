@@ -236,7 +236,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
     }
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onSignViaVkontakteSuccess();
+        void onSignViaVkontakteSuccess(boolean newUserCreated);
     }
 
     final class AuthObserver implements Observer<CurrentUser> {
@@ -272,7 +272,8 @@ public class SignViaVkontakteFragment extends DialogFragment {
                 // XXX
             } else {
                 UserManager.getInstance().setCurrentUser(info);
-                if (mListener != null) mListener.onSignViaVkontakteSuccess();
+                if (mListener != null) mListener.onSignViaVkontakteSuccess(false);
+
             }
         }
     }
@@ -306,7 +307,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
             } else {
                 // TODO: заливать аватарку на сервер?
                 UserManager.getInstance().setCurrentUser(info);
-                if (mListener != null) mListener.onSignViaVkontakteSuccess();
+                if (mListener != null) mListener.onSignViaVkontakteSuccess(true);
             }
         }
     }

@@ -93,4 +93,6 @@ public interface Constants {
     String ANALYTICS_CATEGORY_PREFERENCES_PROFILE = "Настройки профиля";
 
     String ANALYTICS_CATEGORY_PREFERENCES_APP = "Настройки приложения";
+
+    String ANALYTICS_CATEGORY_LOGIN = "Логин";
 }

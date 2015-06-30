@@ -9,7 +9,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -35,7 +34,9 @@ import java.util.Random;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.tabbar.LiveFeedActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -118,6 +119,15 @@ public class LoginActivity extends ActivityBase implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(BUNDLE_CURRENT_BACKGROUND_ID, mCurrentBackgroundId);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() > 0) {
+            getFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @DrawableRes
@@ -221,6 +231,8 @@ public class LoginActivity extends ActivityBase implements
     @Override
     public void onSignSuccess() {
         switchToMainScreen();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                "Успешный вход — емайл", null);
     }
 
     @Override
@@ -249,6 +261,8 @@ public class LoginActivity extends ActivityBase implements
     public void onForgotPasswordRequestSent() {
         closeAllFragments();
         Toast.makeText(this, "Спасибо. Мы отправили вам письмо с инструкциями.", Toast.LENGTH_LONG).show();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                "Восстановление пароля - отправлено на емайл", null);
     }
 
     @Override
@@ -260,6 +274,8 @@ public class LoginActivity extends ActivityBase implements
     public void onSignUpSuccess() {
         Toast.makeText(this, R.string.sign_up_success, Toast.LENGTH_LONG).show();
         switchToMainScreen();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                "Успешная регистрация — емайл", null);
     }
 
     @Override
@@ -274,13 +290,17 @@ public class LoginActivity extends ActivityBase implements
     }
 
     @Override
-    public void onSignViaVkontakteSuccess() {
+    public void onSignViaVkontakteSuccess(boolean newUserCreated) {
         switchToMainScreen();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                (newUserCreated ? "Успешная регистрация — вконакте" : "Успешный вход — вконакте"), null);
     }
 
     @Override
-    public void onSignViaFacebookSuccess() {
+    public void onSignViaFacebookSuccess(boolean newUserCreated) {
         switchToMainScreen();
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                (newUserCreated ? "Успешная регистрация — facebook" : "Успешный вход — facebook"), null);
     }
 
     public class Background {

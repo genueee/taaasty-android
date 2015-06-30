@@ -230,7 +230,7 @@ public class SignViaFacebookFragment extends DialogFragment {
     }
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        void onSignViaFacebookSuccess();
+        void onSignViaFacebookSuccess(boolean newUserCreated);
     }
 
     final class AuthObserver implements Observer<CurrentUser> {
@@ -266,7 +266,7 @@ public class SignViaFacebookFragment extends DialogFragment {
                 // XXX
             } else {
                 UserManager.getInstance().setCurrentUser(info);
-                if (mListener != null) mListener.onSignViaFacebookSuccess();
+                if (mListener != null) mListener.onSignViaFacebookSuccess(false);
             }
         }
     }
@@ -299,7 +299,7 @@ public class SignViaFacebookFragment extends DialogFragment {
                 // XXX
             } else {
                 UserManager.getInstance().setCurrentUser(info);
-                if (mListener != null) mListener.onSignViaFacebookSuccess();
+                if (mListener != null) mListener.onSignViaFacebookSuccess(true);
             }
         }
     }
