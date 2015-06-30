@@ -28,13 +28,13 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
+import retrofit.RetrofitError;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.UserManager;
 import ru.taaasty.rest.DateTypeAdapter;
-import ru.taaasty.ui.login.LoginActivity;
 
 public final class NetworkUtils {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -70,6 +70,18 @@ public final class NetworkUtils {
             }
         }
         return sGson;
+    }
+
+    public static String getUrlApiPath(RetrofitError error) {
+        String url = error.getUrl();
+        if (url.startsWith(BuildConfig.API_SERVER_ADDRESS)) {
+            try {
+                Uri uri = Uri.parse(error.getUrl());
+                return uri.getPath();
+            } catch (Throwable ignore) {}
+        }
+        return url;
+
     }
 
     public void onAppInit(Context context) {

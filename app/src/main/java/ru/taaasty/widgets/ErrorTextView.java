@@ -11,10 +11,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import ru.taaasty.TaaastyApplication;
+import ru.taaasty.utils.AnalyticsExceptionParser;
 
 public class ErrorTextView extends TextView {
 
@@ -60,7 +60,7 @@ public class ErrorTextView extends TextView {
                 Tracker t = ((TaaastyApplication) getContext().getApplicationContext()).getTracker();
                 t.send(new HitBuilders.ExceptionBuilder()
                                 .setDescription(
-                                        new StandardExceptionParser(getContext(), null)
+                                        new AnalyticsExceptionParser(getContext(), null)
                                                 .getDescription(Thread.currentThread().getName(), exception))
                                 .setFatal(false)
                                 .build()
