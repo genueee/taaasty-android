@@ -42,6 +42,7 @@
     <dimen name="header_title_subtitle_height">195dp</dimen>
     <dimen name="live_feed_pager_indicator_top">175dp</dimen>
     <dimen name="feed_header_height">235dp</dimen>
+    <dimen name="feed_header_padding_top">0dp</dimen>
     <dimen name="login_btn_background_corner_radius">2dp</dimen>
 
     <dimen name="following_followers_indicator_stroke_radius">6dp</dimen>

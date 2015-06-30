@@ -2,7 +2,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppThemeBase" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimaryLight</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -12,6 +12,9 @@
         <item name="vpiCirclePageIndicatorStyle">@style/LiveFeedCirclePageIndicator</item>
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
         <item name="actionBarSize">52dp</item>
+    </style>
+
+    <style name="AppTheme" parent="AppThemeBase">
     </style>
 
     <style name="AppThemeDark" parent="AppTheme">

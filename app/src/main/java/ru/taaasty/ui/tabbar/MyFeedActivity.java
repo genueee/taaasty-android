@@ -50,10 +50,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_my_feed);
-
-        getWindow().getDecorView().setBackgroundDrawable(null); // Используем background у RecyclerView
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 

@@ -26,6 +26,7 @@
         <ru.taaasty.widgets.ErrorTextView
             android:id="@+id/error_text"
             style="@style/ErrorTextView"
+            android:fitsSystemWindows="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
