@@ -1,7 +1,5 @@
 package ru.taaasty.ui.feeds;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -83,13 +81,13 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     private String mBackgroundBitmapKey;
 
-    private boolean mForceShowRefreshingIndicator;
-
     private int mAvatarThumbnailRes;
 
     private WorkRetainedFragment mWorkFragment;
 
     private Handler mHandler;
+
+    private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
 
     public static TlogFragment newInstance(long userId) {
         return newInstance(userId, 0);
@@ -131,7 +129,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mAvatarThumbnailRes = getArguments().getInt(ARG_AVATAR_THUMBNAIL_RES, 0);
-        mForceShowRefreshingIndicator = false;
         mHandler = new Handler();
     }
 
@@ -160,7 +157,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 if (mListener == null) return;
                 View child = recyclerView.getChildAt(0);
                 float firstVisibleFract;
-                updateDateIndicator(dy > 0);
                 if (child == null) {
                     mListener.onListScroll(dy, 0, 0, 0, 0);
                 } else {
@@ -183,7 +179,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mDateIndicatorView.setAuthoShow(false);
+        mDateIndicatorView.setAutoShow(false);
 
         final GestureDetector gd = new GestureDetector(getActivity(), new GestureDetector.OnGestureListener() {
             @Override
@@ -238,7 +234,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     public void onWorkFragmentActivityCreated() {
         mAdapter = new Adapter(mWorkFragment.getEntryList());
         mAdapter.onCreate();
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
+
+        mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
+        mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
+        mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
+
         if (mWorkFragment.getUser() != null) {
             mAdapter.setUser(mWorkFragment.getUser().author);
             setupFeedDesign();
@@ -251,7 +251,8 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     @Override
     public void onWorkFragmentResume() {
         if (!mWorkFragment.isRefreshing()) refreshData(false);
-        updateIndicatorDelayed();
+        mDateIndicatorHelper.onResume();
+        updateDateIndicatorVisibility();
     }
 
     @Override
@@ -260,8 +261,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mHandler.removeCallbacksAndMessages(null);
         mDateIndicatorView = null;
         mWorkFragment.setTargetFragment(null, 0);
+        if (mDateIndicatorHelper != null) {
+            mDateIndicatorHelper.onDestroy();
+            mDateIndicatorHelper = null;
+        }
         if (mAdapter != null) {
-            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
@@ -340,11 +344,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     }
 
-    void updateDateIndicator(boolean animScrollUp) {
-        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
-        updateDateIndicatorVisibility();
-    }
-
     void updateDateIndicatorVisibility() {
         if (mListener == null) return;
         updateDateIndicatorVisibility(mListener.isOverlayVisible());
@@ -352,57 +351,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     private void updateDateIndicatorVisibility(boolean overlayVisible) {
         boolean dayIndicatorVisible = overlayVisible && !mAdapter.getFeed().isEmpty();
-        if (dayIndicatorVisible  && mDateIndicatorView.getVisibility() != View.VISIBLE) {
-            // Show
-            ObjectAnimator animator = ObjectAnimator.ofFloat(mDateIndicatorView, "alpha", 0f, 1f)
-                    .setDuration(getResources().getInteger(R.integer.longAnimTime));
-            animator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    if (mDateIndicatorView != null) mDateIndicatorView.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mDateIndicatorView != null) mDateIndicatorView.setAlpha(1f);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    if (mDateIndicatorView != null) mDateIndicatorView.setAlpha(1f);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            });
-            animator.start();
-        } else if (!dayIndicatorVisible && mDateIndicatorView.getVisibility() == View.VISIBLE) {
+        if (dayIndicatorVisible) {
+            mDateIndicatorView.showIndicatorSmoothly();
+        } else {
             // Hide
-            ObjectAnimator animator = ObjectAnimator.ofFloat(mDateIndicatorView, "alpha", 1f, 0f)
-                    .setDuration(getResources().getInteger(R.integer.longAnimTime));
-            animator.addListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (mDateIndicatorView == null) return;
-                    mDateIndicatorView.setAlpha(1f);
-                    mDateIndicatorView.setVisibility(View.INVISIBLE);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    if (mDateIndicatorView == null) return;
-                    mDateIndicatorView.setAlpha(1f);
-                    mDateIndicatorView.setVisibility(View.INVISIBLE);
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            });
-            animator.start();
+            mDateIndicatorView.hideIndicatorSmoothly();
         }
     }
 
@@ -635,34 +588,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             titleView = (TextView)itemView.findViewById(R.id.user_name);
         }
     }
-
-    final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-
-        @Override
-        public void onChanged() {
-            updateIndicatorDelayed();
-        }
-
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            updateIndicatorDelayed();
-        }
-
-    };
-
-    void updateIndicatorDelayed() {
-        if (mListView != null) {
-            mListView.removeCallbacks(mUpdateIndicatorRunnable);
-            mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-        }
-    }
-
-    private Runnable mUpdateIndicatorRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateDateIndicator(true);
-        }
-    };
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 

@@ -79,6 +79,8 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
     private Handler mHandler;
 
+    private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
+
     private TabbarFragment.AutoHideScrollListener mHideTabbarListener;
 
     public static ListFeedFragment createLiveFeedInstance() {
@@ -156,9 +158,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                updateDateIndicator(dy > 0);
-            }
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {}
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -206,8 +206,12 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     public void onWorkFragmentActivityCreated() {
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarVisibleOnPost());
         mAdapter.onCreate();
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
         mListView.setAdapter(mAdapter);
+
+        mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView,mAdapter);
+        mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
+        mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
+
         setupFeedDesign();
         setupAdapterPendingIndicator();
         onLoadingStateChanged("onWorkFragmentActivityCreated()");
@@ -216,7 +220,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
     @Override
     public void onWorkFragmentResume() {
-        updateDateIndicator(true);
+        mDateIndicatorHelper.onResume();
         if (!mWorkFragment.isRefreshing()) refreshData(mPendingForceShowRefreshingIndicator);
         mPendingForceShowRefreshingIndicator = false;
     }
@@ -229,8 +233,11 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorView = null;
         mEmptyView = null;
         mRefreshLayout = null;
+        if (mDateIndicatorHelper != null) {
+            mDateIndicatorHelper.onDestroy();
+            mDateIndicatorHelper = null;
+        }
         if (mAdapter != null) {
-            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
@@ -316,10 +323,6 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         design = TlogDesign.createLightTheme(design); // Подписки всегда светлые
         mAdapter.setFeedDesign(design);
-    }
-
-    void updateDateIndicator(boolean animScrollUp) {
-        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
     public void onHeaderMoved(boolean isVisible, int viewTop) {
@@ -554,34 +557,6 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             FeedsHelper.setupListEntryClickListener(this, pHolder);
         }
     }
-
-    final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-        private Runnable mUpdateIndicatorRunnable = new Runnable() {
-            @Override
-            public void run() {
-                updateDateIndicator(true);
-            }
-        };
-
-        @Override
-        public void onChanged() {
-            if (DBG) Log.v(TAG, "onChanged");
-            updateIndicatorDelayed();
-        }
-
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            if (DBG) Log.v(TAG, "onItemRangeInserted");
-            updateIndicatorDelayed();
-        }
-
-        private void updateIndicatorDelayed() {
-            if (mListView != null) {
-                mListView.removeCallbacks(mUpdateIndicatorRunnable);
-                mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-            }
-        }
-    };
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 

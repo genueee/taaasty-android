@@ -1,12 +1,12 @@
 package ru.taaasty.widgets;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +47,8 @@ public class DateIndicatorWidget extends ViewSwitcher {
     private Animation mScrollUpOutAnim;
 
     private boolean mAuthoShow = true;
+
+    private static final LinearOutSlowInInterpolator sLinearOutSlowInInterpolator = new LinearOutSlowInInterpolator();
 
     public DateIndicatorWidget(Context context) {
         super(context, null);
@@ -121,7 +123,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
     }
 
 
-    public void setAuthoShow(boolean show) {
+    public void setAutoShow(boolean show) {
         mAuthoShow = show;
     }
 
@@ -166,30 +168,31 @@ public class DateIndicatorWidget extends ViewSwitcher {
         if (mAuthoShow && (getVisibility() != View.VISIBLE)) showIndicatorSmoothly();
     }
 
-    private void showIndicatorSmoothly() {
-        ObjectAnimator animator = ObjectAnimator.ofFloat(this, "alpha", 0f, 1f)
-                .setDuration(getResources().getInteger(R.integer.longAnimTime));
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                setVisibility(View.VISIBLE);
-                setAlpha(0f);
-            }
+    public void showIndicatorSmoothly() {
+        if (getVisibility() == View.VISIBLE && getAlpha() >= 1f) return;
+        setVisibility(View.VISIBLE);
+        ViewCompat.animate(this)
+                .alpha(1f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime))
+                .setInterpolator(sLinearOutSlowInInterpolator)
+                .withLayer()
+                .start();
+    }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                setAlpha(1f);
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                setAlpha(1f);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {}
-        });
-        animator.start();
+    public void hideIndicatorSmoothly() {
+        if (getVisibility() != View.VISIBLE) return;
+        ViewCompat.animate(this)
+                .alpha(0f)
+                .setDuration(getResources().getInteger(R.integer.longAnimTime))
+                .setInterpolator(sLinearOutSlowInInterpolator)
+                .withLayer()
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        setVisibility(View.INVISIBLE);
+                    }
+                })
+                .start();
     }
 
     static class SavedState extends BaseSavedState {

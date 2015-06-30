@@ -100,6 +100,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     private Handler mHandler;
 
+    private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
+
     public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
         Bundle b = new Bundle();
@@ -138,8 +140,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                              Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_my_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
-
         mEmptyView = v.findViewById(R.id.empty_view);
+        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -147,7 +151,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             }
         });
 
-        mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
@@ -155,14 +158,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarShown()));
 
         setupEmptyView(v);
-
-        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                updateDateIndicator(dy > 0);
-            }
-        });
 
         return v;
     }
@@ -186,8 +181,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     public void onWorkFragmentActivityCreated() {
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarShown());
         mAdapter.onCreate();
-        mAdapter.registerAdapterDataObserver(mUpdateIndicatorObserver);
         mListView.setAdapter(mAdapter);
+
+        mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
+        mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
+        mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
 
         setupFeedDesign();
         setupUser();
@@ -198,7 +196,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     @Override
     public void onWorkFragmentResume() {
         if (!mWorkFragment.isRefreshing()) refreshData(false);
-        updateDateIndicatorDelayed();
+        mDateIndicatorHelper.onResume();
     }
 
     @Override
@@ -206,8 +204,11 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         super.onDestroyView();
         mWorkFragment.setTargetFragment(null, 0);
         mDateIndicatorView = null;
+        if (mDateIndicatorHelper != null) {
+            mDateIndicatorHelper.onDestroy();
+            mDateIndicatorHelper = null;
+        }
         if (mAdapter != null) {
-            mAdapter.unregisterAdapterDataObserver(mUpdateIndicatorObserver);
             mAdapter.onDestroy(mListView);
             mAdapter = null;
         }
@@ -295,10 +296,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
         mListView.setBackgroundDrawable(new ColorDrawable(mWorkFragment.getTlogDesign().getFeedBackgroundColor(getResources())));
-    }
-
-    void updateDateIndicator(boolean animScrollUp) {
-        FeedsHelper.updateDateIndicator(mListView, mDateIndicatorView, mAdapter, animScrollUp);
     }
 
     private void setupAdapterPendingIndicator() {
@@ -516,33 +513,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             usernameView = (TextView)itemView.findViewById(R.id.user_name);
         }
     }
-
-    final RecyclerView.AdapterDataObserver mUpdateIndicatorObserver = new RecyclerView.AdapterDataObserver() {
-
-        @Override
-        public void onChanged() {
-            updateDateIndicatorDelayed();
-        }
-
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            updateDateIndicatorDelayed();
-        }
-    };
-
-    void updateDateIndicatorDelayed() {
-        if (mListView != null) {
-            mListView.removeCallbacks(mUpdateIndicatorRunnable);
-            mListView.postDelayed(mUpdateIndicatorRunnable, 64);
-        }
-    }
-
-    private Runnable mUpdateIndicatorRunnable = new Runnable() {
-        @Override
-        public void run() {
-            updateDateIndicator(true);
-        }
-    };
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 

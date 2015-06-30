@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 
 import com.google.android.youtube.player.YouTubeIntents;
@@ -14,6 +16,7 @@ import com.google.android.youtube.player.YouTubeIntents;
 import java.util.Date;
 import java.util.List;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -69,9 +72,79 @@ public class FeedsHelper {
             dateIndicator.setVisibility(View.INVISIBLE);
         } else {
             Entry entry = adapter.getEntry(position);
-            if (entry != null) newDate = entry.getCreatedAt();
-            dateIndicator.setDate(newDate, animScrollUp);
+            if (entry != null) {
+                newDate = entry.getCreatedAt();
+                dateIndicator.setDate(newDate, animScrollUp);
+            } else {
+                if (BuildConfig.DEBUG) Log.v("FeedsHelper", "no entry at position" + position);
+
+            }
         }
+    }
+
+    public static class DateIndicatorUpdateHelper {
+
+        private final Handler mHandler;
+        private final RecyclerView mListView;
+        private final DateIndicatorWidget mWidget;
+        private final FeedItemAdapterLite mAdapter;
+
+        boolean mQueued = false;
+
+        boolean mLastAnimScrollUp = true;
+
+        public DateIndicatorUpdateHelper(RecyclerView listView,
+                                         DateIndicatorWidget dateIndicator,
+                                         FeedItemAdapterLite adapter) {
+            mHandler = new Handler();
+            mListView = listView;
+            mWidget = dateIndicator;
+            mAdapter = adapter;
+        }
+
+        public void onResume() {
+            updateDateIndicatorDelayed(true);
+        }
+
+        public void onDestroy() {
+            mHandler.removeCallbacksAndMessages(null);
+            mQueued = false;
+        }
+
+        void updateDateIndicatorDelayed(boolean animScrollIUp) {
+            if (mQueued) return;
+            mQueued = true;
+            mLastAnimScrollUp = animScrollIUp;
+            mHandler.removeCallbacks(mUpdateRunnable);
+            mHandler.postDelayed(mUpdateRunnable, 16 * 5);
+        }
+
+        public final RecyclerView.AdapterDataObserver adapterDataObserver = new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                updateDateIndicatorDelayed(true);
+            }
+
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                updateDateIndicatorDelayed(true);
+            }
+        };
+
+        private final Runnable mUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                FeedsHelper.updateDateIndicator(mListView, mWidget, mAdapter, mLastAnimScrollUp);
+                mQueued = false;
+            }
+        };
+
+        public final RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                updateDateIndicatorDelayed(dy > 0);
+            }
+        };
     }
 
     public static void setupListEntryClickListener(IFeedsHelper adapter, final ListEntryBase pHolder) {
