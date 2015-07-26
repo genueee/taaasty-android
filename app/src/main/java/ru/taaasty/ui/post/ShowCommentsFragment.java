@@ -351,7 +351,7 @@ public class ShowCommentsFragment extends Fragment {
     public void refreshEntry() {
         mPostSubscription.unsubscribe();
 
-        Observable<Entry> observablePost = AppObservable.bindFragment(this,
+        Observable<Entry> observablePost = AppObservable.bindSupportFragment(this,
                 mEntriesService.getEntry(mPostId, false));
 
         mPostSubscription = observablePost
@@ -365,7 +365,7 @@ public class ShowCommentsFragment extends Fragment {
 
     private void loadDesign(long userId) {
         mTlogDesignSubscription.unsubscribe();
-        Observable<TlogDesign> observable = AppObservable.bindFragment(this,
+        Observable<TlogDesign> observable = AppObservable.bindSupportFragment(this,
                 mTlogDesignService.getDesignSettings(String.valueOf(userId)));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -376,7 +376,7 @@ public class ShowCommentsFragment extends Fragment {
         mCommentsSubscription.unsubscribe();
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
-        Observable<Comments> observableComments = AppObservable.bindFragment(this,
+        Observable<Comments> observableComments = AppObservable.bindSupportFragment(this,
                 mCommentsService.getComments(mPostId,
                         null,
                         topCommentId,
@@ -431,7 +431,7 @@ public class ShowCommentsFragment extends Fragment {
 
         mPostCommentSubscription.unsubscribe();
 
-        Observable<Comment> observablePost = AppObservable.bindFragment(this,
+        Observable<Comment> observablePost = AppObservable.bindSupportFragment(this,
                 mCommentsService.postComment(mPostId, comment));
 
         mReplyToCommentText.setEnabled(false);

@@ -204,7 +204,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) { return false; }
         });
 
-        mListView.addOnItemTouchListener(mListView.new SimpleOnItemTouchListener() {
+        mListView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
             @Override
             public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
                 gd.onTouchEvent(e);

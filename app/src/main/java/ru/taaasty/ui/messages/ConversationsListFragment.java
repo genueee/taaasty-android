@@ -353,7 +353,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             if (DBG) Log.v(TAG, "refreshConversationList");
 
             mConversationsSubscription.unsubscribe();
-            mConversationsSubscription = AppObservable.bindFragment(this, mApiMessenger.getConversations(null))
+            mConversationsSubscription = AppObservable.bindSupportFragment(this, mApiMessenger.getConversations(null))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(mConversationListObserver);
             if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusLoading();

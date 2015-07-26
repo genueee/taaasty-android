@@ -33,7 +33,7 @@ public class FollowingsFragment extends RelationshipListFragmentBase {
 
     Observable<Relationships> createRelationshipsObservable() {
         ApiTlog tlogApi = RestClient.getAPiTlog();
-        return AppObservable.bindFragment(this,
+        return AppObservable.bindSupportFragment(this,
                 tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
     }
 

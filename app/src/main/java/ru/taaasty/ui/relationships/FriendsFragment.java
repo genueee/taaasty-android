@@ -38,7 +38,7 @@ public class FriendsFragment extends RelationshipListFragmentBase {
     Observable<Relationships> createRelationshipsObservable() {
         ApiRelationships api = RestClient.getAPiRelationships();
 
-        return AppObservable.bindFragment(this,
+        return AppObservable.bindSupportFragment(this,
                 api.getRelationshipsTo(Relationship.RELATIONSHIP_FRIEND, null, 200));
     }
 

@@ -239,7 +239,7 @@ public class InitiateConversationFragment extends Fragment {
         }
 
         mLoadingNames = true;
-        Observable<List<User>> observable = AppObservable.bindFragment(this,
+        Observable<List<User>> observable = AppObservable.bindSupportFragment(this,
                 mApiUsers.predict(text.toString(), PREDICT_USERS_LIMIT));
         mLoadingNamesSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -250,7 +250,7 @@ public class InitiateConversationFragment extends Fragment {
         mCreatingConversationSubscription.unsubscribe();
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
         mCreatingConversation = true;
-        Observable<Conversation> observable = AppObservable.bindFragment(this,
+        Observable<Conversation> observable = AppObservable.bindSupportFragment(this,
                 apiMessenger.createConversation(null, userId));
         mCreatingConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())

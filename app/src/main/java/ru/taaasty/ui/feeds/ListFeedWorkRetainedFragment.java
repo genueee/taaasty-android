@@ -185,7 +185,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
     public void refreshUser() {
         if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         mCurrentUserSubscription.unsubscribe();
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindSupportFragment(this,
                 UserManager.getInstance().getCurrentUser());
 
         mCurrentUserSubscription = observableCurrentUser

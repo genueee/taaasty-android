@@ -148,7 +148,7 @@ public class RequestsFragment extends Fragment {
 
         if (mProgressBar != null) mProgressBar.setVisibility(View.VISIBLE);
 
-        Observable<Relationships> observable = AppObservable.bindFragment(this,
+        Observable<Relationships> observable = AppObservable.bindSupportFragment(this,
                 mApiRelationships.getRelationshipsRequested(null, 200, false));
 
         mRelationshipsSubscription = observable
@@ -161,7 +161,7 @@ public class RequestsFragment extends Fragment {
     }
 
     public void onApproveClicked(View view, Relationship relationship) {
-        Observable<Relationship> observable = AppObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
                 mApiRelationships.approveTlogRelationship(String.valueOf(relationship.getReaderId())));
 
         mListView.setEnabled(false);
@@ -172,7 +172,7 @@ public class RequestsFragment extends Fragment {
     }
 
     public void onDisapproveClicked(View view, Relationship relationship) {
-        Observable<Relationship> observable = AppObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
                 mApiRelationships.disapproveTlogRelationship(String.valueOf(relationship.getReaderId())));
 
         mListView.setEnabled(false);

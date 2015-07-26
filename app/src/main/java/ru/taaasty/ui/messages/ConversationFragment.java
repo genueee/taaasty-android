@@ -270,7 +270,7 @@ public class ConversationFragment extends Fragment {
 
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
-        Observable<Conversation.Message> observablePost = AppObservable.bindFragment(this,
+        Observable<Conversation.Message> observablePost = AppObservable.bindSupportFragment(this,
                 apiMessenger.postMessage(null, mConversationId, comment,
                         UUID.randomUUID().toString(), null));
 
@@ -526,7 +526,7 @@ public class ConversationFragment extends Fragment {
 
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
-                Observable<Status.MarkMessagesAsRead> observablePost = AppObservable.bindFragment(ConversationFragment.this,
+                Observable<Status.MarkMessagesAsRead> observablePost = AppObservable.bindSupportFragment(ConversationFragment.this,
                         mApiMessenger.markMessagesAsRead(null, mConversationId,
                                 TextUtils.join(",", postSet)));
                 mPostMessageSubscription = observablePost

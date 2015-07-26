@@ -506,7 +506,7 @@ public class UserInfoFragment extends Fragment {
 
         ApiTlog userService = RestClient.getAPiTlog();
 
-        Observable<TlogInfo> observableUser = AppObservable.bindFragment(this,
+        Observable<TlogInfo> observableUser = AppObservable.bindSupportFragment(this,
                 userService.getUserInfo(String.valueOf(mUserId)));
 
         mUserInfoSubscription = observableUser
@@ -520,7 +520,7 @@ public class UserInfoFragment extends Fragment {
 
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
                 relApi.follow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
         mFollowSubscription = observable
@@ -534,7 +534,7 @@ public class UserInfoFragment extends Fragment {
 
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindFragment(this,
+        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
                 relApi.unfollow(String.valueOf(mUserId)));
         showFollowUnfollowProgress();
         mFollowSubscription = observable
@@ -546,7 +546,7 @@ public class UserInfoFragment extends Fragment {
         mCreateConversationSubscription.unsubscribe();
 
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
-        Observable<Conversation> observable = AppObservable.bindFragment(this,
+        Observable<Conversation> observable = AppObservable.bindSupportFragment(this,
                 apiMessenger.createConversation(null, mUserId));
         mCreateConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())

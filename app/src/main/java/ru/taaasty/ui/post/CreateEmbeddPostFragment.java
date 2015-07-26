@@ -343,7 +343,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
 
 
         Observable<IFramely> observable = AppObservable
-                .bindFragment(this, mApiEntries.getIframely(mEmbeddUrl));
+                .bindSupportFragment(this, mApiEntries.getIframely(mEmbeddUrl));
 
         mLoafIframelySubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
