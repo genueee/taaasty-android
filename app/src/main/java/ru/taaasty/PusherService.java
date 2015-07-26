@@ -40,6 +40,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
+import rx.Observer;
 import rx.Subscription;
 import rx.subscriptions.Subscriptions;
 
@@ -321,7 +322,16 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
         // Игнорируем все ошибки и результаты
         mSendAuthReadySubscription = mApiMessenger.authReady2(mPusher.getConnection().getSocketId())
-                .subscribe();
+                .subscribe(new Observer<Void>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {}
+
+                    @Override
+                    public void onNext(Void aVoid) {}
+                });
 
     }
 

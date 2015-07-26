@@ -208,7 +208,19 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+                .subscribe(new Observer<CurrentUser>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+
+                    @Override
+                    public void onNext(CurrentUser currentUser) {
+                    }
+                });
     }
 
     /**
