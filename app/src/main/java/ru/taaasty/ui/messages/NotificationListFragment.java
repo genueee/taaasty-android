@@ -136,7 +136,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         if (savedInstanceState == null) {
             mNotificationsMarkedAsRead = mMarkNotificationsAsRead == null || mMarkNotificationsAsRead.length == 0;
         } else {
-            mNotificationsMarkedAsRead = savedInstanceState.getBoolean(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
+            mNotificationsMarkedAsRead = savedInstanceState.getBoolean(BUNDLE_KEY_NOTIFICATIONS_MARKED_AS_READ);
         }
     }
 
