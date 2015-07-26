@@ -63,6 +63,7 @@
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
     <string name="error_tlog_access_denied">Извините, но\u00A0доступ к\u00A0данному тлогу и\u00A0его\u00A0записям ограничен его владельцем.</string>
+    <string name="error_post_not_found">Такой публикации не существует. Скорее всего, она была удалена автором</string>
     <string name="no_records">Нет записей</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>

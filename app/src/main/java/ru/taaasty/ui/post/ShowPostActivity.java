@@ -254,6 +254,9 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         if (e instanceof ResponseErrorException && ((ResponseErrorException)e).getStatus() == 403) {
             text = getString(R.string.error_tlog_access_denied);
             iconId = R.drawable.post_load_error;
+        } else if (e instanceof ResponseErrorException && ((ResponseErrorException)e).getStatus() == 404) {
+            // С сервера приходит "Такой публикация не существует". Ставим свой текст
+            text = getString(R.string.error_post_not_found);
         } else {
             if (e instanceof  ResponseErrorException) {
                 text = ((ResponseErrorException)e).error.error;
