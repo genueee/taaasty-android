@@ -25,7 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -414,7 +413,7 @@ public class ShowPostFragment extends Fragment {
         return null;
     }
 
-    private void addCommentsDoNotScrollList(List<Comment> comments) {
+    private void addCommentsDoNotScrollList(Comment[] comments) {
         Long oldTopId = null;
         int oldTopTop = 0;
 

@@ -141,7 +141,7 @@ public abstract class FeedLoader {
     }
 
     protected void onLoadNext(boolean isRefresh, int entriesRequested, Feed feed) {
-        boolean keepOnAppending = (feed != null) && (feed.entries.size() >= 0);
+        boolean keepOnAppending = (feed != null) && (feed.entries.length >= 0);
 
         if (feed != null) {
             // XXX Сравнивать lastEntry?

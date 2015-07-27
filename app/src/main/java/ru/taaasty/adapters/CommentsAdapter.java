@@ -149,7 +149,7 @@ public abstract class CommentsAdapter extends RecyclerView.Adapter {
         mComments.addOrUpdate(comments);
     }
 
-    public void appendComments(List<Comment> comments) {
+    public void appendComments(Comment[] comments) {
         mComments.addOrUpdateItems(comments);
     }
 

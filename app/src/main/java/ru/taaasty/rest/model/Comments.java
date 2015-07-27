@@ -2,14 +2,12 @@ package ru.taaasty.rest.model;
 
 import android.support.annotation.Nullable;
 
-import java.util.List;
-
 /**
  * Created by alexey on 01.08.14.
  */
 public class Comments {
 
-    public List<Comment> comments;
+    public Comment comments[];
 
     @Nullable
     public long fromCommentId;

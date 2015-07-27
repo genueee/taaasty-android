@@ -1,11 +1,9 @@
 package ru.taaasty.rest.model;
 
 
-import java.util.List;
-
 public class Feed {
 
-    public List<Entry> entries;
+    public Entry[] entries;
 
     @Override
     public String toString() {

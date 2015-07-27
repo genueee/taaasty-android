@@ -77,7 +77,7 @@ public class SortedList<E> extends android.support.v7.util.SortedList<E> {
         }
     }
 
-    public void addOrUpdateItems(Collection<E> items) {
+    public void addOrUpdateItems(E[] items) {
         beginBatchedUpdates();
         try {
             for (E entry: items) addOrUpdate(entry);

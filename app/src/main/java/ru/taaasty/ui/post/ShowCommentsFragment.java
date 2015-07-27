@@ -27,7 +27,6 @@ import android.widget.Toast;
 import junit.framework.Assert;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -288,7 +287,7 @@ public class ShowCommentsFragment extends Fragment {
         loadComments();
     }
 
-    private void addCommentsDoNotScrollList(List<Comment> comments) {
+    private void addCommentsDoNotScrollList(Comment[] comments) {
         Long oldTopId = null;
         int oldTopTop = 0;
 

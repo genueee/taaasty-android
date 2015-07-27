@@ -126,7 +126,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         return mMessages.get(getFeedLocation(adapterPosition));
     }
 
-    public void addMessages(List<Conversation.Message> messages) {
+    public void addMessages(Conversation.Message[] messages) {
         mMessages.addOrUpdateItems(messages);
     }
 

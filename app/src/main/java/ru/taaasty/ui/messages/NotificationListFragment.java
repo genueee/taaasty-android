@@ -786,7 +786,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
                 @Override
                 public void onNext(NotificationList list) {
-                    boolean keepOnAppending = (list != null) && (list.notifications.size() >= 0);
+                    boolean keepOnAppending = (list != null) && (list.notifications.length >= 0);
 
                     if (list != null) {
                         int sizeBefore = mNotificationList.size();

@@ -207,13 +207,13 @@ public class StatusBarNotificationNotification {
 
             @Override
             public void onNext(NotificationList notificationList) {
-                if (notificationList.notifications.isEmpty()) {
+                if (notificationList.notifications.length == 0) {
                     // Не показанных нотификаций вроде нет. На всякий случай, оставляем всё как есть
                     if (DBG) Log.v(TAG, "onGcmPushNotificationReceived: no new notifications");
                     return;
                 }
                 long maxReadId = mLastSeenNewestNotificationId;
-                List<Notification> notifications = new ArrayList<>(notificationList.notifications.size());
+                List<Notification> notifications = new ArrayList<>(notificationList.notifications.length);
 
                 // maxReadId - максимальный id последнего прочитанного уведомления
                 for (Notification n: notificationList.notifications) {

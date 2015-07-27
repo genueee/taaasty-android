@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -326,7 +325,7 @@ public class ConversationFragment extends Fragment {
         });
     }
 
-    private void addMessagesDoNotScrollList(List<Conversation.Message> messages) {
+    private void addMessagesDoNotScrollList(Conversation.Message[] messages) {
         Long oldTopId = null;
         int oldTopTop = 0;
 
@@ -685,8 +684,8 @@ public class ConversationFragment extends Fragment {
 
         protected void onLoadNext(boolean isRefresh, int entriesRequested, ConversationMessages messages) {
             if (DBG) Log.e(TAG, "onNext " + messages.toString());
-            boolean keepOnAppending = (messages != null) && (messages.messages.size() == entriesRequested);
-            if (messages != null && !messages.messages.isEmpty()) {
+            boolean keepOnAppending = (messages != null) && (messages.messages.length == entriesRequested);
+            if (messages != null && messages.messages.length > 0) {
                 if (isRefresh) {
                     mAdapter.addMessages(messages.messages);
                     scrollListToPosition(mAdapter.getLastPosition(), false);
