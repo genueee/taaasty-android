@@ -123,7 +123,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     public void recycle() {
         picasso.cancelRequest(mImageView);
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
-        mTitle.setText(null);
         if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag);
         recycleGifDrawable();
     }

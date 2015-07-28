@@ -98,8 +98,6 @@ public class ListTextEntry extends ListEntryBase {
     public void recycle() {
         if (mTextImgLoader != null) mTextImgLoader.reset();
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
-        mText.setText(null);
-        mTitle.setText(null);
     }
 
     private void setupTitle(Entry entry) {
