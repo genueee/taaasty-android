@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <!-- Диаметр окружноти с аватаркой на странице пользователя -->
+    <dimen name="avatar_large_diameter">148dp</dimen>
+    <dimen name="create_post_image_default_height">300dp</dimen>
+
+
+</resources>

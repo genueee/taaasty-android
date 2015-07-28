@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- телефоны с normnal экраном в landscape -->
+<resources>
+    <dimen name="feed_horizontal_margin">32dp</dimen>
+    <dimen name="feed_date_indicator_horizontal_margin">36dp</dimen>
+    <dimen name="following_followers_horizontal_margin">32dp</dimen>
+</resources>

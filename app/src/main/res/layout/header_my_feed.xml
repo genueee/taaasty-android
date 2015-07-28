@@ -40,8 +40,8 @@
 
         <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/avatar"
-            android:layout_width="@dimen/avatar_normal_diameter"
-            android:layout_height="@dimen/avatar_normal_diameter"
+            android:layout_width="@dimen/feed_header_avatar_normal_diameter"
+            android:layout_height="@dimen/feed_header_avatar_normal_diameter"
             android:clickable="true"
             android:contentDescription="@string/user_avatar_content_description"
             android:foreground="@drawable/clickable_item_circle_background"
@@ -53,13 +53,13 @@
             android:id="@+id/user_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="@dimen/feed_header_user_name_margin_top"
             android:gravity="center_horizontal"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:singleLine="true"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/user_name_text_size"
+            android:textSize="@dimen/feed_header_user_name_text_size"
             tools:text="Genue" />
     </LinearLayout>
 

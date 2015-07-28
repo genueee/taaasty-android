@@ -336,7 +336,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
-        TlogActivity.startTlogActivity(this, mUserId, view, R.dimen.avatar_normal_diameter);
+        TlogActivity.startTlogActivity(this, mUserId, view, R.dimen.feed_header_avatar_normal_diameter);
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
                 ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Клик на кол-ве постов", null);
     }

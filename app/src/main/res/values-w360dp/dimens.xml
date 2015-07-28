@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Телефоны в портретном режиме от 4.7” -->
 <resources>
     <dimen name="create_post_button_size">48dp</dimen>
     <dimen name="create_post_button_margin">4dp</dimen>

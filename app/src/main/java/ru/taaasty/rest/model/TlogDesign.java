@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.DrawableRes;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
@@ -101,13 +102,15 @@ public class TlogDesign implements Parcelable {
     }
 
     /**
-     * @param r
-     * @return  Цвет фида, с прозрачностью
+     * @return Drawable, устанавливаемый фоном: цвет ленты, цвет границ
      */
-    public int getFeedItemBackgroundColor(Resources r) {
-        int color = getFeedBackgroundColor(r);
-        int alpha = getFeedAlpha();
-        return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color));
+    @DrawableRes
+    public int getFeedBackgroundDrawable() {
+        if (isLightTheme()) {
+            return R.drawable.feed_white_background;
+        } else {
+            return R.drawable.feed_black_background;
+        }
     }
 
     public int getTitleForegroundColor(Resources r) {

@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -323,7 +324,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         if (user == null || user.author == null) return;
         new UserInfoActivity.Builder(getActivity())
                 .set(mWorkFragment.getUser().author, v, user.design)
-                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setPreloadAvatarThumbnail(R.dimen.feed_header_avatar_normal_diameter)
                 .setBackgroundThumbnailKey(mBackgroundBitmapKey)
                 .startActivity();
     }
@@ -340,7 +341,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         mAdapter.setFeedDesign(design);
-        if (mListener != null) mListener.setFeedBackgroundColor(design.getFeedBackgroundColor(getResources()));
+        if (mListener != null) mListener.setFeedBackground(design.getFeedBackgroundDrawable());
 
     }
 
@@ -557,7 +558,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                     mUser.getUserpic(),
                     mUser.getName(),
                     mAvatarLoadTarget,
-                    R.dimen.avatar_normal_diameter
+                    R.dimen.feed_header_avatar_normal_diameter
             );
         }
 
@@ -902,7 +903,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        void setFeedBackgroundColor(int color);
+        void setFeedBackground(@DrawableRes int background);
         void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         void onTlogInfoLoaded(TlogInfo info);
         void onSharePostMenuClicked(Entry entry);

@@ -27,6 +27,11 @@ public class NotificationsActivity extends TabbarActivityBase implements
 
         getSupportActionBar().setIcon(android.R.color.transparent);
 
+        // Используем background у фрагмента. Там стоит тот же background, что и у activity - так и должно быть,
+        // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
+        // системные кнопки и background на activity лежит под ними.
+        getWindow().setBackgroundDrawable(null);
+
         if (savedInstanceState == null) {
             long markArReadIds[] = null;
             if (getIntent().hasExtra(ARK_KEY_MARK_NOTIFICATIONS_AS_READ)) {

@@ -10,12 +10,13 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_user_info"
         />
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
         tools:text="Неправильный логин или пароль"
+        android:layout_marginLeft="@dimen/following_followers_horizontal_margin"
+        android:layout_marginRight="@dimen/following_followers_horizontal_margin"
         style="@style/ErrorTextView" />
 
 </FrameLayout>

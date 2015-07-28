@@ -42,13 +42,20 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedActivity";
 
-    public static final int ADDITIONAL_MENU_REQUEST_CODE = 1;
-
     private DrawerLayout mDrawerLayout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (UserManager.getInstance().getCachedCurrentUser() != null
+                && UserManager.getInstance().getCachedCurrentUser().getDesign() != null) {
+            TlogDesign design = UserManager.getInstance().getCachedCurrentUser().getDesign();
+            if (design.isDarkTheme()) {
+                setTheme(R.style.AppThemeDark);
+            } else {
+                setTheme(R.style.AppTheme);
+            }
+        }
+
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_my_feed);
@@ -150,7 +157,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design) {
         new UserInfoActivity.Builder(this)
                 .set(user, view, design)
-                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setPreloadAvatarThumbnail(R.dimen.feed_header_avatar_normal_diameter)
                 .setBackgroundThumbnailKey(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY)
                 .startActivity();
     }

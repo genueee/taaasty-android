@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:minHeight="64dp"
     android:paddingLeft="16dp"
-    android:paddingRight="4dp"
+    android:paddingRight="8dp"
     android:gravity="center_vertical"
     android:background="?selectableItemBackground"
     tools:ignore="UseCompoundDrawables">

@@ -5,12 +5,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <View
         android:layout_width="match_parent"
-        android:layout_height="@dimen/tabbarSize"
-        android:layout_gravity="bottom"
+        android:layout_height="@dimen/tabbar_size"
+        android:background="@color/tabbar_button_background_normal"
+        android:layout_gravity="bottom" />
+
+    <LinearLayout
+        android:layout_gravity="bottom|center_horizontal"
         android:orientation="horizontal"
-        tools:context=".widgets.Tabbar">
+        tools:context=".widgets.Tabbar"
+        style="@style/TabbarSize">
 
         <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/btn_tabbar_live"
@@ -37,19 +42,19 @@
                 android:id="@+id/unread_conversations_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
+                android:layout_gravity="center_horizontal|top"
                 android:layout_marginLeft="17dp"
                 android:background="@drawable/unread_conversations_count"
                 android:gravity="center"
                 android:padding="4dp"
                 android:singleLine="true"
                 android:textColor="@android:color/black"
-                android:textSize="10sp"
+                android:textSize="@dimen/tabbar_notifications_text_size"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription,SmallSp"
                 tools:text="100"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                android:layout_marginTop="3dp"/>
         </FrameLayout>
 
         <FrameLayout
@@ -71,19 +76,19 @@
                 android:id="@+id/unread_notifications_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
+                android:layout_gravity="center_horizontal|top"
+                android:layout_marginTop="3dp"
                 android:layout_marginLeft="17dp"
                 android:background="@drawable/conversations_list_unread_messages_background"
-                android:gravity="center"
                 android:padding="4dp"
                 android:singleLine="true"
                 android:textColor="@android:color/white"
-                android:textSize="10sp"
+                android:textSize="@dimen/tabbar_notifications_text_size"
                 android:visibility="invisible"
                 tools:ignore="ContentDescription,SmallSp"
                 tools:text="100"
-                tools:visibility="visible" />
+                tools:visibility="visible"
+                android:gravity="center"/>
 
         </FrameLayout>
 
@@ -106,7 +111,7 @@
         android:layout_marginRight="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="66dp"
+        android:layout_marginBottom="@dimen/tabbar_fab_padding_bottom"
         android:contentDescription="@string/btn_tabbar_action_post"
         android:src="@drawable/btn_tabbar_post"
         android:cropToPadding="false" />

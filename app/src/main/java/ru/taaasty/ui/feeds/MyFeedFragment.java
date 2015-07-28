@@ -2,7 +2,6 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -236,7 +235,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
-        mListView.setBackgroundDrawable(new ColorDrawable(mWorkFragment.getTlogDesign().getFeedBackgroundColor(getResources())));
+        mListView.setBackgroundResource(mWorkFragment.getTlogDesign().getFeedBackgroundDrawable());
     }
 
     private void setupAdapterPendingIndicator() {
@@ -366,7 +365,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
             if (user == null) user = CurrentUser.DUMMY;
             ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                     holder.avatarView,
-                    R.dimen.avatar_normal_diameter
+                    R.dimen.feed_header_avatar_normal_diameter
             );
         }
 

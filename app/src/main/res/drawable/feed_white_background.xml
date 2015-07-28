@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item
+        android:drawable="@color/feed_light_border_background_color"/>
+
+    <item
+        android:drawable="@color/feed_light_background_color"
+        android:left="@dimen/feed_horizontal_margin"
+        android:right="@dimen/feed_horizontal_margin"/>
+</layer-list>
+

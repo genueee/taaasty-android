@@ -93,6 +93,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             ab.setDisplayShowCustomEnabled(true);
             ab.setCustomView(R.layout.ab_custom_create_post);
             ab.setTitle(currentItem.titleViewId);
+            ab.setElevation(0);
 
             mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
             mCreatePostButton.setOnClickListener(new View.OnClickListener() {

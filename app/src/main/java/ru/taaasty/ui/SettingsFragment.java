@@ -2,6 +2,7 @@ package ru.taaasty.ui;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.EditTextPreference;
@@ -13,6 +14,10 @@ import android.preference.TwoStatePreference;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -83,6 +88,22 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.profile_preferences);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View root = super.onCreateView(inflater, container, savedInstanceState);
+
+        ListView listView = (ListView)root.findViewById(android.R.id.list);
+        if (listView != null) {
+            Resources resources = root.getResources();
+            int padding = resources.getDimensionPixelOffset(R.dimen.following_followers_horizontal_margin);
+            listView.setPadding(padding, listView.getPaddingTop(), padding, listView.getPaddingBottom());
+            listView.setClipToPadding(false);
+            listView.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        }
+
+        return root;
     }
 
     @Override

@@ -1,4 +1,6 @@
 <resources>
+    <dimen name="taaasty_action_bar_size">52dp</dimen>
+
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
@@ -18,10 +20,15 @@
     <dimen name="avatar_small_diameter_42dp">42dp</dimen>
 
     <!-- Диаметр окружноти с аватаркой в заголовке на странице пользователя -->
-    <dimen name="avatar_normal_diameter">120dp</dimen>
+    <dimen name="feed_header_avatar_normal_diameter">120dp</dimen>
 
     <!-- Диаметр окружноти с аватаркой на странице пользователя -->
-    <dimen name="avatar_large_diameter">148dp</dimen>
+    <dimen name="avatar_large_diameter">100dp</dimen>
+
+    <!-- Отсутпы у ленты по краям (для планшетов) -->
+    <dimen name="feed_horizontal_margin">0dp</dimen>
+
+    <dimen name="feed_date_indicator_horizontal_margin">4dp</dimen>
 
     <!-- padding слева и справа у текста в ленте -->
     <dimen name="feed_item_padding_left">16dp</dimen>
@@ -44,26 +51,37 @@
 
     <!-- Высота заголовка над лентой -->
     <dimen name="header_title_subtitle_height">195dp</dimen>
+    <dimen name="header_title_subtitle_title_text_size">34sp</dimen>
+    <dimen name="header_title_subtitle_subtitle_text_size">14sp</dimen>
     <dimen name="live_feed_pager_indicator_top">175dp</dimen>
+
+
     <dimen name="feed_header_height">235dp</dimen>
     <dimen name="login_btn_background_corner_radius">2dp</dimen>
 
     <dimen name="following_followers_indicator_stroke_radius">6dp</dimen>
-    <dimen name="following_followers_padding_right">12dp</dimen>
+    <dimen name="following_followers_horizontal_margin">12dp</dimen>
     <dimen name="following_followers_list_padding_top">24dp</dimen>
 
     <dimen name="image_loading_placeholder_default_size">64dp</dimen>
     <dimen name="grid_feed_item_margin">2.5dp</dimen>
-    <dimen name="user_name_text_size">32sp</dimen>
+    <dimen name="feed_header_user_name_text_size">32sp</dimen>
 
     <dimen name="date_indicator_margin_bottom">84dp</dimen>
 
     <dimen name="notification_picture_height">192dp</dimen>
 
     <dimen name="ab_icon_size">32dp</dimen>
-    <dimen name="tabbarSize">50dp</dimen>
+
 
     <dimen name="create_post_button_size">46dp</dimen>
     <dimen name="create_post_button_margin">3dp</dimen>
+    <dimen name="feed_header_name_height">48dp</dimen>
+    <dimen name="create_post_image_default_height">150dp</dimen>
+
+    <dimen name="tabbar_size">50dp</dimen>
+    <dimen name="tabbar_notifications_text_size">10sp</dimen>
+    <dimen name="tabbar_fab_padding_bottom">66dp</dimen>
+    <dimen name="feed_header_user_name_margin_top">22dp</dimen>
 
 </resources>

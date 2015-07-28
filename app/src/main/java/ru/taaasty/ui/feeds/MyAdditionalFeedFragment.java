@@ -2,7 +2,6 @@ package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -279,7 +278,16 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                 break;
         }
 
-        ((TextView)root.findViewById(R.id.empty_view)).setText(textNoRecords);
+        TextView emptyView = (TextView)root.findViewById(R.id.empty_view);
+        emptyView.setText(textNoRecords);
+
+        int paddingTop = getResources().getDimensionPixelSize(R.dimen.feed_header_height);
+        if (isFeedNameVisible(mFeedType)) {
+            paddingTop += getResources().getDimensionPixelSize(R.dimen.feed_header_name_height);
+        }
+
+        emptyView.setPadding(emptyView.getPaddingLeft(),
+                paddingTop, emptyView.getPaddingRight(), emptyView.getCompoundPaddingBottom());
     }
 
     void setupUser() {
@@ -295,7 +303,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
-        mListView.setBackgroundDrawable(new ColorDrawable(mWorkFragment.getTlogDesign().getFeedBackgroundColor(getResources())));
+        mListView.setBackgroundResource(mWorkFragment.getTlogDesign().getFeedBackgroundDrawable());
     }
 
     private void setupAdapterPendingIndicator() {
@@ -342,10 +350,13 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         }
     };
 
+    private static boolean isFeedNameVisible(@FeedType int feedType) {
+        return feedType != FEED_TYPE_MAIN;
+    }
+
     public class Adapter extends FeedItemAdapterLite {
         private String mTitle;
         private final int mFeedName;
-        private final int mFeedNameVisibility;
         private final int mFeedNameLeftDrawable;
 
         public Adapter(SortedList<Entry> feed, boolean showUserAvatar) {
@@ -357,22 +368,18 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             switch (mFeedType) {
                 case FEED_TYPE_MAIN:
                     mFeedName = -1;
-                    mFeedNameVisibility = View.GONE;
                     mFeedNameLeftDrawable = -1;
                     break;
                 case FEED_TYPE_FRIENDS:
                     mFeedName = R.string.friends;
-                    mFeedNameVisibility = View.VISIBLE;
                     mFeedNameLeftDrawable = R.drawable.ic_friends;
                     break;
                 case FEED_TYPE_FAVORITES:
                     mFeedName = R.string.title_favorites;
-                    mFeedNameVisibility = View.VISIBLE;
                     mFeedNameLeftDrawable = R.drawable.ic_favorites_small_normal;
                     break;
                 case FEED_TYPE_PRIVATE:
                     mFeedName = R.string.title_hidden_entries;
-                    mFeedNameVisibility = View.VISIBLE;
                     mFeedNameLeftDrawable = R.drawable.ic_hidden_small_normal;
                     break;
                 default:
@@ -435,8 +442,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
         void bindTitleName(HeaderHolder holder) {
             TextView feedNameView = (TextView)holder.itemView.findViewById(R.id.feed_name);
-            feedNameView.setVisibility(mFeedNameVisibility);
-            if (mFeedNameVisibility != View.GONE) {
+            feedNameView.setVisibility(isFeedNameVisible(mFeedType) ? View.VISIBLE : View.GONE);
+            if (isFeedNameVisible(mFeedType)) {
                 feedNameView.setText(mFeedName);
                 feedNameView.setCompoundDrawablesWithIntrinsicBounds(mFeedNameLeftDrawable, 0, 0, 0);
             }
@@ -469,7 +476,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             if (user == null) user = CurrentUser.DUMMY;
             ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
                     holder.avatarView,
-                    R.dimen.avatar_normal_diameter
+                    R.dimen.feed_header_avatar_normal_diameter
             );
         }
 

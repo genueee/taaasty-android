@@ -11,7 +11,7 @@
         <item name="android:colorBackgroundCacheHint">@color/feed_light_background_color</item>
         <item name="vpiCirclePageIndicatorStyle">@style/LiveFeedCirclePageIndicator</item>
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
-        <item name="actionBarSize">52dp</item>
+        <item name="actionBarSize">@dimen/taaasty_action_bar_size</item>
     </style>
 
     <style name="AppThemeDark" parent="AppTheme">
@@ -30,8 +30,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="homeAsUpIndicator">@drawable/ic_back</item>
         <item name="actionBarStyle">@style/ActionBar.Taaasty</item>
-        <item name="actionBarSize">52dp</item>
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
+        <item name="actionBarSize">@dimen/taaasty_action_bar_size</item>
     </style>
 
     <style name="AppThemeGreenActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -40,9 +40,9 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="homeAsUpIndicator">@drawable/ic_back_white</item>
         <item name="actionBarStyle">@style/ActionBar.Taaasty.Green</item>
-        <item name="actionBarSize">52dp</item>
         <item name="android:listViewStyle">@style/ListViewStyle</item> <!-- списки в настройках -->
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
+        <item name="actionBarSize">@dimen/taaasty_action_bar_size</item>
     </style>
 
     <style name="AppThemeOverlayingGreenActionBar" parent="AppThemeGreenActionBar">
@@ -85,13 +85,14 @@
     </style>
 
     <style name="CreatePostTheme" parent="AppThemeLightActionBar">
+        <item name="android:windowContentOverlay">@null</item>
     </style>
 
     <style name="ShowPostTheme" parent="AppThemeOverlayingActionBar">
     </style>
 
-    <style name="NotificationsActivityTheme" parent="AppTheme">
-        <item name="android:windowBackground">@android:color/white</item>
+    <style name="NotificationsActivityTheme" parent="AppThemeOverlayingGreenActionBar">
+        <item name="android:windowBackground">@drawable/feed_white_background</item>
         <item name="android:colorBackground">@android:color/white</item>
         <item name="android:colorBackgroundCacheHint">@android:color/white</item>
     </style>
@@ -157,17 +158,18 @@
     </style>
 
     <style name="TabbarButton">
-        <item name="android:paddingTop">8dp</item>
-        <item name="android:paddingBottom">8dp</item>
-        <item name="android:paddingLeft">8dp</item>
-        <item name="android:paddingRight">8dp</item>
-        <item name="android:minHeight">50dp</item>
+        <item name="android:paddingTop">6dp</item>
+        <item name="android:paddingBottom">6dp</item>
+        <item name="android:paddingLeft">6dp</item>
+        <item name="android:paddingRight">6dp</item>
+        <item name="android:minHeight">@dimen/tabbar_size</item>
         <item name="android:background">@drawable/btn_tabbar_background</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:scaleType">center</item>
+        <item name="android:scaleType">centerInside</item>
         <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
     </style>
 
     <style name="TabbarButton.First">
@@ -207,6 +209,8 @@
         <item name="android:layout_marginBottom">5dp</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">50dp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
     </style>
 
     <style name="LoginButton">
@@ -526,6 +530,11 @@
 
     <style name="ToolbarNavigationButton" parent="@style/Widget.AppCompat.Toolbar.Button.Navigation">
         <item name="android:minWidth">24dp</item>
+    </style>
+
+    <style name="TabbarSize">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/tabbar_size</item>
     </style>
 
 </resources>

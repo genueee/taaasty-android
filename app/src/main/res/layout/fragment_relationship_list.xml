@@ -11,6 +11,9 @@
         android:clipToPadding="false"
         android:divider="@drawable/followings_list_divider"
         android:paddingTop="@dimen/following_followers_list_padding_top"
+        android:paddingLeft="@dimen/following_followers_horizontal_margin"
+        android:paddingRight="@dimen/following_followers_horizontal_margin"
+        android:scrollbarStyle="outsideOverlay"
         />
 
     <ProgressBar
@@ -26,6 +29,8 @@
         android:id="@+id/empty_text"
         android:text="@string/no_subscribers"
         style="@style/EmptyTextStyle"
+        android:layout_marginLeft="@dimen/following_followers_horizontal_margin"
+        android:layout_marginRight="@dimen/following_followers_horizontal_margin"
         tools:visibility="visible" />
 
 </FrameLayout>

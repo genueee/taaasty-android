@@ -10,10 +10,12 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -178,7 +180,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
             if (design != null) {
-                getWindow().getDecorView().setBackgroundColor(design.getFeedBackgroundColor(getResources()));
+                getWindow().getDecorView().setBackgroundResource(design.getFeedBackgroundDrawable());
             }
 
             Fragment fragment;
@@ -273,7 +275,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     @Override
     public void onAvatarClicked(View view, User user, TlogDesign design) {
-        TlogActivity.startTlogActivity(this, user.getId(), view, R.dimen.avatar_normal_diameter);
+        TlogActivity.startTlogActivity(this, user.getId(), view, R.dimen.feed_header_avatar_normal_diameter);
     }
 
     @Override
@@ -295,18 +297,18 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         if (DBG) Log.v(TAG, "onEdgeUnreached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
+
     }
 
     @Override
-    public void setPostBackgroundColor(int color, boolean animate) {
+    public void setPostBackground(@DrawableRes int background, boolean animate) {
         Drawable from, to;
 
         from = getWindow().getDecorView().getBackground();
-        if ((from != null) && (from instanceof  ColorDrawable) && ((ColorDrawable) from).getColor() == color) {
-            return;
-        }
+        to = ResourcesCompat.getDrawable(getResources(), background, null);
 
-        to = new ColorDrawable(color);
+        if (from != null && from.equals(to)) return;
+
         if (animate) {
             TransitionDrawable transition;
             transition = new TransitionDrawable(new Drawable[]{from, to});

@@ -9,6 +9,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -231,8 +232,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void setFeedBackgroundColor(int color) {
-        getWindow().getDecorView().setBackgroundColor(color);
+    public void setFeedBackground(@DrawableRes int background) {
+        getWindow().getDecorView().setBackgroundResource(background);
     }
 
     @Override

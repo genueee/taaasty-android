@@ -109,7 +109,7 @@ public class TabbarFragment extends Fragment {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) mCreatePostView.getLayoutParams();
             // get rid of margins since shadow area is now the margin
-            p.setMargins(0, 0, 0, (int)mCreatePostView.getContext().getResources().getDimension(R.dimen.tabbarSize));
+            p.setMargins(0, 0, 0, (int)mCreatePostView.getContext().getResources().getDimension(R.dimen.tabbar_size));
             mCreatePostView.setLayoutParams(p);
         }
         for (int id: sItemIds) {

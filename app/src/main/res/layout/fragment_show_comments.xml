@@ -26,6 +26,8 @@
         android:layout_centerInParent="true"
         style="@style/EmptyTextStyle"
         android:text="@string/no_comments_hint"
+        android:layout_marginLeft="@dimen/feed_horizontal_margin"
+        android:layout_marginRight="@dimen/feed_horizontal_margin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

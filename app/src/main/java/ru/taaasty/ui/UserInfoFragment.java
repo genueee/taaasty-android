@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.RequestCreator;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -372,7 +373,7 @@ public class UserInfoFragment extends Fragment {
                 mUser.getUserpic(),
                 mUser.getName(),
                 mAvatarThumbnailLoadTarget,
-                R.dimen.avatar_normal_diameter
+                R.dimen.feed_header_avatar_normal_diameter
         );
 
     }
@@ -495,8 +496,19 @@ public class UserInfoFragment extends Fragment {
                 }
             }
 
-            picasso
+            RequestCreator rq = picasso
                     .load(backgroudUrl)
+                    .config(Bitmap.Config.RGB_565);
+
+            if (getActivity().getWindow().getDecorView().getWidth() > 0) {
+                rq.resize(getActivity().getWindow().getDecorView().getWidth(),
+                        getActivity().getWindow().getDecorView().getHeight());
+                rq.onlyScaleDown()
+                        .centerCrop();
+                if (DBG) Log.v(TAG, "resize");
+            }
+
+            rq
                     .into(mTargetSetHeaderBackground);
         }
     }

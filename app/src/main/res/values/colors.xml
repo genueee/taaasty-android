@@ -37,8 +37,11 @@
 
     <color name="unread_conversations_count_background">#fff627</color>
 
-    <color name="feed_dark_background_color">#ff1e1e1e</color>
-    <color name="feed_light_background_color">#ffeeeeee</color>
+    <color name="feed_dark_background_color">#121212</color>
+    <color name="feed_dark_border_background_color">#262626</color>
+
+    <color name="feed_light_border_background_color">#eeeeee</color>
+    <color name="feed_light_background_color">#fafafa</color>
 
     <color name="semi_transparent_action_bar_dark">#b6000000</color>
     <color name="semi_transparent_action_bar_light">#b6ffffff</color>
@@ -54,5 +57,6 @@
 
     <color name="date_indicator_background">#b2000000</color>
     <color name="date_indicator_color">#bbbbbbbb</color>
+
 
 </resources>

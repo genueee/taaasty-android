@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="taaasty_action_bar_size">42dp</dimen>
+
+    <!-- На телефонах в landscape заголовок маленького размера -->
+    <dimen name="header_title_subtitle_height">106dp</dimen>
+    <dimen name="header_title_subtitle_title_text_size">18sp</dimen>
+    <dimen name="header_title_subtitle_subtitle_text_size">10sp</dimen>
+    <dimen name="live_feed_pager_indicator_top">85dp</dimen>
+
+
+    <dimen name="tabbar_size">34dp</dimen>
+    <dimen name="tabbar_notifications_text_size">6sp</dimen>
+    <dimen name="tabbar_fab_padding_bottom">50dp</dimen>
+
+    <dimen name="feed_header_height">145dp</dimen>
+    <dimen name="feed_header_avatar_normal_diameter">87dp</dimen>
+    <dimen name="feed_header_user_name_text_size">20sp</dimen>
+    <dimen name="feed_header_user_name_margin_top">12dp</dimen>
+
+</resources>

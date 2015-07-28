@@ -2,14 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginLeft="@dimen/feed_horizontal_margin"
+    android:layout_marginRight="@dimen/feed_horizontal_margin"
     android:layout_marginTop="@dimen/activity_vertical_margin"
     android:layout_marginBottom="@dimen/activity_vertical_margin"
     android:layout_gravity="center"
     android:orientation="vertical"
     tools:context="ru.taaasty.ui.post.ErrorLoadingPostFragment">
-
 
     <ImageView
         android:id="@+id/icon"
@@ -26,7 +25,9 @@
         android:layout_height="wrap_content"
         android:minLines="3"
         android:layout_marginTop="16dp"
+        style="@style/EmptyTextStyle"
         tools:text="Извините, но доступ к данному тлогу и его записям ограничен его владельцем."
+        android:visibility="visible"
         android:gravity="center_horizontal"
          />
 

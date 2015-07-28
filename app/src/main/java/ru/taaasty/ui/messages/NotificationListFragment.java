@@ -151,7 +151,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
-        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
+        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.notification_list_divider));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 

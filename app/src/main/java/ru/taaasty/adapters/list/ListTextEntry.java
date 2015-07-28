@@ -7,8 +7,6 @@ import android.util.TimingLogger;
 import android.view.View;
 import android.widget.TextView;
 
-import junit.framework.Assert;
-
 import java.util.ArrayList;
 
 import ru.taaasty.BuildConfig;
@@ -57,22 +55,14 @@ public class ListTextEntry extends ListEntryBase {
         if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup TextEntry");
         super.setupEntry(entry, design);
 
-        if (BuildConfig.DEBUG) {
-            if (mText.getWidth() != 0) {
-                int textWidth = mText.getWidth() - mText.getPaddingLeft() - mText.getPaddingRight();
-                int textWidth2 = mParentWidth - mText.getPaddingLeft() - mText.getPaddingRight();
-                Assert.assertEquals("Ширина может определяться неверно. textWidth: " + textWidth + "parent width: " +textWidth2,
-                        textWidth, textWidth2);
-            }
-        }
-
         mUser = entry.getAuthor();
-
-        if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(
-                (mParentWidth == 0 ? 0 : mParentWidth
-                        - mText.getPaddingLeft()
-                        - mText.getPaddingRight()),
-                mContext);
+        if (mImageGetter == null) {
+            mImageGetter = new ImageLoadingGetter(
+                    guessViewVisibleWidth(mText),
+                    mContext);
+        } else {
+            if (BuildConfig.DEBUG) guessViewVisibleWidth(mText); // Assertion
+        }
         setupTitle(entry);
         setupText(entry);
         applyFeedStyle(design);

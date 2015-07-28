@@ -287,9 +287,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         }
 
         if (mImageGetter == null) mImageGetter = new ImageLoadingGetter(
-                (parentWidth == 0 ? 0 : parentWidth
-                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)
-                        - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
+                guessViewVisibleWidth(mTitle),
                 mContext);
 
         CharSequence title = UiUtils.formatEntryTextSpanned(item.getTitleSpanned(), mImageGetter);

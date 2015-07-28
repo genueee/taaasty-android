@@ -18,6 +18,7 @@
             android:layout_height="wrap_content"
             android:hint="@string/edit_text_title"
             android:inputType="textCapSentences|textMultiLine"
+            android:imeOptions="flagNavigateNext"
             style="@style/CreatePostEditText"
             android:maxLength="200"
             android:textSize="32sp"

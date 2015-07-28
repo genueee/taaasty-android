@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- На планшетах в landscape заголовок среднего размера -->
+    <dimen name="header_title_subtitle_height">138dp</dimen>
+    <dimen name="header_title_subtitle_title_text_size">22sp</dimen>
+    <dimen name="header_title_subtitle_subtitle_text_size">12sp</dimen>
+    <dimen name="live_feed_pager_indicator_top">117dp</dimen>
+</resources>

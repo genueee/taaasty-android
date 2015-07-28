@@ -141,7 +141,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     public void onCurrentUserAvatarClicked(View view, User user, TlogDesign design) {
         new UserInfoActivity.Builder(this)
                 .set(user, view, design)
-                .setPreloadAvatarThumbnail(R.dimen.avatar_normal_diameter)
+                .setPreloadAvatarThumbnail(R.dimen.feed_header_avatar_normal_diameter)
                 .setBackgroundThumbnailKey(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY)
                 .startActivity();
     }

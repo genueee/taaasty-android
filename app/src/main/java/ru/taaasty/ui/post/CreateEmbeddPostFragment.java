@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -324,7 +322,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         if (mEmbeddUrl == null) {
             mCopyLinkPromtView.setVisibility(View.VISIBLE);
             mPicasso.cancelRequest(mImageView);
-            mImageView.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mImageView.setImageDrawable(null);
             mProgressView.setVisibility(View.GONE);
         } else {
             mCopyLinkPromtView.setVisibility(View.GONE);

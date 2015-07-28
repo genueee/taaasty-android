@@ -7,10 +7,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import junit.framework.Assert;
+
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -87,6 +91,32 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     public void recycle() {
         picasso.cancelRequest(mAvatarTarget);
     };
+
+    int guessViewVisibleWidth(View view) {
+        if (view.getWidth() > 0) {
+            int width = view.getWidth() - view.getPaddingLeft() - view.getPaddingRight();
+            if (BuildConfig.DEBUG && (mParentWidth != 0)) {
+                int guessedWidth = guesViewVisibleWidthFromDimensions(view);
+                Assert.assertEquals("Ширина может определяться неверно. width: " + width + " guessed: " + guessedWidth,
+                        width, guessedWidth);
+            }
+            return width;
+        } else {
+            return guesViewVisibleWidthFromDimensions(view);
+        }
+    }
+
+    private int guesViewVisibleWidthFromDimensions(View view) {
+        if (mParentWidth == 0) return 0;
+        ViewGroup.MarginLayoutParams itemViewLayoutParams = (ViewGroup.MarginLayoutParams)itemView.getLayoutParams();
+        ViewGroup.MarginLayoutParams viewLayoutParams = (ViewGroup.MarginLayoutParams)view.getLayoutParams();
+        return mParentWidth -
+                itemViewLayoutParams.leftMargin - itemViewLayoutParams.rightMargin -
+                itemView.getPaddingLeft() - itemView.getPaddingRight() -
+                viewLayoutParams.leftMargin - viewLayoutParams.rightMargin -
+                view.getPaddingLeft() - view.getPaddingRight();
+    }
+
 
     private final ImageUtils.DrawableTarget mAvatarTarget = new ImageUtils.DrawableTarget() {
 

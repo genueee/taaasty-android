@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="@dimen/activity_vertical_margin"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin"
+    android:layout_marginLeft="@dimen/following_followers_horizontal_margin"
+    android:layout_marginRight="@dimen/following_followers_horizontal_margin"
     android:layout_marginTop="@dimen/activity_vertical_margin"
     tools:context="ru.taaasty.ui.UserInfoActivity">
 
@@ -21,28 +21,93 @@
         android:contentDescription="@string/change_background"
         android:minHeight="42dp"
         android:minWidth="42dp"
+        android:focusable="true"
         android:scaleType="center"
         android:clickable="true"
         android:background="?selectableItemBackground"
         android:src="@drawable/ic_magick_wand" />
 
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/initiate_conversation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:background="?selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:contentDescription="@string/initiate_conversation"
+        android:minHeight="42dp"
+        android:minWidth="42dp"
+        android:src="@drawable/ic_letter_gray"/>
+
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                 xmlns:tools="http://schemas.android.com/tools"
+                 android:layout_width="42dp"
+                 android:layout_toLeftOf="@id/initiate_conversation"
+                 android:layout_height="42dp"
+                 android:layout_marginLeft="8dp"
+                 android:layout_marginRight="6dp"
+                 android:layout_marginTop="4dp">
+
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/unsubscribe"
+            android:visibility="invisible"
+            tools:visibility="visible"
+            android:src="@drawable/ic_ab_subscribed"
+            android:contentDescription="@string/unsubscribe_content_description"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center"
+            android:focusable="true"
+            android:padding="5dp"/>
+
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/subscribe"
+            android:src="@drawable/ic_ab_subscribe_normal"
+            android:contentDescription="@string/subscribe_content_description"
+            android:scaleType="centerInside"
+            tools:visibility="visible"
+            android:clickable="true"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center_vertical"
+            android:focusable="true"
+            android:padding="2dp"/>
+
+        <ProgressBar
+            android:id="@+id/follow_unfollow_progress"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_gravity="center"
+            android:visibility="invisible"
+            android:padding="4dp" />
+
+    </FrameLayout>
 
     <LinearLayout
         android:id="@+id/avatar_user_name"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp"
-        android:gravity="center"
         android:orientation="vertical"
         android:paddingBottom="8dp"
-        android:paddingTop="8dp">
+        android:paddingTop="8dp"
+        android:layout_above="@+id/user_info_content"
+        android:layout_alignParentTop="true"
+        android:gravity="center">
 
         <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_width="@dimen/avatar_large_diameter"
+            android:layout_height="@dimen/avatar_large_diameter"
+            >
 
             <ru.taaasty.widgets.HintedExtendedImageView
                 android:id="@+id/avatar"
@@ -52,7 +117,8 @@
                 android:contentDescription="@string/user_avatar_content_description"
                 android:cropToPadding="false"
                 android:scaleType="fitCenter"
-                android:src="@drawable/ic_user_stub" />
+                android:src="@drawable/ic_user_stub"
+                />
 
             <ProgressBar
                 android:id="@+id/progress_refresh_avatar"
@@ -66,20 +132,20 @@
             android:id="@+id/user_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="10dp"
             android:gravity="center_horizontal"
             android:paddingLeft="8dp"
             android:paddingRight="8dp"
             android:singleLine="true"
             android:textColor="@android:color/white"
-            android:textSize="@dimen/user_name_text_size"
+            android:textSize="@dimen/feed_header_user_name_text_size"
             tools:text="Genue" />
 
         <info.piwai.android.JellyBeanSpanFixTextView
             android:id="@+id/user_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="8dp"
             android:gravity="center_horizontal"
             android:maxLines="2"
             android:paddingLeft="8dp"
@@ -87,67 +153,8 @@
             android:textColor="@color/text_color_semi_transparent_white"
             android:textSize="16sp"
             android:textAppearance="@style/TextAppearance.PostSans"
-            tools:text="Не переставай улыбаться. Для кого-то ты лучик света." />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/subscribe"
-                    style="@style/LoginButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginRight="12dp"
-                    android:layout_marginTop="28dp"
-                    android:background="@drawable/register_btn_background"
-                    android:text="@string/subscribe_button" />
-
-                <TextView
-                    android:id="@+id/unsubscribe"
-                    style="@style/LoginButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:layout_marginLeft="12dp"
-                    android:layout_marginRight="12dp"
-                    android:layout_marginTop="28dp"
-                    android:background="@drawable/btn_green_background"
-                    android:text="@string/you_have_subscribed_button"
-                    android:visibility="gone" />
-
-                <ProgressBar
-                    android:id="@+id/follow_unfollow_progress"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="8dp"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-            </FrameLayout>
-
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/initiate_conversation"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginTop="28dp"
-                android:background="?selectableItemBackground"
-                android:foreground="@drawable/register_btn_background"
-                android:contentDescription="@string/initiate_conversation"
-                android:padding="12dp"
-                android:src="@drawable/ic_letter_gray"
-                android:layout_marginBottom="12dp" />
-
-        </LinearLayout>
+            tools:text="Не переставай улыбаться. Для кого-то ты лучик света."
+            android:layout_marginBottom="6dp"/>
 
     </LinearLayout>
 

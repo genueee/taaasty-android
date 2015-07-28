@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -323,7 +324,7 @@ public class ShowPostFragment extends Fragment {
         TlogDesign design = mDesign != null ? mDesign : TlogDesign.DUMMY;
         if (DBG) Log.v(TAG, "setupFeedDesign " + design);
 
-        if (mListener != null) mListener.setPostBackgroundColor(design.getFeedBackgroundColor(getResources()), !isResumed());
+        if (mListener != null) mListener.setPostBackground(design.getFeedBackgroundDrawable(), !isResumed());
         mCommentsAdapter.setFeedDesign(design);
     }
 
@@ -953,10 +954,10 @@ public class ShowPostFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener {
-        public void onPostLoaded(Entry entry);
-        public void onPostLoadError(Throwable e);
-        public void onAvatarClicked(View view, User user, TlogDesign design);
-        public void onSharePostMenuClicked(Entry entry);
-        public void setPostBackgroundColor(int color, boolean animate);
+        void onPostLoaded(Entry entry);
+        void onPostLoadError(Throwable e);
+        void onAvatarClicked(View view, User user, TlogDesign design);
+        void onSharePostMenuClicked(Entry entry);
+        void setPostBackground(@DrawableRes int resId, boolean animate);
     }
 }

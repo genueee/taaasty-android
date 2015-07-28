@@ -1,0 +1,226 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_marginLeft="@dimen/following_followers_horizontal_margin"
+                android:layout_marginRight="@dimen/following_followers_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                tools:context="ru.taaasty.ui.UserInfoActivity">
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/select_background_button"
+        android:visibility="visible"
+        tools:visibility="visible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:contentDescription="@string/change_background"
+        android:minHeight="42dp"
+        android:minWidth="42dp"
+        android:scaleType="center"
+        android:clickable="true"
+        android:background="?selectableItemBackground"
+        android:src="@drawable/ic_magick_wand" />
+
+
+    <LinearLayout
+        android:id="@+id/avatar_user_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="50dp"
+        android:layout_marginRight="50dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp">
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_large_diameter"
+                android:layout_height="@dimen/avatar_large_diameter"
+                android:clickable="true"
+                android:contentDescription="@string/user_avatar_content_description"
+                android:cropToPadding="false"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_user_stub" />
+
+            <ProgressBar
+                android:id="@+id/progress_refresh_avatar"
+                android:visibility="gone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/user_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center_horizontal"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:singleLine="true"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/feed_header_user_name_text_size"
+            tools:text="Genue" />
+
+        <info.piwai.android.JellyBeanSpanFixTextView
+            android:id="@+id/user_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center_horizontal"
+            android:maxLines="2"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:textColor="@color/text_color_semi_transparent_white"
+            android:textSize="16sp"
+            android:textAppearance="@style/TextAppearance.PostSans"
+            tools:text="Не переставай улыбаться. Для кого-то ты лучик света." />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/subscribe"
+                    style="@style/LoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="12dp"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/register_btn_background"
+                    android:text="@string/subscribe_button" />
+
+                <TextView
+                    android:id="@+id/unsubscribe"
+                    style="@style/LoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:layout_marginLeft="12dp"
+                    android:layout_marginRight="12dp"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/btn_green_background"
+                    android:text="@string/you_have_subscribed_button"
+                    android:visibility="gone" />
+
+                <ProgressBar
+                    android:id="@+id/follow_unfollow_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/initiate_conversation"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginTop="28dp"
+                android:background="?selectableItemBackground"
+                android:foreground="@drawable/register_btn_background"
+                android:contentDescription="@string/initiate_conversation"
+                android:padding="12dp"
+                android:src="@drawable/ic_letter_gray"
+                android:layout_marginBottom="12dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/user_info_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/entries_count"
+            android:background="?selectableItemBackground"
+            style="@style/UserInfoContentColumn">
+
+            <TextView
+                android:id="@+id/entries_count_value"
+                style="@style/UserInfoContentValue"
+                tools:text="356" />
+
+            <TextView
+                android:id="@+id/entries_count_title"
+                style="@style/UserInfoContentTitle"
+                tools:text="записей"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/subscriptions_count"
+            style="@style/UserInfoContentColumn">
+
+            <TextView
+                android:id="@+id/subscriptions_count_value"
+                style="@style/UserInfoContentValue"
+                tools:text="45" />
+
+            <TextView
+                android:id="@+id/subscriptions_count_title"
+                style="@style/UserInfoContentTitle"
+                tools:text="подписок" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/subscribers_count"
+            style="@style/UserInfoContentColumn">
+
+            <TextView
+                android:id="@+id/subscribers_count_value"
+                style="@style/UserInfoContentValue"
+                tools:text="356" />
+
+            <TextView
+                android:id="@+id/subscribers_count_title"
+                style="@style/UserInfoContentTitle"
+                tools:text="подписчиков" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/days_count"
+            style="@style/UserInfoContentColumn">
+
+            <TextView
+                android:id="@+id/days_count_value"
+                style="@style/UserInfoContentValue"
+                tools:text="12" />
+
+            <TextView
+                android:id="@+id/days_count_title"
+                style="@style/UserInfoContentTitle"
+                tools:text="дней тут" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>
