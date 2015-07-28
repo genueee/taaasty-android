@@ -77,7 +77,10 @@ public class ListTextEntry extends ListEntryBase {
         setupText(entry);
         applyFeedStyle(design);
 
-        if (BuildConfig.DEBUG && timings != null) timings.dumpToLog();
+        if (BuildConfig.DEBUG && timings != null) {
+            timings.addSplit("setup TextEntry end");
+            timings.dumpToLog();
+        }
     }
 
     @Override
