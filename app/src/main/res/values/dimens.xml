@@ -59,4 +59,7 @@
     <dimen name="ab_icon_size">32dp</dimen>
     <dimen name="tabbarSize">50dp</dimen>
 
+    <dimen name="create_post_button_size">46dp</dimen>
+    <dimen name="create_post_button_margin">3dp</dimen>
+
 </resources>

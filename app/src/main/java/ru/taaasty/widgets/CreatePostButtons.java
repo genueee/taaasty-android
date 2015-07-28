@@ -1,11 +1,10 @@
 package ru.taaasty.widgets;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Rect;
 import android.support.annotation.IdRes;
-import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewPropertyAnimatorListener;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -20,8 +19,6 @@ public class CreatePostButtons extends LinearLayout {
     private View mPrivatePostIndicator;
 
     private View mWithVotingIndicator;
-
-    private LinearLayout mButtonsList;
 
     @Entry.EntryPrivacy
     private String mPrivacy = Entry.PRIVACY_PUBLIC;
@@ -48,21 +45,17 @@ public class CreatePostButtons extends LinearLayout {
         if (mPrivatePostIndicator != null) return;
         mPrivatePostIndicator = findViewById(R.id.private_post_indicator);
         mWithVotingIndicator = findViewById(R.id.is_with_voting_indicator);
-        mButtonsList = (LinearLayout)findViewById(R.id.buttons_list);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        int childCount = mButtonsList.getChildCount();
+        int childCount = getChildCount();
         for (int i=0; i < childCount; ++i) {
-            View v = mButtonsList.getChildAt(i);
+            View v = getChildAt(i);
             v.setOnClickListener(mOnClickListener);
         }
-
-        mWithVotingIndicator.setOnClickListener(mOnClickListener);
-        mPrivatePostIndicator.setOnClickListener(mOnClickListener);
 
         refreshActivated();
     }
@@ -72,16 +65,6 @@ public class CreatePostButtons extends LinearLayout {
     public void setActivated(@IdRes int activated) {
         mActivatedElement = activated;
         refreshActivated();
-
-        View activatedView = getActivatedView();
-        if (activatedView != null) {
-            MarginLayoutParams lp = (MarginLayoutParams)activatedView.getLayoutParams();
-            visibleRect.left = activatedView.getLeft() - lp.leftMargin * 2;
-            visibleRect.right = activatedView.getRight() + lp.rightMargin * 2;
-            visibleRect.top = activatedView.getTop();
-            visibleRect.bottom = activatedView.getBottom();
-            if (visibleRect.width() > 0) activatedView.requestRectangleOnScreen(visibleRect);
-        }
     }
 
     public int getActivatedViewId() {
@@ -93,21 +76,12 @@ public class CreatePostButtons extends LinearLayout {
     }
 
     public void refreshActivated() {
-        int childCount = mButtonsList.getChildCount();
+        int childCount = getChildCount();
         for (int i=0; i < childCount; ++i) {
-            View v = mButtonsList.getChildAt(i);
+            View v = getChildAt(i);
+            if (v == mPrivatePostIndicator || v == mWithVotingIndicator) continue;
             v.setActivated(mActivatedElement == v.getId());
         }
-    }
-
-    @Nullable
-    private View getActivatedView() {
-        int childCount = mButtonsList.getChildCount();
-        for (int i=0; i < childCount; ++i) {
-            View v = mButtonsList.getChildAt(i);
-            if (mActivatedElement == v.getId()) return v;
-        }
-        return null;
     }
 
     public void setPrivacy(@Entry.EntryPrivacy String privacy) {
@@ -133,61 +107,55 @@ public class CreatePostButtons extends LinearLayout {
     }
 
     private void showVotingIndicator() {
-        if (mWithVotingIndicator.getVisibility() == View.VISIBLE) return;
-        ObjectAnimator anim = ObjectAnimator.ofFloat(mWithVotingIndicator, "alpha", 0f, 1f);
-        anim.setDuration(getResources().getInteger(R.integer.shortAnimTime));
-        anim.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mWithVotingIndicator.setVisibility(View.VISIBLE);
-                mWithVotingIndicator.setAlpha(0f);
-            }
+        if (mWithVotingIndicator.getVisibility() != View.VISIBLE) {
+            mWithVotingIndicator.setVisibility(View.VISIBLE);
+            mWithVotingIndicator.setAlpha(0f);
+        }
+        ViewCompat.animate(mWithVotingIndicator)
+                .alpha(1f)
+                .setDuration(getResources().getInteger(R.integer.shortAnimTime))
+                .withLayer()
+                .setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
+                    }
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mWithVotingIndicator.setAlpha(1f);
-            }
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        mWithVotingIndicator.setAlpha(1f);
+                    }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mWithVotingIndicator.setAlpha(1f);
-            }
+                    @Override
+                    public void onAnimationCancel(View view) {
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
-        });
-        anim.start();
+                    }
+                })
+                .start();
     }
 
     private void hideVotingIndicator() {
         if (mWithVotingIndicator.getVisibility() != View.VISIBLE) return;
-        ObjectAnimator anim = ObjectAnimator.ofFloat(mWithVotingIndicator, "alpha", 1f, 0f);
-        anim.setDuration(getResources().getInteger(R.integer.shortAnimTime));
-        anim.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
+        ViewCompat.animate(mWithVotingIndicator)
+                .alpha(0f)
+                .setDuration(getResources().getInteger(R.integer.shortAnimTime))
+                .withLayer()
+                .setListener(new ViewPropertyAnimatorListener() {
+                    @Override
+                    public void onAnimationStart(View view) {
 
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mWithVotingIndicator.setVisibility(View.INVISIBLE);
-                mWithVotingIndicator.setAlpha(1f);
-            }
+                    }
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mWithVotingIndicator.setVisibility(View.INVISIBLE);
-                mWithVotingIndicator.setAlpha(1f);
-            }
+                    @Override
+                    public void onAnimationEnd(View view) {
+                        mWithVotingIndicator.setVisibility(View.INVISIBLE);
+                    }
 
-            @Override
-            public void onAnimationRepeat(Animator animation) {
+                    @Override
+                    public void onAnimationCancel(View view) {
 
-            }
-        });
-        anim.start();
+                    }
+                })
+                .start();
     }
 
     public @Entry.EntryPrivacy String getPrivacy() {
@@ -224,6 +192,6 @@ public class CreatePostButtons extends LinearLayout {
     };
 
     public interface onCreatePostButtonsListener {
-        public void onCreatePostButtonClicked(View v);
+        void onCreatePostButtonClicked(View v);
     }
 }

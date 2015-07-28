@@ -1,93 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginRight="8dp"
-    android:layout_marginTop="4dp"
-    android:gravity="center_vertical"
-    android:orientation="horizontal">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginRight="8dp"
+              android:layout_marginTop="4dp"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
 
-    <HorizontalScrollView
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/text_post"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
+        android:layout_margin="@dimen/create_post_button_margin"
+        android:contentDescription="@string/text_post_content_description"
+        android:src="@drawable/ic_text_post"
+        tools:activated="true"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/image_post"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
+        android:layout_margin="@dimen/create_post_button_margin"
+        android:contentDescription="@string/image_post_content_description"
+        android:src="@drawable/ic_image_post"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/quote_post"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
+        android:layout_margin="@dimen/create_post_button_margin"
+        android:contentDescription="@string/quote_post_content_description"
+        android:src="@drawable/ic_quote_post"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/embedd_post"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
+        android:layout_margin="@dimen/create_post_button_margin"
+        android:contentDescription="@string/embedd_post_content_description"
+        android:src="@drawable/ic_embedd_post"/>
+
+    <Space
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:fillViewport="true"
-        android:requiresFadingEdge="none"
-        android:clipToPadding="false"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:id="@+id/buttons_list"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
-
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/text_post"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:contentDescription="@string/text_post_content_description"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="@drawable/ic_text_post"
-                tools:activated="true" />
-
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/image_post"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:contentDescription="@string/image_post_content_description"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="@drawable/ic_image_post" />
-
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/quote_post"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:contentDescription="@string/quote_post_content_description"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="@drawable/ic_quote_post" />
-
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/embedd_post"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:contentDescription="@string/embedd_post_content_description"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="@drawable/ic_embedd_post" />
-        </LinearLayout>
-
-    </HorizontalScrollView>
+        android:layout_weight="1"/>
 
     <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/is_with_voting_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
         android:layout_gravity="center_vertical|right"
-        android:layout_margin="4dp"
+        android:layout_margin="@dimen/create_post_button_margin"
         android:contentDescription="@string/is_with_voting"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@drawable/ic_post_with_vote_indicator" />
+        android:src="@drawable/ic_post_with_vote_indicator"/>
 
     <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/private_post_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="@dimen/create_post_button_size"
+        android:layout_height="@dimen/create_post_button_size"
         android:layout_gravity="center_vertical|right"
-        android:layout_margin="4dp"
+        android:layout_margin="@dimen/create_post_button_margin"
         android:contentDescription="@string/is_private_post_content_description"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:src="@drawable/ic_private_post_indicator" />
+        android:src="@drawable/ic_private_post_indicator"/>
 
 </merge>
