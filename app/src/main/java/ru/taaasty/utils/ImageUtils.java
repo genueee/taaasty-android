@@ -174,7 +174,10 @@ public class ImageUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (DBG) timings.dumpToLog();
+            if (DBG) {
+                timings.addSplit("decodeBackgroundBitmap done");
+                timings.dumpToLog();
+            }
         }
         return null;
     }

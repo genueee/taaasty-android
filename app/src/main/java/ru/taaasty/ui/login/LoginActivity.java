@@ -331,7 +331,10 @@ public class LoginActivity extends ActivityBase implements
             }
             refreshPrimaryBackground();
             // startKenBurnsAnimator();
-            if (DBG) timings.dumpToLog();
+            if (DBG) {
+                timings.addSplit("refreshBackgroundPrimary done");
+                timings.dumpToLog();
+            }
         }
 
         public void setBackgroundSecondary() {
@@ -352,14 +355,8 @@ public class LoginActivity extends ActivityBase implements
         }
 
         private Bitmap decodeBackgroundBitmap(int backgroundResId, int inSampleSizeAdd) {
-            float scale, scaleX, scaleY;
-            TimingLogger timings = null;
-
-            if (DBG) timings = new TimingLogger("Taaasty", "decodeBackgroundBitmap");
-
             Point displaySize = new Point();
             getWindowManager().getDefaultDisplay().getSize(displaySize);
-
             return ImageUtils.decodeBackgroundBitmap(LoginActivity.this, backgroundResId, displaySize, inSampleSizeAdd);
         }
 
