@@ -3,6 +3,7 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.util.TimingLogger;
 import android.view.View;
 import android.widget.TextView;
 
@@ -11,6 +12,7 @@ import junit.framework.Assert;
 import java.util.ArrayList;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -51,6 +53,8 @@ public class ListTextEntry extends ListEntryBase {
 
     @Override
     public void setupEntry(Entry entry, TlogDesign design) {
+        TimingLogger timings = null;
+        if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup TextEntry");
         super.setupEntry(entry, design);
 
         if (BuildConfig.DEBUG) {
@@ -73,6 +77,7 @@ public class ListTextEntry extends ListEntryBase {
         setupText(entry);
         applyFeedStyle(design);
 
+        if (BuildConfig.DEBUG && timings != null) timings.dumpToLog();
     }
 
     @Override
@@ -96,7 +101,7 @@ public class ListTextEntry extends ListEntryBase {
 
     private void setupTitle(Entry entry) {
         if (entry.hasTitle()) {
-            CharSequence title = UiUtils.formatEntryText(entry.getTitle(), mImageGetter);
+            CharSequence title = UiUtils.formatEntryTextSpanned(entry.getTitleSpanned(), mImageGetter);
             mTitle.setText(title, TextView.BufferType.NORMAL);
             mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
             mTitle.setVisibility(View.VISIBLE);
@@ -107,8 +112,8 @@ public class ListTextEntry extends ListEntryBase {
 
     private void setupText(Entry item) {
         if (item.hasText()) {
-            CharSequence text = UiUtils.formatEntryText(item.getText(), mImageGetter);
-            mText.setText(text, TextView.BufferType.NORMAL);
+            CharSequence text = UiUtils.formatEntryTextSpanned(item.getTextSpanned(), mImageGetter);
+            mText.setText(text, TextView.BufferType.NORMAL); // Главный тормоз
             mTextImgLoader = TextViewImgLoader.bindAndLoadImages(mText, onImgClickListener);
             mText.setVisibility(View.VISIBLE);
         } else {

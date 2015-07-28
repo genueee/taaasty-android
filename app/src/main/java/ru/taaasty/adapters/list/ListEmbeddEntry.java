@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,6 +15,8 @@ import com.squareup.picasso.Callback;
 
 import java.util.ArrayList;
 
+import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -63,11 +66,19 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
     @Override
     public void setupEntry(Entry entry, TlogDesign design) {
+        TimingLogger timings = null;
+        if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup EmbeddEntry");
+
         super.setupEntry(entry, design);
         mUser = entry.getAuthor();
         setupImage(entry, mParentWidth);
         setupTitle(entry, mParentWidth);
         applyFeedStyle(design);
+
+        if (BuildConfig.DEBUG && timings != null) {
+            timings.addSplit("setup EmbeddEntry end");
+            timings.dumpToLog();
+        }
     }
 
     @Override
@@ -155,7 +166,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
                 mContext);
 
-        CharSequence title = UiUtils.formatEntryText(item.getTitle(), mImageGetter);
+        CharSequence title = UiUtils.formatEntryTextSpanned(item.getTitleSpanned(), mImageGetter);
         mTitle.setText(title, TextView.BufferType.NORMAL);
         mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
         mTitle.setVisibility(View.VISIBLE);

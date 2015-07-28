@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringDef;
 import android.text.Html;
 import android.text.Spanned;
+import android.text.SpannedString;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
@@ -153,11 +154,11 @@ public class Entry implements Parcelable, Cloneable {
     @SerializedName("image_url")
     private String mImageUrl;
 
-    private transient volatile Spanned mTextSpanned = null;
+    private transient volatile SpannedString mTextSpanned = null;
 
-    private transient volatile Spanned mSourceSpanned = null;
+    private transient volatile SpannedString mSourceSpanned = null;
 
-    private transient volatile Spanned mTitleSpanned = null;
+    private transient volatile SpannedString mTitleSpanned = null;
 
     public static Entry setRating(Entry entry, Rating rating) {
         Entry dst = null;
@@ -282,28 +283,28 @@ public class Entry implements Parcelable, Cloneable {
     public String getVideoUrl() { return mVideoUrl; }
 
     @Nullable
-    private synchronized Spanned getTextSpanned() {
+    public synchronized Spanned getTextSpanned() {
         if (TextUtils.isEmpty(mText)) return null;
         if (mTextSpanned == null) {
-            mTextSpanned = Html.fromHtml(mText);
+            mTextSpanned = new SpannedString(Html.fromHtml(mText));
         }
         return mTextSpanned;
     }
 
     @Nullable
-    private synchronized Spanned getSourceSpanned() {
+    public synchronized Spanned getSourceSpanned() {
         if (TextUtils.isEmpty(mSource)) return null;
         if (mSourceSpanned == null) {
-            mSourceSpanned = Html.fromHtml(mSource);
+            mSourceSpanned = new SpannedString(Html.fromHtml(mSource));
         }
         return mSourceSpanned;
     }
 
     @Nullable
-    private synchronized Spanned getTitleSpanned() {
+    public synchronized Spanned getTitleSpanned() {
         if (TextUtils.isEmpty(mTitle)) return null;
         if (mTitleSpanned == null) {
-            mTitleSpanned = Html.fromHtml(mTitle);
+            mTitleSpanned = new SpannedString(Html.fromHtml(mTitle));
         }
         return mTitleSpanned;
     }
@@ -434,6 +435,12 @@ public class Entry implements Parcelable, Cloneable {
         }
         intent.putExtra(Intent.EXTRA_TEXT, getEntryUrl());
         return intent;
+    }
+
+    public void initSpannedText() {
+        getTitleSpanned();
+        getTextSpanned();
+        getSourceSpanned();
     }
 
     public Entry() {

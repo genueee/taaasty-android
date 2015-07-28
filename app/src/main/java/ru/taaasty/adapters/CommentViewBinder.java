@@ -239,7 +239,7 @@ public class CommentViewBinder {
         SpannableStringBuilder ssb = new SpannableStringBuilder(item.getAuthor().getName());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), item.getAuthor().getId(), context, design.getAuthorTextAppearance());
         ssb.append(' ');
-        ssb.append(UiUtils.replaceUrlSpans(item.getTextSpanned()));
+        ssb.append(UiUtils.replaceUrlSpans(item.getTextSpanned(), false));
 
         // Добавляем дату в текст
         vh.updatedAtValue = item.getUpdatedAt().getTime();

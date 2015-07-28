@@ -1,7 +1,9 @@
 package ru.taaasty.ui.feeds;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.util.TimingLogger;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,6 +17,7 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -71,6 +74,7 @@ public abstract class FeedLoader {
         }
 
         mFeedRefreshSubscription = observable
+                .map(mInitFeedSpannedText)
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override
@@ -120,6 +124,7 @@ public abstract class FeedLoader {
 
         int requestEntries = Constants.LIST_FEED_APPEND_LENGTH;
         mFeedAppendSubscription = createObservable(lastEntry.getId(), requestEntries)
+                .map(mInitFeedSpannedText)
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override
@@ -172,6 +177,25 @@ public abstract class FeedLoader {
         public void run() {
             activateCacheInBackground();
             mActivateCacheQueued = false;
+        }
+    };
+
+    private final  Func1<Feed, Feed> mInitFeedSpannedText = new Func1<Feed, Feed>() {
+        @Override
+        public Feed call(Feed feed) {
+            TimingLogger timings = null;
+            if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup InitFeedSpannedText");
+
+            if (DBG && Looper.myLooper() != null) {
+                throw new IllegalStateException();
+            }
+            for (Entry entry: feed.entries)  entry.initSpannedText();
+
+            if (BuildConfig.DEBUG && timings != null) {
+                timings.addSplit("setup InitFeedSpannedText end");
+                timings.dumpToLog();
+            }
+            return feed;
         }
     };
 

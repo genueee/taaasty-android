@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
+import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -91,12 +92,20 @@ public class ListImageEntry extends ListEntryBase implements Callback {
 
     @Override
     public void setupEntry(final Entry entry, TlogDesign design) {
+        TimingLogger timings = null;
+        if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup EmbeddEntry");
+
         super.setupEntry(entry, design);
         mUser = entry.getAuthor();
         setupImage(entry, mParentWidth);
         setupTitle(entry, mParentWidth);
         setupMoreImages(entry);
         applyFeedStyle(design);
+
+        if (BuildConfig.DEBUG && timings != null) {
+            timings.addSplit("setup EmbeddEntry end");
+            timings.dumpToLog();
+        }
     }
 
     @Override
@@ -284,7 +293,7 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                         - getResources().getDimensionPixelSize(R.dimen.feed_item_padding_left)),
                 mContext);
 
-        CharSequence title = UiUtils.formatEntryText(item.getTitle(), mImageGetter);
+        CharSequence title = UiUtils.formatEntryTextSpanned(item.getTitleSpanned(), mImageGetter);
         mTitle.setText(title, TextView.BufferType.NORMAL);
         mTitleImgLoader = TextViewImgLoader.bindAndLoadImages(mTitle, onImgClickListener);
         mTitle.setVisibility(View.VISIBLE);

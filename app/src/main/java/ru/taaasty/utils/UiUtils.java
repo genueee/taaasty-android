@@ -69,10 +69,16 @@ public class UiUtils {
         return new SpannableString(text);
     }
 
-    public static CharSequence formatEntryText(@Nullable String text, @Nullable Html.ImageGetter imageGetter) {
+    public static CharSequence formatEntryTextSpanned(@Nullable CharSequence text, @Nullable Html.ImageGetter imageGetter) {
         if (TextUtils.isEmpty(text)) return "";
-        CharSequence seq = UiUtils.removeTrailingWhitespaces(Html.fromHtml(text, imageGetter, null));
-        return replaceUrlSpans(seq);
+        CharSequence seq = UiUtils.removeTrailingWhitespaces(text);
+
+        if (!(seq instanceof Spanned)) return seq;
+
+        Spanned spannedSeq = (Spanned)seq;
+
+        Spanned spannedSeqWithImages = replaceImageUrlSpans(spannedSeq, imageGetter);
+        return replaceUrlSpans(spannedSeqWithImages, spannedSeq != spannedSeqWithImages);
     }
 
     @Nullable
@@ -120,6 +126,11 @@ public class UiUtils {
         return TextUtils.isEmpty(source) ? "" : Html.fromHtml(source, imageGetter, tagHandler);
     }
 
+    /**
+     * Удаление висячих пробелов из CharSequence.
+     * @param source Исходная строка
+     * @return Исходная строка, либо её subSequence() без пробелов
+     */
     public static CharSequence removeTrailingWhitespaces(CharSequence source) {
         int origLength, length;
         if (source == null) return null;
@@ -144,14 +155,14 @@ public class UiUtils {
     }
 
 
-    public static void setNicknameSpans(SpannableStringBuilder stringBuilder, int start, int end,
+    public static void setNicknameSpans(Spannable stringBuilder, int start, int end,
                                         long userId,
                                         Context context,
                                         int textAppearance) {
         setNicknameSpans(stringBuilder, start, end, userId, context, textAppearance, -1);
     }
 
-    public static void setNicknameSpans(SpannableStringBuilder stringBuilder, int start, int end,
+    public static void setNicknameSpans(Spannable spannable, int start, int end,
                                            long userId,
                                            Context context,
                                            int textAppearance,
@@ -159,8 +170,8 @@ public class UiUtils {
         CustomTypefaceSpan cts = new CustomTypefaceSpan(context, textAppearance, colorList,
                 FontManager.getInstance(context).getFontSystemBold());
         ClickableNicknameSpan acs = new ClickableNicknameSpan(userId);
-        stringBuilder.setSpan(acs, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        stringBuilder.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(acs, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(cts, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     public static void appendStyled(SpannableStringBuilder builder, String str, Object... spans) {
@@ -173,9 +184,10 @@ public class UiUtils {
     /**
      * Заменяет все UrlSpan'ы с ссылками на taasty.ru (слаги, тэги) на {linkto  android.text.TaaastyUrlSpan}
      * ведущими на страницы внутри приложения
-     * По возможности, замена происходит в исходном тексте
+     * По возможности, замена происходит в исходном тексте.
+     * Вернет исходну строку если спанов не было
      */
-    public static CharSequence replaceUrlSpans(CharSequence text) {
+    public static CharSequence replaceUrlSpans(CharSequence text, boolean inPlace) {
         Spanned spanned;
         Spannable spannable;
         URLSpan urlSpans[];
@@ -188,7 +200,7 @@ public class UiUtils {
             return text;
         }
 
-        if (text instanceof Spannable) {
+        if (inPlace && (text instanceof Spannable)) {
             spannable = (Spannable)text;
         } else {
             spannable = Spannable.Factory.getInstance().newSpannable(text);
@@ -239,6 +251,29 @@ public class UiUtils {
             if (!TextUtils.isEmpty(imageSpan.getSource())) sources.add(imageSpan.getSource());
         }
         return sources;
+    }
+
+    /**
+     * Заменяет все IMG на IMG с Drawable из ImageGetter. Если IMG нет, то возвращает исходную строку,
+     * иначе стоздает новую
+     * @param text
+     * @param getter
+     * @return
+     */
+    private static Spanned replaceImageUrlSpans(Spanned text, Html.ImageGetter getter) {
+        if (text.getSpans(0, text.length(), ImageSpan.class).length == 0) return text;
+
+        Spannable spannable = Spannable.Factory.getInstance().newSpannable(text);
+        ImageSpan images[] = spannable.getSpans(0, text.length(), ImageSpan.class);
+        for (ImageSpan imageSpan: images) {
+            int start = spannable.getSpanStart(imageSpan);
+            int end = spannable.getSpanEnd(imageSpan);
+            int flags = spannable.getSpanFlags(imageSpan);
+            spannable.removeSpan(imageSpan);
+            spannable.setSpan(new ImageSpan(getter.getDrawable(imageSpan.getSource()),
+                    imageSpan.getSource(), imageSpan.getVerticalAlignment()), start, end, flags);
+        }
+        return spannable;
     }
 
     @Nullable
