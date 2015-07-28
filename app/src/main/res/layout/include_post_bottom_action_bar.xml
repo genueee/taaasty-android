@@ -6,7 +6,7 @@
     tools:ignore="RtlHardcoded"
     android:id="@+id/entry_bottom_action_bar"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="42dp"
     android:layout_gravity="center_vertical"
     android:orientation="horizontal"
     android:clickable="false"
@@ -31,19 +31,10 @@
         android:contentDescription="@string/open_comments_content_description"
         android:minWidth="68sp" />
 
-    <ru.taaasty.widgets.HintedTextView
-        android:id="@+id/user_info"
-        style="@style/PostButtonsItem"
-        android:layout_width="0dp"
+    <Space
         android:layout_weight="1"
-        android:drawablePadding="8dp"
-        tools:text="genue"
-        android:singleLine="true"
-        android:shadowDx="1.1"
-        android:shadowDy="1.1"
-        android:shadowColor="@android:color/white"
-        android:contentDescription="@string/open_user_tlog"
-        android:minWidth="48dp" />
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"/>
 
     <ru.taaasty.widgets.HintedExtendedImageView
         android:id="@+id/more"

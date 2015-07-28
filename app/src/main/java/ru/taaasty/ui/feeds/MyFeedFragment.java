@@ -405,11 +405,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
-        public void onPostUserInfoClicked(View view, Entry entry) {
-            throw new IllegalStateException();
-        }
-
-        @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             LikesHelper.getInstance().voteUnvote(entry);

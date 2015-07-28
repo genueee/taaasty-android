@@ -811,19 +811,6 @@ public class ShowPostFragment extends Fragment {
             }
 
             @Override
-            public void onPostUserInfoClicked(View view, Entry entry) {
-                if (mListener == null) return;
-                // Если клавиатура на экране - значит, скорее всего, пользователь пишет пост. При тыке на авторе поста
-                // добавляем его в пост
-                InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm.isActive()) {
-                    appendUserSlugToReplyComment(entry.getAuthor().getSlug());
-                } else {
-                    mListener.onAvatarClicked(view, mCurrentEntry.getAuthor(), mDesign);
-                }
-            }
-
-            @Override
             public void onPostAdditionalMenuClicked(View view, Entry entry) {
                 if (mListener != null) mListener.onSharePostMenuClicked(entry);
             }

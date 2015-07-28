@@ -1,18 +1,9 @@
 package ru.taaasty.widgets;
 
-import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.squareup.picasso.Picasso;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -21,8 +12,6 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Rating;
 import ru.taaasty.rest.model.TlogDesign;
-import ru.taaasty.rest.model.User;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 
 /**
@@ -30,15 +19,11 @@ import ru.taaasty.utils.LikesHelper;
  */
 public class EntryBottomActionBar {
     private static final boolean DBG = BuildConfig.DEBUG;
-    public static final int AVATAR_EXTRA_SMALL_DIAMETER = R.dimen.avatar_extra_small_diameter;
 
     private TextView mCommentsCountView;
     private TextView mLikesView;
-    @Nullable
-    private TextView mUserInfo;
     private ImageView mMoreButton;
 
-    private final boolean mHideUserInfo;
     private OnEntryActionBarListener mListener;
     private Entry mOnItemListenerEntry;
     private final LikesHelper mLikesHelper;
@@ -53,18 +38,16 @@ public class EntryBottomActionBar {
     private int mVotes;
 
 
-    public EntryBottomActionBar(View root, boolean hideUserInfo) {
-        mHideUserInfo = hideUserInfo;
+    public EntryBottomActionBar(View root) {
         mTlogDesign = TlogDesign.DUMMY;
         mLikesHelper = LikesHelper.getInstance();
         setRoot(root);
     }
 
     public interface OnEntryActionBarListener {
-        public void onPostLikesClicked(View view, Entry entry);
-        public void onPostCommentsClicked(View view, Entry entry);
-        public void onPostUserInfoClicked(View view, Entry entry);
-        public void onPostAdditionalMenuClicked(View view, Entry entry);
+        void onPostLikesClicked(View view, Entry entry);
+        void onPostCommentsClicked(View view, Entry entry);
+        void onPostAdditionalMenuClicked(View view, Entry entry);
     }
 
     public void setRoot(View root) {
@@ -72,21 +55,6 @@ public class EntryBottomActionBar {
         mCommentsCountView = (TextView)root.findViewById(R.id.comments_count);
         mLikesView = (TextView)root.findViewById(R.id.likes);
         mMoreButton = (ImageView)root.findViewById(R.id.more);
-        initUserInfo(root);
-    }
-
-    private void initUserInfo(View root) {
-        if (mHideUserInfo) {
-            root.findViewById(R.id.user_info).setVisibility(View.INVISIBLE);
-            mUserInfo = null;
-        } else {
-            mUserInfo = (TextView)root.findViewById(R.id.user_info);
-            Drawable userIconDrawable = new ColorDrawable(Color.TRANSPARENT);
-            int sizePx = root.getContext().getResources().getDimensionPixelSize(AVATAR_EXTRA_SMALL_DIAMETER);
-            userIconDrawable.setBounds(0, 0, sizePx, sizePx);
-            mUserInfo.setCompoundDrawables(userIconDrawable, null, null, null);
-            mUserInfo.setVisibility(View.VISIBLE);
-        }
     }
 
     public void setOnItemListenerEntry(Entry entry) {
@@ -97,7 +65,6 @@ public class EntryBottomActionBar {
         mListener = listener;
         mCommentsCountView.setOnClickListener(mOnClickListener);
         mLikesView.setOnClickListener(mOnClickListener);
-        if (mUserInfo != null) mUserInfo.setOnClickListener(mOnClickListener);
         mMoreButton.setOnClickListener(mOnClickListener);
     }
 
@@ -120,9 +87,6 @@ public class EntryBottomActionBar {
         int textColor = mTlogDesign.getFeedActionsTextColor(r);
 
         mCommentsCountView.setTextColor(textColor);
-
-        if (mUserInfo != null) mUserInfo.setTextColor(textColor);
-
         mLikesView.setTextColor(textColor);
 
         refreshRating();
@@ -131,7 +95,6 @@ public class EntryBottomActionBar {
     public void setupEntry(Entry item) {
         setComments(item);
         setRating(item);
-        setUserAvatar(item);
     }
 
     public void setComments(Entry item) {
@@ -186,60 +149,6 @@ public class EntryBottomActionBar {
         mCommentsCountView.setClickable(clickable);
     }
 
-    public void setUserAvatar(Entry item) {
-        if (mUserInfo == null) return;
-
-        if( item.getAuthor() == User.DUMMY) {
-            mUserInfo.setVisibility(View.INVISIBLE);
-            return;
-        }
-
-        mUserInfo.setText(item.getAuthor().getName());
-        mUserInfo.setVisibility(View.VISIBLE);
-        ImageUtils.getInstance().loadAvatar(mCommentsCountView.getContext(),
-                item.getAuthor().getUserpic(), item.getAuthor().getName(), mAvatarTarget,
-                AVATAR_EXTRA_SMALL_DIAMETER
-                );
-    }
-
-    private final ImageUtils.DrawableTarget mAvatarTarget = new ImageUtils.DrawableTarget() {
-        @Override
-        public void onDrawableReady(Drawable drawable) {
-            Context context = mUserInfo.getContext();
-            if (context == null) return;
-            int avatarSize = context.getResources().getDimensionPixelSize(AVATAR_EXTRA_SMALL_DIAMETER);
-            drawable.setBounds(0, 0, avatarSize, avatarSize);
-            mUserInfo.setCompoundDrawables(drawable, null, null, null);
-        }
-
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            Context context = mUserInfo.getContext();
-            if (context == null) return;
-            Drawable drawables[] = mUserInfo.getCompoundDrawables();
-            Drawable placeholder = drawables != null ? drawables[0] : null;
-            if (placeholder instanceof AnimationDrawable) {
-                ((AnimationDrawable) placeholder).stop();
-            }
-            PicassoDrawable drawable =
-                    new PicassoDrawable(context, bitmap, placeholder, from, false, false);
-            mUserInfo.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-            Context context = mUserInfo.getContext();
-            if (context == null) return;
-            int avatarSize = context.getResources().getDimensionPixelSize(AVATAR_EXTRA_SMALL_DIAMETER);
-            errorDrawable.setBounds(0, 0, avatarSize, avatarSize);
-            mUserInfo.setCompoundDrawables(errorDrawable, null, null, null);
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-        }
-    };
-
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -257,10 +166,6 @@ public class EntryBottomActionBar {
                 case R.id.more:
                     mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry);
                     action = "Открыто доп. меню";
-                    break;
-                case R.id.user_info:
-                    mListener.onPostUserInfoClicked(v, mOnItemListenerEntry);
-                    action = "Открыт юзер их нижнего меню";
                     break;
                 case R.id.likes:
                     if (mCanVote) {

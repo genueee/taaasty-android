@@ -561,11 +561,6 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
-        public void onPostUserInfoClicked(View view, Entry entry) {
-            TlogActivity.startTlogActivity(getActivity(), entry.getAuthor().getId(), view, R.dimen.avatar_extra_small_diameter_34dp);
-        }
-
-        @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             LikesHelper.getInstance().voteUnvote(entry);

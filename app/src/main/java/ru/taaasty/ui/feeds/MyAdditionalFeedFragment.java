@@ -518,11 +518,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
 
         @Override
-        public void onPostUserInfoClicked(View view, Entry entry) {
-            throw new IllegalStateException();
-        }
-
-        @Override
         public void onPostLikesClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
             LikesHelper.getInstance().voteUnvote(entry);
