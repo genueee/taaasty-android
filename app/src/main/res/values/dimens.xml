@@ -3,6 +3,10 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="login_activity_horizontal_margin">20dp</dimen>
+    <dimen name="login_activity_ab_margin_left">8dp</dimen>
+    <dimen name="login_activity_ab_margin_right">58dp</dimen> <!-- margin_left + 42 + 8 -->
+
     <!-- Диаметр окружности с аватаркой автора в панели лайков под постом -->
     <dimen name="avatar_extra_small_diameter">30dp</dimen>
 

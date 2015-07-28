@@ -9,6 +9,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -78,6 +79,10 @@ public class LoginActivity extends ActivityBase implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         FacebookSdk.sdkInitialize(getApplicationContext());
+
+        if(!getResources().getBoolean(R.bool.is_tablet)){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         if (savedInstanceState == null) {
             mCurrentBackgroundId = choseRandomBackground();
