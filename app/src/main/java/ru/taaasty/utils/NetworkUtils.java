@@ -48,6 +48,8 @@ public final class NetworkUtils {
 
     private LruCache mPicassoCache;
 
+    private static final Thumbor sThumbor = Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY);
+
     private NetworkUtils() {
     }
 
@@ -192,8 +194,7 @@ public final class NetworkUtils {
     }
 
     public static ThumborUrlBuilder createThumborUrlFromPath(String path) {
-        return Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY)
-                .buildImage(path)
+        return sThumbor.buildImage(path)
                 .filter(ThumborUrlBuilder.stripicc());
     }
 
