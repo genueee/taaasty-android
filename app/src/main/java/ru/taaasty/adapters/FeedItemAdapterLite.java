@@ -57,12 +57,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
     protected final boolean mShowUserAvatar;
 
-    protected abstract boolean initClickListeners(RecyclerView.ViewHolder holder, int type);
-
-    protected abstract RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent);
-
-    protected abstract void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
-
     public FeedItemAdapterLite(SortedList<Entry> list, boolean showUserAvatar) {
         this(list, null, showUserAvatar, R.layout.endless_loading_indicator);
     }
@@ -85,7 +79,11 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         switch (viewType) {
             case VIEW_TYPE_HEADER:
-                return onCreateHeaderViewHolder(parent);
+                if (mInteractionListener != null) {
+                    return mInteractionListener.onCreateHeaderViewHolder(parent);
+                } else {
+                    return null; // XXX
+                }
             case VIEW_TYPE_PENDING:
                 child = inflater.inflate(mPendingResource, parent, false);
                 holder = new RecyclerView.ViewHolder(child) {};
@@ -111,7 +109,9 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         }
         if (holder instanceof ListEntryBase) ((ListEntryBase)holder).setParentWidth(parent.getWidth());
 
-        initClickListeners(holder, viewType);
+        if (mInteractionListener != null) {
+            mInteractionListener.initClickListeners(holder, viewType);
+        }
 
         return holder;
     }
@@ -119,7 +119,9 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int adapterPosition) {
         if (isHeaderPosition(adapterPosition)) {
-            onBindHeaderViewHolder(viewHolder);
+            if (mInteractionListener != null) {
+                mInteractionListener.onBindHeaderViewHolder(viewHolder);
+            }
             return;
         } else if (isPendingIndicatorPosition(adapterPosition)) {
             return;
@@ -247,7 +249,9 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         return mLoading.get();
     }
 
-    public abstract void onEventMainThread(EntryChanged update);
+    public void onEventMainThread(EntryChanged update) {
+        if (mInteractionListener != null) mInteractionListener.onEntryChanged(update);
+    }
 
     public void onEventMainThread(EntryRemoved event) {
         for (int i = mEntries.size() - 1; i >= 0; --i) {
@@ -309,6 +313,15 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
          * @param position
          */
         void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position);
+
+        void initClickListeners(RecyclerView.ViewHolder holder, int type);
+
+        RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent);
+
+        void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder);
+
+        void onEntryChanged(EntryChanged event);
+
     }
 
 

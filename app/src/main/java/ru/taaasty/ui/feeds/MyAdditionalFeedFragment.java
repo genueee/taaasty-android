@@ -390,47 +390,66 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
                     if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
                 }
-            });
-        }
 
-        @Override
-        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-
-            // Все посты
-            if (pHolder instanceof ListEntryBase) {
-                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-                if (mShowUserAvatar) {
-                    ((ListEntryBase)pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
-                            if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                @Override
+                public void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+                    // Все посты
+                    if (pHolder instanceof ListEntryBase) {
+                        ((ListEntryBase) pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                        if (mShowUserAvatar) {
+                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
+                                    if (mListener != null && entry != null)
+                                        mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                                }
+                            });
                         }
-                    });
+                        // Клики на картинках
+                        FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) pHolder);
+                    }
                 }
-                // Клики на картинках
-                FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
-                return true;
-            }
 
-            return false;
-        }
+                @Override
+                public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_user_feed, mListView, false);
+                    HeaderHolder holder = new HeaderHolder(child);
+                    holder.avatarView.setOnClickListener(mOnClickListener);
+                    bindTitleName(holder);
+                    return holder;
+                }
 
-        @Override
-        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_user_feed, mListView, false);
-            HeaderHolder holder = new HeaderHolder(child);
-            holder.avatarView.setOnClickListener(mOnClickListener);
-            bindTitleName(holder);
-            return holder;
-        }
+                @Override
+                public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+                    HeaderHolder holder = (HeaderHolder) viewHolder;
+                    holder.usernameView.setText(mTitle);
+                    bindDesign(holder);
+                    bindUser(holder);
+                }
 
-        @Override
-        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-            HeaderHolder holder = (HeaderHolder)viewHolder;
-            holder.usernameView.setText(mTitle);
-            bindDesign(holder);
-            bindUser(holder);
+                @Override
+                public void onEntryChanged(EntryChanged event) {
+                    if(!event.postEntry.isFavorited() && (mFeedType == FEED_TYPE_FAVORITES)) {
+                        mAdapter.removeEntry(event.postEntry);
+                    }
+                    else
+                        mAdapter.addEntry(event.postEntry);
+                }
+
+                private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        switch (v.getId()) {
+                            case R.id.avatar:
+                                if (mWorkFragment.getCurrentUser() == null) return;
+                                if (mListener != null) mListener.onCurrentUserAvatarClicked(v,
+                                        mWorkFragment.getCurrentUser(), mWorkFragment.getTlogDesign());
+                                break;
+                        }
+                    }
+                };
+            });
         }
 
         public void setTitleUser(String title, User user) {
@@ -478,28 +497,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                     holder.avatarView,
                     R.dimen.feed_header_avatar_normal_diameter
             );
-        }
-
-        private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.avatar:
-                        if (mWorkFragment.getCurrentUser() == null) return;
-                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v,
-                                mWorkFragment.getCurrentUser(), mWorkFragment.getTlogDesign());
-                        break;
-                }
-            }
-        };
-
-        @Override
-        public void onEventMainThread(EntryChanged event) {
-            if(!event.postEntry.isFavorited() && (mFeedType == FEED_TYPE_FAVORITES)) {
-                mAdapter.removeEntry(event.postEntry);
-            }
-            else
-                mAdapter.addEntry(event.postEntry);
         }
     }
 

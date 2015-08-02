@@ -407,88 +407,139 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                         mWorkFragment.onBindViewHolder(viewHolder, position);
                     }
                 }
-            });
-        }
 
-        @Override
-        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            // Все посты
-            if (pHolder instanceof ListEntryBase) {
-                setPostClickListener((ListEntryBase) pHolder);
-                return true;
-            }
-            return false;
-        }
-
-
-        @Override
-        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
-            ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams)child.getLayoutParams();
-            params.bottomMargin = 0;
-            child.setLayoutParams(params);
-
-            if (mFeedType == FEED_ANONYMOUS) {
-                View anonymousButton = child.findViewById(R.id.create_anonymous_post);
-                anonymousButton.setVisibility(View.VISIBLE);
-                anonymousButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        CreateAnonymousPostActivity.startActivity(v.getContext(), v);
-                        ((TaaastyApplication)getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FEEDS,
-                                "Открыто создание анонимки", null);
-                    }
-                });
-            }
-
-            return new HeaderTitleSubtitleViewHolder(child) {
                 @Override
-                public void onScrollChanged() {
-                    if (ListFeedFragment.this.getUserVisibleHint()) {
-                        super.onScrollChanged();
-                        onHeaderMoved(true, itemView.getTop());
+                public void initClickListeners(RecyclerView.ViewHolder holder, int type) {
+                    // Все посты
+                    if (holder instanceof ListEntryBase) {
+                        setPostClickListener((ListEntryBase) holder);
                     }
                 }
-            };
-        }
 
-        @Override
-        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-            int title;
-            String subtitle = null;
+                @Override
+                public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_title_subtitle, parent, false);
+                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) child.getLayoutParams();
+                    params.bottomMargin = 0;
+                    child.setLayoutParams(params);
 
-            title = getTitle();
-            Stats stats = mListener == null ? null : mListener.getStats();
-            if (stats != null) {
-                switch (mFeedType) {
-                    case FEED_LIVE:
-                        if (stats.getPublicEntriesInDayCount() != null) {
-                            mLastPublicEntriesCount = stats.getPublicEntriesInDayCount();
-                            subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mLastPublicEntriesCount, mLastPublicEntriesCount);
+                    if (mFeedType == FEED_ANONYMOUS) {
+                        View anonymousButton = child.findViewById(R.id.create_anonymous_post);
+                        anonymousButton.setVisibility(View.VISIBLE);
+                        anonymousButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                CreateAnonymousPostActivity.startActivity(v.getContext(), v);
+                                ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FEEDS,
+                                        "Открыто создание анонимки", null);
+                            }
+                        });
+                    }
+
+                    return new HeaderTitleSubtitleViewHolder(child) {
+                        @Override
+                        public void onScrollChanged() {
+                            if (ListFeedFragment.this.getUserVisibleHint()) {
+                                super.onScrollChanged();
+                                onHeaderMoved(true, itemView.getTop());
+                            }
                         }
-                        break;
-                    case FEED_BEST:
-                        if (stats.getBestEntriesInDayCount() != null) {
-                            mlastBestEntriesCount = stats.getBestEntriesInDayCount();
-                            subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mlastBestEntriesCount, mlastBestEntriesCount);
-                        }
-                        break;
-                    case FEED_ANONYMOUS:
-                        if (stats.getAnonymousEntriesInDayCount() != null) {
-                            mlastAnonymousEntriesCount = stats.getAnonymousEntriesInDayCount();
-                            subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mlastAnonymousEntriesCount, mlastAnonymousEntriesCount);
-                        }
-                        break;
-                    case FEED_MY_SUBSCRIPTIONS:
-                    case FEED_NEWS:
-                        break;
-                    default:
-                        throw new IllegalStateException();
+                    };
                 }
-            }
 
-            ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(title, subtitle);
-            ((HeaderTitleSubtitleViewHolder) viewHolder).bindDesign(mFeedDesign);
+                @Override
+                public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+                    int title;
+                    String subtitle = null;
+
+                    title = getTitle();
+                    Stats stats = mListener == null ? null : mListener.getStats();
+                    if (stats != null) {
+                        switch (mFeedType) {
+                            case FEED_LIVE:
+                                if (stats.getPublicEntriesInDayCount() != null) {
+                                    mLastPublicEntriesCount = stats.getPublicEntriesInDayCount();
+                                    subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mLastPublicEntriesCount, mLastPublicEntriesCount);
+                                }
+                                break;
+                            case FEED_BEST:
+                                if (stats.getBestEntriesInDayCount() != null) {
+                                    mlastBestEntriesCount = stats.getBestEntriesInDayCount();
+                                    subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mlastBestEntriesCount, mlastBestEntriesCount);
+                                }
+                                break;
+                            case FEED_ANONYMOUS:
+                                if (stats.getAnonymousEntriesInDayCount() != null) {
+                                    mlastAnonymousEntriesCount = stats.getAnonymousEntriesInDayCount();
+                                    subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mlastAnonymousEntriesCount, mlastAnonymousEntriesCount);
+                                }
+                                break;
+                            case FEED_MY_SUBSCRIPTIONS:
+                            case FEED_NEWS:
+                                break;
+                            default:
+                                throw new IllegalStateException();
+                        }
+                    }
+
+                    ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(title, subtitle);
+                    ((HeaderTitleSubtitleViewHolder) viewHolder).bindDesign(mFeedDesign);
+                }
+
+                @Override
+                public void onEntryChanged(EntryChanged event) {
+                    // TODO это должно быть в work fragment'е
+                    if (hasEntry(event.postEntry.getId())) {
+                        // Запись уже есть в списке. Обновляем её
+                        addEntry(event.postEntry);
+                    } else {
+                        // Новая запись. Не добавляем её в список, т.к. непонятно, должна быть она в этом фиде или нет.
+                        // Просто обновляемся с индикатором
+                        if (isResumed()) {
+                            refreshData(true);
+                        } else {
+                            mPendingForceShowRefreshingIndicator = true;
+                        }
+                    }
+                }
+
+                private int getTitle() {
+                    switch (mFeedType) {
+                        case FEED_LIVE:
+                            return R.string.title_live_feed;
+                        case FEED_BEST:
+                            return R.string.title_best_feed;
+                        case FEED_NEWS:
+                            return R.string.title_news;
+                        case FEED_ANONYMOUS:
+                            return R.string.title_anonymous_feed;
+                        case FEED_MY_SUBSCRIPTIONS:
+                            return R.string.title_my_subscriptions;
+                        default:
+                            throw new IllegalStateException();
+                    }
+                }
+
+                private void setPostClickListener(final ListEntryBase pHolder) {
+                    // Клики по элементам панельки снизу
+                    pHolder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+
+                    // Клик по аватарке в заголовке
+                    if (mShowUserAvatar) {
+                        pHolder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Entry entry = getAnyEntryAtHolderPosition(pHolder);
+                                if (mListener != null && entry != null)
+                                    mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                            }
+                        });
+                    }
+
+                    // Клики на картинках
+                    FeedsHelper.setupListEntryClickListener(Adapter.this, pHolder);
+                }
+            });
         }
 
         @Override
@@ -507,59 +558,6 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                 if (DBG) Log.v(TAG, "header detached from window itemView: " + holder.itemView);
                 onHeaderMoved(false, 0);
             }
-        }
-
-        @Override
-        public void onEventMainThread(EntryChanged update) {
-            // TODO это должно быть в work fragment'е
-            if (hasEntry(update.postEntry.getId())) {
-                // Запись уже есть в списке. Обновляем её
-                addEntry(update.postEntry);
-            } else {
-                // Новая запись. Не добавляем её в список, т.к. непонятно, должна быть она в этом фиде или нет.
-                // Просто обновляемся с индикатором
-                if (isResumed()) {
-                    refreshData(true);
-                } else {
-                    mPendingForceShowRefreshingIndicator = true;
-                }
-            }
-        }
-
-        private int getTitle() {
-            switch (mFeedType) {
-                case FEED_LIVE:
-                    return R.string.title_live_feed;
-                case FEED_BEST:
-                    return R.string.title_best_feed;
-                case FEED_NEWS:
-                    return R.string.title_news;
-                case FEED_ANONYMOUS:
-                    return R.string.title_anonymous_feed;
-                case FEED_MY_SUBSCRIPTIONS:
-                    return R.string.title_my_subscriptions;
-                default:
-                    throw new IllegalStateException();
-            }
-        }
-
-        private void setPostClickListener(final ListEntryBase pHolder) {
-            // Клики по элементам панельки снизу
-            pHolder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-
-            // Клик по аватарке в заголовке
-            if (mShowUserAvatar) {
-                pHolder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Entry entry = getAnyEntryAtHolderPosition(pHolder);
-                        if (mListener != null && entry != null) mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                    }
-                });
-            }
-
-            // Клики на картинках
-            FeedsHelper.setupListEntryClickListener(this, pHolder);
         }
     }
 

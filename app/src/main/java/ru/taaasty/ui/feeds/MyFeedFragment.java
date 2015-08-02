@@ -292,43 +292,41 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
                     if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
                 }
+
+                @Override
+                public void initClickListeners(RecyclerView.ViewHolder holder, int type) {
+                    // Все посты
+                    if (holder instanceof ListEntryBase) {
+                        ((ListEntryBase) holder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                        // Клики на картинках
+                        FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) holder);
+                    }
+                }
+
+                @Override
+                public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+                    if (DBG) Log.v(TAG, "onCreateHeaderViewHolder");
+                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_my_feed, mListView, false);
+                    HeaderHolder holder = new HeaderHolder(child);
+                    holder.avatarView.setOnClickListener(mOnClickListener);
+                    child.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
+                    return holder;
+                }
+
+                @Override
+                public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+                    if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
+                    HeaderHolder holder = (HeaderHolder) viewHolder;
+                    holder.titleView.setText(mTitle);
+                    bindDesign(holder);
+                    bindUser(holder);
+                }
+
+                @Override
+                public void onEntryChanged(EntryChanged event) {
+                    addEntry(event.postEntry);
+                }
             });
-        }
-
-        @Override
-        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            // Все посты
-            if (pHolder instanceof ListEntryBase) {
-                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-                // Клики на картинках
-                FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            if (DBG) Log.v(TAG, "onCreateHeaderViewHolder");
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_my_feed, mListView, false);
-            HeaderHolder holder = new HeaderHolder(child);
-            holder.avatarView.setOnClickListener(mOnClickListener);
-            child.findViewById(R.id.additional_menu).setOnClickListener(mOnClickListener);
-            return holder;
-        }
-
-        @Override
-        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-            if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
-            HeaderHolder holder = (HeaderHolder)viewHolder;
-            holder.titleView.setText(mTitle);
-            bindDesign(holder);
-            bindUser(holder);
-        }
-
-        @Override
-        public void onEventMainThread(EntryChanged update) {
-            addEntry(update.postEntry);
         }
 
         public void setTitleUser(String title, User user) {

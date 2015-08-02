@@ -426,40 +426,37 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
                     if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
                 }
+
+                @Override
+                public void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
+                    // Все посты
+                    if (pHolder instanceof ListEntryBase) {
+                        ((ListEntryBase) pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                        FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) pHolder);
+                    }
+                }
+
+                @Override
+                public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
+                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
+                    HeaderHolder holder = new HeaderHolder(child);
+                    holder.avatarView.setOnClickListener(mOnClickListener);
+                    return holder;
+                }
+
+                @Override
+                public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
+                    HeaderHolder holder = (HeaderHolder) viewHolder;
+                    holder.titleView.setText(mTitle);
+                    bindDesign(holder);
+                    bindUser(holder);
+                }
+
+                @Override
+                public void onEntryChanged(EntryChanged event) {
+                    addEntry(event.postEntry);
+                }
             });
-        }
-
-        @Override
-        protected boolean initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
-            // Все посты
-            if (pHolder instanceof ListEntryBase) {
-                ((ListEntryBase)pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
-                FeedsHelper.setupListEntryClickListener(this, (ListEntryBase)pHolder);
-                return true;
-            }
-
-            return false;
-        }
-
-        @Override
-        protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-            View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
-            HeaderHolder holder = new HeaderHolder(child);
-            holder.avatarView.setOnClickListener(mOnClickListener);
-            return holder;
-        }
-
-        @Override
-        protected void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-            HeaderHolder holder = (HeaderHolder)viewHolder;
-            holder.titleView.setText(mTitle);
-            bindDesign(holder);
-            bindUser(holder);
-        }
-
-        @Override
-        public void onEventMainThread(EntryChanged update) {
-            addEntry(update.postEntry);
         }
 
         public void setUser(User user) {
