@@ -23,8 +23,8 @@ import ru.taaasty.utils.UiUtils;
 
 public class ListTextEntry extends ListEntryBase {
     private final Context mContext;
-    private final TextView mTitle;
-    private final TextView mText;
+    public final TextView mTitle;
+    public final TextView mText;
 
     private ImageLoadingGetter mImageGetter;
 
@@ -64,11 +64,15 @@ public class ListTextEntry extends ListEntryBase {
             if (BuildConfig.DEBUG) guessViewVisibleWidth(mText); // Assertion
         }
         setupTitle(entry);
+        if (BuildConfig.DEBUG) timings.addSplit("setupTitle() done");
+
         setupText(entry);
+        if (BuildConfig.DEBUG) timings.addSplit("setupText() done");
+
         applyFeedStyle(design);
 
         if (BuildConfig.DEBUG && timings != null) {
-            timings.addSplit("setup TextEntry end");
+            timings.addSplit("applyFeedStyle() done. setup TextEntry end");
             timings.dumpToLog();
         }
     }

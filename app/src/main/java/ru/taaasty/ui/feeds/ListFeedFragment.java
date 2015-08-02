@@ -25,6 +25,7 @@ import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
+import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.OnCurrentUserChanged;
 import ru.taaasty.events.OnStatsLoaded;
@@ -46,6 +47,7 @@ import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
+import rx.functions.Func1;
 
 public class ListFeedFragment extends Fragment implements IRereshable,
         ListFeedWorkRetainedFragment.TargetFragmentInteraction{
@@ -401,7 +403,9 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             setInteractionListener(new InteractionListener() {
                 @Override
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-                    if (mWorkFragment != null) mWorkFragment.onBindViewHolder(position);
+                    if (mWorkFragment != null) {
+                        mWorkFragment.onBindViewHolder(viewHolder, position);
+                    }
                 }
             });
         }
@@ -415,6 +419,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
             }
             return false;
         }
+
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
@@ -587,10 +592,13 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
         private int mFeedType = FEED_LIVE;
 
+        private FeedsHelper.PreMeasureFeedFunc mPreMeasureFunc;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             mFeedType = getArguments().getInt(ARG_FEED_TYPE);
+            mPreMeasureFunc = new FeedsHelper.PreMeasureFeedFunc(getActivity());
         }
 
         @Override
@@ -624,6 +632,19 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         @Override
         public TlogDesign getTlogDesign() {
             throw new IllegalStateException();
+        }
+
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            this.onBindViewHolder(position);
+            if (holder instanceof ListTextEntry) {
+                ListTextEntry te = (ListTextEntry)holder;
+                mPreMeasureFunc.setPaints(te.mTitle.getPaint(), te.mText.getPaint());
+            }
+        }
+
+        @Override
+        protected Func1<Feed, Feed> getPostCacheFunc() {
+            return mPreMeasureFunc;
         }
     }
 

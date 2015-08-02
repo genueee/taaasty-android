@@ -6,10 +6,16 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextPaint;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.TimingLogger;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.youtube.player.YouTubeIntents;
 
@@ -17,14 +23,19 @@ import java.util.Date;
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
+import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Feed;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
+import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
+import rx.functions.Func1;
 
 /**
  * Created by alexey on 04.11.14.
@@ -204,6 +215,61 @@ public class FeedsHelper {
                     context.startActivity(intent);
                 }
             }
+        }
+    }
+
+    /**
+     * Вызывает measure() на тексте всех элементов фида.
+     * Практика показывает, что после этого размеры оседают где-то в кэше во внутренностях андроида
+     * и TextView.setText() с этим текстом в основном потоке работает гораздо быстрее.
+     * Измерять при этом можно в любом потоке.
+     * Эспериментальный модуль, убрать при проблемах.
+     */
+    public static class PreMeasureFeedFunc implements Func1<Feed,Feed> {
+
+        private final TextPaint mTitlePaint;
+
+        private final TextPaint mTextPaint;
+
+        public PreMeasureFeedFunc(Context context) {
+            View root = LayoutInflater.from(context).inflate(R.layout.list_feed_item_text, null);
+            TextView title = (TextView)root.findViewById(R.id.feed_item_title);
+            TextView text = (TextView)root.findViewById(R.id.feed_item_text);
+            mTitlePaint = title.getPaint();
+            mTextPaint = text.getPaint();
+            mTitlePaint.setTypeface(FontManager.getInstance(context).getPostSansSerifTypeface());
+            mTextPaint.setTypeface(FontManager.getInstance(context).getPostSansSerifTypeface());
+        }
+
+        public void setPaints(TextPaint titlePaint, TextPaint textPaint) {
+            mTitlePaint.set(titlePaint);
+            mTextPaint.set(textPaint);
+        }
+
+        @Override
+        public Feed call(Feed feed) {
+            TimingLogger timings = null;
+            if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup MeasureText");
+
+            if (BuildConfig.DEBUG && Looper.myLooper() != null) {
+                throw new IllegalStateException();
+            }
+            for (Entry entry: feed.entries)  {
+                CharSequence title = entry.getTitleSpanned();
+                CharSequence text = entry.getTextSpanned();
+                if (!TextUtils.isEmpty(title)) {
+                    mTitlePaint.measureText(title, 0, title.length());
+                }
+                if (!TextUtils.isEmpty(text)) {
+                    mTextPaint.measureText(text, 0, text.length());
+                }
+            }
+
+            if (BuildConfig.DEBUG && timings != null) {
+                timings.addSplit("setup MeasureText end");
+                timings.dumpToLog();
+            }
+            return feed;
         }
     }
 }

@@ -2,6 +2,7 @@ package ru.taaasty.ui.feeds;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.TimingLogger;
 
@@ -121,11 +122,16 @@ public abstract class FeedLoader {
         if (!mKeepOnAppending.get()) return;
         if (isLoading()) return;
 
-
         int requestEntries = Constants.LIST_FEED_APPEND_LENGTH;
-        mFeedAppendSubscription = createObservable(lastEntry.getId(), requestEntries)
-                .map(mInitFeedSpannedText)
-                .observeOn(AndroidSchedulers.mainThread())
+        Observable<Feed> observable = createObservable(lastEntry.getId(), requestEntries)
+                .map(mInitFeedSpannedText);
+
+        Func1<Feed,Feed > postCacheFunc = getPostCacheFunc();
+        if (postCacheFunc != null) {
+            observable = observable.map(postCacheFunc);
+        }
+
+        mFeedAppendSubscription = observable.observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(new Action0() {
                     @Override
                     public void call() {
@@ -135,6 +141,11 @@ public abstract class FeedLoader {
                 })
                 .subscribe(new FeedLoadObserver(false, requestEntries));
         onShowPendingIndicatorChanged(true);
+    }
+
+    @Nullable
+    protected Func1<Feed, Feed> getPostCacheFunc() {
+        return null;
     }
 
     protected void onLoadCompleted(boolean isRefresh, int entriesRequested) {

@@ -28,6 +28,7 @@ import rx.Subscription;
 import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
+import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
 public abstract class ListFeedWorkRetainedFragment extends Fragment {
@@ -207,6 +208,10 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         callLoadingStateChanged("refreshFeed() start");
     }
 
+    protected Func1<Feed, Feed> getPostCacheFunc() {
+        return null;
+    }
+
     void callLoadingStateChanged(String reason) {
         if (DBG) Log.v(TAG, "callLoadingStateChanged: " + reason);
         if (getMainFragment() != null) getMainFragment().onLoadingStateChanged(reason);
@@ -249,6 +254,11 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             return ListFeedWorkRetainedFragment.this.createObservable(sinceEntryId, limit);
+        }
+
+        @Nullable
+        protected Func1<Feed, Feed> getPostCacheFunc() {
+            return ListFeedWorkRetainedFragment.this.getPostCacheFunc();
         }
 
         @Override
