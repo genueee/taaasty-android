@@ -185,6 +185,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
         mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
         mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
+        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
 
         setupFeedDesign();
         setupUser();

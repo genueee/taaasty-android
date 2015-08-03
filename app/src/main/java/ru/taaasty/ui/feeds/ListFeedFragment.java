@@ -24,7 +24,6 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
-import ru.taaasty.adapters.list.ListImageEntry;
 import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.OnCurrentUserChanged;
@@ -158,28 +157,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarVisibleOnPost()));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {}
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (mListView == null) return;
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    int childCount = mListView.getChildCount();
-                    for (int i = 0; i < childCount; ++i) {
-                        RecyclerView.ViewHolder vh = mListView.getChildViewHolder(mListView.getChildAt(i));
-                        if (vh instanceof ListImageEntry) ((ListImageEntry) vh).onStopScroll();
-                    }
-                } else {
-                    int childCount = mListView.getChildCount();
-                    for (int i = 0; i < childCount; ++i) {
-                        RecyclerView.ViewHolder vh = mListView.getChildViewHolder(mListView.getChildAt(i));
-                        if (vh instanceof ListImageEntry) ((ListImageEntry) vh).onStartScroll();
-                    }
-                }
-            }
-        });
+        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
 
         mHideTabbarListener = new TabbarFragment.AutoHideScrollListener(mListener.getTabbar());
         mListView.addOnScrollListener(mHideTabbarListener);

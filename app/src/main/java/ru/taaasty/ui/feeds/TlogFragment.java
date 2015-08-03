@@ -148,6 +148,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 refreshData(false);
             }
         });
+        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener () {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {

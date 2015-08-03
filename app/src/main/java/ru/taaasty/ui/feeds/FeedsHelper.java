@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.Log;
@@ -150,7 +151,7 @@ public class FeedsHelper {
             }
         };
 
-        public final RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+        public final OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 updateDateIndicatorDelayed(dy > 0);
@@ -213,6 +214,27 @@ public class FeedsHelper {
                 List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
                 if (infos.size() > 0) {
                     context.startActivity(intent);
+                }
+            }
+        }
+    }
+
+    public static class StopGifOnScroll extends RecyclerView.OnScrollListener {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {}
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            int childCount = recyclerView.getChildCount();
+            boolean stopScroll = newState == RecyclerView.SCROLL_STATE_IDLE;
+            for (int i = 0; i < childCount; ++i) {
+                RecyclerView.ViewHolder vh = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+                if (vh instanceof ListImageEntry) {
+                    if (stopScroll) {
+                        ((ListImageEntry) vh).onStopScroll();
+                    } else {
+                        ((ListImageEntry) vh).onStartScroll();
+                    }
                 }
             }
         }
