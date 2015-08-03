@@ -186,7 +186,7 @@ public class TlogDesign implements Parcelable {
     public static TlogDesign createLightTheme(TlogDesign src) {
         if (src.isLightTheme()) return src;
         TlogDesign res = new TlogDesign(src);
-        res.mFontColor = "#ffffff";
+        res.mFontColor = "#000000";
         return res;
     }
 
