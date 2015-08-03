@@ -72,6 +72,7 @@ public class CommentViewBinder {
     public void bindSelectedComment(CommentsAdapter.ViewHolder vh, Comment comment, TlogDesign design) {
         bindActionView(vh, comment);
         bindCommentText(vh, comment, design);
+        bindAuthor(vh, comment); // Иначе при анимации возврата обратно показывается левый аватар
 
         vh.actionView.setVisibility(View.VISIBLE);
         vh.avatar.setVisibility(View.GONE);

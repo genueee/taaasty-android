@@ -189,6 +189,8 @@ public class ShowCommentsFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
         mListView.setLayoutManager(lm);
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {

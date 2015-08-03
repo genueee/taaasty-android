@@ -198,6 +198,8 @@ public class ShowPostFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
 
         mListView.setLayoutManager(lm);
+        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             private boolean mEdgeReachedCalled = true;
 
