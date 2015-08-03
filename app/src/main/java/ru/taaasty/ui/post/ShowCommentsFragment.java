@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +64,8 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
 /**
  * Пост с комментариями
@@ -518,7 +521,7 @@ public class ShowCommentsFragment extends Fragment {
         if (toShowStickers) {
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setWmiCurrencyId(643);
-            orderInfo.setWmiPaymentAmount(1.23);
+            orderInfo.setWmiPaymentAmount(new BigDecimal("1.23"));
             orderInfo.setCustomerId(String.valueOf(UserManager.getInstance().getCurrentUserId()));
             orderInfo.setWmiOrderId("744954637305");
             orderInfo.setCustomerMail(UserManager.getInstance().getCachedCurrentUser().getEmail());
@@ -527,6 +530,7 @@ public class ShowCommentsFragment extends Fragment {
             orderInfo.setWmiMerchantId("137622880509");
             PayCardsHelper.ConfigBuilder cb = new PayCardsHelper.ConfigBuilder(orderInfo);
             PayCardsHelper.startPayment(this, cb);
+            
         } else {
             // TODO: return keyboard
         }
