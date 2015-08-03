@@ -3,7 +3,6 @@ package ru.taaasty.adapters.list;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.util.TimingLogger;
@@ -25,6 +24,7 @@ import ru.taaasty.rest.model.iframely.Link;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
@@ -35,7 +35,6 @@ import ru.taaasty.widgets.ExtendedImageView;
  */
 public class ListEmbeddEntry extends ListEntryBase implements Callback {
     private final ExtendedImageView mImageView;
-    private final Drawable mImagePlaceholderDrawable;
     private final Drawable mEmbeddForegroundDrawable;
     private final TextView mTitle;
 
@@ -59,7 +58,6 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
         mContext = context;
         Resources resources = context.getResources();
-        mImagePlaceholderDrawable = new ColorDrawable(resources.getColor(R.color.grid_item_image_loading_color));
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
         mImageView.setForeground(null);
     }
@@ -98,6 +96,16 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
     public View getImageView() {
         return mImageView;
+    }
+
+    /**
+     * Создаем каждый раз новый drawable, так как размеры у нас меняются, а ImageView никак не обрабатывает
+     * смену размеров у уже установленного drawable
+     */
+    private Drawable createImagePlaceholderDrawable(int width, int height) {
+        Drawable drawable = mContext.getResources().getDrawable(R.drawable.image_loading_drawable);
+        ImageUtils.changeDrawableIntristicSizeAndBounds(drawable, width, height);
+        return drawable;
     }
 
     private void setupImage(Entry item, final int parentWidth) {
@@ -142,12 +150,11 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
         final String url = imageLink.getHref();
 
-        mImagePlaceholderDrawable.setBounds(0, 0, parentWidth, imgViewHeight);
-        mImageView.setImageDrawable(mImagePlaceholderDrawable);
-        mImageView.requestLayout();
+        Drawable placeholder = createImagePlaceholderDrawable(parentWidth, imgViewHeight);
+        mImageView.setImageDrawable(placeholder);
         picasso
                 .load(url)
-                .placeholder(mImagePlaceholderDrawable)
+                .placeholder(placeholder)
                 .error(R.drawable.image_load_error)
                 .noFade()
                 .into(mImageView, this);
