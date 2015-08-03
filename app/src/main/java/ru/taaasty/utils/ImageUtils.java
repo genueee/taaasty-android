@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -73,6 +74,42 @@ public class ImageUtils {
     public static ImageUtils getInstance() {
         if (sInstance == null) sInstance = new ImageUtils();
         return sInstance;
+    }
+
+    public static boolean isLightColor(String pColor) {
+        int color;
+        if ("#ffffff".equals(pColor)) {
+            return true;
+        } else if ("#000000".equals(pColor)) {
+            return false;
+        }
+        try {
+            if (pColor.startsWith("#") && pColor.length() == 4) {
+                int r = Character.digit(pColor.charAt(1), 16);
+                int g = Character.digit(pColor.charAt(2), 16);
+                int b = Character.digit(pColor.charAt(3), 16);
+                if (r < 0 || g < 0 || b < 0) throw new IllegalArgumentException();
+                r = r | (r << 4);
+                g = g | (g << 4);
+                b = b | (b << 4);
+                color = Color.rgb(r, g, b);
+            } else {
+                color = Color.parseColor(pColor);
+            }
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            return false;
+        }
+
+        return isLightColor(color);
+    }
+
+    static boolean isLightColor(int color) {
+        double darkness = 1-(0.299*Color.red(color) + 0.587*Color.green(color) + 0.114*Color.blue(color))/255;
+        if(darkness>=0.5){
+            return false; // It's a dark color
+        }else{
+            return true; // It's a light color
+        }
     }
 
     public void putBitmapToCache(String key, Bitmap bitmap) {

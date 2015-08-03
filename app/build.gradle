@@ -183,6 +183,7 @@ dependencies {
     compile 'com.adobe.creativesdk:image:4.0.0'
 
     testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.0"
 }
 
 ['beta', 'release'].each { typeName ->

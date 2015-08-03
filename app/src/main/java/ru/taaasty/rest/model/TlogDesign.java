@@ -11,6 +11,7 @@ import com.google.gson.annotations.SerializedName;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.utils.ImageUtils;
 
 /**
  * Дизайн дневника
@@ -46,10 +47,13 @@ public class TlogDesign implements Parcelable {
     String mCoverAlign = COVER_ALIGN_CENTER;
 
     /**
-     * Цвет ленты
+     * Цвет ленты.
+     * Устаревший, сломанный атрибут, не пользуемся. Сначла это был цвет самой ленты, затем, в
+     * какой-то момент он стал цветом текста и хрен его знает, что с ним в будущем будет.
      */
-    @SerializedName("feedColor")
-    String mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
+    //@Deprecated
+    //@SerializedName("feedColor")
+    //String mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
 
     /**
      * Увет заголовка (титул)
@@ -70,6 +74,12 @@ public class TlogDesign implements Parcelable {
      */
     @SerializedName("feedOpacity")
     float mFeedOpacity = 1;
+
+    /**
+     * Цвет текста ленты
+     */
+    @SerializedName("feedFontColor")
+    private String mFontColor = "#ffffff";
 
     /**
      * Цвет текста
@@ -163,20 +173,20 @@ public class TlogDesign implements Parcelable {
      * @return тёмный текст на светлом фоне
      */
     public boolean isLightTheme() {
-        return FEED_BACKGROUND_COLOR_WHITE.equals(mFeedColor);
+        return !isDarkTheme();
     }
 
     /**
      * @return светлый текст на темном фоне
      */
     public boolean isDarkTheme() {
-        return !isLightTheme();
+        return ImageUtils.isLightColor(mFontColor);
     }
 
     public static TlogDesign createLightTheme(TlogDesign src) {
         if (src.isLightTheme()) return src;
         TlogDesign res = new TlogDesign(src);
-        res.mFeedColor = FEED_BACKGROUND_COLOR_WHITE;
+        res.mFontColor = "#ffffff";
         return res;
     }
 
@@ -187,10 +197,9 @@ public class TlogDesign implements Parcelable {
     @Override
     public String toString() {
         return "TlogDesign[backgroundUrl: " + getBackgroundUrl() + ", coverAlign: " + mCoverAlign
-                + ", feed color: " + mFeedColor + ", header color: " + mHeaderColor
+                + ", font color: " + mFontColor + ", header color: " + mHeaderColor
                 + ", font typeface: " + mFontTypeface + ", feedOpacity: " + mFeedOpacity + "]";
     }
-
 
     @Override
     public int describeContents() {
@@ -201,7 +210,7 @@ public class TlogDesign implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.mBackgroundUrl);
         dest.writeString(this.mCoverAlign);
-        dest.writeString(this.mFeedColor);
+        dest.writeString(this.mFontColor);
         dest.writeString(this.mHeaderColor);
         dest.writeString(this.mFontTypeface);
         dest.writeFloat(this.mFeedOpacity);
@@ -213,7 +222,7 @@ public class TlogDesign implements Parcelable {
     public TlogDesign(TlogDesign source) {
         this.mBackgroundUrl = source.mBackgroundUrl;
         this.mCoverAlign = source.mCoverAlign;
-        this.mFeedColor = source.mFeedColor;
+        this.mFontColor = source.mFontColor;
         this.mHeaderColor = source.mHeaderColor;
         this.mFontTypeface = source.mFontTypeface;
         this.mFeedOpacity = source.mFeedOpacity;
@@ -222,7 +231,7 @@ public class TlogDesign implements Parcelable {
     private TlogDesign(Parcel in) {
         this.mBackgroundUrl = in.readString();
         this.mCoverAlign = in.readString();
-        this.mFeedColor = in.readString();
+        this.mFontColor = in.readString();
         this.mHeaderColor = in.readString();
         this.mFontTypeface = in.readString();
         this.mFeedOpacity = in.readFloat();
@@ -260,7 +269,7 @@ public class TlogDesign implements Parcelable {
             return false;
         if (mCoverAlign != null ? !mCoverAlign.equals(that.mCoverAlign) : that.mCoverAlign != null)
             return false;
-        if (mFeedColor != null ? !mFeedColor.equals(that.mFeedColor) : that.mFeedColor != null)
+        if (mFontColor != null ? !mFontColor.equals(that.mFontColor) : that.mFontColor != null)
             return false;
         if (mHeaderColor != null ? !mHeaderColor.equals(that.mHeaderColor) : that.mHeaderColor != null)
             return false;
@@ -272,7 +281,7 @@ public class TlogDesign implements Parcelable {
     public int hashCode() {
         int result = mBackgroundUrl != null ? mBackgroundUrl.hashCode() : 0;
         result = 31 * result + (mCoverAlign != null ? mCoverAlign.hashCode() : 0);
-        result = 31 * result + (mFeedColor != null ? mFeedColor.hashCode() : 0);
+        result = 31 * result + (mFontColor != null ? mFontColor.hashCode() : 0);
         result = 31 * result + (mHeaderColor != null ? mHeaderColor.hashCode() : 0);
         result = 31 * result + (mFontTypeface != null ? mFontTypeface.hashCode() : 0);
         result = 31 * result + (mFeedOpacity != +0.0f ? Float.floatToIntBits(mFeedOpacity) : 0);
