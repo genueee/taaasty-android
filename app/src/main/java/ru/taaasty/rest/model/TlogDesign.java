@@ -79,7 +79,7 @@ public class TlogDesign implements Parcelable {
      * Цвет текста ленты
      */
     @SerializedName("feedFontColor")
-    private String mFontColor = "#ffffff";
+    private String mFontColor = "#000000";
 
     /**
      * Цвет текста
