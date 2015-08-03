@@ -20,7 +20,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
@@ -40,7 +40,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public static final int VIEW_TYPE_MY_MESSAGE = R.id.conversation_view_my_message;
     public static final int VIEW_TYPE_THEIR_MESSAGE = R.id.conversation_view_their_message;
 
-    private UserManager mUserManager;
+    private Session mSession;
 
     private final LayoutInflater mInflater;
 
@@ -57,7 +57,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         mMessages = new MessageFeed();
         mInflater = LayoutInflater.from(context);
         mFeedDesign = TlogDesign.DUMMY;
-        mUserManager = UserManager.getInstance();
+        mSession = Session.getInstance();
         mImageUtils = ImageUtils.getInstance();
         setHasStableIds(true);
     }
@@ -107,7 +107,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
 
         Conversation.Message message = mMessages.get(getFeedLocation(position));
-        if (mUserManager.isMe(message.userId)) {
+        if (mSession.isMe(message.userId)) {
             return VIEW_TYPE_MY_MESSAGE;
         } else {
             return VIEW_TYPE_THEIR_MESSAGE;

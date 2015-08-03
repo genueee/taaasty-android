@@ -23,7 +23,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
@@ -399,7 +399,7 @@ public class UserInfoFragment extends Fragment {
     }
 
     boolean isMyProfile() {
-        return UserManager.getInstance().isMe(mUserId);
+        return Session.getInstance().isMe(mUserId);
     }
 
     /**

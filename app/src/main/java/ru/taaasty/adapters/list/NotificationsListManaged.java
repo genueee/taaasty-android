@@ -7,7 +7,7 @@ import java.util.Date;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.SortedList;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.RelationshipChanged;
@@ -42,7 +42,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
      */
     public void onEventMainThread(RelationshipChanged relationshipChanged) {
         Relationship newRelationship = relationshipChanged.relationship;
-        long me = UserManager.getInstance().getCurrentUserId();
+        long me = Session.getInstance().getCurrentUserId();
         long him;
 
         if (!newRelationship.isMyRelationToHim(me)) return; // Не интересно

@@ -14,7 +14,7 @@ import java.util.Date;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
@@ -305,7 +305,7 @@ public class Notification implements Parcelable {
             if (isFollowingRequest()) {
                 // Запросы на дружбу
                 Intent i = new Intent(context, FollowingFollowersActivity.class);
-                i.putExtra(FollowingFollowersActivity.ARG_USER, UserManager.getInstance().getCachedCurrentUser());
+                i.putExtra(FollowingFollowersActivity.ARG_USER, Session.getInstance().getCachedCurrentUser());
                 i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_REQUESTS);
                 return i;
             } else if (ACTION_FOLLOWING_APPROVE.equals(action)) {

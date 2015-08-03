@@ -28,7 +28,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
@@ -204,7 +204,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         if (!mCurrentUserSubscription.isUnsubscribed()) return;
         if (DBG) Log.v(TAG, "startRefreshCurrentUser()");
         Observable<CurrentUser> observableCurrentUser = AppObservable.bindActivity(this,
-                UserManager.getInstance().getCurrentUser());
+                Session.getInstance().getCurrentUser());
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())

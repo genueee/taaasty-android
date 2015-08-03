@@ -329,7 +329,7 @@ public class StatusBarConversationNotification {
         // Conversation intent
         if (showConversation) {
             long recipient;
-            if (UserManager.getInstance().isMe(message.recipientId)) {
+            if (Session.getInstance().isMe(message.recipientId)) {
                 recipient = message.userId;
             } else {
                 recipient = message.recipientId;
@@ -369,7 +369,7 @@ public class StatusBarConversationNotification {
 
         if (message.conversation != null
             && message.conversation.recipient != null
-                && !UserManager.getInstance().isMe(message.conversation.recipient.getId())) {
+                && !Session.getInstance().isMe(message.conversation.recipient.getId())) {
             User author = message.conversation.recipient;
             // wearable не поддерживает CustomTypefaceSpan/TextAppearanceSpan, поэтому ставим так
             UiUtils.appendStyled(ssb, author.getNameWithPrefix(),

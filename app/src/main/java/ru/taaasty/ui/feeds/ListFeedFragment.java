@@ -19,7 +19,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
@@ -292,7 +292,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
     @Nullable
     private TlogDesign getDesign() {
-        CurrentUser user = UserManager.getInstance().getCachedCurrentUser();
+        CurrentUser user = Session.getInstance().getCachedCurrentUser();
         if (user == null) return null;
         return user.getDesign();
     }

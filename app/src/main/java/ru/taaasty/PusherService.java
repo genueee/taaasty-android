@@ -290,7 +290,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
     };
 
     private String getMessagingChannelName() {
-        return "private-" + UserManager.getInstance().getCurrentUserId() + "-messaging";
+        return "private-" + Session.getInstance().getCurrentUserId() + "-messaging";
     }
 
     public class LocalBinder extends Binder {

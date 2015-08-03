@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.iframely.IFramely;
 import ru.taaasty.rest.model.iframely.Link;
 import ru.taaasty.utils.NetworkUtils;
@@ -388,7 +388,7 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     public boolean isMyEntry() {
-        Long me = UserManager.getInstance().getCurrentUserId();
+        Long me = Session.getInstance().getCurrentUserId();
         return me != null && (mAuthor != null) && (me == mAuthor.getId());
     }
 

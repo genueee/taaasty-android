@@ -3,7 +3,7 @@ package ru.taaasty.ui.relationships;
 import android.os.Bundle;
 
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.RelationshipsAdapter;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Relationship;
@@ -21,7 +21,7 @@ public class FriendsFragment extends RelationshipListFragmentBase {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUserId = UserManager.getInstance().getCurrentUserId();
+        mUserId = Session.getInstance().getCurrentUserId();
     }
 
     @Override
@@ -44,7 +44,7 @@ public class FriendsFragment extends RelationshipListFragmentBase {
 
     @Override
     public boolean isListRelationship(Relationship relationship) {
-        Long me = UserManager.getInstance().getCurrentUserId();
+        Long me = Session.getInstance().getCurrentUserId();
         if (me == null) return false;
         return relationship.isMyRelationToHim(me)
                 && Relationship.RELATIONSHIP_FRIEND.equals(relationship.getState());

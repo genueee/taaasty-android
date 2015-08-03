@@ -19,7 +19,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
@@ -67,9 +67,9 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (UserManager.getInstance().getCachedCurrentUser() != null
-                && UserManager.getInstance().getCachedCurrentUser().getDesign() != null) {
-            TlogDesign design = UserManager.getInstance().getCachedCurrentUser().getDesign();
+        if (Session.getInstance().getCachedCurrentUser() != null
+                && Session.getInstance().getCachedCurrentUser().getDesign() != null) {
+            TlogDesign design = Session.getInstance().getCachedCurrentUser().getDesign();
             if (design.isDarkTheme()) {
                 setTheme(R.style.AppThemeDark);
             } else {

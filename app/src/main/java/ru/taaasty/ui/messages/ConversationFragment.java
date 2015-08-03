@@ -30,7 +30,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
@@ -390,7 +390,7 @@ public class ConversationFragment extends Fragment {
 
     class Adapter extends ConversationAdapter {
 
-        private UserManager mUserManager = UserManager.getInstance();
+        private Session mSession = Session.getInstance();
 
         public Adapter(Context context) {
             super(context);
@@ -471,8 +471,8 @@ public class ConversationFragment extends Fragment {
         @Nullable
         @Override
         protected User getMember(long userUuid) {
-            if (mUserManager.isMe(userUuid)) {
-                return mUserManager.getCachedCurrentUser();
+            if (mSession.isMe(userUuid)) {
+                return mSession.getCachedCurrentUser();
             } else {
                 return mConversation == null ? null : mConversation.recipient;
             }

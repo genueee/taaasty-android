@@ -12,7 +12,7 @@ import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.functions.Action1;
 
-public class UserManager {
+public class Session {
 
     private static final String SHARED_PREFS_NAME="authtoken";
 
@@ -20,7 +20,7 @@ public class UserManager {
 
     private static final String SHARED_PREFS_KEY_USER="author";
 
-    private static UserManager mUserManager;
+    private static Session mSession;
 
     private String mAuthtoken;
 
@@ -28,13 +28,13 @@ public class UserManager {
 
     private CurrentUser mCurrentUser;
 
-    private UserManager() {
+    private Session() {
 
     }
 
-    public static UserManager getInstance() {
-        if (mUserManager == null) mUserManager = new UserManager();
-        return mUserManager;
+    public static Session getInstance() {
+        if (mSession == null) mSession = new Session();
+        return mSession;
     }
 
     public void onAppInit(Context context) {

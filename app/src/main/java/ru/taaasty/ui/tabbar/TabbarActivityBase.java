@@ -11,7 +11,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.login.LoginActivity;
@@ -25,14 +25,14 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
 
     static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
-    UserManager mUserManager = UserManager.getInstance();
+    Session mSession = Session.getInstance();
     TabbarFragment mTabbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (mUserManager.getCurrentUserToken() == null) {
+        if (mSession.getCurrentUserToken() == null) {
             switchToLoginForm();
             return;
         }

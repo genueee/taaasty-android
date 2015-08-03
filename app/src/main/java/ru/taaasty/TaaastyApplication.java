@@ -59,7 +59,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                         .build()
         );
         NetworkUtils.getInstance().onAppInit(this);
-        UserManager.getInstance().onAppInit(this);
+        Session.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
         VkontakteHelper.getInstance().onAppInit();
         getTracker();
@@ -137,7 +137,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     public synchronized void startIntercomSession() {
         if (mInterSessionStarted) return;
-        Long userId = UserManager.getInstance().getCurrentUserId();
+        Long userId = Session.getInstance().getCurrentUserId();
         if (userId == null) return;
         mInterSessionStarted = true;
         Intercom.client().setPreviewPosition(IntercomPreviewPosition.BOTTOM_RIGHT);

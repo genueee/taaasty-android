@@ -15,7 +15,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.SortedList;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -88,7 +88,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         });
         mFeedLoader = new FeedLoader(mEntryList);
 
-        mCurrentUser = UserManager.getInstance().getCachedCurrentUser();
+        mCurrentUser = Session.getInstance().getCachedCurrentUser();
         if (savedInstanceState != null) {
             ArrayList<Entry> feed = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_FEED_ITEMS + getKeysSuffix());
             if (feed != null) mEntryList.resetItems(feed);
@@ -187,7 +187,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         mCurrentUserSubscription.unsubscribe();
         Observable<CurrentUser> observableCurrentUser = AppObservable.bindSupportFragment(this,
-                UserManager.getInstance().getCurrentUser());
+                Session.getInstance().getCurrentUser());
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())

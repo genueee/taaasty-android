@@ -22,7 +22,7 @@ import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -46,9 +46,9 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (UserManager.getInstance().getCachedCurrentUser() != null
-                && UserManager.getInstance().getCachedCurrentUser().getDesign() != null) {
-            TlogDesign design = UserManager.getInstance().getCachedCurrentUser().getDesign();
+        if (Session.getInstance().getCachedCurrentUser() != null
+                && Session.getInstance().getCachedCurrentUser().getDesign() != null) {
+            TlogDesign design = Session.getInstance().getCachedCurrentUser().getDesign();
             if (design.isDarkTheme()) {
                 setTheme(R.style.AppThemeDark);
             } else {
@@ -239,7 +239,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openFriends() {
-        CurrentUser user = UserManager.getInstance().getCachedCurrentUser();
+        CurrentUser user = Session.getInstance().getCachedCurrentUser();
         if (user == null) return;
         Intent i = new Intent(this, FollowingFollowersActivity.class);
         i.putExtra(FollowingFollowersActivity.ARG_USER, user);

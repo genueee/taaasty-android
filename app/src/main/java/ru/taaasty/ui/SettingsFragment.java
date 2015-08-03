@@ -25,7 +25,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
@@ -131,7 +131,7 @@ public class SettingsFragment extends PreferenceFragment {
 
         findPreference("pref_key_conversation_notifications").setOnPreferenceClickListener(nestedClickListener);
         findPreference("pref_key_notification_notifications").setOnPreferenceClickListener(nestedClickListener);
-        mCurrentUser = UserManager.getInstance().getCachedCurrentUser();
+        mCurrentUser = Session.getInstance().getCachedCurrentUser();
         setupUser();
     }
 
@@ -396,7 +396,7 @@ public class SettingsFragment extends PreferenceFragment {
         public void onNext(CurrentUser info) {
             mCurrentUser = info;
             if (mListener != null) mListener.onCurrentUserLoaded(mCurrentUser);
-            UserManager.getInstance().setCurrentUser(mCurrentUser);
+            Session.getInstance().setCurrentUser(mCurrentUser);
             setupUser();
         }
     };

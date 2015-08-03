@@ -13,7 +13,7 @@ import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.model.ResponseError;
 import ru.taaasty.rest.service.ApiApp;
 import ru.taaasty.rest.service.ApiComments;
@@ -217,11 +217,11 @@ public final class RestClient {
 
     private static class AddHeadersRequestInterceptor implements RequestInterceptor {
 
-        private final UserManager mUserManager;
+        private final Session mSession;
         private final String mBasicAuth;
 
         AddHeadersRequestInterceptor(){
-            mUserManager = UserManager.getInstance();
+            mSession = Session.getInstance();
             if (!TextUtils.isEmpty(BuildConfig.API_SERVER_LOGIN) && !TextUtils.isEmpty(BuildConfig.API_SERVER_PASSWORD)) {
                 final String credentials = BuildConfig.API_SERVER_LOGIN + ":" + BuildConfig.API_SERVER_PASSWORD;
                 mBasicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
@@ -234,7 +234,7 @@ public final class RestClient {
         public void intercept(RequestFacade request) {
             request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
             request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, BuildConfig.VERSION_NAME);
-            String token = mUserManager.getCurrentUserToken();
+            String token = mSession.getCurrentUserToken();
             if (token != null) {
                 request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
             }

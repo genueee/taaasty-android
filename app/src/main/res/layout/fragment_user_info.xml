@@ -43,9 +43,8 @@
         android:minWidth="42dp"
         android:src="@drawable/ic_letter_gray"/>
 
-    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                 xmlns:tools="http://schemas.android.com/tools"
-                 android:layout_width="42dp"
+    <FrameLayout
+        android:layout_width="42dp"
                  android:layout_toLeftOf="@id/initiate_conversation"
                  android:layout_height="42dp"
                  android:layout_marginLeft="8dp"

@@ -31,7 +31,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.model.Conversation;
@@ -221,7 +221,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        boolean isMyProfile = UserManager.getInstance().isMe(mUserId);
+        boolean isMyProfile = Session.getInstance().isMe(mUserId);
         if (!ViewConfiguration.get(this).hasPermanentMenuKey()) return false; // Бывает и такое
         menu.findItem(R.id.menu_change_avatar).setVisible(isMyProfile);
         menu.findItem(R.id.menu_change_background).setVisible(isMyProfile);

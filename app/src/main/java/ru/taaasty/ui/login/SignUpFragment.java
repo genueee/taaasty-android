@@ -29,7 +29,7 @@ import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.UnauthorizedException;
@@ -280,7 +280,7 @@ public class SignUpFragment extends Fragment {
                         @Override
                         public void onNext(CurrentUser currentUser) {
                             if (DBG) Log.e(TAG, "onNext " + currentUser.toString());
-                            UserManager.getInstance().setCurrentUser(currentUser);
+                            Session.getInstance().setCurrentUser(currentUser);
                         }
                     });
         }

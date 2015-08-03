@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import java.util.Comparator;
 import java.util.Date;
 
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.utils.Objects;
 
 /**
@@ -104,7 +104,7 @@ public class Conversation implements Parcelable {
         }
 
         public boolean isFromMe() {
-            return UserManager.getInstance().isMe(userId);
+            return Session.getInstance().isMe(userId);
         }
 
         @Override

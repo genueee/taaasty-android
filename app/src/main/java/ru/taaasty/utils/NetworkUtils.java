@@ -33,7 +33,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.DateTypeAdapter;
 
 public final class NetworkUtils {
@@ -155,7 +155,7 @@ public final class NetworkUtils {
         GcmUtils.getInstance(context).onLogout();
         StatusBarNotifications.getInstance().onLogout();
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
-        UserManager.getInstance().logout();
+        Session.getInstance().logout();
         LoginManager.getInstance().logOut();
         try {
             mOkHttpClient.getCache().delete();

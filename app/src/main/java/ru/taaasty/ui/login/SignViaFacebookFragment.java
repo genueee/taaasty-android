@@ -30,7 +30,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.rest.ResponseErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.UnauthorizedException;
@@ -274,7 +274,7 @@ public class SignViaFacebookFragment extends DialogFragment {
             if (info == null) {
                 // XXX
             } else {
-                UserManager.getInstance().setCurrentUser(info);
+                Session.getInstance().setCurrentUser(info);
                 if (mListener != null) mListener.onSignViaFacebookSuccess(false);
             }
         }
@@ -307,7 +307,7 @@ public class SignViaFacebookFragment extends DialogFragment {
             if (info == null) {
                 // XXX
             } else {
-                UserManager.getInstance().setCurrentUser(info);
+                Session.getInstance().setCurrentUser(info);
                 if (mListener != null) mListener.onSignViaFacebookSuccess(true);
             }
         }

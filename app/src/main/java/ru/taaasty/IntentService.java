@@ -410,7 +410,7 @@ public class IntentService extends android.app.IntentService {
         TlogBackgroundUploadStatus status;
         try {
             TlogDesign response = mApiDesignService.uploadBackgroundSync(
-                    String.valueOf(UserManager.getInstance().getCurrentUserId()),
+                    String.valueOf(Session.getInstance().getCurrentUserId()),
                     new ContentTypedOutput(this, imageUri, null));
             status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);

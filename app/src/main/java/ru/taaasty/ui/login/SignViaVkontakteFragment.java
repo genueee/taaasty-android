@@ -29,7 +29,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.UserManager;
+import ru.taaasty.Session;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.rest.ResponseErrorException;
@@ -279,7 +279,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
             if (info == null) {
                 // XXX
             } else {
-                UserManager.getInstance().setCurrentUser(info);
+                Session.getInstance().setCurrentUser(info);
                 if (mListener != null) mListener.onSignViaVkontakteSuccess(false);
 
             }
@@ -314,7 +314,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
                 // XXX
             } else {
                 // TODO: заливать аватарку на сервер?
-                UserManager.getInstance().setCurrentUser(info);
+                Session.getInstance().setCurrentUser(info);
                 if (mListener != null) mListener.onSignViaVkontakteSuccess(true);
             }
         }

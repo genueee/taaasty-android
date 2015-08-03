@@ -111,7 +111,7 @@ public class GcmIntentService extends IntentService {
 
     private void sendRegistrationIdToBackend(String regId) throws IOException {
         Intercom.client().setupGCM(regId, R.mipmap.ic_launcher);
-        String userToken = UserManager.getInstance().getCurrentUserToken();
+        String userToken = Session.getInstance().getCurrentUserToken();
         try {
             if (userToken != null) {
                 RestClient.getAPiDevice().register(regId);
