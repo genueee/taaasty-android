@@ -10,7 +10,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -188,26 +188,22 @@ public class EditPostActivity extends ActivityBase implements
 
     private void setupActionBar() {
         Page currentItem = getEntryPageType();
-        final ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setDisplayShowCustomEnabled(true);
-            ab.setCustomView(R.layout.ab_custom_create_post);
-            if (mEntry.isAnonymousPost()) {
-                ab.setTitle(R.string.title_anonymous_post);
-            } else if (currentItem != null) {
-                ab.setTitle(currentItem.titleViewId);
-            }
 
-            mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
-            mCreatePostButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onEditPostClicked();
-                }
-            });
-            mCreatePostButton.setEnabled(true);
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+        if (mEntry.isAnonymousPost()) {
+            setTitle(R.string.title_anonymous_post);
+        } else if (currentItem != null) {
+            setTitle(currentItem.titleViewId);
         }
+
+        mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
+        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onEditPostClicked();
+            }
+        });
+        mCreatePostButton.setEnabled(true);
     }
 
     private void canOnlyBeEditedOnWebsite() {

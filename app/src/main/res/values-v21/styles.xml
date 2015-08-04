@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Taaasty.Toolbar.GreenActionBar" parent="Widget.Taaasty.Toolbar.GreenActionBarBase">
+        <item name="android:elevation">4dp</item>
+    </style>
+</resources>

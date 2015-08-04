@@ -2,10 +2,9 @@ package ru.taaasty.ui;
 
 import android.app.Fragment;
 import android.content.SharedPreferences;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -40,13 +39,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
                     .commit();
         }
 
-        if (getSupportActionBar() != null) {
-            ActionBar ab = getSupportActionBar();
-            ab.setDisplayHomeAsUpEnabled(true);
-
-            Drawable dummyAvatar = getResources().getDrawable(R.drawable.ic_user_stub);
-            ab.setIcon(dummyAvatar);
-        }
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
     }
 
     @Override

@@ -3,8 +3,6 @@ package ru.taaasty.ui.messages;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -12,9 +10,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -31,7 +27,6 @@ import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
-import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.ErrorTextView;
@@ -95,6 +90,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         setContentView(R.layout.activity_conversation);
 
         long conversationId;
+
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
         if (getIntent().hasExtra(ARG_CONVERSATION)) {
             mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
@@ -207,7 +204,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     public void onConversationLoaded(Conversation conversation) {
         mConversation = conversation;
-        setupActionBar(conversation.recipient);
+        setTitle(conversation.recipient.getName());
         bindDesign(conversation.recipient.getDesign());
         ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onConversationLoaded(conversation);
@@ -220,19 +217,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     void onImeKeyboardHidden() {
 
-    }
-
-    private void setupActionBar(User recipient) {
-        ActionBar ab = getSupportActionBar();
-        if (ab == null) return;
-        ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
-        ab.setDisplayHomeAsUpEnabled(true);
-        ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
-
-        SpannableString title = new SpannableString(recipient.getName());
-        ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
-        title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        ab.setTitle(title);
     }
 
     private void loadConversation(long recipientId) {

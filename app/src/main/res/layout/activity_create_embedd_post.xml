@@ -4,8 +4,12 @@
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.post.CreateAnonymousPostActivity">
 
+    <include layout="@layout/ab_cutom_create_post"
+             android:id="@+id/toolbar"/>
+
     <FrameLayout
         android:id="@+id/container"
+        android:layout_below="@id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

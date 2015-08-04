@@ -11,7 +11,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -87,23 +87,18 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
         mCreatePostButtons.setPrivacy(postPrivacy);
 
-        final ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setDisplayShowCustomEnabled(true);
-            ab.setCustomView(R.layout.ab_custom_create_post);
-            ab.setTitle(currentItem.titleViewId);
-            ab.setElevation(0);
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+        setTitle(currentItem.titleViewId);
 
-            mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
-            mCreatePostButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onCreatePostClicked();
-                }
-            });
-            mCreatePostButton.setEnabled(false);
-        }
+        mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
+        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onCreatePostClicked();
+            }
+        });
+        mCreatePostButton.setEnabled(false);
+
         mViewPager.setCurrentItem(currentItem.ordinal(), false);
         mCreatePostButtons.setActivated(currentItem.buttonViewId);
 
@@ -207,7 +202,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         public void onPageSelected(int i) {
             Page selected = Page.values()[i];
             mCreatePostButtons.setActivated(selected.buttonViewId);
-            getSupportActionBar().setTitle(selected.titleViewId);
+            setTitle(selected.titleViewId);
         }
 
         @Override

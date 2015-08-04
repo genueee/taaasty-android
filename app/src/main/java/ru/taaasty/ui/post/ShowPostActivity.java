@@ -17,6 +17,7 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -163,7 +164,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         setContentView(R.layout.activity_show_post);
 
         //noinspection ConstantConditions
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
         mHideActionBarHandler = new Handler();
 
@@ -355,16 +356,19 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         SpannableString title = new SpannableString(getText(
                 mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
 
-        ab.setDisplayHomeAsUpEnabled(true);
-        if (design != null && design.isDarkTheme()) {
-            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
-            ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
-            title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        } else {
-            ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_light)));
+        if (design != null) {
+            if (design.isDarkTheme()) {
+                ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
+                if (DBG) Log.v(TAG, "setupActionbar dark theme");
+            } else {
+                ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_light)));
+                ForegroundColorSpan textColor = new ForegroundColorSpan(Color.BLACK);
+                title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (DBG) Log.v(TAG, "setupActionbar light theme");
+            }
         }
 
-        ab.setTitle(title);
+        setTitle(title);
     }
 
     public void onEventMainThread(EntryRemoved event) {

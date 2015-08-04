@@ -14,7 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
@@ -106,12 +106,8 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
         viewPager.setAdapter(mAdapter);
 
-        if (getSupportActionBar() != null) {
-            ActionBar ab = getSupportActionBar();
-            ab.setTitle(title == null ?  "" : Html.fromHtml(title));
-            ab.setDisplayShowHomeEnabled(true);
-            ab.setDisplayHomeAsUpEnabled(true);
-        }
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        setTitle(title == null ?  "" : Html.fromHtml(title));
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {

@@ -14,7 +14,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -89,22 +89,17 @@ public class CreateSharedPostActivity extends ActivityBase implements
         }
         EventBus.getDefault().register(this);
 
-        final ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setDisplayShowCustomEnabled(true);
-            ab.setCustomView(R.layout.ab_custom_create_post);
-            ab.setTitle(isImageShare ? R.string.title_image_post : R.string.title_embedd_post);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        setTitle(isImageShare ? R.string.title_image_post : R.string.title_embedd_post);
 
-            mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
-            mCreatePostButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onCreatePostClicked();
-                }
-            });
-            mCreatePostButton.setEnabled(false);
-        }
+        mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
+        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onCreatePostClicked();
+            }
+        });
+        mCreatePostButton.setEnabled(false);
     }
 
     @Override

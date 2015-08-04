@@ -99,7 +99,7 @@
             android:label="@string/title_activity_show_post"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:windowSoftInputMode="adjustResize|stateHidden"
-            android:theme="@style/ShowPostTheme" >
+            android:theme="@style/AppThemeOverlayingActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
@@ -107,7 +107,7 @@
         <activity
             android:name=".ui.UserInfoActivity"
             android:parentActivityName=".ui.post.ShowPostActivity"
-            android:theme="@style/UserInfoActivity" >
+            android:theme="@style/AppThemeDark" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.post.ShowPostActivity" />
@@ -116,7 +116,7 @@
             android:name=".ui.relationships.FollowingFollowersActivity"
             android:label="@string/title_activity_following_followers"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
-            android:theme="@style/AppThemeGreenActionBar" >
+            android:theme="@style/AppTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
@@ -125,12 +125,12 @@
             android:name=".ui.photo.ShowPhotoActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:screenOrientation="fullSensor"
-            android:theme="@style/FullscreenTheme" >
+            android:theme="@style/ShowPhotoTheme" >
         </activity>
         <activity
             android:name=".ui.feeds.TlogActivity"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
-            android:theme="@style/TlogActivity" >
+            android:theme="@style/AppThemeOverlayingActionBar" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
@@ -154,7 +154,7 @@
             android:name=".ui.SettingsActivity"
             android:label="@string/activity_settings"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
-            android:theme="@style/AppThemeGreenActionBar" >
+            android:theme="@style/SettingsActivityTheme" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
@@ -162,12 +162,10 @@
         <activity
             android:name=".ui.post.CreatePostActivity"
             android:launchMode="singleTop"
-            android:theme="@style/CreatePostTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" >
         </activity>
         <activity
             android:name=".ui.post.CreateSharedPostActivity"
-            android:theme="@style/CreatePostTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -187,7 +185,6 @@
         <activity
             android:name=".ui.post.EditPostActivity"
             android:parentActivityName=".ui.post.ShowPostActivity"
-            android:theme="@style/CreatePostTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -196,7 +193,6 @@
         <activity
             android:name=".ui.post.CreateAnonymousPostActivity"
             android:label="@string/title_anonymous_post"
-            android:theme="@style/CreatePostTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
         <activity

@@ -3,6 +3,7 @@ package ru.taaasty.ui.tabbar;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -25,7 +26,8 @@ public class NotificationsActivity extends TabbarActivityBase implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
 
-        getSupportActionBar().setIcon(android.R.color.transparent);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         // Используем background у фрагмента. Там стоит тот же background, что и у activity - так и должно быть,
         // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее

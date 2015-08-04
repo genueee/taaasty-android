@@ -14,7 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.util.Log;
@@ -68,9 +68,12 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private Subscription mFollowSubscription = Subscriptions.unsubscribed();
 
+    private View mContainer;
     private View mSubscribeView;
     private View mUnsubscribeView;
     private View mFollowUnfollowProgressView;
+
+    private Toolbar mToolbar;
 
     boolean mPerformSubscription;
 
@@ -126,6 +129,9 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
 
         mInterfaceVisibilityController = new InterfaceVisibilityController();
+
+        mContainer = findViewById(R.id.container);
+
         if (savedInstanceState != null) {
             mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
             mLastAlpha = savedInstanceState.getInt(BUNDLE_KEY_LAST_ALPHA);
@@ -135,26 +141,17 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             mAbBackgroundDrawable.setAlpha(0);
         }
 
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayShowCustomEnabled(true);
-            ab.setCustomView(R.layout.ab_custom_tlog);
-            ab.setBackgroundDrawable(mAbBackgroundDrawable);
-            ab.setTitle(mAbTitle);
+        mToolbar = (Toolbar)findViewById(R.id.toolbar);
+        mUnsubscribeView = findViewById(R.id.unsubscribe);
+        mSubscribeView = findViewById(R.id.subscribe);
+        mFollowUnfollowProgressView = findViewById(R.id.follow_unfollow_progress);
 
-            if (savedInstanceState == null) {
-                ab.setIcon(new ColorDrawable(Color.TRANSPARENT));
-            }
+        setSupportActionBar(mToolbar);
+        mToolbar.setBackgroundDrawable(mAbBackgroundDrawable);
+        mToolbar.setTitle(mAbTitle);
 
-            mSubscribeView = ab.getCustomView().findViewById(R.id.subscribe);
-            mSubscribeView.setOnClickListener(mOnSubscriptionClickListener);
-
-            mUnsubscribeView = ab.getCustomView().findViewById(R.id.unsubscribe);
-            mUnsubscribeView.setOnClickListener(mOnSubscriptionClickListener);
-
-            mFollowUnfollowProgressView = ab.getCustomView().findViewById(R.id.follow_unfollow_progress);
-            refreshFollowUnfollowView();
-        }
+        mSubscribeView.setOnClickListener(mOnSubscriptionClickListener);
+        mUnsubscribeView.setOnClickListener(mOnSubscriptionClickListener);
 
         if (savedInstanceState == null) {
             Fragment tlogFragment;
@@ -171,6 +168,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                     .replace(R.id.container, tlogFragment)
                     .commit();
         }
+
+        refreshFollowUnfollowView();
     }
 
     @Override
@@ -233,7 +232,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void setFeedBackground(@DrawableRes int background) {
-        getWindow().getDecorView().setBackgroundResource(background);
+        // Используем background у контейнера. Там стоит тот же background, что и у activity - так и должно быть,
+        // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
+        // системные кнопки и background на activity лежит под ними.
+        getWindow().getDecorView().setBackgroundDrawable(null);
+        mContainer.setBackgroundResource(background);
     }
 
     @Override
@@ -293,7 +296,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             mAbBackgroundDrawable.setAlpha(intAlpha);
             if (mAbTitle != null) {
                 mAlphaForegroundColorSpan.setAlpha(abAlpha);
-                getSupportActionBar().setTitle(mAbTitle);
+                mToolbar.setTitle(mAbTitle);
             }
         }
     }

@@ -20,6 +20,10 @@
         android:layout_gravity="bottom"
         tools:layout="@layout/tabbar" />
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"/>
+
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
         style="@style/ErrorTextView"

@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -56,21 +56,15 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         }
         EventBus.getDefault().register(this);
 
-        final ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setDisplayShowCustomEnabled(true);
-            ab.setCustomView(R.layout.ab_custom_create_post);
-
-            mCreatePostButton = (ImageView)ab.getCustomView().findViewById(R.id.create_post_button);
-            mCreatePostButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onCreatePostClicked();
-                }
-            });
-            mCreatePostButton.setEnabled(false);
-        }
+        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+        mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
+        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onCreatePostClicked();
+            }
+        });
+        mCreatePostButton.setEnabled(false);
     }
 
     @Override
