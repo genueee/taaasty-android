@@ -153,21 +153,6 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         mListView.setLayoutManager(lm);
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.notification_list_divider));
         mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (mListener == null) return;
-                boolean atTop = !mListView.canScrollVertically(-1);
-                mListener.onListScrolled(dy, atTop);
-            }
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (mListener == null) return;
-                mListener.onListScrollStateChanged(newState);
-            }
-        });
         mWaitingMessagingStatus = false;
         mMaxVisiblePosition = -1;
 
@@ -815,8 +800,6 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        void onListScrolled(int dy, boolean atTop);
-        void onListScrollStateChanged(int state);
         TabbarFragment getTabbar();
     }
 

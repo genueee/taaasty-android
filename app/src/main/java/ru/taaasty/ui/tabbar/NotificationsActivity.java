@@ -2,7 +2,6 @@ package ru.taaasty.ui.tabbar;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 
 import ru.taaasty.BuildConfig;
@@ -63,20 +62,5 @@ public class NotificationsActivity extends TabbarActivityBase implements
 
     @Override
     void onCurrentTabButtonClicked() {
-    }
-
-    @Override
-    public void onListScrolled(int scrollY, boolean atTop) {
-        ActionBar ab = getSupportActionBar();
-        if (ab == null) return;
-        if (!atTop) {
-            ab.hide();
-        } else {
-            ab.show();
-        }
-    }
-
-    @Override
-    public void onListScrollStateChanged(int state) {
     }
 }

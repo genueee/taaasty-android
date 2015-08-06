@@ -84,3 +84,11 @@
 -keepnames class com.adobe.creativesdk.foundation.internal.auth.** {
    *;
 }
+
+#Android support v4
+-keep class android.support.v7.widget.SearchView { *; }
+
+#Android design library
+-keep public class * extends android.support.design.widget.CoordinatorLayout.Behavior { *; }
+-keep public class * extends android.support.design.widget.ViewOffsetBehavior { *; }
+-keepclassmembers class android.support.design.widget.FloatingActionButton$Behavior { public <init>(); }
