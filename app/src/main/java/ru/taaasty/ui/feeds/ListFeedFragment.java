@@ -549,10 +549,20 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         @Override
         public void onPostCommentsClicked(View view, Entry entry) {
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
+            TlogDesign design;
+            if (entry.getDesign() != null) {
+                design = entry.getDesign();
+            } else {
+                design = getDesign();
+                if (mFeedType == FEED_ANONYMOUS) {
+                    // Анонимки обычно светлые
+                    design = TlogDesign.createLightTheme(design != null ? design : TlogDesign.DUMMY);
+                }
+            }
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
-                    .setDesign(entry.getDesign() != null ? entry.getDesign() : getDesign())
+                    .setDesign(design)
                     .startActivity();
         }
 

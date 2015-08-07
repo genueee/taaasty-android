@@ -161,29 +161,36 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
+        Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
+        if (entry != null && entry.getAuthor() != null && design == null) design = entry.getAuthor().getDesign();
+        if (design != null) {
+            getWindow().getDecorView().setBackgroundResource(design.getFeedBackgroundDrawable());
+            if (design.isLightTheme()) {
+                setTheme(R.style.AppThemeLightOverlayingActionBar);
+            } else {
+                setTheme(R.style.AppThemeOverlayingActionBar);
+            }
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_post);
+
+        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
 
         //noinspection ConstantConditions
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
         mHideActionBarHandler = new Handler();
 
-        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
 
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
             mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
             if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
-            Entry entry = getIntent().getParcelableExtra(ARG_ENTRY);
-            TlogDesign design = getIntent().getParcelableExtra(ARG_TLOG_DESIGN);
-            if (entry != null && entry.getAuthor() != null && design == null) design = entry.getAuthor().getDesign();
 
             String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
-            if (design != null) {
-                getWindow().getDecorView().setBackgroundResource(design.getFeedBackgroundDrawable());
-            }
 
             Fragment fragment;
             if (mShowFullPost) {

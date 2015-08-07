@@ -28,7 +28,6 @@
     <style name="AppThemeOverlayingActionBar" parent="AppThemeDark">
         <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="windowActionBarOverlay">true</item> <!-- TODO попробовать убрать -->
     </style>
 
     <style name="AppThemeLightOverlayingActionBar" parent="AppTheme">

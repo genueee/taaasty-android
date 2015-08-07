@@ -768,7 +768,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         }
 
         public boolean isFeedEmpty() {
-            return mFeedLoader.isKeepOnAppending() && mEntryList.isEmpty();
+            return !mFeedLoader.isKeepOnAppending() && mEntryList.isEmpty();
         }
 
         public void onBindViewHolder(int feedLocation) {
