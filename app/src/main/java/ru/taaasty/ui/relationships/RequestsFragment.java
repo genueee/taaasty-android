@@ -27,6 +27,7 @@ import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -192,7 +193,8 @@ public class RequestsFragment extends Fragment {
         @Override
         public void onError(Throwable e) {
             if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
-            mListener.notifyError(getString(R.string.error_loading_relationships), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_relationships), e);
         }
 
         @Override
@@ -226,7 +228,8 @@ public class RequestsFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.server_error), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
         }
 
         @Override

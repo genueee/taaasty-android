@@ -9,7 +9,6 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.OkClient;
-import retrofit.client.Response;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -254,22 +253,7 @@ public final class RestClient {
                 if (DBG) Log.v(TAG, "ignore exception", ignore);
             }
 
-            Response r = cause.getResponse();
-            if (r != null) {
-                switch (r.getStatus()) {
-                    case 401:
-                        return new UnauthorizedException(cause, responseError);
-                    case 417:
-                        if (responseError != null && "no_token".equals(responseError.errorCode)) {
-                            return new UnauthorizedException(cause, responseError);
-                        }
-                }
-            }
-            if (responseError != null) {
-                return new ResponseErrorException(cause, responseError);
-            } else {
-                return cause;
-            }
+            return new ApiErrorException(cause, responseError);
         }
     };
 }

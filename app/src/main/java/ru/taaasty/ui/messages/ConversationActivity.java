@@ -29,6 +29,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
@@ -280,7 +281,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.v(TAG, getString(R.string.error_create_conversation), e);
-            Toast.makeText(ConversationActivity.this, R.string.error_create_conversation, Toast.LENGTH_LONG).show();
+            Toast.makeText(ConversationActivity.this,
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_create_conversation),
+                    Toast.LENGTH_LONG).show();
             finish();
         }
 

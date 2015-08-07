@@ -43,6 +43,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -366,7 +367,9 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_post_comment), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_post_comment),
+                    e);
         }
 
         @Override
@@ -679,7 +682,8 @@ public class ConversationFragment extends Fragment {
 
         protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            if (mListener != null) mListener.notifyError(getText(R.string.error_append_feed), e);
+            if (mListener != null) mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_append_feed), e);
         }
 
         protected void onLoadNext(boolean isRefresh, int entriesRequested, ConversationMessages messages) {

@@ -32,13 +32,14 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryRemoved;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
 public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener, ShowPostFragment.OnFragmentInteractionListener {
@@ -254,18 +255,14 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         String text = "";
         Integer iconId = null;
         // При ошибке загруи поста заменяем фрагмент на фрагмент с сообщением об ошибке
-        if (e instanceof ResponseErrorException && ((ResponseErrorException)e).getStatus() == 403) {
+        if (e instanceof ApiErrorException && ((ApiErrorException)e).isError403Forbidden()) {
             text = getString(R.string.error_tlog_access_denied);
             iconId = R.drawable.post_load_error;
-        } else if (e instanceof ResponseErrorException && ((ResponseErrorException)e).getStatus() == 404) {
+        } else if (e instanceof ApiErrorException && ((ApiErrorException)e).isError404NotFound()) {
             // С сервера приходит "Такой публикация не существует". Ставим свой текст
             text = getString(R.string.error_post_not_found);
         } else {
-            if (e instanceof  ResponseErrorException) {
-                text = ((ResponseErrorException)e).error.error;
-            } else {
-                text = getString(R.string.error_post_comment);
-            }
+            text = UiUtils.getUserErrorText(getResources(), e, R.string.error_post_comment);
         }
 
         ErrorLoadingPostFragment newFragment = ErrorLoadingPostFragment.newInstance(text, iconId);

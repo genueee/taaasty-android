@@ -41,6 +41,7 @@ import ru.taaasty.rest.service.ApiApp;
 import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -349,7 +350,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "onError", e);
-            notifyError(getString(R.string.server_error), e);
+            notifyError(UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
         }
 
         @Override

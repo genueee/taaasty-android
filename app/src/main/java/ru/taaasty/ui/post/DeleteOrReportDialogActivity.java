@@ -24,6 +24,7 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
@@ -262,7 +263,8 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(getString(R.string.error_loading_comments), e);
+            notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_report_to_comment), e);
         }
 
         @Override
@@ -307,7 +309,8 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(getString(R.string.error_loading_comments), e);
+            notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_comments), e);
         }
 
         @Override
@@ -348,7 +351,8 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(getString(R.string.error_report_to_comment), e);
+            notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_report_to_comment), e);
         }
 
         @Override

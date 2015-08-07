@@ -28,7 +28,7 @@ import java.util.Random;
 
 import io.intercom.android.sdk.Intercom;
 import retrofit.RetrofitError;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.utils.GcmUtils;
 
@@ -116,7 +116,7 @@ public class GcmIntentService extends IntentService {
             if (userToken != null) {
                 RestClient.getAPiDevice().register(regId);
             }
-        } catch (ResponseErrorException ree) {
+        } catch (ApiErrorException ree) {
             RetrofitError err = (RetrofitError)ree.getCause();
             if (err.getKind() == RetrofitError.Kind.HTTP
                     && err.getResponse() != null

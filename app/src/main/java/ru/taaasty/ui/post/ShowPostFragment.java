@@ -54,6 +54,7 @@ import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -885,7 +886,8 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_loading_comments), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_comments), e);
             mLoadComments = false;
 
         }
@@ -910,7 +912,8 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_post_comment), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
         }
 
         @Override
@@ -931,7 +934,8 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_loading_user), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_user), e);
         }
 
         @Override

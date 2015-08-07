@@ -575,7 +575,8 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            if (mListener != null) mListener.notifyError(getText(R.string.error_create_conversation), e);
+            if (mListener != null) mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_create_conversation), e);
             setupSubscribeButton();
         }
 
@@ -595,7 +596,8 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_follow), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
         }
 
         @Override
@@ -613,7 +615,8 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(getString(R.string.error_loading_user), e);
+            mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_user), e);
         }
 
         @Override

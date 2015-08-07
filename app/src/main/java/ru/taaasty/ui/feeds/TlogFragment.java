@@ -37,7 +37,7 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -810,11 +810,13 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             @Override
             public void onError(Throwable exception) {
                 if (DBG) Log.e(TAG, "refresh author error", exception);
-                if (exception instanceof ResponseErrorException
-                    && ((ResponseErrorException)exception).getStatus() == 404) {
+                if (exception instanceof ApiErrorException
+                    && ((ApiErrorException)exception).isError404NotFound()) {
                     if (mListener != null) mListener.onNoSuchUser();
                 } else {
-                    if (mListener != null) mListener.notifyError(getText(R.string.error_loading_user), exception);
+                    if (mListener != null) mListener.notifyError(
+                            UiUtils.getUserErrorText(getResources(), exception, R.string.error_loading_user),
+                            exception);
                 }
             }
 
@@ -873,13 +875,15 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             @Override
             protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable exception) {
                 super.onLoadError(isRefresh, entriesRequested, exception);
-                if (exception instanceof ResponseErrorException
-                        && ((ResponseErrorException)exception).getStatus() == 403) {
+                if (exception instanceof ApiErrorException
+                        && ((ApiErrorException)exception).isError403Forbidden()) {
                     // тлог закрыт.
                     mLastErrorForbidden = true;
                 } else {
                     if (mListener != null)
-                        mListener.notifyError(getText(R.string.error_append_feed), exception);
+                        mListener.notifyError(
+                                UiUtils.getUserErrorText(getResources(), exception,
+                                        R.string.error_append_feed), exception);
                 }
             }
 

@@ -31,6 +31,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.app.AppObservable;
@@ -385,7 +386,8 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
                 if (DBG) Log.v(TAG, "onError");
                 if (mListener != null)
                 if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment())
-                        .setStatusFailure(getString(R.string.error_loading_conversations));
+                        .setStatusFailure(
+                                UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_conversations));
             }
 
             @Override

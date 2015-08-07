@@ -28,9 +28,8 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.UnauthorizedException;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.ui.CustomErrorView;
@@ -246,16 +245,8 @@ public class SignViaEmailFragment extends Fragment {
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            CharSequence error = "";
-                            if (e instanceof ResponseErrorException) {
-                                error = ((ResponseErrorException)e).getUserError();
-                            } else if (e instanceof UnauthorizedException) {
-                                error = ((UnauthorizedException)e).getUserError();
-                            }
-                            if (TextUtils.isEmpty(error)) {
-                                error = getText(R.string.error_invalid_email_or_password);
-                            }
-                            if (mListener != null) mListener.notifyError(error, e);
+                            if (mListener != null) mListener.notifyError(
+                                    ((ApiErrorException) e).getErrorUserMessage(getResources()), e);
                             mPasswordView.requestFocus();
                         }
 

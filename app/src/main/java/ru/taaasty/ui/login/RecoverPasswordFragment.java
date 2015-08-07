@@ -26,6 +26,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
@@ -177,8 +178,8 @@ public class RecoverPasswordFragment extends Fragment {
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            // XXX
-                            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email_or_password), null);
+                            if (mListener != null) mListener.notifyError(
+                                    UiUtils.getUserErrorText(getResources(), e, R.string.error_invalid_email_or_password), e);
                             mEmailView.requestFocus();
                         }
 

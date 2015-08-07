@@ -22,6 +22,7 @@ import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.Objects;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -276,7 +277,8 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
             super.onLoadError(isRefresh, entriesRequested, e);
             if (mListener != null)
-                mListener.notifyError(getText(R.string.error_append_feed), e);
+                mListener.notifyError(
+                        UiUtils.getUserErrorText(getResources(), e, R.string.error_append_feed), e);
         }
 
         protected void onFeedIsUnsubscribed(boolean isRefresh) {

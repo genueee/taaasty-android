@@ -9,8 +9,7 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import java.util.Collection;
 
 import retrofit.RetrofitError;
-import ru.taaasty.rest.ResponseErrorException;
-import ru.taaasty.rest.UnauthorizedException;
+import ru.taaasty.rest.ApiErrorException;
 
 /**
  * Created by alexey on 30.06.15.
@@ -36,16 +35,9 @@ public class AnalyticsExceptionParser extends StandardExceptionParser {
         String kind = retrofitError.getKind().name();
         String errorStatus = null;
         String error = null;
-        if (throwable instanceof UnauthorizedException) {
-            UnauthorizedException uae = (UnauthorizedException) throwable;
-            if (uae.error != null) {
-                error = uae.error.errorCode;
-            }
-        } else if (throwable instanceof ResponseErrorException) {
-            ResponseErrorException ree = (ResponseErrorException) throwable;
-            if (ree.error != null) {
-                error = ree.error.errorCode;
-            }
+        if (throwable instanceof ApiErrorException) {
+            ApiErrorException apiException = (ApiErrorException)throwable;
+            if (apiException.error != null) error = apiException.error.errorCode;
         }
         if (retrofitError.getResponse() != null) {
             errorStatus = String.valueOf(retrofitError.getResponse().getStatus());

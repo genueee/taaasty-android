@@ -47,7 +47,7 @@ import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.Entry;
@@ -302,7 +302,7 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (ResponseErrorException ree) {
+        } catch (ApiErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
             if (DBG) throw new IllegalStateException(ex);
@@ -350,7 +350,7 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (ResponseErrorException ree) {
+        } catch (ApiErrorException ree) {
             status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
             if (DBG) throw new IllegalStateException(ex);
@@ -377,14 +377,14 @@ public class IntentService extends android.app.IntentService {
                     for (long id: messageIds) idsArray.add(id);
                     String ids = TextUtils.join(",", idsArray);
                     api.markMessagesAsReadSync(null, conversationId, ids);
-                } catch (ResponseErrorException ignore) {
+                } catch (ApiErrorException ignore) {
                     if (DBG) Log.v(TAG, "markMessagesAsReadSync() error");
                 }
             }
             Conversation.Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
                     UUID.randomUUID().toString(), null);
             EventBus.getDefault().post(new MessageChanged(message));
-        } catch (ResponseErrorException ree) {
+        } catch (ApiErrorException ree) {
             if (DBG) Log.i(TAG, "handleVoiceReplyToConversation() error", ree);
         } catch (Throwable ex) {
             if (DBG) throw new IllegalStateException(ex);
@@ -397,7 +397,7 @@ public class IntentService extends android.app.IntentService {
             Userpic response = mApiUsersService.uploadUserpicSync(new ContentTypedOutput(this, imageUri, null));
             status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (ResponseErrorException ree) {
+        }catch (ApiErrorException ree) {
             status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;
@@ -414,7 +414,7 @@ public class IntentService extends android.app.IntentService {
                     new ContentTypedOutput(this, imageUri, null));
             status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (ResponseErrorException ree) {
+        }catch (ApiErrorException ree) {
             status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;

@@ -2,6 +2,7 @@ package ru.taaasty.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.Html;
@@ -21,6 +22,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.ui.ClickableNicknameSpan;
 import ru.taaasty.ui.CustomTypefaceSpan;
@@ -330,5 +332,17 @@ public class UiUtils {
         matcher.appendTail(sb);
 
         return sb;
+    }
+
+    public static String getUserErrorText(Resources resources, @Nullable Throwable e, int fallbackTextResId) {
+        String userErrorText;
+
+        if (e != null && e instanceof ApiErrorException) {
+            userErrorText = ((ApiErrorException) e).getErrorUserMessage(resources, fallbackTextResId);
+        }else {
+            userErrorText = resources != null ? resources.getString(fallbackTextResId) : "unknown error";
+        }
+
+        return userErrorText;
     }
 }

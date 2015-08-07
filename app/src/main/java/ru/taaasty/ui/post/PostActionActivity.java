@@ -30,6 +30,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.android.app.AppObservable;
@@ -172,7 +173,9 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
 
         @Override
         public void onError(Throwable e) {
-            Toast.makeText(PostActionActivity.this, R.string.adding_to_favourites_fail, Toast.LENGTH_LONG).show();
+            Toast.makeText(PostActionActivity.this,
+                    UiUtils.getUserErrorText(getResources(), e, R.string.adding_to_favourites_fail),
+                    Toast.LENGTH_LONG).show();
             finish();
         }
 

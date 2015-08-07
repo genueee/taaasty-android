@@ -452,7 +452,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
         @Override
         public void onError(Throwable e) {
-            notifyError(getString(R.string.error_follow), e);
+            notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
             mPerformSubscription = false;
             refreshFollowUnfollowView();
         }

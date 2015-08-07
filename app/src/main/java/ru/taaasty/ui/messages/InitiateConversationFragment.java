@@ -28,6 +28,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -275,7 +276,8 @@ public class InitiateConversationFragment extends Fragment {
         public void onError(Throwable e) {
             mLoadingNames = false;
             mAdapter.setUsers(Collections.<User>emptyList());
-            if (mListener != null) mListener.notifyError(getString(R.string.users_load_error), e);
+            if (mListener != null) mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.users_load_error), e);
             updateCurrentState();
         }
 
@@ -297,7 +299,9 @@ public class InitiateConversationFragment extends Fragment {
         @Override
         public void onError(Throwable e) {
             mCreatingConversation = false;
-            if (mListener != null) mListener.notifyError(getText(R.string.error_create_conversation), e);
+            if (mListener != null) mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_create_conversation),
+                    e);
             updateCurrentState();
         }
 

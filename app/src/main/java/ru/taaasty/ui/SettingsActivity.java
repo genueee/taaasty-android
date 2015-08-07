@@ -15,8 +15,9 @@ import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
 
 /**
@@ -82,9 +83,9 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
         if (exception != null) Log.e(TAG, error.toString(), exception);
 
         CharSequence text;
-        if (exception != null && exception instanceof ResponseErrorException) {
-            text = ((ResponseErrorException)exception).error.longMessage;
-            if (text == null) text = ((ResponseErrorException)exception).error.error;
+        if (exception != null && exception instanceof ApiErrorException) {
+            text = ((ApiErrorException)exception).error.longMessage;
+            if (text == null) text = ((ApiErrorException)exception).error.error;
         } else {
             text = error;
         }
@@ -94,7 +95,9 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
     @Override
     public void onErrorRefreshUser(Throwable e) {
-        Toast.makeText(this, R.string.user_error, Toast.LENGTH_LONG).show();
+        Toast.makeText(this,
+                UiUtils.getUserErrorText(getResources(), e, R.string.user_error),
+                Toast.LENGTH_LONG).show();
         finish();
     }
 

@@ -24,12 +24,12 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.Session;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -386,10 +386,8 @@ public class SettingsFragment extends PreferenceFragment {
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "refresh author error", e);
-            if (e instanceof ResponseErrorException) {
-
-            }
-            if (mListener != null) mListener.notifyError("update user error", e);
+            if (mListener != null) mListener.notifyError(
+                    UiUtils.getUserErrorText(getResources(), e, R.string.error_saving_settings), e);
         }
 
         @Override

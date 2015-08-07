@@ -28,13 +28,12 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
-import ru.taaasty.rest.ResponseErrorException;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.UnauthorizedException;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
@@ -261,15 +260,6 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         @Override
         public void onError(Throwable e) {
-            CharSequence error = "";
-            if (e instanceof ResponseErrorException) {
-                error = ((ResponseErrorException)e).getUserError();
-            } else if (e instanceof UnauthorizedException) {
-                error = ((UnauthorizedException)e).getUserError();
-            }
-            if (TextUtils.isEmpty(error)) {
-                error = getText(R.string.error_vkontakte_failed);
-            }
             // По коду ошибки хрен что разберешь. В любой непонятной ситуации - регимся
             signUp(mToken);
         }
@@ -281,7 +271,6 @@ public class SignViaVkontakteFragment extends DialogFragment {
             } else {
                 Session.getInstance().setCurrentUser(info);
                 if (mListener != null) mListener.onSignViaVkontakteSuccess(false);
-
             }
         }
     }
@@ -294,17 +283,9 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         @Override
         public void onError(Throwable e) {
-            CharSequence error = "";
-            if (e instanceof ResponseErrorException) {
-                error = ((ResponseErrorException)e).getUserError();
-            } else if (e instanceof UnauthorizedException) {
-                error = ((UnauthorizedException)e).getUserError();
-            }
-            if (TextUtils.isEmpty(error)) {
-                error = getText(R.string.error_vkontakte_failed);
-            }
-
-            if (mListener != null) mListener.notifyError(error, e);
+            if (mListener != null) mListener.notifyError(
+                    ((ApiErrorException)e).getErrorUserMessage(getResources(), R.string.error_vkontakte_failed),
+                    e);
             getDialog().dismiss();
         }
 
