@@ -68,6 +68,7 @@ import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.utils.ContentTypedOutput;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.UiUtils;
 
 /**
  * An {@link android.app.IntentService} subclass for handling asynchronous task requests in
@@ -302,11 +303,9 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (ApiErrorException ree) {
-            status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
-            if (DBG) throw new IllegalStateException(ex);
-            status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_create_post), ex);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -350,11 +349,9 @@ public class IntentService extends android.app.IntentService {
                 throw new IllegalStateException();
             }
             status = EntryUploadStatus.createPostCompleted(form);
-        } catch (ApiErrorException ree) {
-            status = EntryUploadStatus.createPostFinishedWithError(form, ree.error.error, ree);
         } catch (Throwable ex) {
-            if (DBG) throw new IllegalStateException(ex);
-            status = EntryUploadStatus.createPostFinishedWithError(form, getString(R.string.error_vote), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_post), ex);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -387,7 +384,7 @@ public class IntentService extends android.app.IntentService {
         } catch (ApiErrorException ree) {
             if (DBG) Log.i(TAG, "handleVoiceReplyToConversation() error", ree);
         } catch (Throwable ex) {
-            if (DBG) throw new IllegalStateException(ex);
+            // ignore
         }
     }
 
@@ -397,11 +394,10 @@ public class IntentService extends android.app.IntentService {
             Userpic response = mApiUsersService.uploadUserpicSync(new ContentTypedOutput(this, imageUri, null));
             status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (ApiErrorException ree) {
-            status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
             if (DBG) throw ex;
-            status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri, getString(R.string.error_upload_userpic), ex);
+            status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_upload_userpic), ex);
         }
         EventBus.getDefault().post(status);
     }
@@ -414,11 +410,9 @@ public class IntentService extends android.app.IntentService {
                     new ContentTypedOutput(this, imageUri, null));
             status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
-        }catch (ApiErrorException ree) {
-            status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri, ree.error.error, ree);
         } catch (Exception ex) {
-            if (DBG) throw ex;
-            status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri, getString(R.string.error_upload_userpic), ex);
+            status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_upload_userpic), ex);
         }
         EventBus.getDefault().post(status);
     }

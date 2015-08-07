@@ -242,6 +242,8 @@
     <string name="start_typing_friend_name">Начните вводить имя друга, которому хотите написать сообщение</string>
     <string name="we_cannot_find_this_user">К сожалению, мы не можем найти данного пользователя</string>
     <string name="error_create_conversation">Ошибка создания переписки</string>
+    <string name="error_create_post">Ошибка создания поста</string>
+    <string name="error_saving_post">Ошибка сохранения поста</string>
     <string name="error_saving_settings">Ошибка сохранения настроек</string>
     <string name="users_load_error">Ошибка загрузки пользователей</string>
     <string name="error_loading_conversations">Ошибка загрузки переписок</string>

@@ -3,7 +3,6 @@ package ru.taaasty.rest;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.text.SpannableString;
 import android.text.TextUtils;
 
 import retrofit.RetrofitError;
@@ -23,19 +22,13 @@ public class ApiErrorException extends RuntimeException {
     @Nullable
     public final ResponseError error;
 
-    public ApiErrorException(Throwable throwable, ResponseError error) {
+    public ApiErrorException(Throwable throwable, @Nullable ResponseError error) {
         super(throwable);
         this.error = error;
     }
 
     public RetrofitError getRetrofitError() {
         return (RetrofitError) getCause();
-    }
-
-    @Deprecated
-    @Nullable
-    public String getUserError() {
-        return error == null ? null : error.error;
     }
 
     /**
@@ -86,8 +79,6 @@ public class ApiErrorException extends RuntimeException {
      */
     public int getHttpStatusCode() {
         RetrofitError ree = (RetrofitError)getCause();
-        SpannableString ss = SpannableString.valueOf("df");
-        ss.equals("25");
         if (getRetrofitError().getKind() != RetrofitError.Kind.HTTP) return -1;
         return ree.getResponse().getStatus();
     }

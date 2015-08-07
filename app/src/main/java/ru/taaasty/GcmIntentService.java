@@ -123,7 +123,7 @@ public class GcmIntentService extends IntentService {
                     && err.getResponse().getStatus() >= 400
                     && err.getResponse().getStatus() < 500) {
                 // Скорее всего, "уже существует". Не считаем ошибкой.
-                if (DBG) Log.v(TAG, "sendRegistrationIdToBackend response: " + ree.getUserError());
+                if (DBG) Log.v(TAG, "sendRegistrationIdToBackend response: " + ree.getErrorUserMessage(getResources(), "no response"));
             } else {
                 throw new IOException(err);
             }

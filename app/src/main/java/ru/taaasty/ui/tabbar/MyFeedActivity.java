@@ -39,7 +39,7 @@ import ru.taaasty.utils.NetworkUtils;
 
 
 public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener {
-    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final boolean DBG = BuildConfig.DEBUG && false;
     private static final String TAG = "MyFeedActivity";
 
     private DrawerLayout mDrawerLayout;

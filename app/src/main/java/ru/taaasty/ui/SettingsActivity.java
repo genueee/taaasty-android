@@ -15,7 +15,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ErrorTextView;
@@ -81,16 +80,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
         ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
-
-        CharSequence text;
-        if (exception != null && exception instanceof ApiErrorException) {
-            text = ((ApiErrorException)exception).error.longMessage;
-            if (text == null) text = ((ApiErrorException)exception).error.error;
-        } else {
-            text = error;
-        }
-
-        ert.setError(text, exception);
+        ert.setError(error, exception);
     }
 
     @Override
