@@ -33,4 +33,7 @@
 
     <string name="error_vkontakte_failed">Ошибка вконтакте</string>
     <string name="error_facebook_failed">Ошибка facebook</string>
+
+    <string name="error_socket_timeout">Время ожидания истекло</string>
+
 </resources>

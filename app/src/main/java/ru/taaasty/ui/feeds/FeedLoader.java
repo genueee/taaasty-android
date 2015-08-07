@@ -99,6 +99,10 @@ public abstract class FeedLoader {
         return mFeedRefreshSubscription.isUnsubscribed() && !mFeedAppendSubscription.isUnsubscribed();
     }
 
+    public boolean isKeepOnAppending() {
+        return mKeepOnAppending.get();
+    }
+
     public void onCreate() {
 
     }

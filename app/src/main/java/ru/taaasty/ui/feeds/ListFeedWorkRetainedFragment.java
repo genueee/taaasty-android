@@ -172,6 +172,13 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         return !mCurrentUserSubscription.isUnsubscribed() || mFeedLoader.isLoading();
     }
 
+    /**
+     * @return лента полностью загружена с сервера и она пустая
+     */
+    public boolean isFeedEmpty() {
+        return !mFeedLoader.isKeepOnAppending() && mEntryList.isEmpty();
+    }
+
     public boolean isPendingIndicatorShown() {
         return mFeedLoader.isPendingIndicatorShown();
     }

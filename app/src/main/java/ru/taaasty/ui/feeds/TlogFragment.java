@@ -368,7 +368,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                         + (mWorkFragment != null)
                         + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
                         + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
-                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.getEntryList().isEmpty())
+                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.isFeedEmpty())
                         + " adapter != null: " + (mAdapter != null)
         );
 
@@ -379,8 +379,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null
-                && !mWorkFragment.isLoading()
-                && mWorkFragment.getEntryList().isEmpty();
+                && mWorkFragment.isFeedEmpty();
 
         boolean isTlogForbidden = listIsEmpty && (mWorkFragment != null) && mWorkFragment.isTlogForbidden();
 
@@ -766,6 +765,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         public boolean isRefreshing() {
             return mFeedLoader.isRefreshing();
+        }
+
+        public boolean isFeedEmpty() {
+            return mFeedLoader.isKeepOnAppending() && mEntryList.isEmpty();
         }
 
         public void onBindViewHolder(int feedLocation) {

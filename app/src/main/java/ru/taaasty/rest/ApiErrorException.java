@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
+import java.net.SocketTimeoutException;
+
 import retrofit.RetrofitError;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.ResponseError;
@@ -71,6 +73,12 @@ public class ApiErrorException extends RuntimeException {
             }
         }
 
+        if (getRetrofitError().getKind() == RetrofitError.Kind.NETWORK) {
+            if (getRetrofitError().getCause() instanceof SocketTimeoutException) {
+                return resources == null ? "timeout" : resources.getString(R.string.error_socket_timeout);
+            }
+        }
+
         return fallbackText;
     }
 
@@ -81,13 +89,6 @@ public class ApiErrorException extends RuntimeException {
         RetrofitError ree = (RetrofitError)getCause();
         if (getRetrofitError().getKind() != RetrofitError.Kind.HTTP) return -1;
         return ree.getResponse().getStatus();
-    }
-
-    /**
-     * @return Сетевая ошибка (HTTP ответ обычно не получен)
-     */
-    public boolean isNetworkError() {
-        return getRetrofitError().getKind() == RetrofitError.Kind.NETWORK;
     }
 
     public boolean isError403Forbidden() {

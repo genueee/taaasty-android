@@ -255,7 +255,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                         + (mWorkFragment != null)
                         + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
                         + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
-                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.getEntryList().isEmpty())
+                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.isFeedEmpty())
                         + " adapter != null: " + (mAdapter != null)
         );
 
@@ -266,11 +266,10 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null
-                && !mWorkFragment.isLoading()
-                && mWorkFragment.getEntryList().isEmpty();
+                && mWorkFragment.isFeedEmpty();
 
         mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
-        if (listIsEmpty) mDateIndicatorView.setVisibility(View.INVISIBLE);
+        if (mWorkFragment.getEntryList().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
     }
 
     private final Runnable mRefreshLoadingState = new Runnable() {
