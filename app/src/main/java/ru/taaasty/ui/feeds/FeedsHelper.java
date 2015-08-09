@@ -240,6 +240,39 @@ public class FeedsHelper {
         }
     }
 
+    public static abstract class WatchHeaderScrollListener extends RecyclerView.OnScrollListener {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            View child = recyclerView.getChildAt(0);
+            float firstVisibleFract;
+            if (child == null) {
+                onScrolled(recyclerView, dy, 0, 0, 0, 0);
+            } else {
+                firstVisibleFract = (child.getHeight() + child.getTop()) / (float) child.getHeight();
+                int visibleItemCount = recyclerView.getChildCount();
+                int totalItemCount;
+                if (recyclerView.getAdapter() == null) {
+                    totalItemCount = 0;
+                } else {
+                    totalItemCount = recyclerView.getAdapter().getItemCount();
+                }
+                onScrolled(recyclerView, dy, recyclerView.getChildAdapterPosition(child),
+                        UiUtils.clamp(firstVisibleFract, 0f, 1f), visibleItemCount, totalItemCount);
+            }
+        }
+
+        /**
+         *
+         * @param recyclerView The RecyclerView which scrolled.
+         * @param dy The amount of vertical scroll.
+         * @param firstVisibleItem Позиция в адаптере первого видимого элемента
+         * @param firstVisibleFract Видимая высота / высота первого видимого элемента
+         * @param visibleCount Элементов в RecyclerView
+         * @param totalCount Всего элементов в адаптере
+         */
+        abstract void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
+    }
+
     /**
      * Вызывает measure() на тексте всех элементов фида.
      * Практика показывает, что после этого размеры оседают где-то в кэше во внутренностях андроида

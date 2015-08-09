@@ -72,6 +72,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_live_feed);
 
+        getWindow().getDecorView().setBackgroundDrawable(null);
+
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         ((TaaastyApplication)getApplicationContext()).startIntercomSession();
 

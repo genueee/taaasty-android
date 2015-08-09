@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
@@ -148,6 +149,7 @@ public class TlogDesign implements Parcelable {
         return alpha;
     }
 
+    @Nullable
     public String getBackgroundUrl() {
         if (TextUtils.isEmpty(mBackgroundUrl)) return null;
         if (!mBackgroundUrl.startsWith("http:")) {

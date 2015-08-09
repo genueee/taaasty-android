@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -23,7 +22,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -52,7 +50,6 @@ import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -79,8 +76,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     private DateIndicatorWidget mDateIndicatorView;
 
     private Adapter mAdapter;
-
-    private String mBackgroundBitmapKey;
 
     private int mAvatarThumbnailRes;
 
@@ -149,27 +144,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             }
         });
         mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener () {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            }
+        mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
 
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
                 if (mListener == null) return;
-                View child = recyclerView.getChildAt(0);
-                float firstVisibleFract;
-                if (child == null) {
-                    mListener.onListScroll(dy, 0, 0, 0, 0);
-                } else {
-                    firstVisibleFract = -1f * (float) child.getTop() / (float) child.getHeight();
-                    int visibleItemCount = recyclerView.getChildCount();
-                    int totalItemCount = mAdapter.getItemCount();
-                    mListener.onListScroll(dy, recyclerView.getChildPosition(child),
-                            UiUtils.clamp(firstVisibleFract, 0f, 0.99f), visibleItemCount, totalItemCount);
-
-                }
-
+                mListener.onListScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
             }
         });
 
@@ -326,7 +306,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         new UserInfoActivity.Builder(getActivity())
                 .set(mWorkFragment.getUser().author, v, user.design)
                 .setPreloadAvatarThumbnail(R.dimen.feed_header_avatar_normal_diameter)
-                .setBackgroundThumbnailKey(mBackgroundBitmapKey)
                 .startActivity();
     }
 
@@ -342,8 +321,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         mAdapter.setFeedDesign(design);
-        if (mListener != null) mListener.setFeedBackground(design.getFeedBackgroundDrawable());
-
     }
 
     void updateDateIndicatorVisibility() {
@@ -381,9 +358,9 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 && mWorkFragment != null
                 && mWorkFragment.isFeedEmpty();
 
-        boolean isTlogForbidden = listIsEmpty && (mWorkFragment != null) && mWorkFragment.isTlogForbidden();
+        boolean isTlogForbidden = (mWorkFragment != null) && mWorkFragment.isTlogForbidden();
 
-        mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
+        mEmptyView.setVisibility(listIsEmpty || isTlogForbidden ? View.VISIBLE : View.GONE);
         if (isTlogForbidden) {
             mEmptyView.setText(R.string.error_tlog_access_denied);
             mEmptyView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_private_post_indicator_activated, 0, 0);
@@ -439,6 +416,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 @Override
                 public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
                     View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
+                    child.setBackgroundDrawable(null);
                     HeaderHolder holder = new HeaderHolder(child);
                     holder.avatarView.setOnClickListener(mOnClickListener);
                     return holder;
@@ -448,7 +426,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
                     HeaderHolder holder = (HeaderHolder) viewHolder;
                     holder.titleView.setText(mTitle);
-                    bindDesign(holder);
                     bindUser(holder);
                 }
 
@@ -472,31 +449,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 mUser = user;
                 notifyItemChanged(0);
             }
-        }
-
-        private void bindDesign(HeaderHolder holder) {
-            if (mWorkFragment == null || mWorkFragment.getUser() == null) return;
-
-            TlogDesign design = mWorkFragment.getUser().design;
-            String backgroudUrl = design.getBackgroundUrl();
-            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
-            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    design, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-                    mBackgroundBitmapKey = "TlogFragment-header";
-                    ImageUtils.getInstance().putBitmapToCache(mBackgroundBitmapKey, bitmap);
-                }
-            };
-            holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq = Picasso.with(holder.itemView.getContext())
-                    .load(backgroudUrl);
-            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
-                        .centerCrop();
-            }
-            rq.into(holder.feedDesignTarget);
         }
 
         private void bindUser(final HeaderHolder holder) {
@@ -574,11 +526,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     public static class HeaderHolder extends ParallaxedHeaderHolder {
         TextView titleView;
         ImageView avatarView;
-
-        public String backgroundUrl = null;
-
-        // XXX: anti picasso weak ref
-        private TargetSetHeaderBackground feedDesignTarget;
 
         public HeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.avatar_user_name));
@@ -908,7 +855,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
-        void setFeedBackground(@DrawableRes int background);
         void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         void onTlogInfoLoaded(TlogInfo info);
         void onSharePostMenuClicked(Entry entry);

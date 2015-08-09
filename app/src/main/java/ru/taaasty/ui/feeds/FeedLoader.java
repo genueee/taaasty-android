@@ -161,14 +161,17 @@ public abstract class FeedLoader {
     }
 
     protected void onLoadNext(boolean isRefresh, int entriesRequested, Feed feed) {
-        boolean keepOnAppending = (feed != null) && (feed.entries.length >= 0);
+        // Если ставить feed.entries.length >= 0, то никогда не срабатывает "вы ничего не написали"
+        boolean keepOnAppending = (feed != null) && (feed.entries.length > 0);
 
         if (feed != null) {
             // XXX Сравнивать lastEntry?
             int sizeBefore = mList.size();
             mList.addOrUpdateItems(feed.entries);
-            if (!isRefresh && entriesRequested != 0 && sizeBefore == mList.size())
+            if (!isRefresh && entriesRequested != 0 && sizeBefore == mList.size()) {
                 keepOnAppending = false;
+            }
+
         }
         setKeepOnAppending(keepOnAppending);
     }

@@ -1,7 +1,6 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -17,14 +16,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
@@ -41,9 +36,9 @@ import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -101,6 +96,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
 
+    private FeedBackground mFeedBackground;
+
     public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
         Bundle b = new Bundle();
@@ -142,6 +139,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mEmptyView = v.findViewById(R.id.empty_view);
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+
+        mFeedBackground = new FeedBackground(mListView, null, R.dimen.feed_header_height);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -186,6 +185,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
         mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
         mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
+        mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
+            @Override
+            void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
+                mFeedBackground.setHeaderVisibleFraction(firstVisibleItem == 0 ? firstVisibleFract : 0);
+            }
+        });
 
         setupFeedDesign();
         setupUser();
@@ -213,6 +218,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             mAdapter = null;
         }
         mListView = null;
+        mFeedBackground = null;
     }
 
     @Override
@@ -304,7 +310,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
-        mListView.setBackgroundResource(mWorkFragment.getTlogDesign().getFeedBackgroundDrawable());
+        mFeedBackground.setTlogDesign(mWorkFragment.getTlogDesign());
     }
 
     private void setupAdapterPendingIndicator() {
@@ -424,7 +430,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                 public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
                     HeaderHolder holder = (HeaderHolder) viewHolder;
                     holder.usernameView.setText(mTitle);
-                    bindDesign(holder);
                     bindUser(holder);
                 }
 
@@ -468,28 +473,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             }
         }
 
-        private void bindDesign(HeaderHolder holder) {
-            if (mFeedDesign == null) return;
-            String backgroudUrl = mFeedDesign.getBackgroundUrl();
-            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
-            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.headerUserFeedMain,
-                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
-                }
-            };
-            holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq = Picasso.with(holder.itemView.getContext())
-                    .load(backgroudUrl);
-            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
-                        .centerCrop();
-            }
-            rq.into(holder.feedDesignTarget);
-        }
-
         private void bindUser(HeaderHolder holder) {
             User user = mWorkFragment.getCurrentUser();
             if (user == null) user = CurrentUser.DUMMY;
@@ -505,11 +488,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         TextView usernameView;
         ImageView avatarView;
 
-        public String backgroundUrl = null;
-
-        // XXX: anti picasso weak ref
-        private TargetSetHeaderBackground feedDesignTarget;
-
         public HeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.header_user_feed_main));
             headerUserFeedMain = itemView.findViewById(R.id.header_user_feed_main);
@@ -519,7 +497,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     }
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
-
 
         @Override
         public void onPostLikesClicked(View view, Entry entry) {

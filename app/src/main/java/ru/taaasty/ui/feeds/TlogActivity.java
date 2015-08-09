@@ -9,7 +9,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -35,6 +34,7 @@ import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.post.SharePostActivity;
+import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
@@ -68,7 +68,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private Subscription mFollowSubscription = Subscriptions.unsubscribed();
 
-    private View mContainer;
     private View mSubscribeView;
     private View mUnsubscribeView;
     private View mFollowUnfollowProgressView;
@@ -81,6 +80,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private String mMyRelationship;
 
     private InterfaceVisibilityController mInterfaceVisibilityController;
+
+    private FeedBackground mFeedBackground;
 
     public static Intent getStartTlogActivityIntent(Context source, long userId,  int avatarThumbnailSizeRes) {
         Intent intent = new Intent(source, TlogActivity.class);
@@ -130,7 +131,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
         mInterfaceVisibilityController = new InterfaceVisibilityController();
 
-        mContainer = findViewById(R.id.container);
+        View container = findViewById(R.id.container);
+        mFeedBackground = new FeedBackground(container, null, R.dimen.feed_header_height);
+
+        // Используем background у контейнера. Там стоит тот же background, что и у activity - так и должно быть,
+        // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
+        // системные кнопки и background на activity лежит под ними.
+        getWindow().getDecorView().setBackgroundDrawable(null);
 
         if (savedInstanceState != null) {
             mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
@@ -231,21 +238,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void setFeedBackground(@DrawableRes int background) {
-        // Используем background у контейнера. Там стоит тот же background, что и у activity - так и должно быть,
-        // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
-        // системные кнопки и background на activity лежит под ними.
-        getWindow().getDecorView().setBackgroundDrawable(null);
-        mContainer.setBackgroundResource(background);
-    }
-
-    @Override
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
         mMyRelationship = tlogInfo.getMyRelationship();
         User author = tlogInfo.author;
         mAbTitle = new SpannableString(author.getName());
         mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         refreshFollowUnfollowView();
+        if (tlogInfo.design != null) mFeedBackground.setTlogDesign(tlogInfo.design);
     }
 
     @Override
@@ -283,11 +282,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             abAlpha = 0;
         } else {
             if (totalCount > 5) totalCount = 5;
-            abAlpha = (firstVisibleItem + firstVisibleFract) / (float)totalCount;
+            abAlpha = (firstVisibleItem + 1f - firstVisibleFract) / (float)totalCount;
             abAlpha = UiUtils.clamp(abAlpha, 0f, 1f);
         }
 
         intAlpha = (int)(255f * abAlpha);
+
+        mFeedBackground.setHeaderVisibleFraction(firstVisibleItem == 0 ? firstVisibleFract : 0);
 
         if (intAlpha == 0
                 || (intAlpha == 255 && mLastAlpha != 255)

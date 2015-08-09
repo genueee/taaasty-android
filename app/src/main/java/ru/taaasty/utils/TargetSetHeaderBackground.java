@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.support.annotation.ColorRes;
 import android.util.Log;
 import android.view.View;
 
@@ -27,19 +28,13 @@ public class TargetSetHeaderBackground implements Target {
     private final View mTarget;
     private final TlogDesign mDesign;
     private final int mForegroundColor;
-    private final int mBlurRadius;
     private boolean mForceDisableAnimation;
 
-    public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColor) {
-        this(target, design, foregroundColor, 0);
-    }
-
-    public TargetSetHeaderBackground(View target, TlogDesign design, int foregroundColorRes, int blurRadius) {
+    public TargetSetHeaderBackground(View target, TlogDesign design, @ColorRes int foregroundColor) {
         if (target == null) throw new NullPointerException();
         mTarget = target;
         mDesign = design;
-        mBlurRadius = blurRadius;
-        mForegroundColor = target.getResources().getColor(foregroundColorRes);
+        mForegroundColor = target.getResources().getColor(foregroundColor);
     }
 
     @Override
@@ -55,7 +50,6 @@ public class TargetSetHeaderBackground implements Target {
 
     @Override
     public void onPrepareLoad(Drawable placeHolderDrawable) {
-
     }
 
     public void setForceDisableAnimate(boolean disable) {
@@ -67,12 +61,11 @@ public class TargetSetHeaderBackground implements Target {
         Drawable backgroundDrawable;
 
         background = new BackgroundBitmapDrawable(mTarget.getResources(), bitmap);
-        background.setBlurRadius(mBlurRadius);
         // Игнорируем настройки дизайна. Всегда ставим бэграундом COVER_ALIGN_CENTER_CROP,
         // чтобы соотношение сторон изображения не изменялось.
         background.setCoverAlign(BackgroundBitmapDrawable.COVER_ALIGN_CENTER_CROP);
         if (DBG) Log.v(TAG, "setBackgroundDrawable design: " + mDesign +
-                " foregroundColor: 0x" + Integer.toHexString(mForegroundColor) + "blur radius: " + mBlurRadius);
+                " foregroundColor: 0x" + Integer.toHexString(mForegroundColor));
 
         if (mForegroundColor != Color.TRANSPARENT) {
             ColorDrawable foreground = new ColorDrawable(mForegroundColor);

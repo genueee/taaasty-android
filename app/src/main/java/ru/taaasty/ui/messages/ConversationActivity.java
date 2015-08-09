@@ -3,6 +3,7 @@ package ru.taaasty.ui.messages;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -254,9 +255,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     private void bindDesignMeasured(TlogDesign design) {
         View root = getWindow().getDecorView();
         mBackgroundTarget = new TargetSetHeaderBackground(root,
-                design, R.color.conversation_background_overlay, 0);
+                design, R.color.conversation_background_overlay);
         RequestCreator rq = Picasso.with(this)
-                .load(design.getBackgroundUrl());
+                .load(design.getBackgroundUrl())
+                .config(Bitmap.Config.RGB_565);
         if (root.getWidth() > 1 && root.getHeight() > 1) {
             rq.resize(root.getWidth() / 2, root.getHeight() / 2)
                     .centerCrop();

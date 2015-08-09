@@ -1,6 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -44,6 +45,7 @@ import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.FeedBackgroundDrawable;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.functions.Func1;
@@ -161,6 +163,15 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
         mHideTabbarListener = new TabbarFragment.AutoHideScrollListener(mListener.getTabbar());
         mListView.addOnScrollListener(mHideTabbarListener);
+
+        Resources resource = getResources();
+        FeedBackgroundDrawable background = new FeedBackgroundDrawable(resource, null,
+                resource.getDimensionPixelSize(R.dimen.header_title_subtitle_height));
+        TlogDesign lightDesign = TlogDesign.createLightTheme(TlogDesign.DUMMY);
+        background.setFeedDesign(resource, lightDesign);
+        background.setFeedMargin(resource.getDimensionPixelSize(R.dimen.feed_horizontal_margin), 0,
+                resource.getDimensionPixelSize(R.dimen.feed_horizontal_margin), 0);
+        mListView.setBackgroundDrawable(background);
 
         return v;
     }

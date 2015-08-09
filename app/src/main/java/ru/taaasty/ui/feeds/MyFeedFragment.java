@@ -1,7 +1,6 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -16,11 +15,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
-
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
@@ -38,9 +33,9 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
-import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -67,6 +62,8 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     private Handler mHandler;
 
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
+
+    private FeedBackground mFeedBackground;
 
     /**
      * Use this factory method to create a new instance of
@@ -111,6 +108,8 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
 
+        mFeedBackground = new FeedBackground(mListView, null, R.dimen.feed_header_height);
+
         return v;
     }
 
@@ -150,6 +149,13 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
         mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
 
+        mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
+            @Override
+            void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
+                mFeedBackground.setHeaderVisibleFraction(firstVisibleItem == 0 ? firstVisibleFract : 0);
+            }
+        });
+
         setupFeedDesign();
         setupUser();
         setupAdapterPendingIndicator();
@@ -176,6 +182,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
             mAdapter = null;
         }
         mListView = null;
+        mFeedBackground = null;
     }
 
     @Override
@@ -235,7 +242,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         if (mWorkFragment == null || mWorkFragment.getTlogDesign() == null) return;
         if (DBG) Log.e(TAG, "Setup feed design " + mWorkFragment.getTlogDesign());
         mAdapter.setFeedDesign(mWorkFragment.getTlogDesign());
-        mListView.setBackgroundResource(mWorkFragment.getTlogDesign().getFeedBackgroundDrawable());
+        mFeedBackground.setTlogDesign(mWorkFragment.getTlogDesign());
     }
 
     private void setupAdapterPendingIndicator() {
@@ -317,7 +324,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                     if (DBG) Log.v(TAG, "onBindHeaderViewHolder");
                     HeaderHolder holder = (HeaderHolder) viewHolder;
                     holder.titleView.setText(mTitle);
-                    bindDesign(holder);
                     bindUser(holder);
                 }
 
@@ -333,28 +339,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                 mTitle = title;
                 notifyItemChanged(0);
             }
-        }
-
-        private void bindDesign(HeaderHolder holder) {
-            if (mFeedDesign == null) return;
-            String backgroudUrl = mFeedDesign.getBackgroundUrl();
-            if (TextUtils.equals(holder.backgroundUrl, backgroudUrl)) return;
-            holder.feedDesignTarget = new TargetSetHeaderBackground(holder.itemView,
-                    mFeedDesign, Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES, Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS) {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-                    ImageUtils.getInstance().putBitmapToCache(Constants.MY_FEED_HEADER_BACKGROUND_BITMAP_CACHE_KEY, bitmap);
-                }
-            };
-            holder.backgroundUrl = backgroudUrl;
-            RequestCreator rq =  Picasso.with(holder.itemView.getContext())
-                    .load(backgroudUrl);
-            if (holder.itemView.getWidth() > 1 && holder.itemView.getHeight() > 1) {
-                rq.resize(holder.itemView.getWidth() / 2, holder.itemView.getHeight() / 2)
-                        .centerCrop();
-            }
-            rq.into(holder.feedDesignTarget);
         }
 
         private void bindUser(HeaderHolder holder) {
@@ -386,10 +370,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     static class HeaderHolder extends ParallaxedHeaderHolder {
         TextView titleView;
         ImageView avatarView;
-        public String backgroundUrl = null;
-
-        // XXX: anti picasso weak ref
-        private TargetSetHeaderBackground feedDesignTarget;
 
         public HeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.avatar_user_name));

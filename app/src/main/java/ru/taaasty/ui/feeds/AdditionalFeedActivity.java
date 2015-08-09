@@ -79,6 +79,8 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
         setContentView(R.layout.activity_additional_feed);
 
+        getWindow().getDecorView().setBackgroundDrawable(null); // Используем background у RecyclerView
+
         int currentSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, 1);
 
         if (savedInstanceState != null) {

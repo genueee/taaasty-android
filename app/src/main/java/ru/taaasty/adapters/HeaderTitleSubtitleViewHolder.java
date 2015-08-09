@@ -79,7 +79,7 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
         if (TextUtils.equals(this.backgroundUrl, backgroudUrl)) return;
 
         feedDesignTarget = new TargetSetHeaderBackground(itemView,
-                design, getBackgroundDimColorRes(), getBackgroundBlurRadius()) {
+                design, getBackgroundDimColorRes()) {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
                 super.onBitmapLoaded(bitmap, from);
@@ -88,7 +88,8 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
         };
         this.backgroundUrl = backgroudUrl;
         RequestCreator rq = Picasso.with(itemView.getContext())
-                .load(backgroudUrl);
+                .load(backgroudUrl)
+                .config(Bitmap.Config.RGB_565);
         if (itemView.getWidth() > 1 && itemView.getHeight() > 1) {
             rq.resize(itemView.getWidth() / 2, itemView.getHeight() / 2)
                     .centerCrop();
@@ -98,10 +99,6 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
 
     protected int getBackgroundDimColorRes() {
         return Constants.FEED_TITLE_BACKGROUND_DIM_COLOR_RES;
-    }
-
-    protected int getBackgroundBlurRadius() {
-        return Constants.FEED_TITLE_BACKGROUND_BLUR_RADIUS;
     }
 
     protected void onBackgroundBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
