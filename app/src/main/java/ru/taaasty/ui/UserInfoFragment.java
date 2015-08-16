@@ -13,11 +13,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -182,9 +182,14 @@ public class UserInfoFragment extends Fragment {
             mSelectBackgroundButtonView.setVisibility(View.GONE);
             view.findViewById(R.id.initiate_conversation).setOnClickListener(mOnClickListener);
         }
-        if (mUser != null) setupUserInfo();
 
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (mUser != null) setupUserInfo();
     }
 
     @Override
@@ -461,14 +466,39 @@ public class UserInfoFragment extends Fragment {
         }
     }
 
+    private boolean mSetupDesignQueued;
+
     private void setupDesign() {
+        if (mSetupDesignQueued) return;
+
+        final View target = getActivity().findViewById(android.R.id.content);
+        if (target == null) return;
+        if (target.getWidth() != 0) {
+            setupDesignAfterPreDraw();
+        } else {
+            mSetupDesignQueued = true;
+            target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    target.getViewTreeObserver().removeOnPreDrawListener(this);
+                    mSetupDesignQueued = false;
+                    setupDesignAfterPreDraw();
+                    return true;
+                }
+            });
+        }
+    }
+
+    private void setupDesignAfterPreDraw() {
         TlogDesign design = mDesign == null ? TlogDesign.DUMMY : mDesign;
+
+        final View targetView = getActivity().findViewById(android.R.id.content);
 
         final Picasso picasso = Picasso.with(getActivity());
         String backgroudUrl = design.getBackgroundUrl();
         if (!TextUtils.isEmpty(backgroudUrl)) {
             mTargetSetHeaderBackground = new TargetSetHeaderBackground(
-                    getActivity().getWindow().getDecorView(),
+                    targetView,
                     design, R.color.additional_menu_background) {
                 @Override
                 public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -486,7 +516,6 @@ public class UserInfoFragment extends Fragment {
                 }
             };
 
-
             String thumbnailKey = getArguments().getString(ARG_BACKGROUND_THUMBNAIL_KEY);
             if (!TextUtils.isEmpty(thumbnailKey)) {
                 Bitmap thumbnail = ImageUtils.getInstance().removeBitmapFromCache(thumbnailKey);
@@ -496,19 +525,12 @@ public class UserInfoFragment extends Fragment {
                 }
             }
 
-            RequestCreator rq = picasso
+            picasso
                     .load(backgroudUrl)
-                    .config(Bitmap.Config.RGB_565);
-
-            if (getActivity().getWindow().getDecorView().getWidth() > 0) {
-                rq.resize(getActivity().getWindow().getDecorView().getWidth(),
-                        getActivity().getWindow().getDecorView().getHeight());
-                rq.onlyScaleDown()
-                        .centerCrop();
-                if (DBG) Log.v(TAG, "resize");
-            }
-
-            rq
+                    .config(Bitmap.Config.RGB_565)
+                    .resize(targetView.getWidth(), targetView.getHeight())
+                    .onlyScaleDown()
+                    .centerCrop()
                     .into(mTargetSetHeaderBackground);
         }
     }
