@@ -92,3 +92,15 @@
 -keep public class * extends android.support.design.widget.CoordinatorLayout.Behavior { *; }
 -keep public class * extends android.support.design.widget.ViewOffsetBehavior { *; }
 -keepclassmembers class android.support.design.widget.FloatingActionButton$Behavior { public <init>(); }
+
+
+# vk
+#-keep class com.vk.** { *;}
+#-dontskipnonpubliclibraryclassmembers
+-dontwarn org.apache.http.**
+-dontwarn com.vk.sdk.api.httpClient.**
+
+-dontwarn android.util.FloatMath**
+
+-dontwarn android.app.Notification**
+
