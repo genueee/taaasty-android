@@ -46,7 +46,7 @@
     <style name="ShowPhotoTheme" parent="AppThemeOverlayingActionBar"/>
 
     <style name="NotificationsActivityTheme" parent="AppThemeLightOverlayingActionBar">
-        <item name="android:windowBackground">@drawable/feed_white_background</item>
+        <item name="android:windowBackground">@color/feed_light_background_color</item>
     </style>
 
     <style name="SettingsActivityTheme" parent="AppTheme">

@@ -127,7 +127,6 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
         if (getArguments() != null) {
             mMarkNotificationsAsRead = getArguments().getLongArray(ARK_KEY_MARK_NOTIFICATIONS_AS_READ);
         } else {
@@ -177,6 +176,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
         mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
     }
 
