@@ -53,6 +53,9 @@ public class Stats implements Parcelable {
     @SerializedName("users_votes_in_day_count")
     private String usersVotesInDayCount;
 
+    @SerializedName("flows_count")
+    private String flowsCount;
+
 
     @Override
     public int describeContents() {
@@ -75,6 +78,7 @@ public class Stats implements Parcelable {
         dest.writeString(this.votesInDayCount);
         dest.writeString(this.bestEntriesInDayCount);
         dest.writeString(this.usersVotesInDayCount);
+        dest.writeString(this.flowsCount);
     }
 
     public Stats() {
@@ -95,6 +99,7 @@ public class Stats implements Parcelable {
         this.votesInDayCount = in.readString();
         this.bestEntriesInDayCount = in.readString();
         this.usersVotesInDayCount = in.readString();
+        this.flowsCount = in.readString();
     }
 
     public static final Creator<Stats> CREATOR = new Creator<Stats>() {
@@ -126,5 +131,9 @@ public class Stats implements Parcelable {
 
     public Integer getAnonymousEntriesInDayCount() {
         return parseIntSilent(anonymousEntriesInDayCount);
+    }
+
+    public Integer getFlowsTotal() {
+        return parseIntSilent(flowsCount);
     }
 }

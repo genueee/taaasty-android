@@ -337,8 +337,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
         // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
         // при свайпе вверх, либо если адаптер пустой. В другом месте.
-        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
-        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+        if (mWorkFragment != null && !mWorkFragment.isLoading()) {
+            mRefreshLayout.setRefreshing(false);
+        }
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null

@@ -27,23 +27,15 @@ import android.widget.Toast;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
-import ru.taaasty.rest.model.Relationship;
+import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.app.AppObservable;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.subscriptions.Subscriptions;
 
 
 public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmentInteractionListener {
@@ -56,7 +48,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
     private static final String BUNDLE_KEY_AB_TITLE = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_AB_TITLE";
-    private static final String BUNDLE_KEY_IS_NAVIGATION_HIDDEN = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_IS_NAVIGATION_HIDDEN";
 
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
 
@@ -66,18 +57,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
     private SpannableString mAbTitle;
 
-    private Subscription mFollowSubscription = Subscriptions.unsubscribed();
-
     private View mSubscribeView;
     private View mUnsubscribeView;
     private View mFollowUnfollowProgressView;
 
     private Toolbar mToolbar;
-
-    boolean mPerformSubscription;
-
-    @Nullable
-    private String mMyRelationship;
 
     private InterfaceVisibilityController mInterfaceVisibilityController;
 
@@ -149,16 +133,34 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         }
 
         mToolbar = (Toolbar)findViewById(R.id.toolbar);
-        mUnsubscribeView = findViewById(R.id.unsubscribe);
-        mSubscribeView = findViewById(R.id.subscribe);
-        mFollowUnfollowProgressView = findViewById(R.id.follow_unfollow_progress);
+        mUnsubscribeView = mToolbar.findViewById(R.id.unsubscribe);
+        mSubscribeView = mToolbar.findViewById(R.id.subscribe);
+        mFollowUnfollowProgressView = mToolbar.findViewById(R.id.follow_unfollow_progress);
+
+        setTitle(mAbTitle.toString());
 
         setSupportActionBar(mToolbar);
         mToolbar.setBackgroundDrawable(mAbBackgroundDrawable);
         mToolbar.setTitle(mAbTitle);
 
-        mSubscribeView.setOnClickListener(mOnSubscriptionClickListener);
-        mUnsubscribeView.setOnClickListener(mOnSubscriptionClickListener);
+        View.OnClickListener onSubscriptionClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+                if (fragment == null) return;
+
+                switch (v.getId()) {
+                    case R.id.subscribe:
+                        fragment.startFollow();
+                        break;
+                    case R.id.unsubscribe:
+                        fragment.startUnfollow();
+                        break;
+                }
+            }
+        };
+        mSubscribeView.setOnClickListener(onSubscriptionClickListener);
+        mUnsubscribeView.setOnClickListener(onSubscriptionClickListener);
 
         if (savedInstanceState == null) {
             Fragment tlogFragment;
@@ -175,8 +177,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                     .replace(R.id.container, tlogFragment)
                     .commit();
         }
-
-        refreshFollowUnfollowView();
     }
 
     @Override
@@ -221,9 +221,9 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mFollowSubscription.unsubscribe();
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        refreshFollowUnfollowView();
     }
 
     @Override
@@ -239,12 +239,13 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
-        mMyRelationship = tlogInfo.getMyRelationship();
         User author = tlogInfo.author;
         mAbTitle = new SpannableString(author.getName());
         mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         refreshFollowUnfollowView();
-        if (tlogInfo.design != null) mFeedBackground.setTlogDesign(tlogInfo.design);
+        if (tlogInfo.getDesign() != null) {
+            mFeedBackground.setTlogDesign(tlogInfo.getDesign());
+        }
     }
 
     @Override
@@ -266,8 +267,18 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
+    public void onFollowingStatusChanged() {
+        refreshFollowUnfollowView();
+    }
+
+    @Override
     public boolean isOverlayVisible() {
         return !mInterfaceVisibilityController.isNavigationHidden();
+    }
+
+    @Override
+    public void onAvatarClicked(View view, User user, TlogDesign design) {
+        TlogActivity.startTlogActivity(this, user.getId(), view, R.dimen.avatar_extra_small_diameter_34dp);
     }
 
     @Override
@@ -308,59 +319,40 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     void refreshFollowUnfollowView() {
-        if (mPerformSubscription) {
-            mSubscribeView.setVisibility(View.INVISIBLE);
-            mUnsubscribeView.setVisibility(View.INVISIBLE);
-            mFollowUnfollowProgressView.setVisibility(View.VISIBLE);
-            return;
-        }
-
-        if (mMyRelationship == null) {
-            mSubscribeView.setVisibility(View.INVISIBLE);
-            mUnsubscribeView.setVisibility(View.INVISIBLE);
-            mFollowUnfollowProgressView.setVisibility(View.GONE);
-            return;
-        }
-
-        boolean meSubscribed = Relationship.isMeSubscribed(mMyRelationship);
-        mSubscribeView.setVisibility(meSubscribed ? View.INVISIBLE : View.VISIBLE);
-        mUnsubscribeView.setVisibility(meSubscribed ? View.VISIBLE : View.INVISIBLE);
-        mFollowUnfollowProgressView.setVisibility(View.GONE);
-    }
-
-    @Nullable
-    private Long getUserId() {
         TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
-        if (fragment != null) {
-            return ((TlogFragment)fragment).getUserId();
+
+        @TlogFragment.FollowingStatus
+        int status;
+
+        boolean subscribeVisible = false;
+        boolean unsubscribeVisible = false;
+        boolean progressVisible = false;
+
+        if (fragment == null || fragment.isFlow()) {
+            status = TlogFragment.FOLLOWING_STATUS_UNKNOWN;
+        } else {
+            status = fragment.getFollowingStatus();
         }
-        return null;
-    }
 
-    void doFollow() {
-        if (getUserId() == null) return;
-        mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindActivity(this,
-                relApi.follow(getUserId().toString()));
-        mPerformSubscription = true;
-        refreshFollowUnfollowView();
-        mFollowSubscription = observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mFollowObserver);
-    }
+        switch (status) {
+            case TlogFragment.FOLLOWING_STATUS_UNKNOWN:
+                break;
+            case TlogFragment.FOLLOWING_STATUS_CHANGING:
+                progressVisible = true;
+                break;
+            case TlogFragment.FOLLOWING_STATUS_ME_SUBSCRIBED:
+                unsubscribeVisible = true;
+                break;
+            case TlogFragment.FOLLOWING_STATUS_ME_UNSUBSCRIBED:
+                subscribeVisible = true;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
 
-    void doUnfollow() {
-        if (getUserId() == null) return;
-        mFollowSubscription.unsubscribe();
-        ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindActivity(this,
-                relApi.unfollow(getUserId().toString()));
-        mPerformSubscription = true;
-        refreshFollowUnfollowView();
-        mFollowSubscription = observable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mFollowObserver);
+        mSubscribeView.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mUnsubscribeView.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mFollowUnfollowProgressView.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
     }
 
     private final class InterfaceVisibilityController {
@@ -443,40 +435,4 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
             }
         };
     }
-
-    private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
-        @Override
-        public void onCompleted() {
-            mPerformSubscription = false;
-            refreshFollowUnfollowView();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
-            mPerformSubscription = false;
-            refreshFollowUnfollowView();
-        }
-
-        @Override
-        public void onNext(Relationship relationship) {
-            mMyRelationship = relationship.getState();
-        }
-    };
-
-
-    private final View.OnClickListener mOnSubscriptionClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.subscribe:
-                    doFollow();
-                    break;
-                case R.id.unsubscribe:
-                    doUnfollow();
-                    break;
-            }
-        }
-    };
 }

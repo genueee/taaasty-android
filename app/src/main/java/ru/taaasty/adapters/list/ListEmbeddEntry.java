@@ -59,7 +59,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mContext = context;
         Resources resources = context.getResources();
         mEmbeddForegroundDrawable = resources.getDrawable(R.drawable.embedd_play_foreground);
-        mImageView.setForeground(null);
+        mImageView.setForegroundDrawable(null);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
             imageLink = item.getIframely().getImageLink(parentWidth);
         }
         if (imageLink == null) {
-            mImageView.setForeground(mEmbeddForegroundDrawable);
+            mImageView.setForegroundDrawable(mEmbeddForegroundDrawable);
             mImageView.setVisibility(View.VISIBLE);
             return;
         }
@@ -143,9 +143,9 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         mImageView.setAdjustViewBounds(true); // Instagram часто возвращает кривые размеры. Пусть мерцает.
         mImageView.setVisibility(View.VISIBLE);
         if (item.getIframely().isContentLooksLikeImage()) {
-            mImageView.setForeground(null);
+            mImageView.setForegroundDrawable(null);
         } else {
-            mImageView.setForeground(mEmbeddForegroundDrawable);
+            mImageView.setForegroundDrawable(mEmbeddForegroundDrawable);
         }
 
         final String url = imageLink.getHref();

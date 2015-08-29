@@ -1,0 +1,79 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            style="@style/CreatePostScrollView"
+            android:paddingTop="0dp"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
+            tools:context="ru.taaasty.ui.post.CreateTextPostFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:focusableInTouchMode="true"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <FrameLayout
+                android:id="@+id/make_photo_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:minHeight="@dimen/create_post_image_default_height">
+
+                <ru.taaasty.widgets.HintedExtendedImageView
+                    android:id="@+id/make_photo_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/action_make_photo_content_description"
+                    android:layout_gravity="center"
+                    android:src="@drawable/make_photo" />
+            </FrameLayout>
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/action_make_photo_content_description"
+                android:cropToPadding="false"
+                android:scaleType="fitXY" />
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+        </FrameLayout>
+
+        <EditText
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="12dp"
+            android:hint="@string/edit_text_flow_title"
+            android:inputType="textCapSentences|textMultiLine"
+            android:imeOptions="flagNavigateNext"
+            style="@style/CreatePostEditText"
+            android:maxLength="30"
+            android:textSize="32sp"
+            android:minLines="1" />
+
+        <EditText
+            android:id="@+id/description"
+            style="@style/CreatePostEditText"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/edit_text_flow_description" />
+
+    </LinearLayout>
+</ScrollView>

@@ -8,30 +8,23 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.util.Log;
 import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.okhttp.Call;
 import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.Callback;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import pl.droidsonroids.gif.AnimationListener;
 import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.adapters.ScrollEventConsumer;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.ImageInfo;
 import ru.taaasty.rest.model.TlogDesign;
@@ -45,7 +38,7 @@ import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ExtendedImageView;
 
-public class ListImageEntry extends ListEntryBase implements Callback {
+public class ListImageEntry extends ListEntryBase implements Callback, ScrollEventConsumer {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ListImageEntry";
 
@@ -54,9 +47,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     private final TextView mTitle;
 
     private Context mContext;
-
-    @Nullable
-    private LayerDrawable mImageLoadingDrawable;
 
     private ImageLoadingGetter mImageGetter;
 
@@ -87,7 +77,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         }
 
         mContext = context;
-        mImageLoadingDrawable = null;
     }
 
     @Override
@@ -181,10 +170,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         return drawable;
     }
 
-    private Drawable getProgressDrawable() {
-        return mImageLoadingDrawable.findDrawableByLayerId(R.id.progress_indicator);
-    }
-
     private void setupImage(Entry item, int parentWidth) {
         ImageSize imgSize;
         int resizeToWidth = 0;
@@ -240,16 +225,15 @@ public class ListImageEntry extends ListEntryBase implements Callback {
                     fitMaxTextureSize ? thumborHeight : 0).fitIn();
         }
 
-        mImageLoadingDrawable = createImageLoadingDrawable(parentWidth, imgViewHeight);
-        mImageView.setImageDrawable(mImageLoadingDrawable);
         mImageViewUrl = b.toUrl();
-
         if (image.isAnimatedGif()) {
-            loadGif(mImageViewUrl, mImageView);
+            ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, parentWidth, imgViewHeight, this);
         } else {
+            Drawable placeholder = createImageLoadingDrawable(parentWidth, imgViewHeight);
+            mImageView.setImageDrawable(placeholder);
             picasso
                     .load(mImageViewUrl)
-                    .placeholder(mImageLoadingDrawable)
+                    .placeholder(placeholder)
                     .error(R.drawable.image_load_error)
                     .noFade()
                     .into(mImageView, this);
@@ -261,20 +245,19 @@ public class ListImageEntry extends ListEntryBase implements Callback {
         assert imageUrl != null;
         int height = (int)Math.ceil((float)parentWidth / Constants.DEFAULT_IMAGE_ASPECT_RATIO);
 
-        mImageLoadingDrawable = createImageLoadingDrawable(parentWidth, height);
+        mImageViewUrl = imageUrl;
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.VISIBLE);
-        mImageView.setImageDrawable(mImageLoadingDrawable);
-        mImageView.requestLayout();
-        mImageViewUrl = imageUrl;
 
         if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
-            loadGif(mImageViewUrl, mImageView);
+            ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, parentWidth, height, this);
             picasso.cancelRequest(mImageView);
         } else {
+            Drawable placeholder = createImageLoadingDrawable(parentWidth, height);
+            mImageView.setImageDrawable(placeholder);
             picasso
                     .load(mImageViewUrl)
-                    .placeholder(mImageLoadingDrawable)
+                    .placeholder(placeholder)
                     .error(R.drawable.image_load_error)
                     .resize(parentWidth, 0)
                     .noFade()
@@ -330,153 +313,6 @@ public class ListImageEntry extends ListEntryBase implements Callback {
     public void onError() {
         // 9patch нормально скалится только при использовании FIT_XY
         mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
-    }
-
-    private void loadGif(String url, final ImageView imageView) {
-        if (mOkHttpClient == null) {
-            mOkHttpClient = NetworkUtils.getInstance().getOkHttpClient();
-        }
-
-        Request request = new Request.Builder()
-                .url(url)
-                .tag(this.mGitLoadTag)
-                .build();
-
-        final Drawable progressDrawable = getProgressDrawable();
-        progressDrawable.setLevel(0);
-        mImageView.setImageDrawable(mImageLoadingDrawable);
-
-        final Call okHttpCall =  mOkHttpClient
-                .newCall(request);
-
-        okHttpCall
-                .enqueue(new com.squareup.okhttp.Callback() {
-                    @Override
-                    public void onFailure(Request request, IOException e) {
-                        if (okHttpCall.isCanceled()) {
-                            if (DBG) Log.v(TAG, "load gif cancelled", e);
-                        } else {
-                            reportError(e);
-                        }
-                    }
-
-                    @Override
-                    public void onResponse(Response response) throws IOException {
-                        try {
-                            if (!response.isSuccessful()) {
-                                throw new IOException("Unexpected code " + response);
-                            }
-                            byte content[];
-                            if (response.networkResponse() == null) {
-                                content = response.body().bytes();
-                            } else {
-                                content = readResponseWithProgress(response);
-                            }
-
-                            final GifDrawable drawable = new GifDrawable(content);
-                            if (drawable.getLoopCount() != 0) initLoopForever(drawable);
-                            imageView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                    imageView.setImageDrawable(drawable);
-                                    progressDrawable.setLevel(0);
-                                }
-                            });
-                        } catch (Throwable e) {
-                            reportError(e);
-                        }
-                    }
-
-                    class SetProgressRunnable implements Runnable {
-                        private final Drawable mDrawable;
-                        private final int mLevel;
-
-                        public SetProgressRunnable(Drawable drawable, long progress, long max) {
-                            mDrawable = drawable;
-                            if (max == 0) {
-                                mLevel = 0;
-                            } else {
-                                if (progress > max) progress = max;
-                                mLevel = (int) ((float) progress * 10000f / (float) max);
-                            }
-                        }
-
-                        @Override
-                        public void run() {
-                            if (DBG) Log.d(TAG, "mDrawable.setLevel " + mLevel);
-                            mDrawable.setLevel(mLevel);
-                        }
-                    }
-
-                    private byte[] readResponseWithProgress(Response response) throws IOException {
-                        byte bytes[];
-                        int pos;
-                        int nRead;
-                        long lastTs, lastPos;
-
-                        final long contentLength = response.body().contentLength();
-                        if (contentLength < 0 || contentLength > Integer.MAX_VALUE) {
-                            throw new IOException("Cannot buffer entire body for content length: " + contentLength);
-                        }
-
-                        mImageView.post(new SetProgressRunnable(progressDrawable, 0, contentLength));
-                        InputStream source = response.body().byteStream();
-
-                        bytes = new byte[(int) contentLength];
-                        pos = 0;
-                        lastTs = System.nanoTime();
-                        lastPos = 0;
-                        try {
-                            while ((nRead = source.read(bytes, pos, bytes.length - pos)) != -1) {
-                                pos += nRead;
-
-                                long newTs = System.nanoTime();
-                                if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
-                                    lastTs = newTs;
-                                    lastPos = pos;
-                                    mImageView.post(new SetProgressRunnable(progressDrawable, pos, contentLength));
-                                }
-                                if (pos == bytes.length) break;
-                            }
-                        } finally {
-                            Util.closeQuietly(source);
-                            mImageView.post(new SetProgressRunnable(progressDrawable, 0, 0));
-                        }
-
-                        if (contentLength != -1 && contentLength != bytes.length) {
-                            throw new IOException("Content-Length and stream length disagree");
-                        }
-
-                        return bytes;
-                    }
-
-                    private void reportError(final Throwable exception) {
-                        Log.i("ListImageEntry", "load gif error", exception);
-                        imageView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                imageView.setImageResource(R.drawable.image_load_error);
-                                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
-                            }
-                        });
-                    }
-
-                    private void initLoopForever(final GifDrawable drawable) {
-                        drawable.addAnimationListener(new AnimationListener() {
-                            @Override
-                            public void onAnimationCompleted() {
-                                imageView.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        drawable.start();
-                                    }
-                                }, 3000);
-                            }
-                        });
-                    }
-                });
-
     }
 
     private final TextViewImgLoader.OnClickListener onImgClickListener = new TextViewImgLoader.OnClickListener() {

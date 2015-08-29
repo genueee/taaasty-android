@@ -57,7 +57,7 @@ public class ExtendedImageView extends ImageView {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ExtendedImageView);
         Drawable foreground = a.getDrawable(R.styleable.ExtendedImageView_android_foreground);
         if (foreground != null) {
-            setForeground(foreground);
+            setForegroundDrawable(foreground);
         }
 
         if (a.hasValue(R.styleable.ExtendedImageView_android_maxWidth)) {
@@ -97,7 +97,7 @@ public class ExtendedImageView extends ImageView {
      * @param drawableResId The drawable resource to be drawn on top of the children.
      */
     public void setForegroundResource(int drawableResId) {
-        setForeground(getContext().getResources().getDrawable(drawableResId));
+        setForegroundDrawable(getContext().getResources().getDrawable(drawableResId));
     }
 
     public Drawable getForeground() {
@@ -110,7 +110,7 @@ public class ExtendedImageView extends ImageView {
      *
      * @param drawable The Drawable to be drawn on top of the children.
      */
-    public void setForeground(Drawable drawable) {
+    public void setForegroundDrawable(Drawable drawable) {
         if (foreground == drawable) {
             return;
         }

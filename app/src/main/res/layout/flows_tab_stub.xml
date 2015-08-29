@@ -1,0 +1,21 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="42dp"
+    android:orientation="horizontal"
+    android:measureWithLargestChild="true"
+    tools:background="@android:color/black"
+    android:layout_gravity="bottom|center_horizontal">
+
+    <TextView
+        android:id="@+id/flows_all"
+        android:text="@string/flows_tab_all"
+        style="@style/FlowsTab"/>
+
+    <TextView
+        android:id="@+id/flows_my"
+        android:text="@string/flows_tab_my"
+        style="@style/FlowsTab"/>
+
+</LinearLayout>

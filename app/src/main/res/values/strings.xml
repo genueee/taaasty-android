@@ -21,6 +21,7 @@
     <string name="title_image_post">Изображение</string>
     <string name="title_quote_post">Цитата</string>
     <string name="title_anonymous_post">Анонимка</string>
+    <string name="title_create_flow">Новый поток</string>
     <string name="title_embedd_post">Ссылка</string>
     <string name="activity_settings">Настройки</string>
 
@@ -41,6 +42,12 @@
         <item quantity="few">%d анонимки за последние 24 часа</item>
         <item quantity="many">%d анонимок за последние 24 часа</item>
         <item quantity="other">%d анонимок за последние 24 часа</item>
+    </plurals>
+    <plurals name="flows_total">
+        <item quantity="one">%d поток</item>
+        <item quantity="few">%d потока</item>
+        <item quantity="many">%d потоков</item>
+        <item quantity="other">%d потоков</item>
     </plurals>
 
     <string name="user_avatar_content_description">Информация о пользователе</string>
@@ -63,8 +70,11 @@
     <string name="error_vote">Ошибка голосования</string>
     <string name="error_upload_userpic">Ошибка загрузки изображения</string>
     <string name="error_tlog_access_denied">Извините, но\u00A0доступ к\u00A0данному тлогу и\u00A0его\u00A0записям ограничен его владельцем.</string>
+    <string name="error_flow_access_denied">Извините, но\u00A0доступ к\u00A0данному потоку и\u00A0его\u00A0записям ограничен его владельцем.</string>
     <string name="error_post_not_found">Такой публикации не существует. Скорее всего, она была удалена автором</string>
     <string name="no_records">Нет записей</string>
+    <string name="no_flows">Нет потоков</string>
+    <string name="you_have_no_subscriptions">Вы ещё ни на что не подписались</string>
     <string name="you_have_not_written_anything">Вы пока ничего не написали</string>
     <string name="user_have_not_written_anything">Пользователь пока ничего не написал</string>
     <string name="friends_have_not_written_anything">Ваши друзья пока ничего не написали</string>
@@ -75,6 +85,7 @@
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
     <string name="title_my_subscriptions">Мои подписки</string>
+    <string name="title_flows">Потоки</string>
 
     <plurals name="posts_title">
         <item quantity="one">пост</item>
@@ -111,6 +122,8 @@
     <string name="edit_text_post_text">Текст поста</string>
     <string name="edit_text_anonymous_text">Текст анонимки</string>
     <string name="edit_text_image_caption_text">Подпись</string>
+    <string name="edit_text_flow_title">Название потока</string>
+    <string name="edit_text_flow_description">Краткое описание</string>
     <string name="text_post_content_description">Текстовый пост</string>
     <string name="image_post_content_description">Пост — изображение</string>
     <string name="quote_post_content_description">Пост — цитата</string>
@@ -124,6 +137,8 @@
     <string name="post_edited">Пост изменен</string>
     <string name="anonymous_post_created">Анонимка добавлена</string>
     <string name="anonymous_post_edited">Анонимка изменена</string>
+    <string name="flow_created">Поток создан</string>
+    <string name="flow_edited">Поток изменен</string>
     <string name="error_camera_not_available">Камера недоступна</string>
     <string name="error_no_place_to_save">Некуда сохранять</string>
     <string name="subscribe_content_description">Подписаться</string>
@@ -205,6 +220,7 @@
     <string name="taaasty">Тейсти</string>
     <string name="error_append_feed">Ошибка подгрузки записей</string>
     <string name="error_loading_notifications">Ошибка загрузки уведомлений</string>
+    <string name="error_loading_flows">Ошибка загрузки потоков</string>
     <string name="sharing_description">Пост на тейсти</string>
     <string name="menu_follow">Подписаться</string>
     <string name="menu_unfollow">Отписаться</string>
@@ -244,6 +260,7 @@
     <string name="error_create_conversation">Ошибка создания переписки</string>
     <string name="error_create_post">Ошибка создания поста</string>
     <string name="error_saving_post">Ошибка сохранения поста</string>
+    <string name="error_saving_flow">Ошибка сохранения потока</string>
     <string name="error_saving_settings">Ошибка сохранения настроек</string>
     <string name="users_load_error">Ошибка загрузки пользователей</string>
     <string name="error_loading_conversations">Ошибка загрузки переписок</string>
@@ -271,6 +288,7 @@
     <string name="user_error">Ошибка обновления пользователя</string>
 
     <string name="write_an_anonymous_post">Написать анонимку</string>
+    <string name="create_flow">Создать поток</string>
     <string name="copy_link_to_clipboard_description">Скопируйте ссылку в буфер обмена</string>
 
     <string name="notification_title_save_images">Загрузка изображений</string>
@@ -326,6 +344,7 @@
     <string name="notifications_events_summary_following_approve">Кто-то разрешил вам читать тлог</string>
     <string name="notifications_events_title_mentions">Упоминания</string>
     <string name="notifications_events_summary_mentions">Вас упомянули в статье или комментарии</string>
-
+    <string name="flows_tab_all">Все</string>
+    <string name="flows_tab_my">Мои</string>
 
 </resources>

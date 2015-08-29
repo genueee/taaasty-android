@@ -183,9 +183,13 @@ public abstract class RelationshipListFragmentBase extends Fragment {
         }
     }
 
-    public void onEventMainThread(RelationshipRemoved even) {
+    public void onEventMainThread(RelationshipRemoved event) {
         if (mRelationshipsAdapter == null) return;
-        mRelationshipsAdapter.deleteRelationship(even.id);
+        if (event.id != null) {
+            mRelationshipsAdapter.deleteRelationship(event.id);
+        } else {
+            mRelationshipsAdapter.deleteRelationship(event.relationship.getFromId(), event.relationship.getToId());
+        }
     }
 
     private final Observer<Relationships> mRelationshipsObserver = new Observer<Relationships>() {
@@ -220,5 +224,6 @@ public abstract class RelationshipListFragmentBase extends Fragment {
         List<Relationship> getRelationships();
         void setRelationship(Relationship relationship);
         void deleteRelationship(long id);
+        void deleteRelationship(long fromId, long toId);
     }
 }

@@ -1,6 +1,6 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="ru.taaasty.ui.feeds.GridFeedFragment"
+    tools:context="ru.taaasty.ui.feeds.ListFeedFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
@@ -18,8 +18,7 @@
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
-            tools:listheader="@layout/header_live_feed"
-            tools:listitem="@layout/feed_item" />
+            tools:listheader="@layout/header_live_feed"/>
 
     </ru.taaasty.widgets.SwipeRefreshLayout>
 
@@ -33,7 +32,8 @@
         android:paddingRight="50dp"
         android:layout_marginLeft="@dimen/feed_horizontal_margin"
         android:layout_marginRight="@dimen/feed_horizontal_margin"
-        android:paddingTop="@dimen/feed_header_height"
+        android:paddingTop="@dimen/header_title_subtitle_height"
+        android:paddingBottom="8dp"
         android:text="@string/no_records"
         tools:visibility="visible"
         android:textColor="#7d7d7d"

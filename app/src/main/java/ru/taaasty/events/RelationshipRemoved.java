@@ -1,5 +1,7 @@
 package ru.taaasty.events;
 
+import android.support.annotation.Nullable;
+
 import ru.taaasty.rest.model.Relationship;
 
 /**
@@ -8,14 +10,20 @@ import ru.taaasty.rest.model.Relationship;
 public class RelationshipRemoved {
 
     /**
-     * Старый id
+     * Старый id. Может быть null, если на момент иизменения он неизвестен
      */
-    public final long id;
+    @Nullable
+    public final Long id;
 
     /**
      * Новый relationship с id=null
      */
     public final Relationship relationship;
+
+    public RelationshipRemoved(Relationship relationship) {
+        this.id = null;
+        this.relationship = relationship;
+    }
 
     public RelationshipRemoved(long id, Relationship relationship) {
         this.id = id;

@@ -77,7 +77,6 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     protected void onDestroy() {
         super.onDestroy();

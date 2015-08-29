@@ -128,6 +128,7 @@ public class FeedBackground {
     }
 
     private void reloadBackgroundDrawableAfterPreDraw() {
+        // TODO thumbor path
         Picasso.with(mRoot.getContext())
                 .load(mBackgroundUrl)
                 .resize(mRoot.getWidth(), mRoot.getHeight())

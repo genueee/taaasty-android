@@ -3,7 +3,6 @@ package ru.taaasty.rest.model;
 import android.net.Uri;
 import android.os.Parcel;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import ru.taaasty.utils.UiUtils;
 
@@ -17,6 +16,8 @@ public class PostImageForm extends PostForm {
     @Nullable
     public Uri imageUri;
 
+    @Nullable
+    public Long tlogId;
 
     public PostImageForm() {
     }
@@ -33,19 +34,18 @@ public class PostImageForm extends PostForm {
 
         PostImageForm that = (PostImageForm) o;
 
-        if (!TextUtils.equals(title, that.title)) return false;
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
         if (imageUri != null ? !imageUri.equals(that.imageUri) : that.imageUri != null)
             return false;
-        if (!TextUtils.equals(privacy, that.privacy)) return false;
+        return !(tlogId != null ? !tlogId.equals(that.tlogId) : that.tlogId != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = title != null ? title.hashCode() : 0;
         result = 31 * result + (imageUri != null ? imageUri.hashCode() : 0);
-        result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
+        result = 31 * result + (tlogId != null ? tlogId.hashCode() : 0);
         return result;
     }
 
@@ -57,10 +57,13 @@ public class PostImageForm extends PostForm {
 
         public final String privacy;
 
+        public final Long tlogId;
+
         private AsHtml(PostImageForm source) {
             this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
             this.imageUri = source.imageUri;
             this.privacy = source.privacy;
+            this.tlogId = source.tlogId;
         }
 
         @Override
@@ -73,12 +76,14 @@ public class PostImageForm extends PostForm {
             dest.writeString(this.title);
             dest.writeParcelable(this.imageUri, 0);
             dest.writeString(this.privacy);
+            dest.writeValue(this.tlogId);
         }
 
         private AsHtml(Parcel in) {
             this.title = in.readString();
             this.imageUri = in.readParcelable(Uri.class.getClassLoader());
             this.privacy = in.readString();
+            this.tlogId = (Long)in.readValue(Long.class.getClassLoader());
         }
 
         @Override

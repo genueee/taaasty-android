@@ -36,6 +36,7 @@ public class Relationship implements Parcelable {
     @SerializedName("user")
     private User mUser = User.DUMMY;
 
+
     /**
      * Сортировка по убыванию id (более новые - в начале списка)
      */
@@ -53,6 +54,22 @@ public class Relationship implements Parcelable {
             }
         }
     };
+
+    public static transient Comparator<Relationship> ORDER_BY_TO_USER_ID_COMARATOR = new Comparator<Relationship>() {
+        @Override
+        public int compare(Relationship lhs, Relationship rhs) {
+            if (lhs == null && rhs == null) {
+                return 0;
+            } else if (lhs == null || lhs.getId() == null) {
+                return -1;
+            } else if (rhs == null || rhs.getId() == null) {
+                return 1;
+            } else {
+                return Objects.compare(rhs.getId(), lhs.getId());
+            }
+        }
+    };
+
 
     public Relationship() {
     }
@@ -84,10 +101,16 @@ public class Relationship implements Parcelable {
         return mState;
     }
 
+    @Nullable
+    @Deprecated
+    // TODO постараться избавиться и не исопользовать, на многих точкх он не приходит
     public User getReader() {
         return mReader;
     }
 
+    @Nullable
+    @Deprecated
+    // TODO постараться избавиться и не исопользовать, на многих точкх он не приходит
     public User getUser() {
         return mUser;
     }

@@ -74,11 +74,11 @@ public class CreateSharedPostActivity extends ActivityBase implements
             Fragment fragment = null;
 
             if (isTextShare) {
-                fragment = CreateEmbeddPostFragment.newInstance(intent);
+                fragment = CreateEmbeddPostFragment.newInstance(null, intent);
             } else if (isImageShare) {
-                fragment = CreateImagePostFragment.newInstance(UiUtils.getSharedImageUri(intent));
+                fragment = CreateImagePostFragment.newInstance(null, UiUtils.getSharedImageUri(intent));
             } else {
-                fragment = CreateEmbeddPostFragment.newInstance(null);
+                fragment = CreateEmbeddPostFragment.newInstance(null, null);
             }
 
             getSupportFragmentManager()

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="flow_brick_image_aspect_ratio">40</integer>
+</resources>

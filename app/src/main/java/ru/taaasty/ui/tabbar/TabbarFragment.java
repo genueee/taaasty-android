@@ -7,19 +7,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
@@ -28,6 +24,7 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.rest.model.MessagingStatus;
+import ru.taaasty.utils.FabHelper;
 
 
 public class TabbarFragment extends Fragment {
@@ -51,7 +48,7 @@ public class TabbarFragment extends Fragment {
     private TextView mNotificationsCountView;
     private TextView mConversationsCountView;
 
-    private View mCreatePostView;
+    private FabHelper mFabHelper;
 
     private int mCreatePostViewLocation[] = new int[2];
 
@@ -64,11 +61,6 @@ public class TabbarFragment extends Fragment {
 
     PusherService mPusherService;
     boolean mBound = false;
-
-    @Nullable
-    private ObjectAnimator mFabAnimator;
-
-    private boolean mIsFabAnimatorShow;
 
     public TabbarFragment() {
     }
@@ -105,13 +97,8 @@ public class TabbarFragment extends Fragment {
         View view = inflater.inflate(R.layout.tabbar, container, false);
         mNotificationsCountView = (TextView)view.findViewById(R.id.unread_notifications_count);
         mConversationsCountView = (TextView)view.findViewById(R.id.unread_conversations_count);
-        mCreatePostView = view.findViewById(R.id.btn_tabbar_post);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) mCreatePostView.getLayoutParams();
-            // get rid of margins since shadow area is now the margin
-            p.setMargins(0, 0, 0, (int)mCreatePostView.getContext().getResources().getDimension(R.dimen.tabbar_size));
-            mCreatePostView.setLayoutParams(p);
-        }
+        mFabHelper = new FabHelper(view.findViewById(R.id.btn_tabbar_post), R.dimen.tabbar_size);
+
         for (int id: sItemIds) {
             View v = view.findViewById(id);
             v.setOnClickListener(mOnClickListener);
@@ -126,12 +113,6 @@ public class TabbarFragment extends Fragment {
         Intent intent = new Intent(getActivity(), PusherService.class);
         getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
         refreshActivated();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        if (mFabAnimator != null) mFabAnimator.cancel();
     }
 
     @Override
@@ -156,8 +137,7 @@ public class TabbarFragment extends Fragment {
         super.onDestroyView();
         mNotificationsCountView = null;
         mConversationsCountView = null;
-        mCreatePostView = null;
-        mFabAnimator = null;
+        mFabHelper = null;
     }
 
     @Override
@@ -211,27 +191,17 @@ public class TabbarFragment extends Fragment {
     }
 
     public void showFab(boolean animate) {
-        if (mCreatePostView == null) return;
-        if (mCreatePostView.getVisibility() == View.VISIBLE) return;
-        if (!animate) {
-            if (mFabAnimator != null) mFabAnimator.cancel();
-            mCreatePostView.setVisibility(View.VISIBLE);
-            mCreatePostView.setTranslationY(0);
-        } else {
-            showOrHideFabSmoothly(true);
-        }
+        if (mFabHelper == null) return;
+        mFabHelper.showFab(animate);
     }
 
     public void hideFab(boolean animate) {
-        if (mCreatePostView == null) return;
-        if (mCreatePostView.getVisibility() != View.VISIBLE) return;
-        if (!animate) {
-            if (mFabAnimator != null) mFabAnimator.cancel();
-            mCreatePostView.setVisibility(View.INVISIBLE);
-            mCreatePostView.setTranslationY(0);
-        } else {
-            showOrHideFabSmoothly(false);
-        }
+        if (mFabHelper == null) return;
+        mFabHelper.hideFab(animate);
+    }
+
+    public FabHelper getFab() {
+        return mFabHelper;
     }
 
     private void refreshNotificationIndicator(boolean smoothly) {
@@ -249,7 +219,7 @@ public class TabbarFragment extends Fragment {
     };
 
     public interface onTabbarButtonListener {
-        public void onTabbarButtonClicked(View v);
+        void onTabbarButtonClicked(View v);
     }
 
     private void updateIndicatorCount(TextView view, int count, boolean smoothly) {
@@ -330,64 +300,6 @@ public class TabbarFragment extends Fragment {
         animator.start();
     }
 
-    private static final Interpolator sShowHideInterpolator = new LinearOutSlowInInterpolator();
-
-    private void showOrHideFabSmoothly(boolean doShow) {
-        if (mFabAnimator != null && mFabAnimator.isStarted()) {
-            if (mIsFabAnimatorShow == doShow) {
-                return;
-            } else {
-                mFabAnimator.cancel();
-            }
-        }
-
-        mIsFabAnimatorShow = doShow;
-        int toDy = doShow ? 0 : getCreatePostViewTopToOffscreen();
-        mFabAnimator = ObjectAnimator.ofFloat(mCreatePostView, "translationY", (float)toDy)
-                .setDuration(getResources().getInteger(R.integer.longAnimTime));
-        mFabAnimator.setInterpolator(sShowHideInterpolator);
-        mFabAnimator.addListener(doShow ? mShowFabAnimatorListener : mHideFabAnimatorListener);
-        mFabAnimator.start();
-    }
-
-    private final Animator.AnimatorListener mShowFabAnimatorListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {
-            mCreatePostView.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {}
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {}
-    };
-
-    private final Animator.AnimatorListener mHideFabAnimatorListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {}
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            if (mCreatePostView != null) mCreatePostView.setVisibility(View.INVISIBLE);
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {}
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {}
-    };
-
-    private int getCreatePostViewTopToOffscreen() {
-        return mCreatePostView.getHeight() + ((ViewGroup.MarginLayoutParams)mCreatePostView.getLayoutParams()).bottomMargin;
-    }
-
-
     private final ServiceConnection mPusherServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -404,66 +316,5 @@ public class TabbarFragment extends Fragment {
         }
     };
 
-    public static class AutoHideScrollListener extends RecyclerView.OnScrollListener {
-
-        private TabbarFragment mTabbar;
-
-        private boolean mRunning;
-
-        private int mDy;
-
-        private long mStartActionTime;
-
-        private boolean mPause;
-
-        private static final int THRESHOLD_HI = 64;
-
-        private static final int THRESHOLD_LO = -10;
-
-        private static final long MIN_TIME_NS = 64 * 1_000_000l;
-
-        public AutoHideScrollListener(TabbarFragment tabbar) {
-            if (tabbar == null) throw new IllegalStateException();
-            mTabbar = tabbar;
-        }
-
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            long newTime = System.nanoTime();
-            if (mRunning) {
-                mDy += dy;
-                if (isUnderThreshold() && Math.abs(newTime - mStartActionTime) > MIN_TIME_NS) {
-                    runShowOrHide();
-                }
-            } else {
-                mRunning = true;
-                mDy = dy;
-                mStartActionTime = newTime;
-            }
-        }
-
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            if (newState ==  RecyclerView.SCROLL_STATE_IDLE) {
-                runShowOrHide();
-            }
-        }
-
-        private boolean isUnderThreshold() {
-            return mDy > THRESHOLD_HI || mDy < THRESHOLD_LO;
-        }
-
-        private void runShowOrHide() {
-            if (!mRunning) return;
-            if (mDy > THRESHOLD_HI) {
-                mTabbar.hideFab(true);
-            } else if (mDy < THRESHOLD_LO) {
-                mTabbar.showFab(true);
-            }
-            mRunning = false;
-            mDy = 0;
-            mStartActionTime = 0;
-        }
-    }
 
 }

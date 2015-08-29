@@ -58,5 +58,16 @@
     <color name="date_indicator_background">#b2000000</color>
     <color name="date_indicator_color">#bbbbbbbb</color>
 
+    <color name="flow_brick_description_image_loading_not_susbscribed">#e2e2e2</color>
+    <color name="flow_brick_description_image_loading_subscribed">#93b0a2</color>
+
+    <color name="flow_brick_description_background_not_subscribed">@android:color/white</color>
+    <color name="flow_brick_description_background_subscribed">#3db379</color>
+
+    <color name="flow_brick_text_color_primary_not_subscribed">@android:color/black</color>
+    <color name="flow_brick_text_color_primary_subscribed">@android:color/white</color>
+
+    <color name="flow_brick_text_color_secondary_not_subscribed">#808080</color>
+    <color name="flow_brick_text_color_secondary_subscribed">@color/text_color_semi_semi_transparent_white</color>
 
 </resources>

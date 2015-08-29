@@ -83,5 +83,6 @@
     <dimen name="tabbar_notifications_text_size">10sp</dimen>
     <dimen name="tabbar_fab_padding_bottom">66dp</dimen>
     <dimen name="feed_header_user_name_margin_top">22dp</dimen>
+    <dimen name="flow_brick_corner_radius">4dp</dimen>
 
 </resources>

@@ -41,6 +41,8 @@ import java.util.regex.Pattern;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.events.FlowChanged;
+import ru.taaasty.events.FlowUploadStatus;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.NotificationMarkedAsRead;
@@ -51,10 +53,12 @@ import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.Entry;
+import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.PostAnonymousTextForm;
 import ru.taaasty.rest.model.PostEmbeddForm;
+import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.PostImageForm;
 import ru.taaasty.rest.model.PostQuoteForm;
@@ -80,6 +84,9 @@ public class IntentService extends android.app.IntentService {
 
     private static final String ACTION_POST_ENTRY = "ru.taaasty.IntentService.action.POST_ENTRY";
     private static final String ACTION_EDIT_ENTRY = "ru.taaasty.IntentService.action.EDIT_ENTRY";
+
+    private static final String ACTION_POST_FLOW = "ru.taaasty.IntentService.action.POST_FLOW";
+    private static final String ACTION_EDIT_FLOW = "ru.taaasty.IntentService.action.EDIT_FLOW";
 
     private static final String ACTION_VOICE_REPLY_TO_CONVERSATION = "ru.taaasty.IntentService.action.ACTION_VOICE_REPLY_TO_CONVERSATION";
 
@@ -158,6 +165,13 @@ public class IntentService extends android.app.IntentService {
         context.startService(intent);
     }
 
+    public static void startPostFlow(Context context, PostFlowForm form) {
+        Intent intent = new Intent(context, IntentService.class);
+        intent.setAction(ACTION_POST_FLOW);
+        intent.putExtra(EXTRA_FORM, form.asHtmlForm());
+        context.startService(intent);
+    }
+
     /**
      * Intent для отметки прочитанными нотификаций
      * @param context контекст
@@ -228,6 +242,13 @@ public class IntentService extends android.app.IntentService {
                 PostForm.PostFormHtml entry = intent.getParcelableExtra(EXTRA_FORM);
                 long postId = intent.getLongExtra(EXTRA_ENTRY_ID, -1);
                 handleEditEntry(postId, entry);
+            } else if (ACTION_POST_FLOW.equals(action)) {
+                PostFlowForm.AsHtml flowForm = intent.getParcelableExtra(EXTRA_FORM);
+                handlePostFlow(flowForm);
+            } else if (ACTION_EDIT_FLOW.equals(action)) {
+                PostFlowForm.AsHtml entry = intent.getParcelableExtra(EXTRA_FORM);
+                long flowId = intent.getLongExtra(EXTRA_ENTRY_ID, -1);
+                handleEditFlow(flowId, entry);
             } else if (ACTION_UPLOAD_USERPIC.equals(action)) {
                 Uri imageUri = intent.getParcelableExtra(EXTRA_IMAGE_URI);
                 long userId = intent.getLongExtra(EXTRA_USER_ID, -1);
@@ -284,21 +305,22 @@ public class IntentService extends android.app.IntentService {
             } else if (form instanceof PostTextForm.AsHtml) {
                 PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
                 response = mApiEntriesService.createTextPostSync(
-                        postText.title, postText.text, postText.privacy);
+                        postText.title, postText.text, postText.privacy, postText.tlogId);
             } else if (form instanceof PostQuoteForm.AsHtml) {
                 PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
                 response = mApiEntriesService.createQuoteEntrySync(
-                        postQuote.text, postQuote.source, postQuote.privacy);
+                        postQuote.text, postQuote.source, postQuote.privacy, postQuote.tlogId);
             } else if (form instanceof PostImageForm.AsHtml) {
                 PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
                 response = mApiEntriesService.createImagePostSync(
                         postImage.title,
                         postImage.privacy,
+                        postImage.tlogId,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
             } else if (form instanceof PostEmbeddForm.AsHtml) {
                 PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml)form;
-                response = mApiEntriesService.createVideoPostSync(postForm.title, postForm.url, postForm.privacy);
+                response = mApiEntriesService.createVideoPostSync(postForm.title, postForm.url, postForm.privacy, postForm.tlogId);
             } else {
                 throw new IllegalStateException();
             }
@@ -328,23 +350,25 @@ public class IntentService extends android.app.IntentService {
                 response = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
                         postText.title,
                         postText.text,
-                        postText.privacy);
+                        postText.privacy, null);
             } else if (form instanceof PostQuoteForm.AsHtml) {
                 PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
                 response = mApiEntriesService.updateQuoteEntrySync(String.valueOf(entryId),
                         postQuote.text,
                         postQuote.source,
-                        postQuote.privacy);
+                        postQuote.privacy, postQuote.tlogId);
             } else if (form instanceof PostImageForm.AsHtml) {
                 PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
                 response = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
                         postImage.title,
                         postImage.privacy,
+                        postImage.tlogId,
                         postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
                 );
             } else if (form instanceof PostEmbeddForm.AsHtml) {
                 PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml) form;
-                response = mApiEntriesService.updateVideoPostSync(String.valueOf(entryId), postForm.title, postForm.url, postForm.privacy);
+                response = mApiEntriesService.updateVideoPostSync(String.valueOf(entryId),
+                        postForm.title, postForm.url, postForm.privacy, postForm.tlogId);
             } else {
                 throw new IllegalStateException();
             }
@@ -357,6 +381,49 @@ public class IntentService extends android.app.IntentService {
         if (DBG) Log.v(TAG, "status: " + status);
         EventBus.getDefault().post(status);
         if (response != null) EventBus.getDefault().post(new EntryChanged(response));
+    }
+
+    private void handlePostFlow(PostFlowForm.AsHtml form) {
+        FlowUploadStatus status;
+        Flow response = null;
+
+        try {
+            response = RestClient.getAPiFlows().createFlowSync(
+                    form.title,
+                    form.description,
+                    new ContentTypedOutput(this, form.imageUri, null),
+                    null);
+            status = FlowUploadStatus.createCompleted(form, response);
+        } catch (Throwable ex) {
+            status = FlowUploadStatus.createFinishedWithError(form,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_flow), ex);
+        }
+
+        if (DBG) Log.v(TAG, "status: " + status);
+        EventBus.getDefault().post(status);
+        if (response != null) EventBus.getDefault().post(new FlowChanged(response));
+    }
+
+    private void handleEditFlow(long flowId, PostFlowForm.AsHtml form) {
+        EntryUploadStatus status;
+        Flow response = null;
+        try {
+            status = EntryUploadStatus.createPostCompleted(form);
+            response = RestClient.getAPiFlows().updateFlowSync(flowId,
+                    form.title,
+                    form.description,
+                    null,
+                    (form.imageUri == null ? null : new ContentTypedOutput(this, form.imageUri, null)),
+                    null,
+                    null);
+        } catch (Throwable ex) {
+            status = EntryUploadStatus.createPostFinishedWithError(form,
+                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_flow), ex);
+        }
+
+        if (DBG) Log.v(TAG, "status: " + status);
+        EventBus.getDefault().post(status);
+        if (response != null) EventBus.getDefault().post(new FlowChanged(response));
     }
 
     private void handleVoiceReplyToConversation(long conversationId, long messageIds[], CharSequence replyContent) {

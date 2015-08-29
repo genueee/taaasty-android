@@ -156,7 +156,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     }
 
     void openCreatePost() {
-        Intent i = new Intent(this, CreatePostActivity.class);
-        startActivityForResult(i, CREATE_POST_ACTIVITY_REQUEST_CODE);
+        CreatePostActivity.startCreatePostActivityForResult(this, CREATE_POST_ACTIVITY_REQUEST_CODE);
     }
 }

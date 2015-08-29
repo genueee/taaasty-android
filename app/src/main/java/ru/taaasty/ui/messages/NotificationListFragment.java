@@ -55,6 +55,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
@@ -177,16 +178,16 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
-        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
+        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnFragmentInteractionListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }

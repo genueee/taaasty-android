@@ -1,7 +1,6 @@
 package ru.taaasty.ui.post;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
@@ -51,6 +50,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
     private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateEmbeddPostFragment.ARG_EDIT_POST";
     private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateEmbeddPostFragment.ARG_ORIGINAL_ENTRY";
     private static final String ARG_SHARED_INTENT = "ru.taaasty.ui.post.CreateEmbeddPostFragment.ARG_SHARED_INTENT";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreateEmbeddPostFragment.ARG_TLOG_ID";
 
     private static final String SHARED_PREFS_NAME = "CreateEmbeddPostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
@@ -82,10 +82,13 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
 
     private boolean mEditPost;
 
-    public static CreateEmbeddPostFragment newInstance(@Nullable Intent sharedIntent) {
+    private Long mTlogId;
+
+    public static CreateEmbeddPostFragment newInstance(@Nullable Long tlogId, @Nullable Intent sharedIntent) {
         CreateEmbeddPostFragment fragment = new CreateEmbeddPostFragment();
         Bundle bundle = new Bundle(2);
         bundle.putParcelable(ARG_SHARED_INTENT, sharedIntent);
+        if (tlogId != null) bundle.putLong(ARG_TLOG_ID, tlogId);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -108,10 +111,10 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         if (!(mListener instanceof InteractionListener)) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement InteractionListener");
         }
     }
@@ -122,9 +125,15 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
             mShareIntent = getArguments().getParcelable(ARG_SHARED_INTENT);
+            if (getArguments().containsKey(ARG_TLOG_ID)) {
+                mTlogId = getArguments().getLong(ARG_TLOG_ID);
+            } else {
+                mTlogId = null;
+            }
         } else {
             mEditPost = false;
             mShareIntent = null;
+            mTlogId = null;
         }
 
         mPicasso = Picasso.with(getActivity());
@@ -253,6 +262,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         PostEmbeddForm form = new PostEmbeddForm();
         form.title = mTitleView.getText().toString();
         form.url = mEmbeddUrl;
+        form.tlogId = mTlogId;
         return form;
     }
 

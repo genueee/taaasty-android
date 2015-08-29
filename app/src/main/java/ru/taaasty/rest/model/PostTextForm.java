@@ -1,7 +1,6 @@
 package ru.taaasty.rest.model;
 
 import android.os.Parcel;
-import android.text.TextUtils;
 
 import ru.taaasty.utils.UiUtils;
 
@@ -14,34 +13,14 @@ public class PostTextForm extends PostForm {
 
     public CharSequence text = "";
 
+    public Long tlogId;
+
     public PostTextForm() {
     }
 
     @Override
     public AsHtml asHtmlForm() {
         return new AsHtml(this);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        PostTextForm that = (PostTextForm) o;
-
-        if (!TextUtils.equals(text, that.text)) return false;
-        if (!TextUtils.equals(title, that.title)) return false;
-        if (!TextUtils.equals(privacy, that.privacy)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = title != null ? title.hashCode() : 0;
-        result = 31 * result + (text != null ? text.hashCode() : 0);
-        result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
-        return result;
     }
 
     public static class AsHtml implements PostFormHtml {
@@ -52,10 +31,13 @@ public class PostTextForm extends PostForm {
 
         public final String privacy;
 
+        public final Long tlogId;
+
         private AsHtml(PostTextForm source) {
             this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
             this.text = source.text == null ? null : UiUtils.safeToHtml(source.text);
             this.privacy = source.privacy;
+            this.tlogId = source.tlogId;
         }
 
         @Override
@@ -68,12 +50,14 @@ public class PostTextForm extends PostForm {
             dest.writeString(this.title);
             dest.writeString(this.text);
             dest.writeString(this.privacy);
+            dest.writeValue(this.tlogId);
         }
 
         private AsHtml(Parcel in) {
             this.title = in.readString();
             this.text = in.readString();
             this.privacy = in.readString();
+            this.tlogId = (Long)in.readValue(Long.class.getClassLoader());
         }
 
         @Override
@@ -90,5 +74,26 @@ public class PostTextForm extends PostForm {
                 return new AsHtml[size];
             }
         };
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            PostTextForm that = (PostTextForm) o;
+
+            if (title != null ? !title.equals(that.title) : that.title != null) return false;
+            if (text != null ? !text.equals(that.text) : that.text != null) return false;
+            return !(tlogId != null ? !tlogId.equals(that.tlogId) : that.tlogId != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = title != null ? title.hashCode() : 0;
+            result = 31 * result + (text != null ? text.hashCode() : 0);
+            result = 31 * result + (tlogId != null ? tlogId.hashCode() : 0);
+            return result;
+        }
     }
 }

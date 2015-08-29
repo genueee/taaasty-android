@@ -1,17 +1,19 @@
 package ru.taaasty.ui.feeds;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -23,9 +25,13 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Locale;
+import junit.framework.Assert;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+
+import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -35,18 +41,24 @@ import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
+import ru.taaasty.events.RelationshipChanged;
+import ru.taaasty.events.RelationshipRemoved;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
@@ -57,16 +69,30 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
+import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkRetainedFragment.TargetFragmentInteraction {
+
+    public static final int FOLLOWING_STATUS_UNKNOWN = 0;
+    public static final int FOLLOWING_STATUS_ME_SUBSCRIBED = 0x01;
+    public static final int FOLLOWING_STATUS_ME_UNSUBSCRIBED = 0x02;
+    public static final int FOLLOWING_STATUS_CHANGING = 0x80;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({FOLLOWING_STATUS_UNKNOWN, FOLLOWING_STATUS_ME_SUBSCRIBED,
+            FOLLOWING_STATUS_ME_UNSUBSCRIBED, FOLLOWING_STATUS_CHANGING})
+    public @interface FollowingStatus {}
+
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogFragment";
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_USER_SLUG = "user_slug";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
+
+    private static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 5;
 
     private OnFragmentInteractionListener mListener;
 
@@ -84,6 +110,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     private Handler mHandler;
 
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
+
+    private FabHelper mFabHelper;
+
+    private FabHelper.AutoHideScrollListener mHideFabScrollListener;
+
+    private boolean mScheduleRefreshData;
 
     public static TlogFragment newInstance(long userId) {
         return newInstance(userId, 0);
@@ -111,12 +143,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnFragmentInteractionListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }
@@ -136,6 +168,8 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
         mEmptyView = (TextView)v.findViewById(R.id.empty_view);
+        mFabHelper = new FabHelper(v.findViewById(R.id.post));
+        mFabHelper.hideFab(false);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -194,6 +228,15 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             }
         });
 
+        mFabHelper.getView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CreatePostActivity.startCreatePostActivityForResult(getActivity(),
+                        (mWorkFragment.isFlow() ? mWorkFragment.getUser().author.getId() :  null),
+                        CREATE_POST_ACTIVITY_REQUEST_CODE);
+            }
+        });
+
         return v;
     }
 
@@ -213,28 +256,36 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     @Override
-    public void onWorkFragmentActivityCreated() {
-        mAdapter = new Adapter(mWorkFragment.getEntryList());
-        mAdapter.onCreate();
-
-        mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
-        mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
-        mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
-
-        if (mWorkFragment.getUser() != null) {
-            mAdapter.setUser(mWorkFragment.getUser().author);
-            setupFeedDesign();
-            mListener.onTlogInfoLoaded(mWorkFragment.getUser());
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+                if (requestCode == Activity.RESULT_OK) {
+                    if (mWorkFragment != null) {
+                        refreshData(true);
+                    } else {
+                        mScheduleRefreshData = true;
+                    }
+                }
+                break;
         }
+    }
 
-        mListView.setAdapter(mAdapter);
+    @Override
+    public void onWorkFragmentActivityCreated() {
+        reinitAdapter();
+        refreshFabStatus();
     }
 
     @Override
     public void onWorkFragmentResume() {
-        if (!mWorkFragment.isRefreshing()) refreshData(false);
+        if (!mWorkFragment.isRefreshing() || mScheduleRefreshData) {
+            refreshData(mScheduleRefreshData);
+            mScheduleRefreshData = false;
+        }
         mDateIndicatorHelper.onResume();
         updateDateIndicatorVisibility();
+        refreshFabStatus();
     }
 
     @Override
@@ -242,6 +293,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         super.onDestroyView();
         mHandler.removeCallbacksAndMessages(null);
         mDateIndicatorView = null;
+        mFabHelper = null;
         mWorkFragment.setTargetFragment(null, 0);
         if (mDateIndicatorHelper != null) {
             mDateIndicatorHelper.onDestroy();
@@ -277,17 +329,27 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     @Override
     public void onCurrentUserChanged() {
-        if (mListener != null) mListener.onTlogInfoLoaded(mWorkFragment.getUser());
-        setupFeedDesign(); // TODO проверить. Возможно, здесь не нужно.
-        if (mAdapter != null) mAdapter.setUser(mWorkFragment.getUser().author);
+        TlogInfo tlogInfo = mWorkFragment.getUser();
+        if (mListener != null) mListener.onTlogInfoLoaded(tlogInfo);
+
+        boolean oldIsFlow = mAdapter != null && mAdapter.isFlow();
+        if (oldIsFlow != tlogInfo.author.isFlow()) {
+            reinitAdapter();
+        }
+
+        setupFeedDesign();
+        if (mAdapter != null) mAdapter.setUser(tlogInfo.author);
         setupLoadingState();
+        refreshFabStatus();
+        if (isFlow()) {
+            mAdapter.notifyItemChanged(0);
+        }
     }
 
     @Override
     public RecyclerView.Adapter getAdapter() {
         return mAdapter;
     }
-
 
     public void onOverlayVisibilityChanged(boolean visible) {
         updateDateIndicatorVisibility(visible);
@@ -304,7 +366,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         TlogInfo user = mWorkFragment.getUser();
         if (user == null || user.author == null) return;
         new UserInfoActivity.Builder(getActivity())
-                .set(mWorkFragment.getUser().author, v, user.design)
+                .set(mWorkFragment.getUser().author, v, user.getDesign())
                 .setPreloadAvatarThumbnail(R.dimen.feed_header_avatar_normal_diameter)
                 .startActivity();
     }
@@ -314,10 +376,27 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         return mWorkFragment.mUserId;
     }
 
+    public boolean isFlow() {
+        return mWorkFragment.isFlow();
+    }
+
+    @FollowingStatus
+    public int getFollowingStatus() {
+        return mWorkFragment.getFollowingStatus();
+    }
+
+    public void startFollow() {
+        mWorkFragment.startFollow();
+    }
+
+    public void startUnfollow() {
+        mWorkFragment.startUnfollow();
+    }
+
     void setupFeedDesign() {
         TlogInfo user = mWorkFragment.getUser();
         if (user == null) return;
-        TlogDesign design = user.design;
+        TlogDesign design = user.getDesign();
 
         if (DBG) Log.e(TAG, "Setup feed design " + design);
         mAdapter.setFeedDesign(design);
@@ -338,10 +417,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         }
     }
 
-    public void setupLoadingState() {
+    void setupLoadingState() {
         if (mRefreshLayout == null) return;
 
-        if (DBG) Log.v(TAG, "setupLoadingState() work fragment != null: "
+        if (DBG) Log.v(TAG, "setupLoadingState() ts: " + System.currentTimeMillis() + "  work fragment != null: "
                         + (mWorkFragment != null)
                         + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
                         + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
@@ -351,8 +430,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
         // при свайпе вверх, либо если адаптер пустой. В другом месте.
-        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
-        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+        if (mWorkFragment != null && !mWorkFragment.isLoading()) {
+            if (DBG) Log.v(TAG, "mRefreshLayout.setRefreshing(false) ts: " + System.currentTimeMillis());
+            mRefreshLayout.setRefreshing(false);
+        }
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null
@@ -362,13 +443,79 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         mEmptyView.setVisibility(listIsEmpty || isTlogForbidden ? View.VISIBLE : View.GONE);
         if (isTlogForbidden) {
-            mEmptyView.setText(R.string.error_tlog_access_denied);
+            mEmptyView.setText(isFlow() ? R.string.error_flow_access_denied : R.string.error_tlog_access_denied);
             mEmptyView.setCompoundDrawablesWithIntrinsicBounds(0, R.drawable.ic_private_post_indicator_activated, 0, 0);
         } else {
-            mEmptyView.setText(R.string.user_have_not_written_anything);
+            mEmptyView.setText(isFlow() ? R.string.no_records : R.string.user_have_not_written_anything);
             mEmptyView.setCompoundDrawables(null, null, null, null);
         }
         updateDateIndicatorVisibility();
+    }
+
+    void onFollowingStatusChanged() {
+        if (!isFlow()) return;
+        if (DBG) Log.v(TAG, "onFollowingStatusChanged()");
+        if (mAdapter != null) mAdapter.notifyItemChanged(0);
+        refreshFabStatus();
+    }
+
+    private void reinitAdapter() {
+        if (DBG) Log.v(TAG, "reinitAdapter() is first: " + (mDateIndicatorHelper == null ? "true" : "false"));
+        if (mDateIndicatorHelper != null) {
+            mListView.removeOnScrollListener(mDateIndicatorHelper.onScrollListener);
+            mDateIndicatorHelper.onDestroy();
+            mDateIndicatorHelper = null;
+        }
+
+        if (mAdapter != null) {
+            mAdapter.onDestroy(mListView);
+        }
+
+        final boolean showPostAuthor;
+        final boolean showFab;
+        if (mWorkFragment.getUser() != null) {
+            showPostAuthor = mWorkFragment.getUser().author.isFlow();
+        } else {
+            showPostAuthor = false;
+            showFab = false;
+        }
+
+        mAdapter = new Adapter(mWorkFragment.getEntryList(), showPostAuthor);
+        mAdapter.onCreate();
+
+        mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
+        mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
+        mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
+
+        if (mWorkFragment.getUser() != null) {
+            mAdapter.setUser(mWorkFragment.getUser().author);
+            setupFeedDesign();
+            mListener.onTlogInfoLoaded(mWorkFragment.getUser());
+        }
+
+        mListView.setAdapter(mAdapter);
+    }
+
+    private void refreshFabStatus() {
+        boolean showFab = false;
+        if (mWorkFragment != null && mWorkFragment.getUser() != null) {
+            // TODO нормальное определение, можно ли писать в поток
+            showFab = mWorkFragment.isFlow() && Relationship.isMeSubscribed(mWorkFragment.getUser().getMyRelationship());
+        }
+
+        if (showFab) {
+            if (mHideFabScrollListener == null) {
+                mHideFabScrollListener = new FabHelper.AutoHideScrollListener(mFabHelper);
+                mListView.addOnScrollListener(mHideFabScrollListener);
+            }
+            mFabHelper.showFab(false);
+        } else {
+            if (mHideFabScrollListener != null) {
+                mListView.removeOnScrollListener(mHideFabScrollListener);
+                mHideFabScrollListener = null;
+            }
+            mFabHelper.hideFab(false);
+        }
     }
 
     private void setupAdapterPendingIndicator() {
@@ -391,13 +538,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     };
 
     public class Adapter extends FeedItemAdapterLite {
-        private String mTitle;
         private User mUser = User.DUMMY;
         private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
         private ImageUtils.DrawableTarget mAvatarLoadTarget;
-
-        public Adapter(SortedList<Entry> feed) {
-            super(feed, false);
+        public Adapter(SortedList<Entry> feed, boolean isFlow) {
+            super(feed, isFlow);
             setInteractionListener(new InteractionListener() {
                 @Override
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
@@ -410,23 +555,47 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                     if (pHolder instanceof ListEntryBase) {
                         ((ListEntryBase) pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
                         FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) pHolder);
+                        if (mShowUserAvatar) {
+                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
+                                    if (mListener != null && entry != null)
+                                        mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
+                                }
+                            });
+                        }
                     }
                 }
 
                 @Override
                 public RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent) {
-                    View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
-                    child.setBackgroundDrawable(null);
-                    HeaderHolder holder = new HeaderHolder(child);
-                    holder.avatarView.setOnClickListener(mOnClickListener);
-                    return holder;
+                    if (isFlow()) {
+                        View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_flow, mListView, false);
+                        FlowHeaderHolder holder = new FlowHeaderHolder(child);
+                        holder.subscribeButton.setOnClickListener(mOnClickListener);
+                        holder.unsubscribeButton.setOnClickListener(mOnClickListener);
+                        return holder;
+                    } else {
+                        View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
+                        TlogHeaderHolder holder = new TlogHeaderHolder(child);
+                        holder.avatarView.setOnClickListener(mOnClickListener);
+                        return holder;
+                    }
                 }
 
                 @Override
                 public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
-                    HeaderHolder holder = (HeaderHolder) viewHolder;
-                    holder.titleView.setText(mTitle);
-                    bindUser(holder);
+                    if (isFlow()) {
+                        FlowHeaderHolder holder = (FlowHeaderHolder) viewHolder;
+                        holder.titleView.setText('#' + UiUtils.capitalize(mUser.getName()));
+                        holder.subtitleView.setText(mUser.getTitle());
+                        bindHeaderFollowingStatus(holder);
+                    } else {
+                        TlogHeaderHolder holder = (TlogHeaderHolder) viewHolder;
+                        holder.titleView.setText(UiUtils.capitalize(mUser.getName()));
+                        bindUser(holder);
+                    }
                 }
 
                 @Override
@@ -436,22 +605,19 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             });
         }
 
-        public void setUser(User user) {
-            String name = user.getName();
-            if (name == null) name = "";
-            name = name.substring(0, 1).toUpperCase(Locale.getDefault()) + name.substring(1);
-            setTitleUser(name, user);
+        public boolean isFlow() {
+            return mShowUserAvatar;
         }
 
-        private void setTitleUser(String title, User user) {
-            if (!TextUtils.equals(mTitle, title) && !Objects.equals(mUser, user)) {
-                mTitle = title;
+        public void setUser(User user) {
+            if (DBG) Assert.assertTrue(isFlow() == user.isFlow());
+            if (!Objects.equals(mUser, user)) {
                 mUser = user;
                 notifyItemChanged(0);
             }
         }
 
-        private void bindUser(final HeaderHolder holder) {
+        private void bindUser(final TlogHeaderHolder holder) {
             if (mAvatarThumbnailRes > 0) {
                 mAvatarThumbnailLoadTarget = new ImageUtils.ImageViewTarget(holder.avatarView, false);
                 ImageUtils.getInstance().loadAvatar(
@@ -511,6 +677,32 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             );
         }
 
+        private void bindHeaderFollowingStatus(FlowHeaderHolder holder) {
+            boolean subscribeVisible = false;
+            boolean unsubscribeVisible = false;
+            boolean progressVisible = false;
+
+            switch (getFollowingStatus()) {
+                case FOLLOWING_STATUS_UNKNOWN:
+                    break;
+                case FOLLOWING_STATUS_CHANGING:
+                    progressVisible = true;
+                    break;
+                case FOLLOWING_STATUS_ME_SUBSCRIBED:
+                    unsubscribeVisible = true;
+                    break;
+                case FOLLOWING_STATUS_ME_UNSUBSCRIBED:
+                    subscribeVisible = true;
+                    break;
+                default:
+                    throw new IllegalStateException();
+            }
+
+            holder.subscribeButton.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
+            holder.unsubscribeButton.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
+            holder.subscribeProgressButton.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
+        }
+
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -518,21 +710,50 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                     case R.id.avatar:
                         onAvatarClicked(v);
                         break;
+                    case R.id.header_flow_subscribe:
+                        mWorkFragment.startFollow();
+                        break;
+                    case R.id.header_flow_unsubscribe:
+                        mWorkFragment.startUnfollow();
+                        break;
                 }
             }
         };
     }
 
-    public static class HeaderHolder extends ParallaxedHeaderHolder {
+    public static class TlogHeaderHolder extends ParallaxedHeaderHolder {
         TextView titleView;
         ImageView avatarView;
 
-        public HeaderHolder(View itemView) {
+        public TlogHeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.avatar_user_name));
             avatarView = (ImageView)itemView.findViewById(R.id.avatar);
             titleView = (TextView)itemView.findViewById(R.id.user_name);
         }
     }
+
+    public static class FlowHeaderHolder extends ParallaxedHeaderHolder {
+        TextView titleView;
+
+        TextView subtitleView;
+
+        View subscribeButton;
+
+        View unsubscribeButton;
+
+        View subscribeProgressButton;
+
+        public FlowHeaderHolder(View itemView) {
+            super(itemView, itemView.findViewById(R.id.title_subtitle_container));
+
+            titleView = (TextView)itemView.findViewById(R.id.title);
+            subtitleView = (TextView)itemView.findViewById(R.id.subtitle);
+            subscribeButton = itemView.findViewById(R.id.header_flow_subscribe);
+            unsubscribeButton = itemView.findViewById(R.id.header_flow_unsubscribe);
+            subscribeProgressButton = itemView.findViewById(R.id.header_flow_follow_unfollow_progress);
+        }
+    }
+
 
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
@@ -547,7 +768,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
             if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null)  {
-                design = mWorkFragment.getUser().design;
+                design = mWorkFragment.getUser().getDesign();
             }
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
@@ -570,13 +791,13 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         private FeedLoader mFeedLoader;
 
-        private ApiTlog mTlogService;
-
         private Long mUserId;
 
         private String mUserSlug;
 
         private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
+
+        private Subscription mFollowSubscription = Subscriptions.unsubscribed();
 
         private TlogInfo mUser;
 
@@ -586,12 +807,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
 
         @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
+        public void onAttach(Context context) {
+            super.onAttach(context);
             try {
-                mListener = (OnFragmentInteractionListener) activity;
+                mListener = (OnFragmentInteractionListener) context;
             } catch (ClassCastException e) {
-                throw new ClassCastException(activity.toString()
+                throw new ClassCastException(context.toString()
                         + " must implement OnFragmentInteractionListener");
             }
         }
@@ -600,7 +821,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
-            mTlogService = RestClient.getAPiTlog();
             Bundle args = getArguments();
             if (args.containsKey(ARG_USER_ID)) {
                 mUserId = args.getLong(ARG_USER_ID);
@@ -657,6 +877,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         public void onDestroy() {
             super.onDestroy();
             mCurrentUserSubscription.unsubscribe();
+            mFollowSubscription.unsubscribe();
             if (mFeedLoader != null) {
                 mFeedLoader.onDestroy();
                 mFeedLoader = null;
@@ -678,8 +899,12 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                     && (mFeedLoader.isLastErrorForbidden());
         }
 
+        public boolean isFlow() {
+            return mUser != null && mUser.author.isFlow();
+        }
+
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return mTlogService.getEntries(String.valueOf(mUserId), sinceEntryId, limit);
+            return RestClient.getAPiTlog().getEntries(String.valueOf(mUserId), sinceEntryId, limit);
         }
 
         @Nullable
@@ -702,6 +927,9 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             return mUser;
         }
 
+        /**
+         * @return Активна какая-либо из загрузок: пользователь, рефреш, подгрузка
+         */
         public boolean isLoading() {
             return !mCurrentUserSubscription.isUnsubscribed() || mFeedLoader.isLoading();
         }
@@ -724,7 +952,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         public void refreshUser() {
             mCurrentUserSubscription.unsubscribe();
-            Observable<TlogInfo> observableCurrentUser = mTlogService.getUserInfo(mUserId == null
+            Observable<TlogInfo> observableCurrentUser = RestClient.getAPiTlog().getUserInfo(mUserId == null
                     ? mUserSlug : mUserId.toString());
 
             mCurrentUserSubscription = observableCurrentUser
@@ -746,9 +974,65 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             callLoadingStateChanged("refreshFeed() start");
         }
 
+        @FollowingStatus
+        public int getFollowingStatus() {
+            if (!mFollowSubscription.isUnsubscribed()) {
+                return FOLLOWING_STATUS_CHANGING;
+            }
+
+            if (mUser == null) return FOLLOWING_STATUS_UNKNOWN;
+
+            if (Relationship.isMeSubscribed(mUser.getMyRelationship())) {
+                return FOLLOWING_STATUS_ME_SUBSCRIBED;
+            } else {
+                return FOLLOWING_STATUS_ME_UNSUBSCRIBED;
+            }
+        }
+
+        public void startFollow() {
+            if (mUserId == null) return;
+            mFollowSubscription.unsubscribe();
+            ApiRelationships relApi = RestClient.getAPiRelationships();
+            Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
+                    relApi.follow(mUserId.toString()));
+            mFollowSubscription = observable
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .finallyDo(new Action0() {
+                        @Override
+                        public void call() {
+                            callFollowingStatusChanged();
+                        }
+                    })
+                    .subscribe(new RelationChangedObserver());
+            callFollowingStatusChanged();
+        }
+
+        public void startUnfollow() {
+            if (mUserId == null) return;
+            mFollowSubscription.unsubscribe();
+            ApiRelationships relApi = RestClient.getAPiRelationships();
+            Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
+                    relApi.unfollow(mUserId.toString()));
+            mFollowSubscription = observable
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .finallyDo(new Action0() {
+                        @Override
+                        public void call() {
+                            callFollowingStatusChanged();
+                        }
+                    })
+                    .subscribe(new RelationChangedObserver());
+            callFollowingStatusChanged();
+        }
+
         void callLoadingStateChanged(String reason) {
             if (DBG) Log.v(TAG, "callLoadingStateChanged: " + reason);
             if (getMainFragment() != null) getMainFragment().onLoadingStateChanged(reason);
+        }
+
+        void callFollowingStatusChanged() {
+            if (mListener != null) mListener.onFollowingStatusChanged();
+            if (getMainFragment() != null) getMainFragment().onFollowingStatusChanged();
         }
 
         private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {
@@ -781,6 +1065,33 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 if (getMainFragment() != null) getMainFragment().onCurrentUserChanged();
             }
         };
+
+        private class RelationChangedObserver implements Observer<Relationship> {
+
+            @SuppressWarnings("ConstantConditions")
+            public RelationChangedObserver() {
+            }
+
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                if (mListener != null) mListener.notifyError(UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
+            }
+
+            @Override
+            public void onNext(Relationship relationship) {
+                mUser.setMyRelationship(relationship.getState());
+                if (relationship.getId() == null) {
+                    EventBus.getDefault().post(new RelationshipRemoved(relationship));
+                } else {
+                    EventBus.getDefault().post(new RelationshipChanged(relationship));
+                }
+            }
+        }
 
         class FeedLoader extends ru.taaasty.ui.feeds.FeedLoader {
 
@@ -860,6 +1171,15 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         void onSharePostMenuClicked(Entry entry);
         void onListClicked();
         void onNoSuchUser();
+        void onFollowingStatusChanged();
         boolean isOverlayVisible();
+
+        /**
+         * Юзер ткнул на аватарку в списке
+         * @param view
+         * @param user
+         * @param design
+         */
+        void onAvatarClicked(View view, User user, TlogDesign design);
     }
 }

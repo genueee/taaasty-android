@@ -92,6 +92,16 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
     }
 
     @Override
+    public void deleteRelationship(long fromId, long toId) {
+        for (int i=mRelationships.size() - 1; i >= 0; --i) {
+            Relationship relationship = mRelationships.get(i);
+            if (relationship.getFromId() == fromId && relationship.getToId() == toId) {
+                mRelationships.removeItemAt(i);
+            }
+        }
+    }
+
+    @Override
     public int getCount() {
         return mRelationships.size();
     }

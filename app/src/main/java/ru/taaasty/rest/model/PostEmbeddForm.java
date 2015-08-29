@@ -2,7 +2,6 @@ package ru.taaasty.rest.model;
 
 import android.os.Parcel;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import ru.taaasty.utils.UiUtils;
 
@@ -17,6 +16,10 @@ public class PostEmbeddForm extends PostForm {
     @Nullable
     public String url;
 
+    @Nullable
+    public Long tlogId;
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -24,22 +27,19 @@ public class PostEmbeddForm extends PostForm {
 
         PostEmbeddForm that = (PostEmbeddForm) o;
 
-        if (!TextUtils.equals(title, that.title)) return false;
-        if (url != null ? !url.equals(that.url) : that.url != null)
-            return false;
-        if (!TextUtils.equals(privacy, that.privacy)) return false;
+        if (title != null ? !title.equals(that.title) : that.title != null) return false;
+        if (url != null ? !url.equals(that.url) : that.url != null) return false;
+        return !(tlogId != null ? !tlogId.equals(that.tlogId) : that.tlogId != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = title != null ? title.hashCode() : 0;
         result = 31 * result + (url != null ? url.hashCode() : 0);
-        result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
+        result = 31 * result + (tlogId != null ? tlogId.hashCode() : 0);
         return result;
     }
-
 
     @Override
     public PostFormHtml asHtmlForm() {
@@ -54,10 +54,14 @@ public class PostEmbeddForm extends PostForm {
 
         public final String privacy;
 
+        @Nullable
+        public final Long tlogId;
+
         private AsHtml(PostEmbeddForm source) {
             this.title = source.title == null ? null : UiUtils.safeToHtml(source.title);
             this.url = source.url;
             this.privacy = source.privacy;
+            this.tlogId = source.tlogId;
         }
 
         @Override
@@ -70,12 +74,14 @@ public class PostEmbeddForm extends PostForm {
             dest.writeString(this.title);
             dest.writeString(this.url);
             dest.writeString(this.privacy);
+            dest.writeValue(this.tlogId);
         }
 
         private AsHtml(Parcel in) {
             this.title = in.readString();
             this.url = in.readString();
             this.privacy = in.readString();
+            this.tlogId = (Long)in.readValue(Long.class.getClassLoader());
         }
 
         @Override

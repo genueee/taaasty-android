@@ -500,4 +500,19 @@
 
     <style name="Widget.Taaasty.Toolbar.GreenActionBar" parent="Widget.Taaasty.Toolbar.GreenActionBarBase" />
 
+    <style name="FlowsTab">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:textColor">@drawable/flow_tab_text_color</item>
+        <item name="android:background">?selectableItemBackground</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
 </resources>

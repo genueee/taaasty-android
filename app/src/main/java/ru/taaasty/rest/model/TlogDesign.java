@@ -33,13 +33,19 @@ public class TlogDesign implements Parcelable {
     public static final String FONT_TYPE_SANS  = "sans";
     public static final String FONT_TYPE_SERIF  = "serif";
 
-    public static final  TlogDesign DUMMY = new TlogDesign();
+    public static final TlogDesign DUMMY = new TlogDesign();
 
     /**
      * Бэкграунд ленты, фон блога
      */
     @SerializedName("background_url")
     String mBackgroundUrl = "";
+
+    /**
+     * ХЗ, мож будет когда-нибудь
+     */
+    @Nullable
+    String mBackgroundUrlThumborPath = null;
 
     /**
      * Заполнение бэкграунда: {@value #COVER_ALIGN_CENTER}, {@value #COVER_ALIGN_JUSTIFY}
@@ -159,6 +165,11 @@ public class TlogDesign implements Parcelable {
         }
     }
 
+    @Nullable
+    public String getBackgroundUrlThumborPath() {
+        return mBackgroundUrlThumborPath;
+    }
+
     public int getFeedActionsTextColor(Resources r) {
         return r.getColor(isDarkTheme() ? R.color.text_color_feed_actions_dark_theme : R.color.text_color_feed_actions_light_theme);
     }
@@ -186,11 +197,22 @@ public class TlogDesign implements Parcelable {
     }
 
     public static TlogDesign createLightTheme(TlogDesign src) {
-        if (src.isLightTheme()) return src;
+        return createLightTheme(src, null, null);
+    }
+
+    public static TlogDesign createLightTheme(TlogDesign src, String backgroundUrl, String backgroundThumborPath) {
+        if (src.isLightTheme()
+                && (backgroundUrl == null || TextUtils.equals(backgroundUrl, src.mBackgroundUrl))
+                ) return src;
         TlogDesign res = new TlogDesign(src);
         res.mFontColor = "#000000";
+        if (backgroundUrl != null) {
+            res.mBackgroundUrl = backgroundUrl;
+            res.mBackgroundUrlThumborPath = backgroundThumborPath;
+        }
         return res;
     }
+
 
     public void setFontTypeface(boolean serif) {
         mFontTypeface = serif ? FONT_TYPE_SERIF : FONT_TYPE_SANS;
@@ -211,6 +233,7 @@ public class TlogDesign implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.mBackgroundUrl);
+        dest.writeString(this.mBackgroundUrlThumborPath);
         dest.writeString(this.mCoverAlign);
         dest.writeString(this.mFontColor);
         dest.writeString(this.mHeaderColor);
@@ -223,6 +246,7 @@ public class TlogDesign implements Parcelable {
 
     public TlogDesign(TlogDesign source) {
         this.mBackgroundUrl = source.mBackgroundUrl;
+        this.mBackgroundUrlThumborPath = source.mBackgroundUrlThumborPath;
         this.mCoverAlign = source.mCoverAlign;
         this.mFontColor = source.mFontColor;
         this.mHeaderColor = source.mHeaderColor;
@@ -232,6 +256,7 @@ public class TlogDesign implements Parcelable {
 
     private TlogDesign(Parcel in) {
         this.mBackgroundUrl = in.readString();
+        this.mBackgroundUrlThumborPath = in.readString();
         this.mCoverAlign = in.readString();
         this.mFontColor = in.readString();
         this.mHeaderColor = in.readString();
@@ -269,6 +294,8 @@ public class TlogDesign implements Parcelable {
         if (Float.compare(that.mFeedOpacity, mFeedOpacity) != 0) return false;
         if (mBackgroundUrl != null ? !mBackgroundUrl.equals(that.mBackgroundUrl) : that.mBackgroundUrl != null)
             return false;
+        if (mBackgroundUrlThumborPath != null ? !mBackgroundUrlThumborPath.equals(that.mBackgroundUrlThumborPath) : that.mBackgroundUrlThumborPath != null)
+            return false;
         if (mCoverAlign != null ? !mCoverAlign.equals(that.mCoverAlign) : that.mCoverAlign != null)
             return false;
         if (mFontColor != null ? !mFontColor.equals(that.mFontColor) : that.mFontColor != null)
@@ -282,6 +309,7 @@ public class TlogDesign implements Parcelable {
     @Override
     public int hashCode() {
         int result = mBackgroundUrl != null ? mBackgroundUrl.hashCode() : 0;
+        result = 31 * result + (mBackgroundUrlThumborPath != null ? mBackgroundUrlThumborPath.hashCode() : 0);
         result = 31 * result + (mCoverAlign != null ? mCoverAlign.hashCode() : 0);
         result = 31 * result + (mFontColor != null ? mFontColor.hashCode() : 0);
         result = 31 * result + (mHeaderColor != null ? mHeaderColor.hashCode() : 0);

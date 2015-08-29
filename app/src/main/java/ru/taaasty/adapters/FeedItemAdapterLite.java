@@ -170,6 +170,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
+        // TODO заменить на события от RecyclerView?
         if (holder instanceof IParallaxedHeaderHolder) {
             holder.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }

@@ -33,6 +33,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
@@ -143,7 +144,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         mAdapter = new Adapter(mWorkFragment.getEntryList());
         mAdapter.onCreate();
         mListView.setAdapter(mAdapter);
-        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
+        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
 
         mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
         mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
@@ -268,8 +269,9 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
         // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
         // при свайпе вверх, либо если адаптер пустой. В другом месте.
-        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
-        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+        if (mWorkFragment != null && !mWorkFragment.isLoading()) {
+            mRefreshLayout.setRefreshing(false);
+        }
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null

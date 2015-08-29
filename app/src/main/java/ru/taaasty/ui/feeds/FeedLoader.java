@@ -87,6 +87,9 @@ public abstract class FeedLoader {
                 .subscribe(new FeedLoadObserver(true, entriesRequested));
     }
 
+    /**
+     * @return Список рефрешится, либо подгружается
+     */
     public boolean isLoading() {
         return !mFeedAppendSubscription.isUnsubscribed() || !mFeedRefreshSubscription.isUnsubscribed();
     }

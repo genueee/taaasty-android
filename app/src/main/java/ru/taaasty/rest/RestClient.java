@@ -20,6 +20,7 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiDevice;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.rest.service.ApiFeeds;
+import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.rest.service.ApiRelationships;
@@ -43,6 +44,7 @@ public final class RestClient {
     private volatile ApiDevice mApiDevice;
     private volatile ApiEntries mApiEntries;
     private volatile ApiFeeds mApiFeeds;
+    private volatile ApiFlows mApiFlows;
     private volatile ApiMessenger mApiMessenger;
     private volatile ApiMyFeeds mApiMyFeeds;
     private volatile ApiRelationships mApiRelationships;
@@ -140,6 +142,18 @@ public final class RestClient {
             }
         }
         return instance.mApiFeeds;
+    }
+
+    public static ApiFlows getAPiFlows() {
+        RestClient instance = getInstance();
+        if (instance.mApiFlows == null) {
+            synchronized (RestClient.class) {
+                if (instance.mApiFlows == null) {
+                    instance.mApiFlows = instance.mRestAdapter.create(ApiFlows.class);
+                }
+            }
+        }
+        return instance.mApiFlows;
     }
 
     public static ApiMessenger getAPiMessenger() {

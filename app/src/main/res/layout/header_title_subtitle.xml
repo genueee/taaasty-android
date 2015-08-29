@@ -9,8 +9,16 @@
     android:background="@android:color/black"
     tools:ignore="Overdraw">
 
+    <ViewStub
+        android:id="@+id/flows_tab_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout="@layout/flows_tab_stub"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="16dp" />
+
     <ru.taaasty.widgets.HintedExtendedImageView
-        android:id="@+id/create_anonymous_post"
+        android:id="@+id/create_anonymous_post_or_flow"
         android:src="@drawable/ic_ab_subscribe_normal"
         android:contentDescription="@string/write_an_anonymous_post"
         android:scaleType="centerInside"
@@ -82,4 +90,5 @@
         </ru.taaasty.widgets.SmartTextSwitcher>
 
     </LinearLayout>
+
 </FrameLayout>

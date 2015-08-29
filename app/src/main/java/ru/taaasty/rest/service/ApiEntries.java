@@ -23,6 +23,7 @@ public interface ApiEntries {
     Entry createImagePostSync(
             @Part("title") String title,
             @Part("privacy") String privacy,
+            @Part("tlog_id") Long tlogId,
             @Part("file") TypedOutput file);
 
     @Multipart
@@ -31,6 +32,7 @@ public interface ApiEntries {
             @Path("id") String id,
             @Part("title") String title,
             @Part("privacy") String privacy,
+            @Part("tlog_id") Long tlogId,
             @Part("file") TypedOutput file);
 
 
@@ -38,7 +40,8 @@ public interface ApiEntries {
     @POST("/entries/text.json")
     Entry createTextPostSync(@Field("title") String title,
                                       @Field("text") String text,
-                                      @Field("privacy") String privacy);
+                                      @Field("privacy") String privacy,
+                                      @Field("tlog_id") Long tlogId);
 
     @FormUrlEncoded
     @PUT("/entries/text/{id}.json")
@@ -46,14 +49,16 @@ public interface ApiEntries {
             @Path("id") String id,
             @Field("title") String title,
             @Field("text") String text,
-            @Field("privacy") String privacy);
+            @Field("privacy") String privacy,
+            @Field("tlog_id") Long tlogId);
 
 
     @FormUrlEncoded
     @POST("/entries/quote.json")
     Entry createQuoteEntrySync(@Field("text") String text,
                                         @Field("source") String source,
-                                        @Field("privacy") String privacy);
+                                        @Field("privacy") String privacy,
+                                        @Field("tlog_id") Long tlogId);
 
     @FormUrlEncoded
     @PUT("/entries/quote/{id}.json")
@@ -61,7 +66,8 @@ public interface ApiEntries {
             @Path("id") String id,
             @Field("text") String text,
             @Field("source") String source,
-            @Field("privacy") String privacy);
+            @Field("privacy") String privacy,
+            @Field("tlog_id") Long tlogId);
 
     @FormUrlEncoded
     @POST("/entries/anonymous.json")
@@ -79,7 +85,8 @@ public interface ApiEntries {
     @POST("/entries/video.json")
     Entry createVideoPostSync(@Field("title") String title,
                              @Field("video_url") String url,
-                             @Field("privacy") String privacy);
+                             @Field("privacy") String privacy,
+                              @Field("tlog_id") Long tlogId);
 
     @FormUrlEncoded
     @PUT("/entries/video/{id}.json")
@@ -87,7 +94,8 @@ public interface ApiEntries {
             @Path("id") String id,
             @Field("title") String title,
             @Field("video_url") String url,
-            @Field("privacy") String privacy);
+            @Field("privacy") String privacy,
+            @Field("tlog_id") Long tlogId);
 
     /**
      * Получение статьи

@@ -644,7 +644,7 @@ public class UserInfoFragment extends Fragment {
         @Override
         public void onNext(TlogInfo info) {
             mUser = info.author;
-            mDesign = info.design;
+            mDesign = info.getDesign();
             mRelationshipsSummary = info.relationshipsSummary;
             mMyRelationship = info.getMyRelationship();
             setupUserInfo();

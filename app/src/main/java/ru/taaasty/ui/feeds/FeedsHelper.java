@@ -27,6 +27,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.ScrollEventConsumer;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -219,6 +220,7 @@ public class FeedsHelper {
         }
     }
 
+    // TODO вынести это в свой RecyclerView?
     public static class StopGifOnScroll extends RecyclerView.OnScrollListener {
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {}
@@ -229,11 +231,11 @@ public class FeedsHelper {
             boolean stopScroll = newState == RecyclerView.SCROLL_STATE_IDLE;
             for (int i = 0; i < childCount; ++i) {
                 RecyclerView.ViewHolder vh = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
-                if (vh instanceof ListImageEntry) {
+                if (vh instanceof ScrollEventConsumer) {
                     if (stopScroll) {
-                        ((ListImageEntry) vh).onStopScroll();
+                        ((ScrollEventConsumer) vh).onStopScroll();
                     } else {
-                        ((ListImageEntry) vh).onStartScroll();
+                        ((ScrollEventConsumer) vh).onStartScroll();
                     }
                 }
             }

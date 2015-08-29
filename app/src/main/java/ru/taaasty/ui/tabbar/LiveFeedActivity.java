@@ -38,6 +38,8 @@ import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiApp;
+import ru.taaasty.ui.feeds.FlowListFragment;
+import ru.taaasty.ui.feeds.IFeedsFragment;
 import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.SharePostActivity;
@@ -49,7 +51,8 @@ import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener {
+public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener,
+        FlowListFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
 
@@ -230,10 +233,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
      * Вызывается при смене овидимого фрагмента в viewpager
      * @param newFragment
      */
-    void onPrimaryItemChanged(Fragment newFragment) {
+    void onPrimaryItemChanged(IFeedsFragment newFragment) {
         if (DBG) Log.v(TAG, "onPrimaryItemChanged()" + newFragment);
-        ListFeedFragment fragment = (ListFeedFragment)newFragment;
-        updateCircleIndicatorPosition(fragment.isHeaderVisisble(), fragment.getHeaderTop());
+        updateCircleIndicatorPosition(newFragment.isHeaderVisible(), newFragment.getHeaderTop());
     }
 
     void refreshData() {
@@ -273,7 +275,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
 
-        private Fragment mPrimaryItem;
+        private IFeedsFragment mPrimaryItem;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -285,10 +287,12 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
                 case 0:
                     return ListFeedFragment.createMySubscriptionsFeedInstance();
                 case 1:
-                    return ListFeedFragment.createLiveFeedInstance();
+                    return FlowListFragment.createInstance();
                 case 2:
-                    return ListFeedFragment.createBestFeedInstance();
+                    return ListFeedFragment.createLiveFeedInstance();
                 case 3:
+                    return ListFeedFragment.createBestFeedInstance();
+                case 4:
                     return ListFeedFragment.createAnonymousFeedInstance();
                 default:
                     throw new IllegalArgumentException();
@@ -297,15 +301,15 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         @Override
         public int getCount() {
-            return 4;
+            return 5;
         }
 
         @Override
         public void setPrimaryItem(ViewGroup container, int position, Object object) {
             super.setPrimaryItem(container, position, object);
             if (mPrimaryItem != object) {
-                mPrimaryItem = (Fragment)object;
-                onPrimaryItemChanged((Fragment)object);
+                mPrimaryItem = (IFeedsFragment)object;
+                onPrimaryItemChanged((IFeedsFragment)object);
             }
         }
 
@@ -316,10 +320,12 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
                 case 0:
                     return getString(R.string.title_my_subscriptions).toUpperCase(l);
                 case 1:
-                    return getString(R.string.title_live_feed).toUpperCase(l);
+                    return getString(R.string.title_flows).toUpperCase(l);
                 case 2:
-                    return getString(R.string.title_best_feed).toUpperCase(l);
+                    return getString(R.string.title_live_feed).toUpperCase(l);
                 case 3:
+                    return getString(R.string.title_best_feed).toUpperCase(l);
+                case 4:
                     return getString(R.string.title_anonymous_feed).toUpperCase(l);
             }
             return null;
@@ -330,12 +336,14 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
                 case 0:
                     return "Мои подписки";
                 case 1:
-                    return "Прямой эфир";
+                    return "Потоки";
                 case 2:
-                    return "Лучшее";
+                    return "Прямой эфир";
                 case 3:
-                    return "Новости";
+                    return "Лучшее";
                 case 4:
+                    return "Новости";
+                case 5:
                     return "Анонимки";
                 default:
                     throw new IllegalStateException();

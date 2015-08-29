@@ -88,6 +88,9 @@ public class User implements Parcelable {
     @SerializedName("is_privacy")
     boolean mIsPrivacy;
 
+    @SerializedName("is_flow")
+    boolean mIsFlow;
+
     @SerializedName("total_entries_count")
     long mTotalEntriesCount;
 
@@ -163,6 +166,10 @@ public class User implements Parcelable {
         return mIsPrivacy;
     }
 
+    public boolean isFlow() {
+        return mIsFlow;
+    }
+
     public long getDaysOnTasty() {
         long diffMs = Math.abs(System.currentTimeMillis() - mCreateAt.getTime());
         return Math.round(diffMs / (24f * 60f * 60f * 1000f)); // XXX: wrong
@@ -200,6 +207,7 @@ public class User implements Parcelable {
         dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
         dest.writeString(this.mEmail);
         dest.writeByte(mIsPrivacy ? (byte) 1 : (byte) 0);
+        dest.writeByte(mIsFlow ? (byte) 1 : (byte) 0);
         dest.writeLong(this.mTotalEntriesCount);
         dest.writeLong(this.privateEntriesCount);
         dest.writeLong(this.publicEntriesCount);
@@ -225,6 +233,7 @@ public class User implements Parcelable {
         this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
         this.mEmail = in.readString();
         this.mIsPrivacy = in.readByte() != 0;
+        this.mIsFlow = in.readByte() != 0;
         this.mTotalEntriesCount = in.readLong();
         this.privateEntriesCount = in.readLong();
         this.publicEntriesCount = in.readLong();
@@ -257,6 +266,7 @@ public class User implements Parcelable {
                 ", mUpdatedAt=" + mUpdatedAt +
                 ", mEmail='" + mEmail + '\'' +
                 ", mIsPrivacy=" + mIsPrivacy +
+                ", mIsFlow=" + mIsFlow +
                 ", mTotalEntriesCount=" + mTotalEntriesCount +
                 ", privateEntriesCount=" + privateEntriesCount +
                 ", publicEntriesCount=" + publicEntriesCount +
@@ -277,6 +287,7 @@ public class User implements Parcelable {
         if (mIsFemale != user.mIsFemale) return false;
         if (mIsDaylog != user.mIsDaylog) return false;
         if (mIsPrivacy != user.mIsPrivacy) return false;
+        if (mIsFlow != user.mIsFlow) return false;
         if (mTotalEntriesCount != user.mTotalEntriesCount) return false;
         if (privateEntriesCount != user.privateEntriesCount) return false;
         if (publicEntriesCount != user.publicEntriesCount) return false;
@@ -311,6 +322,7 @@ public class User implements Parcelable {
         result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
         result = 31 * result + (mEmail != null ? mEmail.hashCode() : 0);
         result = 31 * result + (mIsPrivacy ? 1 : 0);
+        result = 31 * result + (mIsFlow ? 1 : 0);
         result = 31 * result + (int) (mTotalEntriesCount ^ (mTotalEntriesCount >>> 32));
         result = 31 * result + (int) (privateEntriesCount ^ (privateEntriesCount >>> 32));
         result = 31 * result + (int) (publicEntriesCount ^ (publicEntriesCount >>> 32));

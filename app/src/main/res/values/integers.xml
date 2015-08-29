@@ -2,4 +2,6 @@
 <resources>
     <integer name="shortAnimTime">150</integer>
     <integer name="longAnimTime">300</integer>
+
+    <integer name="flow_brick_image_aspect_ratio">50</integer>
 </resources>

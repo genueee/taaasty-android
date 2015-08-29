@@ -24,10 +24,16 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
+import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.widgets.CreatePostButtons;
 import ru.taaasty.widgets.ErrorTextView;
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 public class CreatePostActivity extends ActivityBase implements OnCreatePostInteractionListener,
         SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener,
@@ -39,6 +45,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED = Activity.RESULT_FIRST_USER;
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
 
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreatePostActivity.ARG_TLOG_ID";
+    private static final String KEY_TLOG = "TLOG";
+
     private static final String SHARED_PREFS_NAME = "CreatePostActivity";
     private static final String SHARED_PREFS_KEY_POST_PRIVACY = "post_privacy";
     private static final String SHARED_PREFS_KEY_INITIAL_SECTION = "initial_section";
@@ -47,6 +56,26 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private ViewPager mViewPager;
     private CreatePostButtons mCreatePostButtons;
     private ImageView mCreatePostButton;
+
+    private Long mTlogId;
+
+    private Subscription mTlogInfoSubscription = Subscriptions.empty();
+
+    @Nullable
+    private TlogInfo mTlog;
+
+    public static void startCreatePostActivityForResult(Activity activity, int requestCode) {
+        startCreatePostActivityForResult(activity, null, requestCode);
+    }
+
+    public static void startCreatePostActivityForResult(Activity activity, Long tlogId, int requestCode) {
+        Intent intent = new Intent(activity, CreatePostActivity.class);
+        if (tlogId != null) {
+            intent.putExtra(ARG_TLOG_ID, tlogId.longValue());
+        }
+
+        activity.startActivityForResult(intent, requestCode);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +87,13 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         @Entry.EntryPrivacy
         String postPrivacy = Entry.PRIVACY_PUBLIC;
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
+        if (getIntent().hasExtra(ARG_TLOG_ID)) {
+            mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, 0);
+        } else {
+            mTlogId = null;
+        }
+
+        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), mTlogId);
 
         if (savedInstanceState == null) {
             // Восстанавливаем значения последнего поста
@@ -75,11 +110,13 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             if (currentItemString != null) {
                 currentItem = Page.valueOfPrefsName(currentItemString);
             }
+        } else {
+            mTlog = savedInstanceState.getParcelable(KEY_TLOG);
         }
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setOnPageChangeListener(mOnPageChangedListener);
+        mViewPager.addOnPageChangeListener(mOnPageChangedListener);
         mViewPager.setPageTransformer(true, new FadePageTransformer());
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setOffscreenPageLimit(3);
@@ -87,7 +124,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
         mCreatePostButtons.setPrivacy(postPrivacy);
 
-        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         setTitle(currentItem.titleViewId);
 
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
@@ -103,6 +140,18 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButtons.setActivated(currentItem.buttonViewId);
 
         EventBus.getDefault().register(this);
+
+        if (mTlogId != null) {
+            if (mTlog != null) {
+                setupTitle();
+            } else {
+                Observable<TlogInfo> observable = RestClient.getAPiTlog().getUserInfo(String.valueOf(mTlogId));
+                mTlogInfoSubscription = observable
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(mTlogInfoObserver);
+            }
+        }
+
     }
 
     @Override
@@ -128,6 +177,13 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         if (DBG) Log.v(TAG, "onDestroy()");
         saveState();
         EventBus.getDefault().unregister(this);
+        mTlogInfoSubscription.unsubscribe();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mTlog != null) outState.putParcelable(KEY_TLOG, mTlog);
     }
 
     void onCreatePostClicked() {
@@ -191,6 +247,11 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         }
     };
 
+    private void setupTitle() {
+        if (mTlog == null) return;
+        setTitle("#" + mTlog.author.getName());
+    }
+
     private final ViewPager.OnPageChangeListener mOnPageChangedListener = new ViewPager.OnPageChangeListener() {
 
         @Override
@@ -202,7 +263,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         public void onPageSelected(int i) {
             Page selected = Page.values()[i];
             mCreatePostButtons.setActivated(selected.buttonViewId);
-            setTitle(selected.titleViewId);
+            if (mTlogId == null) setTitle(selected.titleViewId);
         }
 
         @Override
@@ -303,4 +364,22 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         CreateEmbeddPostFragment fragment = getCurrentEmbeddPostFragment();
         if (fragment != null) fragment.onEmbeddMenuDialogDismissed(dialog);
     }
+
+    private final rx.Observer<TlogInfo> mTlogInfoObserver = new rx.Observer<TlogInfo>() {
+        @Override
+        public void onCompleted() {
+        }
+
+        @Override
+        public void onError(Throwable e) {
+
+        }
+
+        @Override
+        public void onNext(TlogInfo tlogInfo) {
+            mTlog = tlogInfo;
+            setupTitle();
+        }
+    };
+
 }

@@ -31,6 +31,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -125,7 +126,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         super.onActivityCreated(savedInstanceState);
         if (DBG) Log.v(TAG, this + " onActivityCreated bundle not null: " + (savedInstanceState != null)
                 + " listener not null: " + (mListener != null));
-        mListView.addOnScrollListener(new TabbarFragment.AutoHideScrollListener(mListener.getTabbar()));
+        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
         if (mWorkFragment.isResumed() && mAdapter == null) {
             onWorkFragmentActivityCreated();
         }

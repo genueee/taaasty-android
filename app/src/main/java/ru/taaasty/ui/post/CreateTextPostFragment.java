@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -25,6 +26,7 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
 
     private static final String ARG_EDIT_POST = "edit_post";
     private static final String ARG_IS_ANONYMOUS = "is_anonymous";
+    private static final String ARG_TLOG_ID = "tlog_id";
     private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.original_entry";
 
     private static final String SHARED_PREFS_NAME = "CreateTextPostFragment";
@@ -36,8 +38,17 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
 
     private boolean mIsAnonymous;
 
-    public static CreateTextPostFragment newCreatePostInstance() {
-        return new CreateTextPostFragment();
+    @Nullable
+    private Long mTlogId;
+
+    public static CreateTextPostFragment newCreatePostInstance(@Nullable Long tlogId) {
+        CreateTextPostFragment fragment = new CreateTextPostFragment();
+        if (tlogId != null) {
+            Bundle bundle = new Bundle(1);
+            bundle.putLong(ARG_TLOG_ID, tlogId);
+            fragment.setArguments(bundle);
+        }
+        return fragment;
     }
 
     public static CreateTextPostFragment newEditPostInstance(Entry originalEntry) {
@@ -78,10 +89,15 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
             mIsAnonymous = getArguments().getBoolean(ARG_IS_ANONYMOUS);
-
+            if (getArguments().containsKey(ARG_TLOG_ID)) {
+                mTlogId = getArguments().getLong(ARG_TLOG_ID);
+            } else {
+                mTlogId = null;
+            }
         } else {
             mEditPost = false;
             mIsAnonymous = false;
+            mTlogId = null;
         }
     }
 
@@ -138,6 +154,7 @@ public class CreateTextPostFragment extends CreatePostFragmentBase {
             PostTextForm textForm = new PostTextForm();
             textForm.title = PostForm.getTextVievVal(mTitleView);
             textForm.text = PostForm.getTextVievVal(mTextView);
+            textForm.tlogId = mTlogId;
             form = textForm;
         }
         return form;

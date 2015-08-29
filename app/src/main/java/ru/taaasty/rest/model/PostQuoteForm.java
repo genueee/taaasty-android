@@ -2,7 +2,6 @@ package ru.taaasty.rest.model;
 
 import android.os.Parcel;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import ru.taaasty.utils.UiUtils;
 
@@ -12,6 +11,9 @@ public class PostQuoteForm extends PostForm {
 
     @Nullable
     public CharSequence source;
+
+    @Nullable
+    public Long tlogId;
 
     public PostQuoteForm() {
     }
@@ -28,18 +30,17 @@ public class PostQuoteForm extends PostForm {
 
         PostQuoteForm that = (PostQuoteForm) o;
 
-        if (!TextUtils.equals(text, that.text)) return false;
-        if (!TextUtils.equals(source, that.source)) return false;
-        if (!TextUtils.equals(privacy, that.privacy)) return false;
+        if (text != null ? !text.equals(that.text) : that.text != null) return false;
+        if (source != null ? !source.equals(that.source) : that.source != null) return false;
+        return !(tlogId != null ? !tlogId.equals(that.tlogId) : that.tlogId != null);
 
-        return true;
     }
 
     @Override
     public int hashCode() {
-        int result = source != null ? source.hashCode() : 0;
-        result = 31 * result + (text != null ? text.hashCode() : 0);
-        result = 31 * result + (privacy != null ? privacy.hashCode() : 0);
+        int result = text != null ? text.hashCode() : 0;
+        result = 31 * result + (source != null ? source.hashCode() : 0);
+        result = 31 * result + (tlogId != null ? tlogId.hashCode() : 0);
         return result;
     }
 
@@ -51,10 +52,14 @@ public class PostQuoteForm extends PostForm {
 
         public final String privacy;
 
+        @Nullable
+        public final Long tlogId;
+
         private AsHtml(PostQuoteForm source) {
             this.text = source.text == null ? null : UiUtils.safeToHtml(source.text);
             this.source = source.source == null ? null : UiUtils.safeToHtml(source.source);
             this.privacy = source.privacy;
+            this.tlogId = source.tlogId;
         }
 
         @Override
@@ -67,12 +72,14 @@ public class PostQuoteForm extends PostForm {
             dest.writeString(this.text);
             dest.writeString(this.source);
             dest.writeString(this.privacy);
+            dest.writeValue(this.tlogId);
         }
 
         private AsHtml(Parcel in) {
             this.text = in.readString();
             this.source = in.readString();
             this.privacy = in.readString();
+            this.tlogId = (Long)in.readValue(Long.class.getClassLoader());
         }
 
         @Override

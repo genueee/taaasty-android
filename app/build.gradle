@@ -1,3 +1,4 @@
+apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'testfairy'
@@ -157,12 +158,13 @@ dependencies {
     compile project(':ViewPagerIndicator')
 
     // You must install or update the Support Repository through the SDK manager to use this dependency.
-    compile 'com.android.support:appcompat-v7:23.0.0'
-    compile 'com.android.support:design:23.0.0'
-    compile 'com.android.support:support-annotations:23.0.0'
-    compile 'com.android.support:support-v4:23.0.0'
-    compile 'com.android.support:recyclerview-v7:23.0.0'
-    compile 'com.android.support:preference-v7:23.0.0'
+    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile 'com.android.support:cardview-v7:23.0.1'
+    compile 'com.android.support:design:23.0.1'
+    compile 'com.android.support:support-annotations:23.0.1'
+    compile 'com.android.support:support-v4:23.0.1'
+    compile 'com.android.support:recyclerview-v7:23.0.1'
+    compile 'com.android.support:preference-v7:23.0.1'
     compile 'com.facebook.android:facebook-android-sdk:4.4.0'
     compile 'com.github.chrisbanes.photoview:library:1.2.3'
     compile 'io.reactivex:rxjava:1.0.14'
@@ -173,7 +175,7 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.5.0'
     compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
     compile 'com.squareup.okhttp:okhttp-urlconnection:2.5.0' // aviary
-    compile 'com.squareup:pollexor:2.0.2'
+    compile 'com.squareup:pollexor:2.0.4'
     // Picasso из jecenter не используем, пока не починят https://github.com/square/picasso/issues/364,
     // пока своя сборка.
     // compile 'com.squareup.picasso:picasso:2.5.2'

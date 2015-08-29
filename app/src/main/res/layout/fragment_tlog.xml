@@ -1,4 +1,6 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -17,11 +19,10 @@
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
+            android:scrollbarStyle="outsideOverlay"
             android:scrollbars="vertical"
             android:smoothScrollbar="false"
-            android:scrollbarStyle="outsideOverlay"
-            tools:listheader="@layout/header_tlog"
-            tools:listitem="@layout/feed_item" />
+            tools:listheader="@layout/header_tlog"/>
 
     </ru.taaasty.widgets.SwipeRefreshLayout>
 
@@ -32,6 +33,7 @@
         android:layout_gravity="center"
         android:layout_marginLeft="@dimen/feed_horizontal_margin"
         android:layout_marginRight="@dimen/feed_horizontal_margin"
+        android:drawablePadding="16dp"
         android:gravity="center"
         android:paddingLeft="50dp"
         android:paddingRight="50dp"
@@ -39,20 +41,36 @@
         android:text="@string/user_have_not_written_anything"
         android:textColor="#7d7d7d"
         android:textSize="22sp"
-        android:drawablePadding="16dp"
         android:visibility="invisible"
         tools:visibility="visible"
         />
 
     <ru.taaasty.widgets.DateIndicatorWidget
         android:id="@+id/date_indicator"
-        android:visibility="invisible"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
-        android:paddingLeft="4dp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="@dimen/feed_date_indicator_horizontal_margin"
         android:layout_marginRight="@dimen/feed_horizontal_margin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:paddingLeft="4dp"
+        android:visibility="invisible"/>
 
-</FrameLayout>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/post"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:contentDescription="@string/btn_tabbar_action_post"
+        android:cropToPadding="false"
+        android:src="@drawable/btn_tabbar_post"
+        android:visibility="gone"
+        app:borderWidth="0dp"
+        app:elevation="4dp"
+        app:fabSize="normal"/>
+
+</android.support.design.widget.CoordinatorLayout>

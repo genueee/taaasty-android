@@ -1,6 +1,6 @@
 package ru.taaasty.ui.feeds;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -14,8 +14,8 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
-import ru.taaasty.SortedList;
 import ru.taaasty.Session;
+import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -66,12 +66,12 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
     protected abstract boolean isUserRefreshEnabled();
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (CustomErrorView) activity;
+            mListener = (CustomErrorView) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement CustomErrorView");
         }
     }
@@ -168,6 +168,9 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         return mCurrentUser;
     }
 
+    /**
+     * @return Активна какая-либо из загрузок: пользователь, рефреш, подгрузка
+     */
     public boolean isLoading() {
         return !mCurrentUserSubscription.isUnsubscribed() || mFeedLoader.isLoading();
     }

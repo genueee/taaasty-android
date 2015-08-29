@@ -2,6 +2,7 @@ package ru.taaasty.ui.post;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -26,11 +27,15 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
 
     private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateQuotePostFragment.edit_post";
     private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateQuotePostFragment.original_entry";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreateQuotePostFragment.tlog_id";
 
     private EditText mTextView;
     private EditText mSourceView;
 
     private boolean mEditPost;
+
+    @Nullable
+    private Long mTlogId;
 
     private OnCreatePostInteractionListener mListener;
 
@@ -40,8 +45,15 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
      * @return A new instance of fragment CreateTextPostFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static CreateQuotePostFragment newInstance() {
-        return new CreateQuotePostFragment();
+    public static CreateQuotePostFragment newInstance(@Nullable Long tlogId) {
+        CreateQuotePostFragment fragment =  new CreateQuotePostFragment();
+        if (tlogId != null) {
+            Bundle bundle = new Bundle(1);
+            bundle.putLong(ARG_TLOG_ID, tlogId);
+            fragment.setArguments(bundle);
+        }
+
+        return fragment;
     }
 
     public static CreateQuotePostFragment newEditPostInstance(Entry originalEntry) {
@@ -64,6 +76,13 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         EventBus.getDefault().register(this);
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
+            if (getArguments().containsKey(ARG_TLOG_ID)) {
+                mTlogId = getArguments().getLong(ARG_TLOG_ID);
+            } else {
+                mTlogId = null;
+            }
+        } else {
+            mTlogId = null;
         }
     }
 
@@ -78,6 +97,7 @@ public class CreateQuotePostFragment extends CreatePostFragmentBase {
         PostQuoteForm form= new PostQuoteForm();
         form.text = PostForm.getTextVievVal(mTextView);
         form.source = PostForm.getTextVievVal(mSourceView);
+        form.tlogId = mTlogId;
         return form;
     }
 

@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaScannerConnection;
@@ -29,6 +30,11 @@ import android.widget.ImageView;
 import com.aviary.android.feather.sdk.FeatherActivity;
 import com.aviary.android.feather.sdk.internal.Constants;
 import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -41,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.User;
@@ -428,7 +435,7 @@ public class ImageUtils {
         }
     }
 
-    public static interface DrawableTarget extends Target {
+    public interface DrawableTarget extends Target {
         public void onDrawableReady(Drawable drawable);
     }
 
@@ -522,6 +529,145 @@ public class ImageUtils {
 
     public static int getMaxTextureSize() {
         return sMaxTextureSize;
+    }
+
+    public static void loadGifWithProgress(final ImageView imageView,
+                                           String url,
+                                           Object okHttpTag,
+                                           int progressWidth, int progressHeight,
+                                           final com.squareup.picasso.Callback callback
+                                           ) {
+        OkHttpClient httpClient = NetworkUtils.getInstance().getOkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .tag(okHttpTag)
+                .build();
+
+        LayerDrawable loadingDrawable = (LayerDrawable)imageView.getResources()
+                .getDrawable(R.drawable.image_loading_with_progress)
+                .mutate();
+        Drawable progressBackground = loadingDrawable.findDrawableByLayerId(R.id.progress_background);
+        final Drawable progressIndicator = loadingDrawable.findDrawableByLayerId(R.id.progress_indicator);
+        ImageUtils.changeDrawableIntristicSizeAndBounds(progressBackground, progressWidth, progressHeight);
+
+        progressIndicator.setLevel(0);
+        imageView.setImageDrawable(loadingDrawable);
+
+        final Call okHttpCall =  httpClient
+                .newCall(request);
+
+        okHttpCall
+                .enqueue(new com.squareup.okhttp.Callback() {
+                    @Override
+                    public void onFailure(Request request, IOException e) {
+                        if (okHttpCall.isCanceled()) {
+                            if (DBG) Log.v(TAG, "load gif cancelled", e);
+                        } else {
+                            reportError(e);
+                        }
+                    }
+
+                    @Override
+                    public void onResponse(Response response) throws IOException {
+                        try {
+                            if (!response.isSuccessful()) {
+                                throw new IOException("Unexpected code " + response);
+                            }
+                            byte content[];
+                            if (response.networkResponse() == null) {
+                                content = response.body().bytes();
+                            } else {
+                                content = readResponseWithProgress(response);
+                            }
+
+                            final GifDrawable drawable = new GifDrawable(content);
+                            drawable.setLoopCount(0);
+                            imageView.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    imageView.setImageDrawable(drawable);
+                                    if (callback != null) callback.onSuccess();
+                                }
+                            });
+                        } catch (Throwable e) {
+                            reportError(e);
+                        }
+                    }
+
+                    class SetProgressRunnable implements Runnable {
+                        private final Drawable mDrawable;
+                        private final int mLevel;
+
+                        public SetProgressRunnable(Drawable drawable, long progress, long max) {
+                            mDrawable = drawable;
+                            if (max == 0) {
+                                mLevel = 0;
+                            } else {
+                                if (progress > max) progress = max;
+                                mLevel = (int) ((float) progress * 10000f / (float) max);
+                            }
+                        }
+
+                        @Override
+                        public void run() {
+                            if (DBG) Log.d(TAG, "mDrawable.setLevel " + mLevel);
+                            mDrawable.setLevel(mLevel);
+                        }
+                    }
+
+                    private byte[] readResponseWithProgress(Response response) throws IOException {
+                        byte bytes[];
+                        int pos;
+                        int nRead;
+                        long lastTs, lastPos;
+
+                        final long contentLength = response.body().contentLength();
+                        if (contentLength < 0 || contentLength > Integer.MAX_VALUE) {
+                            throw new IOException("Cannot buffer entire body for content length: " + contentLength);
+                        }
+
+                        imageView.post(new SetProgressRunnable(progressIndicator, 0, contentLength));
+                        InputStream source = response.body().byteStream();
+
+                        bytes = new byte[(int) contentLength];
+                        pos = 0;
+                        lastTs = System.nanoTime();
+                        lastPos = 0;
+                        try {
+                            while ((nRead = source.read(bytes, pos, bytes.length - pos)) != -1) {
+                                pos += nRead;
+
+                                long newTs = System.nanoTime();
+                                if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
+                                    lastTs = newTs;
+                                    lastPos = pos;
+                                    imageView.post(new SetProgressRunnable(progressIndicator, pos, contentLength));
+                                }
+                                if (pos == bytes.length) break;
+                            }
+                        } finally {
+                            Util.closeQuietly(source);
+                            imageView.post(new SetProgressRunnable(progressIndicator, 0, 0));
+                        }
+
+                        if (contentLength != -1 && contentLength != bytes.length) {
+                            throw new IOException("Content-Length and stream length disagree");
+                        }
+
+                        return bytes;
+                    }
+
+                    private void reportError(final Throwable exception) {
+                        Log.i("ListImageEntry", "load gif error", exception);
+                        imageView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                imageView.setImageResource(R.drawable.image_load_error);
+                                if (callback != null) callback.onError();
+                            }
+                        });
+                    }
+                });
     }
 
 }

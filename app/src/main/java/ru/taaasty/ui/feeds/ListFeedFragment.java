@@ -1,6 +1,6 @@
 package ru.taaasty.ui.feeds;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,9 +18,9 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.SortedList;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.Session;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
@@ -41,6 +41,7 @@ import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.DateIndicatorWidget;
@@ -50,7 +51,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class ListFeedFragment extends Fragment implements IRereshable,
+public class ListFeedFragment extends Fragment implements IFeedsFragment,
         ListFeedWorkRetainedFragment.TargetFragmentInteraction{
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ListFeedFragment";
@@ -84,7 +85,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
 
-    private TabbarFragment.AutoHideScrollListener mHideTabbarListener;
+    private FabHelper.AutoHideScrollListener mHideTabbarListener;
 
     public static ListFeedFragment createLiveFeedInstance() {
         return newInstance(FEED_LIVE);
@@ -127,12 +128,12 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnFragmentInteractionListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }
@@ -140,7 +141,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_list_feed, container, false);
+        View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
 
@@ -161,7 +162,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
 
-        mHideTabbarListener = new TabbarFragment.AutoHideScrollListener(mListener.getTabbar());
+        mHideTabbarListener = new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab());
         mListView.addOnScrollListener(mHideTabbarListener);
 
         Resources resource = getResources();
@@ -242,13 +243,15 @@ public class ListFeedFragment extends Fragment implements IRereshable,
         mListener = null;
     }
 
-    public boolean isHeaderVisisble() {
+    @Override
+    public boolean isHeaderVisible() {
         if (mListView == null) return false;
         View v0 = mListView.getChildAt(0);
         if (v0 == null) return false;
         return mListView.getChildViewHolder(v0) instanceof HeaderTitleSubtitleViewHolder;
     }
 
+    @Override
     public int getHeaderTop() {
         if (mListView == null) return 0;
         View v0 = mListView.getChildAt(0);
@@ -373,8 +376,9 @@ public class ListFeedFragment extends Fragment implements IRereshable,
 
         // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
         // при свайпе вверх, либо если адаптер пустой. В другом месте.
-        boolean isRefreshing = mWorkFragment == null || mWorkFragment.isRefreshing();
-        if (!isRefreshing) mRefreshLayout.setRefreshing(false);
+        if (mWorkFragment != null && !mWorkFragment.isLoading()) {
+            mRefreshLayout.setRefreshing(false);
+        }
 
         boolean listIsEmpty = mAdapter != null
                 && mWorkFragment != null
@@ -412,7 +416,7 @@ public class ListFeedFragment extends Fragment implements IRereshable,
                     child.setLayoutParams(params);
 
                     if (mFeedType == FEED_ANONYMOUS) {
-                        View anonymousButton = child.findViewById(R.id.create_anonymous_post);
+                        View anonymousButton = child.findViewById(R.id.create_anonymous_post_or_flow);
                         anonymousButton.setVisibility(View.VISIBLE);
                         anonymousButton.setOnClickListener(new View.OnClickListener() {
                             @Override

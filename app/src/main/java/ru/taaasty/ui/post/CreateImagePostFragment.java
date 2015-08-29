@@ -21,8 +21,6 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -41,6 +39,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final String ARG_EDIT_POST = "ru.taaasty.ui.post.CreateImagePostFragment.edit_post";
     private static final String ARG_ORIGINAL_ENTRY = "ru.taaasty.ui.post.CreateImagePostFragment.original_text";
     private static final String ARG_SHARED_IMAGE_URI = "ru.taaasty.ui.post.CreateImagePostFragment.ARG_SHARED_IMAGE_URI";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreateImagePostFragment.ARG_TLOG_ID";
 
     private static final String SHARED_PREFS_NAME = "CreateImagePostFragment";
     private static final String SHARED_PREFS_KEY_TITLE = "title";
@@ -68,10 +67,14 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
 
     private boolean mEditPost;
 
-    public static CreateImagePostFragment newInstance(@Nullable Uri sharedImageUri) {
+    @Nullable
+    private Long mTlogId;
+
+    public static CreateImagePostFragment newInstance(@Nullable Long tlogId, @Nullable Uri sharedImageUri) {
         CreateImagePostFragment fragment = new CreateImagePostFragment();
         Bundle bundle = new Bundle(1);
         bundle.putParcelable(ARG_SHARED_IMAGE_URI, sharedImageUri);
+        if (tlogId != null) bundle.putLong(ARG_TLOG_ID, tlogId);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -101,9 +104,15 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         if (getArguments() != null) {
             mEditPost = getArguments().getBoolean(ARG_EDIT_POST);
             mSharedImageUri = getArguments().getParcelable(ARG_SHARED_IMAGE_URI);
+            if (getArguments().containsKey(ARG_TLOG_ID)) {
+                mTlogId = getArguments().getLong(ARG_TLOG_ID);
+            } else {
+                mTlogId = null;
+            }
         } else {
             mEditPost = false;
             mSharedImageUri = null;
+            mTlogId = null;
         }
 
         EventBus.getDefault().register(this);
@@ -227,6 +236,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         PostImageForm form = new PostImageForm();
         form.title = mTitleView.getText().toString();
         form.imageUri = mImageUri;
+        form.tlogId = mTlogId;
         return form;
     }
 
@@ -307,16 +317,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
                     .skipMemoryCache()
                     .fit().centerInside()
                     .into(mImageView, mPicassoCallback);
-        }
-    }
-
-    private void deleteFileNoThrow(Uri uri) {
-        if (DBG) Log.v(TAG, "delete file " + uri);
-        if (ImageUtils.isUriInPicturesDirectory(getActivity(), uri)) {
-            try {
-                new File(new URI(uri.toString())).delete();
-            } catch (URISyntaxException ignore) {
-            }
         }
     }
 

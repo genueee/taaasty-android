@@ -1,6 +1,7 @@
 package ru.taaasty.rest.model;
 
 import android.os.Parcel;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
@@ -51,6 +52,10 @@ public class CurrentUser extends User implements android.os.Parcelable {
 
     @SerializedName("api_key")
     ApiKey mApiKey = ApiKey.DUMMY;
+
+    @Nullable
+    @SerializedName("features")
+    Features mFeatures;
 
     public ApiKey getApiKey() {
         return mApiKey;
@@ -164,14 +169,18 @@ public class CurrentUser extends User implements android.os.Parcelable {
         return 0;
     }
 
+    public boolean canCreateFlows() {
+        return mFeatures != null && mFeatures.flows;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
-
         dest.writeByte(mIsConfirmed ? (byte) 1 : (byte) 0);
         dest.writeByte(mAvailableNotifications ? (byte) 1 : (byte) 0);
         dest.writeString(mConfirmationEmail);
         dest.writeParcelable(this.mApiKey, flags);
+        dest.writeParcelable(this.mFeatures, flags);
     }
 
     public CurrentUser() {
@@ -183,6 +192,7 @@ public class CurrentUser extends User implements android.os.Parcelable {
         this.mAvailableNotifications = in.readByte() != 0;
         this.mConfirmationEmail = in.readString();
         this.mApiKey = in.readParcelable(ApiKey.class.getClassLoader());
+        this.mFeatures = in.readParcelable(Features.class.getClassLoader());
     }
 
     public static final Creator<CurrentUser> CREATOR = new Creator<CurrentUser>() {
@@ -194,4 +204,36 @@ public class CurrentUser extends User implements android.os.Parcelable {
             return new CurrentUser[size];
         }
     };
+
+    public static class Features implements android.os.Parcelable {
+
+        public boolean flows;
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeByte(flows ? (byte) 1 : (byte) 0);
+        }
+
+        public Features() {
+        }
+
+        protected Features(Parcel in) {
+            this.flows = in.readByte() != 0;
+        }
+
+        public static final Creator<Features> CREATOR = new Creator<Features>() {
+            public Features createFromParcel(Parcel source) {
+                return new Features(source);
+            }
+
+            public Features[] newArray(int size) {
+                return new Features[size];
+            }
+        };
+    }
 }
