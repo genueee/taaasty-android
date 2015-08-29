@@ -22,13 +22,13 @@
             android:summary="@string/title_tlog_summary"
             android:dialogTitle="@string/dialog_tlog_title" />
 
-        <SwitchPreference
+        <android.support.v7.preference.SwitchPreferenceCompat
             android:key="preference_is_privacy"
             android:persistent="false"
             android:title="@string/title_is_privacy"
             android:summary="@string/is_privacy_summary" />
 
-        <SwitchPreference
+        <android.support.v7.preference.SwitchPreferenceCompat
             android:key="preference_is_female"
             android:persistent="false"
             android:title="@string/title_is_female"
@@ -43,7 +43,7 @@
             android:summary="@string/summary_email"
             android:dialogTitle="@string/dialog_email_title" />
 
-        <SwitchPreference
+        <android.support.v7.preference.SwitchPreferenceCompat
             android:key="preference_available_notifications"
             android:persistent="false"
             android:title="@string/title_available_notifications"
@@ -54,7 +54,7 @@
     <PreferenceCategory
         android:title="@string/status_bar_notifications">
 
-        <SwitchPreference
+        <android.support.v7.preference.SwitchPreferenceCompat
             android:key="pref_key_enable_status_bar_notifications"
             android:title="@string/status_bar_notifications_turned_on" />
 

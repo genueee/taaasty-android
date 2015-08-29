@@ -1,9 +1,9 @@
 package ru.taaasty.ui;
 
-import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
@@ -34,7 +34,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
         if (savedInstanceState == null) {
             Fragment userInfoFragment = SettingsFragment.newInstance();
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment)
                     .commit();
         }
@@ -97,7 +97,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
     @Override
     public void onNestedPreferenceSelected(String key) {
-        getFragmentManager().beginTransaction().replace(R.id.container,
+        getSupportFragmentManager().beginTransaction().replace(R.id.container,
                 SettingsFragment.NotificationsSettingsNestedFragment.newInstance(key))
                         .addToBackStack(null).commit();
     }

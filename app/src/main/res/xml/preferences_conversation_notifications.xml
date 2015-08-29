@@ -3,7 +3,7 @@
     android:summary="@string/setup_notifications_on_new_messages"
     android:title="@string/status_bar_conversations_settings">
 
-    <SwitchPreference
+    <android.support.v7.preference.SwitchPreferenceCompat
         android:key="pref_key_enable_status_bar_conversations_notifications"
         android:title="@string/status_bar_notifications_turned_on" />
 

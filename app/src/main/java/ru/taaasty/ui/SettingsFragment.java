@@ -5,13 +5,12 @@ import android.app.Fragment;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.EditTextPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceGroup;
-import android.preference.SwitchPreference;
-import android.preference.TwoStatePreference;
-import android.text.InputFilter;
+import android.support.v7.preference.EditTextPreference;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceGroup;
+import android.support.v7.preference.SwitchPreferenceCompat;
+import android.support.v7.preference.TwoStatePreference;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -46,7 +45,7 @@ import rx.subscriptions.Subscriptions;
  * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragmentCompat {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ProfileFragment";
 
@@ -68,13 +67,13 @@ public class SettingsFragment extends PreferenceFragment {
 
     private EditTextPreference mTlogTitlePref;
 
-    private SwitchPreference mIsPrivacyPref;
+    private SwitchPreferenceCompat mIsPrivacyPref;
 
-    private SwitchPreference mIsFemalePref;
+    private SwitchPreferenceCompat mIsFemalePref;
 
     private EditTextPreference mEmailPref;
 
-    private SwitchPreference mAvailableNotificationsPref;
+    private SwitchPreferenceCompat mAvailableNotificationsPref;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -83,9 +82,11 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
+    @Override
+    public void onCreatePreferences(Bundle bundle, String s) {
         getPreferenceManager().setSharedPreferencesName(PreferenceHelper.PREFS_NAME);
-
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.profile_preferences);
     }
@@ -112,10 +113,10 @@ public class SettingsFragment extends PreferenceFragment {
         mApiUsers = RestClient.getAPiUsers();
         mUsernamePref = (EditTextPreference) findPreference("preference_user_name");
         mTlogTitlePref = (EditTextPreference) findPreference("preference_tlog_title");
-        mIsPrivacyPref = (SwitchPreference) findPreference("preference_is_privacy");
-        mIsFemalePref = (SwitchPreference) findPreference("preference_is_female");
+        mIsPrivacyPref = (SwitchPreferenceCompat) findPreference("preference_is_privacy");
+        mIsFemalePref = (SwitchPreferenceCompat) findPreference("preference_is_female");
         mEmailPref = (EditTextPreference) findPreference("preference_email");
-        mAvailableNotificationsPref = (SwitchPreference) findPreference("preference_available_notifications");
+        mAvailableNotificationsPref = (SwitchPreferenceCompat) findPreference("preference_available_notifications");
 
         Preference.OnPreferenceClickListener nestedClickListener = new Preference.OnPreferenceClickListener() {
             @Override
@@ -184,7 +185,7 @@ public class SettingsFragment extends PreferenceFragment {
             mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindFragment(this,
+        Observable<CurrentUser> observableCurrentUser = AppObservable.bindSupportFragment(this,
                 mApiUsers.getMyInfo());
 
         mUserSubscription = observableCurrentUser
@@ -228,7 +229,7 @@ public class SettingsFragment extends PreferenceFragment {
         setOnPreferenceChangeListeners(null);
         mUsernamePref.setText(mCurrentUser.getName());
         mUsernamePref.setSummary(mCurrentUser.getName());
-        mUsernamePref.getEditText().setFilters(new InputFilter[]{new UsernameFilter()});
+        //mUsernamePref.getEditText().setFilters(new InputFilter[]{new UsernameFilter()});
 
         if (TextUtils.isEmpty(mCurrentUser.getTitle())) {
             mTlogTitlePref.setSummary(R.string.title_tlog_summary);
@@ -265,7 +266,7 @@ public class SettingsFragment extends PreferenceFragment {
             mStopRefreshingAction.call();
         }
 
-        mPutSubscription = AppObservable.bindFragment(this, observable)
+        mPutSubscription = AppObservable.bindSupportFragment(this, observable)
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mUpdateUserObserver);
@@ -406,7 +407,7 @@ public class SettingsFragment extends PreferenceFragment {
         void onNestedPreferenceSelected(String key);
     }
 
-    public static class NotificationsSettingsNestedFragment extends PreferenceFragment {
+    public static class NotificationsSettingsNestedFragment extends PreferenceFragmentCompat {
         private static final String TAG_KEY = "TAG_KEY";
 
         public static NotificationsSettingsNestedFragment newInstance(String key) {
@@ -419,8 +420,7 @@ public class SettingsFragment extends PreferenceFragment {
         }
 
         @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        public void onCreatePreferences(Bundle bundle, String s) {
             getPreferenceManager().setSharedPreferencesName(PreferenceHelper.PREFS_NAME);
 
             String key = getArguments().getString(TAG_KEY);

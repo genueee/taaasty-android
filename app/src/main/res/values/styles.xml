@@ -51,6 +51,7 @@
 
     <style name="SettingsActivityTheme" parent="AppTheme">
         <item name="android:listViewStyle">@style/ListViewStyle</item> <!-- списки в настройках -->
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
 
     <style name="ToolbarThemeDark" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
