@@ -219,6 +219,8 @@ public final class RestClient {
         private final Session mSession;
         private final String mBasicAuth;
 
+        private static final String VERSION_NAME = BuildConfig.VERSION_NAME.replace('–', '-');
+
         AddHeadersRequestInterceptor(){
             mSession = Session.getInstance();
             if (!TextUtils.isEmpty(BuildConfig.API_SERVER_LOGIN) && !TextUtils.isEmpty(BuildConfig.API_SERVER_PASSWORD)) {
@@ -232,7 +234,7 @@ public final class RestClient {
         @Override
         public void intercept(RequestFacade request) {
             request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
-            request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, BuildConfig.VERSION_NAME);
+            request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, VERSION_NAME);
             String token = mSession.getCurrentUserToken();
             if (token != null) {
                 request.addHeader(Constants.HEADER_X_USER_TOKEN, token);

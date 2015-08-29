@@ -58,6 +58,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                         .setFontAttrId(R.attr.fontPath)
                         .build()
         );
+
         NetworkUtils.getInstance().onAppInit(this);
         Session.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);

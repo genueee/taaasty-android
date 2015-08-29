@@ -23,6 +23,13 @@
 
 -keep class ru.taaasty.rest.model.** { *; }
 
+#Retrofit
+-dontwarn org.apache.http.**
+-dontwarn android.net.http.AndroidHttpClient
+-dontwarn retrofit.client.ApacheClient$GenericEntityHttpRequest
+-dontwarn retrofit.client.ApacheClient$GenericHttpRequest
+-dontwarn retrofit.client.ApacheClient$TypedOutputEntity
+
 # Eventbus
 -keepclassmembers class ** {
     public void onEvent*(**);
@@ -46,28 +53,6 @@
 -dontwarn java.nio.file.*
 -dontwarn com.squareup.okhttp.internal.http.*
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
-
-#google play services
--keep class * extends java.util.ListResourceBundle {
-    protected Object[][] getContents();
-}
-
--keep public class com.google.android.gms.common.internal.safeparcel.SafeParcelable {
-    public static final *** NULL;
-}
-
--keepnames @com.google.android.gms.common.annotation.KeepName class *
--keepclassmembernames class * {
-    @com.google.android.gms.common.annotation.KeepName *;
-}
-
--keepnames class * implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
-
--keep public class com.google.android.gms.analytics.** {
-    public *;
-}
 
 #android-gif-drawable
 -keep public class pl.droidsonroids.gif.GifIOException{<init>(int);}

@@ -1,5 +1,6 @@
 package ru.taaasty.ui.feeds;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -464,6 +465,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             }
         }
 
+        @SuppressLint("WrongConstant")
         void bindTitleName(HeaderHolder holder) {
             TextView feedNameView = (TextView)holder.itemView.findViewById(R.id.feed_name);
             feedNameView.setVisibility(isFeedNameVisible(mFeedType) ? View.VISIBLE : View.GONE);
