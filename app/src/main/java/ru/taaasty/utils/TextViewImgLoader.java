@@ -14,6 +14,7 @@ import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -32,7 +33,7 @@ public class TextViewImgLoader {
     private static final String TAG = "TextViewImgLoader";
 
     public static interface OnClickListener {
-        public void onImageClicked(TextView widget, String source);
+        void onImageClicked(TextView widget, String source);
     }
 
     private final Picasso mPicasso;
@@ -43,7 +44,6 @@ public class TextViewImgLoader {
     private final OnClickListener mListener;
 
     final Set<ImgTarget> mTargets = new HashSet<>(2);
-
 
     private static TextViewImgLoader bindToView(TextView view, OnClickListener listener) {
         TextViewImgLoader imgLoader = (TextViewImgLoader)view.getTag(R.id.tag_text_view_img_loader);
@@ -83,9 +83,19 @@ public class TextViewImgLoader {
             ImgTarget target = new ImgTarget(span);
             mTextView = view;
             mTargets.add(target);
+
+            int maxWidth = guessMaxWidth(mTextView, span);
+            int maxHeight = ImageUtils.getMaxTextureSize();
+
+            if (DBG) Log.v(TAG, "picasso resize: " + maxWidth + "x" + maxHeight);
+
             mPicasso
                     .load(span.getSource())
                     .error(R.drawable.image_load_error)
+                    .config(Bitmap.Config.RGB_565)
+                    .resize(maxWidth, maxHeight)
+                    .onlyScaleDown()
+                    .centerInside()
                     .into(target);
         }
         if (mTargets.isEmpty()) mTextView = null;
@@ -167,6 +177,26 @@ public class TextViewImgLoader {
         }
     }
 
+    private static int guessMaxWidth(@Nullable TextView textView, ImageSpan span) {
+        int width;
+        if (textView != null
+                && textView.getWidth() != 0
+                && textView.getLayoutParams().width == ViewGroup.LayoutParams.MATCH_PARENT) {
+            width = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
+            if (DBG) Log.v(TAG, "guessMaxWidth() textView width: " + width);
+        } else {
+            width = span.getDrawable().getIntrinsicWidth();
+            if (width == 0) width = span.getDrawable().getBounds().width();
+            if (DBG) Log.v(TAG, "guessMaxWidth() span intristic width: "
+                    + span.getDrawable().getIntrinsicWidth() + " bounds width: "
+                    + span.getDrawable().getBounds().width());
+        }
+
+        int maxTextureSize = ImageUtils.getMaxTextureSize();
+
+        return width == 0 ? maxTextureSize : Math.min(width, maxTextureSize);
+    }
+
     private class ImgTarget implements Target {
 
         private final ImageSpan mImageSpan;
@@ -179,14 +209,9 @@ public class TextViewImgLoader {
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             // Масштабируем вручную, иначе какие-то проблемы с памятью в ImageView
             // Размеры TextView тут могут быть еще неизвестны. Пытаемся угадать откуда-нибудь из drawable
-            int width;
-            if (mTextView.getWidth() != 0) {
-                width = mTextView.getWidth() - mTextView.getPaddingLeft() - mTextView.getPaddingRight();
-            } else {
-                width = mImageSpan.getDrawable().getIntrinsicWidth();
-                if (width == 0) width = mImageSpan.getDrawable().getBounds().width();
-            }
+            int width = guessMaxWidth(mTextView, mImageSpan);
             int bitmapWidth = bitmap.getWidth();
+            if (DBG) Log.v(TAG, "onBitmapLoaded() bitmap width: " + bitmapWidth + " guessed width: " + width);
             if (width != 0 && (bitmapWidth > width)) {
                 float scale = (float)width / (float)bitmapWidth;
                 Matrix m = new Matrix();

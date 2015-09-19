@@ -1,32 +1,40 @@
 package ru.taaasty.adapters;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
-import ru.taaasty.SortedList;
 import ru.taaasty.Session;
+import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.ui.ImageLoadingGetter;
+import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
+import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
@@ -34,7 +42,7 @@ import ru.taaasty.widgets.RelativeDateTextSwitcher;
 public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ru.taaasty.adapters.ConversationAdapter";
+    private static final String TAG = "ConversationAdapter";
 
     public static final int VIEW_TYPE_HEADER_MORE_BUTTON = R.id.conversation_view_more_button;
     public static final int VIEW_TYPE_MY_MESSAGE = R.id.conversation_view_my_message;
@@ -51,6 +59,10 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     protected TlogDesign mFeedDesign;
 
     private final ImageUtils mImageUtils;
+
+    private ImageLoadingGetter mImageGetterMyMessage;
+
+    private ImageLoadingGetter mImageGetterTheirMessage;
 
     public ConversationAdapter(Context context) {
         super();
@@ -72,11 +84,59 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 break;
             case VIEW_TYPE_MY_MESSAGE:
                 res = mInflater.inflate(R.layout.conversation_my_message, parent, false);
-                holder = ViewHolderMessage.createMyMessageHolder(res);
+                ConversationAdapter.ViewHolderMessage myHolder;
+                myHolder = ViewHolderMessage.createMyMessageHolder(res);
+                if (mImageGetterMyMessage == null) {
+                    // Вычисление примерного максимального размера бабла с текстом
+                    // TODO придумать что-нибудь поприличнее, чтобы не зависеть от разметки
+                    int maxBubbleTextSize = getParentWidth(parent);
+
+                    ViewGroup.MarginLayoutParams lpItemView = (ViewGroup.MarginLayoutParams) myHolder.itemView.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - myHolder.itemView.getPaddingLeft() - myHolder.itemView.getPaddingRight()
+                            - lpItemView.leftMargin - lpItemView.rightMargin;
+
+                    ViewGroup.MarginLayoutParams lpText = (ViewGroup.MarginLayoutParams) myHolder.text.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - myHolder.text.getPaddingLeft() - myHolder.text.getPaddingRight()
+                            - lpText.leftMargin - lpText.rightMargin;
+
+                    ViewGroup.MarginLayoutParams lpAvatar = (ViewGroup.MarginLayoutParams) myHolder.avatar.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - myHolder.avatar.getPaddingLeft() - myHolder.avatar.getPaddingRight()
+                            - lpAvatar.leftMargin - lpAvatar.rightMargin - lpAvatar.width
+                    ;
+
+                    mImageGetterMyMessage = new ImageLoadingGetter(maxBubbleTextSize, parent.getContext());
+                }
+                holder = myHolder;
                 break;
             case VIEW_TYPE_THEIR_MESSAGE:
                 res = mInflater.inflate(R.layout.conversation_their_message, parent, false);
-                holder = ViewHolderMessage.createTheirMessageHolder(res);
+                ConversationAdapter.ViewHolderMessage theirHolder = ViewHolderMessage.createTheirMessageHolder(res);
+                if (mImageGetterTheirMessage == null) {
+                    int maxBubbleTextSize;
+                    maxBubbleTextSize = getParentWidth(parent);
+
+                    ViewGroup.MarginLayoutParams lpItemView = (ViewGroup.MarginLayoutParams) theirHolder.itemView.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - theirHolder.itemView.getPaddingLeft() - theirHolder.itemView.getPaddingRight()
+                            - lpItemView.leftMargin - lpItemView.rightMargin;
+
+                    ViewGroup.MarginLayoutParams lpText = (ViewGroup.MarginLayoutParams) theirHolder.text.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - lpText.leftMargin - lpText.rightMargin
+                            - theirHolder.text.getPaddingLeft() - theirHolder.text.getPaddingRight()
+                    ;
+
+                    ViewGroup.MarginLayoutParams lpAvatar = (ViewGroup.MarginLayoutParams) theirHolder.avatar.getLayoutParams();
+                    maxBubbleTextSize = maxBubbleTextSize
+                            - theirHolder.avatar.getPaddingLeft() - theirHolder.avatar.getPaddingRight()
+                            - lpAvatar.leftMargin - lpAvatar.rightMargin - lpAvatar.width;
+
+                    mImageGetterTheirMessage = new ImageLoadingGetter(maxBubbleTextSize, parent.getContext());
+                }
+                holder = theirHolder;
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -92,6 +152,20 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             bindHeader(viewHolder, position);
         } else {
             bindMessage((ViewHolderMessage) viewHolder, mMessages.get(getFeedLocation(position)));
+            if (((ViewHolderMessage) viewHolder).text.getWidth() != 0) {
+                Log.v(TAG, "onBindViewHolder text width: " +
+                        (((ViewHolderMessage) viewHolder).text.getWidth()
+                        - ((ViewHolderMessage) viewHolder).text.getPaddingLeft() - ((ViewHolderMessage) viewHolder).text.getPaddingRight())
+                );
+            }
+        }
+    }
+
+    @Override
+    public void onViewRecycled(RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder instanceof ViewHolderMessage) {
+            ((ViewHolderMessage) holder).textImgLoader.reset();
         }
     }
 
@@ -255,20 +329,26 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         User author = getMember(message.userId);
         CharSequence text;
 
+        Html.ImageGetter imageGetter = holder.isMyMessage ? mImageGetterMyMessage : mImageGetterTheirMessage;
+
+        CharSequence msg = UiUtils.removeTrailingWhitespaces(Html.fromHtml(message.contentHtml, imageGetter, null));
+        msg = UiUtils.replaceUrlSpans(msg, true);
+
         if (author != null) {
             SpannableStringBuilder ssb = new SpannableStringBuilder(author.getNameWithPrefix());
             UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
             ssb.append(' ');
-            if (!TextUtils.isEmpty(message.contentHtml)) {
-                ssb.append(Html.fromHtml(message.contentHtml));
+            if (!TextUtils.isEmpty(msg)) {
+                ssb.append(msg);
             }
             text = ssb;
         } else {
             // Автор неизвестен, скорее всего, переписка ещё не загружена
-            text = TextUtils.isEmpty(message.contentHtml) ? null : Html.fromHtml(message.contentHtml);
+            text = TextUtils.isEmpty(msg) ? null : msg;
         }
 
         holder.text.setText(text);
+        holder.textImgLoader.loadImages(holder.text);
     }
 
     private void bindAvatar(ViewHolderMessage holder, Conversation.Message message) {
@@ -282,6 +362,22 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             holder.relativeDate.setCompoundDrawablesWithIntrinsicBounds(0, 0,
                     message.readAt == null ? R.drawable.ic_done_grey_10dp : R.drawable.ic_done_all_grey_10dp, 0);
         }
+    }
+
+    private int getParentWidth(ViewGroup parent) {
+        int parentWidth = parent.getWidth();
+        if (parentWidth == 0) {
+            WindowManager wm = (WindowManager) parent.getContext().getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) parent.getLayoutParams();
+            parentWidth = size.x - lp.leftMargin - lp.rightMargin;
+            if (DBG) Log.v(TAG, "display width: " + size.x);
+        } else {
+            if (DBG) Log.v(TAG, "parent width: " + parentWidth);
+        }
+        return parentWidth - parent.getPaddingLeft() - parent.getPaddingRight();
     }
 
     private final class MessageFeed extends SortedList<Conversation.Message> {
@@ -351,6 +447,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
         public final RelativeDateTextSwitcher relativeDate;
 
+        public final TextViewImgLoader textImgLoader;
+
         public static ViewHolderMessage createMyMessageHolder(View root) {
             return new ViewHolderMessage(root, true);
         }
@@ -366,6 +464,17 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             text = (TextView)v.findViewById(R.id.message);
             text.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
             relativeDate = (RelativeDateTextSwitcher)v.findViewById(R.id.relative_date);
+            textImgLoader = new TextViewImgLoader(v.getContext(), SHOW_PHOTO_ON_CLICK_LISTENER);
         }
     }
+
+    private static final TextViewImgLoader.OnClickListener SHOW_PHOTO_ON_CLICK_LISTENER = new TextViewImgLoader.OnClickListener() {
+        @Override
+        public void onImageClicked(TextView widget, String source) {
+            CharSequence seq = widget.getText();
+            ArrayList<String> sources = UiUtils.getImageSpanUrls(seq);
+            ShowPhotoActivity.startShowPhotoActivity(widget.getContext(), "", sources, null, widget);
+        }
+    };
+
 }

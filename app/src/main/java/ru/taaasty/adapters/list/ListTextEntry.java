@@ -122,7 +122,7 @@ public class ListTextEntry extends ListEntryBase {
             CharSequence seq = widget.getText();
             ArrayList<String> sources = UiUtils.getImageSpanUrls(seq);
             if (!sources.isEmpty()) {
-                ShowPhotoActivity.startShowPhotoActivity(widget.getContext(), mUser, mTitle.getText().toString(), sources, null, widget);
+                ShowPhotoActivity.startShowPhotoActivity(widget.getContext(), mTitle.getText().toString(), sources, null, widget);
             }
         }
     };

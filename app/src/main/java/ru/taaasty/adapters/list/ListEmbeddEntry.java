@@ -194,7 +194,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
             CharSequence seq = widget.getText();
             ArrayList<String> sources = UiUtils.getImageSpanUrls(seq);
             if (!sources.isEmpty()) {
-                ShowPhotoActivity.startShowPhotoActivity(widget.getContext(), mUser, mTitle.getText().toString(), sources, null, widget);
+                ShowPhotoActivity.startShowPhotoActivity(widget.getContext(), mTitle.getText().toString(), sources, null, widget);
             }
         }
     };

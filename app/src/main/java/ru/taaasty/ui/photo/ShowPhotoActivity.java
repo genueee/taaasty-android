@@ -26,13 +26,11 @@ import java.util.List;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
-import ru.taaasty.rest.model.User;
 import ru.taaasty.widgets.PhotoScrollPositionIndicator;
 
 public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment.OnFragmentInteractionListener {
     public static final String ARG_IMAGE_URL_LIST = "ru.taaasty.ui.photo.ShowPhotoActivity.image_url_list";
     public static final String ARG_TITLE = "ru.taaasty.ui.photo.ShowPhotoActivity.title";
-    public static final String ARG_AUTHOR = "ru.taaasty.ui.photo.ShowPhotoActivity.author";
     public static final String ARG_PREVIEW_URL = "ru.taaasty.ui.photo.ShowPhotoActivity.ARG_PREVIEW_URL";
 
     private static final int HIDE_ACTION_BAR_DELAY = 5000;
@@ -46,7 +44,6 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     private boolean mIndicatorVisible = false;
 
     public static void startShowPhotoActivity(Context context,
-                                              User author,
                                               String title,
                                               List<String> images,
                                               String previewUrl,
@@ -61,7 +58,6 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         }
         intent.putStringArrayListExtra(ShowPhotoActivity.ARG_IMAGE_URL_LIST, imagesList);
         intent.putExtra(ShowPhotoActivity.ARG_TITLE, title);
-        intent.putExtra(ShowPhotoActivity.ARG_AUTHOR, author);
         if (previewUrl != null) intent.putExtra(ShowPhotoActivity.ARG_PREVIEW_URL, previewUrl);
 
         if (animateFrom != null) {
@@ -79,7 +75,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
     public static void startShowPhotoActivity(Context context, Entry entry, String previewUrl, View animateFrom) {
         final ArrayList<String> images = entry.getImageUrls(false);
-        startShowPhotoActivity(context, entry.getAuthor(), entry.getTitle(), images,  previewUrl, animateFrom);
+        startShowPhotoActivity(context, entry.getTitle(), images,  previewUrl, animateFrom);
     }
 
     public static boolean canShowEntry(Entry entry) {
@@ -93,7 +89,6 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
 
         ArrayList<String> images = getIntent().getStringArrayListExtra(ARG_IMAGE_URL_LIST);
         String title = getIntent().getStringExtra(ARG_TITLE);
-        User author = getIntent().getParcelableExtra(ARG_AUTHOR);
         String previewUrl = getIntent().getStringExtra(ARG_PREVIEW_URL);
 
         if (images == null) {

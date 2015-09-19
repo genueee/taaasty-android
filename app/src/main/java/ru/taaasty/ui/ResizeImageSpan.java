@@ -17,7 +17,7 @@ import java.lang.ref.WeakReference;
  */
 public class ResizeImageSpan extends ImageSpan {
 
-    private static final int MIN_SCALE_WIDTH = 240;
+    private static final int MIN_SCALE_SIZE = 240;
 
     // TextView's width.
     private int mContainerWidth;
@@ -34,7 +34,7 @@ public class ResizeImageSpan extends ImageSpan {
         Rect rect = getResizedDrawableBounds(d);
 
         if (fm != null) {
-            fm.ascent = -rect.bottom + fm.leading - fm.top; // XXX: магия. не всегда работает
+            fm.ascent = -rect.bottom; // XXX: магия. не всегда работает
             fm.descent = 0;
 
             fm.top = fm.ascent;
@@ -49,8 +49,8 @@ public class ResizeImageSpan extends ImageSpan {
 
         if (d.getIntrinsicWidth() < mContainerWidth ) {
             // Image smaller than container's width.
-            if (d.getIntrinsicWidth() > MIN_SCALE_WIDTH &&
-                    d.getIntrinsicWidth() >= d.getIntrinsicHeight()) {
+            if (d.getIntrinsicWidth() > MIN_SCALE_SIZE
+                    || (d.getIntrinsicHeight() > MIN_SCALE_SIZE)) {
                 // But larger than the minimum scale size, we need to scale the image to fit
                 // the width of the container.
                 int scaledWidth = mContainerWidth;
