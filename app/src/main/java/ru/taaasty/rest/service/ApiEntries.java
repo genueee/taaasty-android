@@ -115,15 +115,6 @@ public interface ApiEntries {
     @POST("/entries/{id}/report.json")
     Observable<Object> reportEntry(@Path("id") Long id);
 
-    /**
-     * Удаление статьи
-     * @param id
-     * @return
-     */
-    @DELETE("/entries/{id}.json")
-    Observable<Object> deleteEntry(@Path("id") Long id);
-
-
     @POST("/entries/{entry_id}/votes.json")
     Observable<Rating> vote(@Path("entry_id") long entryId);
 

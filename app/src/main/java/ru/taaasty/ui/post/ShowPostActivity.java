@@ -47,6 +47,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     private static final String TAG = "ShowPostActivity";
 
     private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_id";
     private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
     private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
     private static final String ARG_SHOW_FULL_POST = "ru.taaasty.ui.feeds.ShowPostActivity.show_full_post";
@@ -60,6 +61,11 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     private boolean mShowFullPost;
 
     private long mPostId;
+
+    /**
+     * ID тлога, при просмотре которого был открыт этот пост. Нужен при удалении постов, например
+     */
+    private long mTlogId;
 
     public static class Builder {
 
@@ -75,6 +81,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         private Long mCommentId;
 
+        private Long mTlogId;
+
         private Bitmap mThumbnailBitmap;
 
         private String mThumbnailBitmapCacheKey;
@@ -87,6 +95,11 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         public Builder setEntryId(long entryId) {
             mPostId = entryId;
+            return this;
+        }
+
+        public Builder setTlogId(long tlogId) {
+            mTlogId = tlogId;
             return this;
         }
 
@@ -129,6 +142,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             Intent intent = new Intent(mContext, ShowPostActivity.class);
             intent.putExtra(ShowPostActivity.ARG_POST_ID, mEntry == null ? (long)mPostId : mEntry.getId());
             if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
+            if (mTlogId != null) intent.putExtra(ShowPostActivity.ARG_TLOG_ID, mTlogId.longValue());
             if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
             if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
 
@@ -183,11 +197,12 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         mHideActionBarHandler = new Handler();
 
+        mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
+        if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
+        mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, -1);
 
         if (savedInstanceState == null) {
             // TODO: скролл к комментарию
-            mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
-            if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
 
             String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
             setupActionbar(null, null, design);
@@ -347,9 +362,11 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     void showShareMenu() {
         Entry entry = getCurrentEntry();
         if (entry != null) {
-            Intent intent = new Intent(this, SharePostActivity.class);
-            intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-            startActivity(intent);
+            if (mTlogId > 0) {
+                SharePostActivity.startActivity(this, entry, mTlogId);
+            } else {
+                SharePostActivity.startActivity(this, entry);
+            }
         }
     }
 

@@ -164,9 +164,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        Intent intent = new Intent(this, SharePostActivity.class);
-        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        startActivity(intent);
+        SharePostActivity.startActivity(this, entry);
     }
 
     void refreshData() {

@@ -64,6 +64,7 @@ public class Session {
         mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE).edit().clear().commit();
     }
 
+    @Nullable
     public Long getCurrentUserId() {
         return mCurrentUser == null ? null : mCurrentUser.getId();
     }

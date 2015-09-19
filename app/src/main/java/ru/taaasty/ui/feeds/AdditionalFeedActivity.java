@@ -27,7 +27,9 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.widgets.ErrorTextView;
 
-
+/**
+ * Избранные и скрытые
+ */
 public class AdditionalFeedActivity extends ActivityBase implements MyAdditionalFeedFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "AdditionalFeedActivity";
@@ -166,9 +168,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        Intent intent = new Intent(this, SharePostActivity.class);
-        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        startActivity(intent);
+        SharePostActivity.startActivity(this, entry);
     }
 
     void refreshData() {

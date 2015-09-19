@@ -28,6 +28,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.VkontakteHelper;
 import ru.taaasty.events.VkGlobalEvent;
@@ -35,7 +36,9 @@ import ru.taaasty.rest.model.Entry;
 
 public class SharePostActivity extends ActivityBase {
 
-    public static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.entry";
+    private  static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.ARG_ENTRY";
+    private  static final String ARG_TLOG_ID = "ru.taaasty.ui.post.SharePostActivity.ARG_TLOG_ID";
+
     private static final Uri VKONTAKTE_SHARE_URL = Uri.parse("http://vk.com/share.php");
     private static final String VK_APP_PACKAGE_ID = "com.vkontakte.android";
 
@@ -45,7 +48,22 @@ public class SharePostActivity extends ActivityBase {
 
     private Entry mEntry;
 
+    private long mTlogId;
+
     private boolean mDoShareVkontakte;
+
+    public static void startActivity(Context context, Entry entry, long tlogId) {
+        Intent intent = new Intent(context, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        intent.putExtra(SharePostActivity.ARG_TLOG_ID, tlogId);
+        context.startActivity(intent);
+    }
+
+    public static void startActivity(Context context, Entry entry) {
+        Intent intent = new Intent(context, SharePostActivity.class);
+        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
+        context.startActivity(intent);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +71,12 @@ public class SharePostActivity extends ActivityBase {
         setContentView(R.layout.activity_share_post);
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
+
+        if (getIntent().hasExtra(ARG_TLOG_ID)) {
+            mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, -1);
+        } else {
+            mTlogId = Session.getInstance().getCurrentUserId();
+        }
 
         if (savedInstanceState != null) {
             mDoShareVkontakte = savedInstanceState.getBoolean(KEY_DO_SHARE_VKONTAKTE);
@@ -152,7 +176,7 @@ public class SharePostActivity extends ActivityBase {
 
     public void deletePost(View view) {
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Удалить", null);
-        DeleteOrReportDialogActivity.startDeletePost(this, mEntry.getId());
+        DeleteOrReportDialogActivity.startDeletePost(this, mTlogId, mEntry.getId());
         finish();
     }
 

@@ -249,10 +249,8 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void onSharePostMenuClicked(Entry entry) {
-        Intent intent = new Intent(this, SharePostActivity.class);
-        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        startActivity(intent);
+    public void onSharePostMenuClicked(Entry entry, long tlogId) {
+        SharePostActivity.startActivity(this, entry, tlogId);
     }
 
     @Override

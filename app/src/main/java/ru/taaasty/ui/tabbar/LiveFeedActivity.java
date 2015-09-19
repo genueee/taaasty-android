@@ -1,6 +1,5 @@
 package ru.taaasty.ui.tabbar;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -27,8 +26,8 @@ import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
@@ -268,9 +267,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        Intent intent = new Intent(this, SharePostActivity.class);
-        intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        startActivity(intent);
+        SharePostActivity.startActivity(this, entry);
     }
 
     public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {

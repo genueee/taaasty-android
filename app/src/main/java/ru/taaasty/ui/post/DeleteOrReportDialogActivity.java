@@ -48,11 +48,13 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     private static final int ACTION_REPORT_COMMENT = 3;
 
-    private static final String ARG_ACTION_ID = "ru.taaasty.ui.post.CommentActionActivity.ARG_ACTION_ID";
+    private static final String ARG_ACTION_ID = "ru.taaasty.ui.post.DeleteOrReportDialogActivity.ARG_ACTION_ID";
 
-    private static final String ARG_COMMENT_ID = "ru.taaasty.ui.post.CommentActionActivity.ARG_COMMENT_ID";
+    private static final String ARG_COMMENT_ID = "ru.taaasty.ui.post.DeleteOrReportDialogActivity.ARG_COMMENT_ID";
 
-    private static final String ARG_POST_ID = "ru.taaasty.ui.post.CommentActionActivity.ARG_POST_ID";
+    private static final String ARG_POST_ID = "ru.taaasty.ui.post.DeleteOrReportDialogActivity.ARG_POST_ID";
+
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.DeleteOrReportDialogActivity.ARG_TLOG_ID";
 
     TextView mTitle;
 
@@ -64,37 +66,36 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     Subscription mSubscription = Subscriptions.unsubscribed();
 
-    private static void startActivityAction(Context context, int actionId, long postId, long commentId) {
-        Intent i = new Intent(context, DeleteOrReportDialogActivity.class);
-        i.putExtra(ARG_ACTION_ID, actionId);
-        switch(actionId) {
-            case ACTION_DELETE_COMMENT:
-            case ACTION_REPORT_COMMENT:
-                i.putExtra(ARG_POST_ID, postId);
-                i.putExtra(ARG_COMMENT_ID, commentId);
-                break;
-            default:
-                i.putExtra(ARG_POST_ID, postId);
-                break;
-        }
-
-        context.startActivity(i);
+    private static Intent createIntent(Context context, int actionId) {
+        Intent intent = new Intent(context, DeleteOrReportDialogActivity.class);
+        intent.putExtra(ARG_ACTION_ID, ACTION_DELETE_POST);
+        return intent;
     }
 
-    public static void startDeletePost(Context context, long postId) {
-        startActivityAction(context, ACTION_DELETE_POST, postId, -1);
+    public static void startDeletePost(Context context, long tlogId, long postId) {
+        Intent intent = createIntent(context, ACTION_DELETE_POST);
+        intent.putExtra(ARG_POST_ID, postId);
+        intent.putExtra(ARG_TLOG_ID, tlogId);
+        context.startActivity(intent);
     }
 
     public static void startReportPost(Context context, long postId) {
-        startActivityAction(context, ACTION_REPORT_POST, postId, -1);
+        Intent intent = createIntent(context, ACTION_REPORT_POST);
+        intent.putExtra(ARG_POST_ID, postId);
+        context.startActivity(intent);
     }
 
     public static void startDeleteComment(Context context, long postId, long commentId) {
-        startActivityAction(context, ACTION_DELETE_COMMENT, postId, commentId);
+        Intent intent = createIntent(context, ACTION_DELETE_COMMENT);
+        intent.putExtra(ARG_POST_ID, postId);
+        intent.putExtra(ARG_COMMENT_ID, commentId);
+        context.startActivity(intent);
     }
 
     public static void startReportComment(Context context, long commentId) {
-        startActivityAction(context, ACTION_REPORT_COMMENT, -1, commentId);
+        Intent intent = createIntent(context, ACTION_REPORT_COMMENT);
+        intent.putExtra(ARG_COMMENT_ID, commentId);
+        context.startActivity(intent);
     }
 
     @Override
@@ -104,6 +105,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         int actionId = getIntent().getIntExtra(ARG_ACTION_ID, -1);
         long commentId = getIntent().getLongExtra(ARG_COMMENT_ID, -1);
         long postId = getIntent().getLongExtra(ARG_POST_ID, -1);
+        long tlogId = getIntent().getLongExtra(ARG_TLOG_ID, -1);
 
         mTitle = (TextView)findViewById(R.id.title);
         mButton = (TextView)findViewById(R.id.delete_comment_button);
@@ -126,7 +128,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         switch (actionId) {
             case ACTION_DELETE_POST:
-                mActionHandler = new DeletePostActionHandler(postId);
+                mActionHandler = new DeletePostActionHandler(tlogId, postId);
                 break;
             case ACTION_REPORT_POST:
                 mActionHandler = new ReportPostActionHandler(postId);
@@ -196,20 +198,22 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         }
     };
 
-
     private interface ActionHandler {
-        abstract void onCreate();
-        abstract Observable<Object> createObservable();
-        abstract void onError(Throwable e);
-        abstract void onCompleted();
-        abstract void onNext(Object o);
+        void onCreate();
+        Observable<Object> createObservable();
+        void onError(Throwable e);
+        void onCompleted();
+        void onNext(Object o);
     }
 
     private class DeletePostActionHandler implements ActionHandler {
 
+        private final long mTlogId;
+
         private final long mPostId;
 
-        public DeletePostActionHandler(long postId) {
+        public DeletePostActionHandler(long tlogId, long postId) {
+            mTlogId = tlogId;
             mPostId = postId;
         }
 
@@ -222,7 +226,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         @Override
         public Observable<Object> createObservable() {
             ApiEntries service = RestClient.getAPiEntries();
-            return service.deleteEntry(mPostId);
+            return RestClient.getApiReposts().deletePost(mTlogId, mPostId);
         }
 
         @Override

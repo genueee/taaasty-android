@@ -24,6 +24,7 @@ import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.rest.service.ApiRelationships;
+import ru.taaasty.rest.service.ApiReposts;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.rest.service.ApiUsers;
@@ -51,6 +52,7 @@ public final class RestClient {
     private volatile ApiSessions mApiSessions;
     private volatile ApiTlog mApiTlog;
     private volatile ApiUsers mApiUsers;
+    private volatile ApiReposts mApiReposts;
 
     private RestClient() {
         mRestAdapter = new RestAdapter.Builder()
@@ -131,6 +133,19 @@ public final class RestClient {
         }
         return instance.mApiEntries;
     }
+
+    public static ApiReposts getApiReposts() {
+        RestClient instance = getInstance();
+        if (instance.mApiReposts == null) {
+            synchronized (RestClient.class) {
+                if (instance.mApiReposts == null) {
+                    instance.mApiReposts = instance.mRestAdapter.create(ApiReposts.class);
+                }
+            }
+        }
+        return instance.mApiReposts;
+    }
+
 
     public static ApiFeeds getAPiFeeds() {
         RestClient instance = getInstance();

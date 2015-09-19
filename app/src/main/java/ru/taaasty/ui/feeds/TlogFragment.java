@@ -52,7 +52,6 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiRelationships;
-import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.UserInfoActivity;
@@ -779,7 +778,13 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         @Override
         public void onPostAdditionalMenuClicked(View view, Entry entry) {
-            if (mListener != null) mListener.onSharePostMenuClicked(entry);
+            if (mWorkFragment != null && mWorkFragment.getUserId() != null) {
+                if (mListener != null) mListener.onSharePostMenuClicked(entry, mWorkFragment.getUserId());
+            } else {
+                // User ID ещё неизвестен. Может быть, если тлог открыт по слагу.
+                // TODO что-нибудь делать
+                // TODO запретить такой вариант, показывать посты только после того, как инфа загружена?
+            }
         }
     };
 
@@ -925,6 +930,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         @Nullable
         public TlogInfo getUser() {
             return mUser;
+        }
+
+        @Nullable
+        public Long getUserId() {
+            return mUserId;
         }
 
         /**
@@ -1168,7 +1178,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         void onTlogInfoLoaded(TlogInfo info);
-        void onSharePostMenuClicked(Entry entry);
+        void onSharePostMenuClicked(Entry entry, long tlogId);
         void onListClicked();
         void onNoSuchUser();
         void onFollowingStatusChanged();
