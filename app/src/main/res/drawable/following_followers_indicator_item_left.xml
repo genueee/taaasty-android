@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_activated="true" android:drawable="@drawable/following_followers_indicator_left_green_rect"/>
-    <item android:drawable="@android:color/transparent"/>
-</selector>

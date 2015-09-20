@@ -2,6 +2,7 @@ package ru.taaasty.ui.relationships;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -9,9 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-
-import java.util.Locale;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -60,6 +58,8 @@ public class FollowingFollowersActivity extends ActivityBase implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_following_followers);
 
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+
         mUser = getIntent().getParcelableExtra(ARG_USER);
         if (mUser == null) throw new IllegalArgumentException("no user");
 
@@ -72,13 +72,13 @@ public class FollowingFollowersActivity extends ActivityBase implements
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setOffscreenPageLimit(4);
 
+        tabLayout.setupWithViewPager(mViewPager);
+
         boolean showRequests = mUser.isPrivacy();
 
         int initialSection = getIntent().getIntExtra(ARG_KEY_SHOW_SECTION, SECTION_FOLLOWERS);
-
-        PagerIndicator indicator = new PagerIndicator((ViewGroup)findViewById(R.id.following_followers_indicator), mViewPager, showRequests);
         if (initialSection == SECTION_REQUESTS && !showRequests) initialSection = SECTION_FOLLOWERS;
-        indicator.setSection(initialSection);
+        mViewPager.setCurrentItem(section2ViewPagerPosition(initialSection, showRequests), false);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
     }
@@ -183,97 +183,17 @@ public class FollowingFollowersActivity extends ActivityBase implements
 
         @Override
         public CharSequence getPageTitle(int position) {
-            Locale l = Locale.getDefault();
             switch (viewPagerPosition2Section(position, mShowRequests)) {
                 case SECTION_FOLLOWERS:
-                    return getString(R.string.title_followers).toUpperCase(l);
+                    return getString(R.string.title_followers);
                 case SECTION_FOLLOWINGS:
-                    return getString(R.string.title_followings).toUpperCase(l);
+                    return getString(R.string.title_followings);
                 case SECTION_REQUESTS:
-                    return getString(R.string.title_requests).toUpperCase(l);
+                    return getString(R.string.title_requests);
                 case SECTION_FRIENDS:
-                    return getString(R.string.title_friends).toUpperCase(l);
+                    return getString(R.string.title_friends);
             }
             return null;
         }
     }
-
-    /**
-     * Индикатор сверху: "Подписки - подписчики - друзья"
-     */
-    private static class PagerIndicator implements ViewPager.OnPageChangeListener, View.OnClickListener {
-        private final ViewGroup mRoot;
-        private final ViewPager mPager;
-
-        private final boolean mShowRequests;
-
-        public PagerIndicator(ViewGroup root, ViewPager pager, boolean showRequests) {
-            mRoot = root;
-            mPager = pager;
-            mShowRequests = showRequests;
-            mPager.setOnPageChangeListener(this);
-            int count = mRoot.getChildCount();
-            for (int i = 0; i < count; ++i) mRoot.getChildAt(i).setOnClickListener(this);
-            mRoot.findViewById(R.id.your_requests_indicator).setVisibility(mShowRequests ? View.VISIBLE : View.GONE);
-        }
-
-        public void setSection(int section) {
-            mPager.setCurrentItem(section2ViewPagerPosition(section, mShowRequests), false);
-            setActivatedView(section);
-        }
-
-        private static int section2ViewId(int section) {
-            int viewId;
-            switch (section) {
-                case SECTION_FOLLOWERS: viewId = R.id.your_followers_indicator; break;
-                case SECTION_FOLLOWINGS: viewId = R.id.you_follow_indicator; break;
-                case SECTION_REQUESTS: viewId = R.id.your_requests_indicator; break;
-                case SECTION_FRIENDS: viewId = R.id.your_friends_indicator; break;
-                default: throw new IllegalArgumentException();
-            }
-            return viewId;
-        }
-
-        private static int viewId2Section(int viewId) {
-            int section;
-            switch (viewId) {
-                case R.id.your_followers_indicator: section = SECTION_FOLLOWERS; break;
-                case R.id.you_follow_indicator: section = SECTION_FOLLOWINGS; break;
-                case R.id.your_requests_indicator: section = SECTION_REQUESTS; break;
-                case R.id.your_friends_indicator: section = SECTION_FRIENDS; break;
-                default: throw new IllegalStateException();
-            }
-            return section;
-        }
-
-        private void setActivatedView(int section) {
-            int viewId = section2ViewId(section);
-            int count = mRoot.getChildCount();
-            for (int i = 0; i < count; ++i) {
-                View child = mRoot.getChildAt(i);
-                child.setActivated(child.getId() == viewId);
-            }
-        }
-
-        @Override
-        public void onPageScrolled(int i, float v, int i2) {
-
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            setActivatedView(viewPagerPosition2Section(position, mShowRequests));
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int i) {
-
-        }
-
-        @Override
-        public void onClick(View v) {
-            mPager.setCurrentItem(section2ViewPagerPosition(viewId2Section(v.getId()), mShowRequests), true);
-        }
-    }
-
 }

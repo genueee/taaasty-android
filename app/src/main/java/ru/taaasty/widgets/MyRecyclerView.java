@@ -11,6 +11,7 @@ import java.util.WeakHashMap;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.adapters.IParallaxedHeaderHolder;
 
 /**
  * RecyclerView с параметрами, которые все равно везде ставим
@@ -50,6 +51,11 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
         if (vh != null && vh instanceof ScrollEventConsumerVh) {
             mScrollListeners.add((ScrollEventConsumerVh)vh);
         }
+
+        if (vh instanceof IParallaxedHeaderHolder) {
+            vh.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder) vh);
+        }
+
     }
 
     @Override
@@ -59,7 +65,13 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
         if (vh != null && vh instanceof ScrollEventConsumerVh) {
             mScrollListeners.remove(vh);
         }
+
+        if (vh != null && vh instanceof IParallaxedHeaderHolder && vh.itemView.getViewTreeObserver().isAlive()) {
+            vh.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) vh);
+        }
     }
+
+
 
     @Override
     public void onScrollStateChanged(int newState) {
