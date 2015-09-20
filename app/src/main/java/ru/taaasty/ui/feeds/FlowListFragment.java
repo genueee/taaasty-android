@@ -93,10 +93,6 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
-
-        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
 
         mHideTabbarListener = new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab());
         mListView.addOnScrollListener(mHideTabbarListener);

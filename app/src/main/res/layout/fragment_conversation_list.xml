@@ -21,7 +21,7 @@
         tools:visibility="visible"
         style="@style/EmptyTextStyle" />
 
-    <android.support.v7.widget.RecyclerView
+    <ru.taaasty.widgets.MyRecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

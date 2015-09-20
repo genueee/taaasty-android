@@ -66,7 +66,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_conversations, container, false);
+        View root = inflater.inflate(R.layout.fragment_conversation_list, container, false);
         mListView = (RecyclerView)root.findViewById(R.id.list);
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
@@ -75,7 +75,6 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
         mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override

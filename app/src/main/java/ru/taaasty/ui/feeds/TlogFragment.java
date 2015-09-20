@@ -176,7 +176,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                 refreshData(false);
             }
         });
-        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
         mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
 
             @Override
@@ -189,8 +188,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
         //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);

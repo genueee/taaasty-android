@@ -152,8 +152,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
         //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarShown()));
 
         setupEmptyView(v);
@@ -185,7 +183,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
         mAdapter.registerAdapterDataObserver(mDateIndicatorHelper.adapterDataObserver);
         mListView.addOnScrollListener(mDateIndicatorHelper.onScrollListener);
-        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
         mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
             @Override
             void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {

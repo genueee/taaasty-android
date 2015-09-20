@@ -27,7 +27,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.adapters.FeedItemAdapterLite;
-import ru.taaasty.adapters.ScrollEventConsumer;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -215,28 +214,6 @@ public class FeedsHelper {
                 List<ResolveInfo> infos = manager.queryIntentActivities(intent, 0);
                 if (infos.size() > 0) {
                     context.startActivity(intent);
-                }
-            }
-        }
-    }
-
-    // TODO вынести это в свой RecyclerView?
-    public static class StopGifOnScroll extends RecyclerView.OnScrollListener {
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {}
-
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            int childCount = recyclerView.getChildCount();
-            boolean stopScroll = newState == RecyclerView.SCROLL_STATE_IDLE;
-            for (int i = 0; i < childCount; ++i) {
-                RecyclerView.ViewHolder vh = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
-                if (vh instanceof ScrollEventConsumer) {
-                    if (stopScroll) {
-                        ((ScrollEventConsumer) vh).onStopScroll();
-                    } else {
-                        ((ScrollEventConsumer) vh).onStartScroll();
-                    }
                 }
             }
         }

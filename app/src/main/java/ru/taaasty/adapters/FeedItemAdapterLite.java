@@ -174,7 +174,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         if (holder instanceof IParallaxedHeaderHolder) {
             holder.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }
-        if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onAttachedToWindow();
     }
 
     @Override
@@ -183,7 +182,6 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         if (holder instanceof IParallaxedHeaderHolder && holder.itemView.getViewTreeObserver().isAlive()) {
             holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }
-        if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onDetachedFromWindow();
     }
 
     @Override

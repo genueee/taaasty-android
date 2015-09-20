@@ -24,7 +24,6 @@ import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.adapters.ScrollEventConsumer;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.ImageInfo;
 import ru.taaasty.rest.model.TlogDesign;
@@ -37,8 +36,9 @@ import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ExtendedImageView;
+import ru.taaasty.widgets.MyRecyclerView;
 
-public class ListImageEntry extends ListEntryBase implements Callback, ScrollEventConsumer {
+public class ListImageEntry extends ListEntryBase implements Callback, MyRecyclerView.ScrollEventConsumerVh {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ListImageEntry";
 
@@ -60,8 +60,6 @@ public class ListImageEntry extends ListEntryBase implements Callback, ScrollEve
     private OkHttpClient mOkHttpClient = null;
 
     private final Object mGitLoadTag = this;
-
-    private boolean mAttachedToWindow;
 
     public ListImageEntry(final Context context, View v, boolean showAuthorAvatar) {
         super(context, v, showAuthorAvatar);
@@ -125,22 +123,12 @@ public class ListImageEntry extends ListEntryBase implements Callback, ScrollEve
         }
     }
 
-    public void onAttachedToWindow() {
-        mAttachedToWindow = true;
-        startGifDrawable();
-    }
-
-    public void onDetachedFromWindow() {
-        mAttachedToWindow = false;
+    public void onStartScroll() {
         stopGifDrawable();
     }
 
-    public void onStartScroll() {
-        if (mAttachedToWindow) stopGifDrawable();
-    }
-
     public void onStopScroll() {
-        if (mAttachedToWindow) startGifDrawable();
+        startGifDrawable();
     }
 
     private void startGifDrawable() {

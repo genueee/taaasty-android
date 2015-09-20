@@ -24,6 +24,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.Locale;
 
+import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Flow;
@@ -31,6 +32,7 @@ import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.MyRecyclerView;
 
 public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -380,7 +382,7 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    public final class ViewHolderItem extends ViewHolder implements  com.squareup.picasso.Callback {
+    public final class ViewHolderItem extends ViewHolder implements com.squareup.picasso.Callback, MyRecyclerView.ScrollEventConsumerVh {
 
         public final ImageView image;
 
@@ -421,6 +423,31 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             image.setScaleType(ImageView.ScaleType.FIT_XY);
             imageLoading = false;
         }
+
+        @Override
+        public void onStartScroll() {
+            stopGifDrawable();
+        }
+
+        @Override
+        public void onStopScroll() {
+            startGifDrawable();
+        }
+
+        private void startGifDrawable() {
+            Drawable drawable = image.getDrawable();
+            if (drawable != null && drawable instanceof GifDrawable){
+                ((GifDrawable) drawable).start();
+            }
+        }
+
+        private void stopGifDrawable() {
+            Drawable drawable = image.getDrawable();
+            if (drawable != null && drawable instanceof GifDrawable){
+                ((GifDrawable) drawable).stop();
+            }
+        }
+
     }
 
     public interface InteractionListener {

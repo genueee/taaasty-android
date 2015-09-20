@@ -134,8 +134,6 @@ public class ConversationFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {

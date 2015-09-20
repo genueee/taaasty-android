@@ -22,6 +22,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TimingLogger;
@@ -531,6 +532,7 @@ public class ImageUtils {
         return sMaxTextureSize;
     }
 
+    // TODO не показывать прогресс и не анимировать GIF при скролле
     public static void loadGifWithProgress(final ImageView imageView,
                                            String url,
                                            Object okHttpTag,
@@ -610,7 +612,7 @@ public class ImageUtils {
 
                         @Override
                         public void run() {
-                            if (DBG) Log.d(TAG, "mDrawable.setLevel " + mLevel);
+                            //if (DBG) Log.d(TAG, "mDrawable.setLevel " + mLevel);
                             mDrawable.setLevel(mLevel);
                         }
                     }

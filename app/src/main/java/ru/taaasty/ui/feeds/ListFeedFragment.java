@@ -155,12 +155,9 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarVisibleOnPost()));
 
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
-        mListView.addOnScrollListener(new FeedsHelper.StopGifOnScroll());
 
         mHideTabbarListener = new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab());
         mListView.addOnScrollListener(mHideTabbarListener);

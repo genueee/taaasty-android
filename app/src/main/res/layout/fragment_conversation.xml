@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
 
-    <android.support.v7.widget.RecyclerView
+    <ru.taaasty.widgets.MyRecyclerView
         android:id="@+id/recycler_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

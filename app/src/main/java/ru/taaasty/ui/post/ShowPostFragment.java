@@ -199,8 +199,6 @@ public class ShowPostFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManagerNonFocusable(getActivity());
 
         mListView.setLayoutManager(lm);
-        mListView.getItemAnimator().setAddDuration(getResources().getInteger(R.integer.longAnimTime));
-        mListView.getItemAnimator().setSupportsChangeAnimations(false);
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             private boolean mEdgeReachedCalled = true;
 
@@ -593,18 +591,6 @@ public class ShowPostFragment extends Fragment {
             } else {
                 throw new IllegalStateException();
             }
-        }
-
-        @Override
-        public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
-            super.onViewDetachedFromWindow(holder);
-            if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onAttachedToWindow();
-        }
-
-        @Override
-        public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
-            super.onViewAttachedToWindow(holder);
-            if (holder instanceof  ListImageEntry) ((ListImageEntry) holder).onDetachedFromWindow();
         }
 
         @Override
