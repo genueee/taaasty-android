@@ -47,8 +47,6 @@
     <color name="semi_transparent_action_bar_light">#b6ffffff</color>
     <color name="view_pager_progress_indicator">#e0ffffff</color>
 
-    <color name="grid_item_image_loading_color">#ffd5d5d5</color>
-
     <color name="no_frame_dialog_background">#d0000000</color>
     <color name="embedd_play_gray_background">#50000000</color>
 
