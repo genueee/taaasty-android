@@ -1,0 +1,57 @@
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                 xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                 xmlns:tools="http://schemas.android.com/tools"
+                                                 android:layout_width="match_parent"
+                                                 android:layout_height="match_parent"
+                                                 tools:context="ru.taaasty.ui.tabbar.NotificationsActivity"
+                                                 tools:ignore="MergeRootFrame">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:navigationIcon="@null"/>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/tabbar_size"
+        android:clipToPadding="false"
+        android:divider="@drawable/followings_list_divider"
+        android:paddingBottom="8dp"
+        android:paddingLeft="@dimen/feed_horizontal_margin"
+        android:paddingRight="@dimen/feed_horizontal_margin"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="vertical"
+        android:smoothScrollbar="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/notifications_item"/>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        style="?android:progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="visible"
+        tools:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/empty_text"
+        style="@style/EmptyTextStyle"
+        android:layout_gravity="center"
+        android:paddingLeft="@dimen/feed_horizontal_margin"
+        android:paddingRight="@dimen/feed_horizontal_margin"
+        android:text="@string/no_notifications"
+        tools:visibility="visible"/>
+
+</android.support.design.widget.CoordinatorLayout>
+
+

@@ -16,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
@@ -144,7 +146,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.fragment_notifications, container, false);
+        View root = inflater.inflate(R.layout.fragment_notification_list, container, false);
         mListView = (RecyclerView)root.findViewById(R.id.list);
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
@@ -179,6 +181,9 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
         mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
+
+        ((ActivityBase)getActivity()).setSupportActionBar((Toolbar) getView().findViewById(R.id.toolbar));
+        ((ActivityBase)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);
     }
 
     @Override

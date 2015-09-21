@@ -2,7 +2,6 @@ package ru.taaasty.ui.tabbar;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -24,9 +23,6 @@ public class NotificationsActivity extends TabbarActivityBase implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_notifications);
-
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 
         if (savedInstanceState == null) {
             long markArReadIds[] = null;
