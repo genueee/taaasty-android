@@ -171,7 +171,6 @@ public class ShowPhotoFragment extends Fragment {
             mPhotoViewAttacher.cleanup();
         }
         mPhotoViewAttacher = new OutPhotoViewAttacher(mPhotoView);
-        mPhotoViewAttacher.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mPhotoViewAttacher.setOnPhotoTapListener(mOnTapListener);
         if (changeAttacher) {
             mPhotoViewAttacher.setScale(lastScale);
