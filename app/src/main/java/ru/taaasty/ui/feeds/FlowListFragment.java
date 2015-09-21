@@ -233,7 +233,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
                     if (position > 0) {
                         Flow flow = mAdapter.getFlow(position);
                         if (flow != null) {
-                            TlogActivity.startTlogActivity(getActivity(), flow.getSlug(), v);
+                            TlogActivity.startTlogActivity(getActivity(), flow.getId(), v);
                         }
                     }
                 }

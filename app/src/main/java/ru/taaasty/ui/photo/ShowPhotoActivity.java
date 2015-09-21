@@ -15,7 +15,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -26,6 +25,7 @@ import java.util.List;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
+import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.PhotoScrollPositionIndicator;
 
 public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment.OnFragmentInteractionListener {
@@ -102,7 +102,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         viewPager.setAdapter(mAdapter);
 
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        setTitle(title == null ?  "" : Html.fromHtml(title));
+        setTitle(UiUtils.safeFromHtml(title).toString());
     }
 
     public boolean onOptionsItemSelected(MenuItem item) {
