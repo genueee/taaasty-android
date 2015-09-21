@@ -174,7 +174,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     }
 
     @Override
-    public void onPhotoTap() {
+    public void onPhotoClicked() {
         userForcedToChangeOverlayMode = true;
         toggleShowOrHideHideyBarMode();
     }

@@ -166,7 +166,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.0.1'
     compile 'com.android.support:preference-v7:23.0.1'
     compile 'com.facebook.android:facebook-android-sdk:4.4.0'
-    compile 'com.github.chrisbanes.photoview:library:1.2.3'
+    compile 'com.davemorrissey.labs:subsampling-scale-image-view:3.2.0'
     compile 'io.reactivex:rxjava:1.0.14'
     compile 'io.reactivex:rxandroid:0.25.0'
     compile 'com.google.android.gms:play-services-analytics:7.8.0'

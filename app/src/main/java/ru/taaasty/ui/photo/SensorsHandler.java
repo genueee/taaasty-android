@@ -16,8 +16,8 @@ import android.view.Surface;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 
+import io.intercom.uk.co.senab.photoview.PhotoViewAttacher;
 import ru.taaasty.BuildConfig;
-import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
  * Created by alexey on 05.10.14.
