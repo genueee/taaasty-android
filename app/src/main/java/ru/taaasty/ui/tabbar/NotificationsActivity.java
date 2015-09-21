@@ -32,6 +32,11 @@ public class NotificationsActivity extends TabbarActivityBase implements
             Fragment fragment = NotificationListFragment.newInstance(markArReadIds);
             getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
         }
+
+        // Используем background у фрагмента. Там стоит тот же background, что и у activity - так и должно быть,
+        // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
+        // системные кнопки и background на activity лежит под ними.
+        getWindow().setBackgroundDrawable(null);
     }
 
     @Override

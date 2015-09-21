@@ -152,12 +152,6 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             bindHeader(viewHolder, position);
         } else {
             bindMessage((ViewHolderMessage) viewHolder, mMessages.get(getFeedLocation(position)));
-            if (((ViewHolderMessage) viewHolder).text.getWidth() != 0) {
-                Log.v(TAG, "onBindViewHolder text width: " +
-                        (((ViewHolderMessage) viewHolder).text.getWidth()
-                        - ((ViewHolderMessage) viewHolder).text.getPaddingLeft() - ((ViewHolderMessage) viewHolder).text.getPaddingRight())
-                );
-            }
         }
     }
 

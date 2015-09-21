@@ -77,6 +77,7 @@
 -keep public class * extends android.support.design.widget.CoordinatorLayout.Behavior { *; }
 -keep public class * extends android.support.design.widget.ViewOffsetBehavior { *; }
 -keepclassmembers class android.support.design.widget.FloatingActionButton$Behavior { public <init>(); }
+-keep public class * extends android.support.v7.preference.Preference { *; }
 
 
 # vk
