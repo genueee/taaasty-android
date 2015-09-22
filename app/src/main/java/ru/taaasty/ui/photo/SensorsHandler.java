@@ -45,6 +45,9 @@ public class SensorsHandler implements SensorEventListener {
     @Nullable
     private Animator mAnimator;
 
+
+    private final PointF mTmpPoint = new PointF();
+
     public SensorsHandler(Activity activity, SubsamplingScaleImageView view) {
         mActivity = activity;
         mPhotoView = view;
@@ -153,13 +156,15 @@ public class SensorsHandler implements SensorEventListener {
         final Matrix matrix;
         ValueAnimator va;
 
-        if (DBG) Log.v(TAG, "Scroll left");
-        stopScroll();
 
         if (!mPhotoView.isReady()) return;
 
+        mPhotoView.viewToSourceCoord(mPhotoView.getWidth() / 2, mPhotoView.getHeight() / 2, mTmpPoint);
+
+        if (DBG) Log.v(TAG, "Scroll left dst: 0," + mTmpPoint.y);
+
         mPhotoView
-                .animateCenter(new PointF(0, 0))
+                .animateCenter(new PointF(0, mTmpPoint.y))
                 .withInterruptible(true)
                 .withDuration(5000)
                 .start();
@@ -206,13 +211,16 @@ public class SensorsHandler implements SensorEventListener {
         final Matrix matrix;
         ValueAnimator va;
 
-        if (DBG) Log.v(TAG, "Scroll left");
-        stopScroll();
-
         if (!mPhotoView.isReady()) return;
 
+        mPhotoView.viewToSourceCoord(mPhotoView.getWidth() / 2, mPhotoView.getHeight() / 2, mTmpPoint);
+
+        int right = mPhotoView.getSWidth();
+
+        if (DBG) Log.v(TAG, "Scroll right dst: " + right + "x" + mTmpPoint.y);
+
         mPhotoView
-                .animateCenter(new PointF(Long.MAX_VALUE, 0))
+                .animateCenter(new PointF(right, mTmpPoint.y))
                 .withInterruptible(true)
                 .withDuration(5000)
                 .start();
@@ -253,7 +261,10 @@ public class SensorsHandler implements SensorEventListener {
 
     public void stopScroll() {
         if (DBG) Log.v(TAG, "Scroll stop");
-        mPhotoView.clearAnimation();
+
+        //mPhotoView.viewToSourceCoord(mPhotoView.getWidth() / 2, mPhotoView.getHeight() / 2, mTmpPoint);
+        //mPhotoView.animateCenter(mTmpPoint).start();
+
         /*if (mAnimator != null) {
             mAnimator.cancel();
             mAnimator = null;
