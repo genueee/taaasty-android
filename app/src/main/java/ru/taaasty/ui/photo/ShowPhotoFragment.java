@@ -13,7 +13,9 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,6 +35,9 @@ import ru.taaasty.utils.ImageUtils;
  * create an instance of this fragment.
  *
  */
+// TODO prefiew
+// TODO свыход по свайпу вверх
+// TODO индикатор
 public class ShowPhotoFragment extends Fragment {
     private static final String TAG = "ShowPhotoFragment";
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -51,11 +56,13 @@ public class ShowPhotoFragment extends Fragment {
     private SensorManager mSensorManager;
     @Nullable
     private Sensor mSensor;
-    //private SensorsHandler mSensorHandler;
+    private SensorsHandler mSensorHandler;
 
     private boolean mPreviewLoaded = false;
 
     private Target mTarget;
+
+    private GestureDetector mGestureDetector;
 
     public static ShowPhotoFragment newInstance(String url, String preview) {
         ShowPhotoFragment fragment = new ShowPhotoFragment();
@@ -93,17 +100,6 @@ public class ShowPhotoFragment extends Fragment {
             mUrl = getArguments().getString(ARG_URL);
             mPreviewBitmap = getArguments().getString(ARG_PREVIEW_URL);
         }
-
-        /*
-        mSensorHandler = new SensorsHandler(getActivity()) {
-            @Override
-            public PhotoViewAttacher getPhotoAttacher() {
-                return mPhotoViewAttacher;
-            }
-        };*/
-        mSensorManager = (SensorManager)getActivity().getSystemService(Activity.SENSOR_SERVICE);
-        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-        if (mSensor == null) Log.i(TAG, "no ROTATION VECTOR sensor");
     }
 
     @Override
@@ -111,6 +107,8 @@ public class ShowPhotoFragment extends Fragment {
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_show_photo_item, container, false);
         mPhotoView = (SubsamplingScaleImageView)root.findViewById(R.id.image_view);
+
+        mGestureDetector = createGestureDetector();
         mPhotoView.setMinimumDpi(160/2);
         mPhotoView.setDebug(DBG);
         mPhotoView.setDoubleTapZoomDpi(160 / 2);
@@ -155,6 +153,20 @@ public class ShowPhotoFragment extends Fragment {
                 if (mListener != null) mListener.onPhotoClicked();
             }
         });
+        mPhotoView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // В любой непонятной ситуации останавливаем скролл
+                if (mSensorHandler != null) mSensorHandler.stopScroll();
+                // return mGestureDetector.onTouchEvent(event);
+                return false;
+            }
+        });
+
+        mSensorHandler = new SensorsHandler(getActivity(), mPhotoView);
+        mSensorManager = (SensorManager)getActivity().getSystemService(Activity.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        if (mSensor == null) Log.i(TAG, "no ROTATION VECTOR sensor");
 
         return root;
     }
@@ -196,21 +208,21 @@ public class ShowPhotoFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        //if (mSensor != null) mSensorManager.registerListener(mSensorHandler, mSensor, SensorManager.SENSOR_DELAY_UI);
-        //mSensorHandler.onResume();
+        if (mSensor != null) mSensorManager.registerListener(mSensorHandler, mSensor, SensorManager.SENSOR_DELAY_UI);
+        mSensorHandler.onResume();
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        //mSensorHandler.onConfigurationChanged(newConfig);
+        mSensorHandler.onConfigurationChanged(newConfig);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        //if (mSensor != null) mSensorManager.unregisterListener(mSensorHandler);
-        //mSensorHandler.onPause();
+        if (mSensor != null) mSensorManager.unregisterListener(mSensorHandler);
+        mSensorHandler.onPause();
     }
 
     @Override
@@ -218,15 +230,15 @@ public class ShowPhotoFragment extends Fragment {
         super.onDestroyView();
         mPhotoView = null;
         mTarget = null;
-        //mSensorHandler.stopScroll();
+        mSensorHandler.stopScroll();
+        mSensorHandler.onDestroy();
+        mSensorHandler = null;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         mPreviewBitmap = null;
-        //mSensorHandler.onDestroy();
-        //mSensorHandler = null;
     }
 
     /*
@@ -252,50 +264,36 @@ public class ShowPhotoFragment extends Fragment {
     }
     */
 
-    /**
-     * PhotoViewAttacher с перехватом свайпа вверх
-     */
-    /*
-    private final class OutPhotoViewAttacher extends PhotoViewAttacher {
 
+    /**
+     * MyGestureDetector с перехватом свайпа вверх
+     */
+    private GestureDetector createGestureDetector() {
+        Context context = getContext();
         final float velYThreshold;
         final float minDistance;
-
-        final GestureDetector mGestureDetector;
-
-        public OutPhotoViewAttacher(ImageView imageView) {
-            super(imageView);
-            float density = getResources().getDisplayMetrics().density;
-            velYThreshold = 3000 * density;
-            minDistance = 20 * density;
-
-            if (DBG) Log.v(TAG, "velYThreshold: " + velYThreshold);
-            mGestureDetector = new GestureDetector(imageView.getContext(), new GestureDetector.SimpleOnGestureListener() {
+        float density = context.getResources().getDisplayMetrics().density;
+        velYThreshold = 3000 * density;
+        minDistance = 20 * density;
+        GestureDetector detector = new GestureDetector(context, new android.view.GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                     if (e1 == null || e2 == null) return false; // Какого-то хрена на android > 4 оно иногда срабатывает
                     if (e1.getY() - e2.getY() < minDistance) return false;
-                    // if (Math.abs(velocityY) < velYThreshold) return false;
+                    /*
                     if (getDisplayRect().bottom > mPhotoView.getHeight()) {
                         // Низ изображения ниже нижней границы mPhotoView
                         return false;
                     }
+                    */
                     getActivity().finish();
                     return false;
                 }
-            });
-            mGestureDetector.setIsLongpressEnabled(false);
-        }
+        });
+        detector.setIsLongpressEnabled(false);
 
-        @Override
-        public boolean onTouch(View v, MotionEvent ev) {
-            // В любой непонятной ситуации останавливаем скролл
-            //if (mSensorHandler != null) mSensorHandler.stopScroll();
-            if (mGestureDetector.onTouchEvent(ev)) return true;
-            return super.onTouch(v, ev);
-        }
+        return detector;
     }
-    */
 
     private final Target mPicassoPreviewTarget = new Target() {
         @Override

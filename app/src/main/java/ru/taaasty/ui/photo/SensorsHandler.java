@@ -5,6 +5,7 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Matrix;
+import android.graphics.PointF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,8 +14,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Surface;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+
+import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import io.intercom.uk.co.senab.photoview.PhotoViewAttacher;
 import ru.taaasty.BuildConfig;
@@ -22,7 +24,7 @@ import ru.taaasty.BuildConfig;
 /**
  * Created by alexey on 05.10.14.
  */
-public abstract class SensorsHandler implements SensorEventListener {
+public class SensorsHandler implements SensorEventListener {
     private static final String TAG = "SensorsHandler";
     private static final boolean DBG = BuildConfig.DEBUG;
 
@@ -34,6 +36,8 @@ public abstract class SensorsHandler implements SensorEventListener {
     private final int mAnimationSpeed;
     private int mRotation;
 
+    private final SubsamplingScaleImageView mPhotoView;
+
     private final float[] mAzumuthPitchRoll = new float[3];
     private final float[] mRotationMatrix = new float[9];
     private final float[] mMappedMatrix = new float[9];
@@ -41,8 +45,9 @@ public abstract class SensorsHandler implements SensorEventListener {
     @Nullable
     private Animator mAnimator;
 
-    public SensorsHandler(Activity activity) {
+    public SensorsHandler(Activity activity, SubsamplingScaleImageView view) {
         mActivity = activity;
+        mPhotoView = view;
         mAnimationSpeed = (int)TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, ANIMATION_SPEED, activity.getResources().getDisplayMetrics());
     }
 
@@ -67,8 +72,6 @@ public abstract class SensorsHandler implements SensorEventListener {
     public void onDestroy() {
         stopScroll();
     }
-
-    public abstract PhotoViewAttacher getPhotoAttacher();
 
     @SuppressWarnings("SuspiciousNameCombination")
     @Override
@@ -152,9 +155,16 @@ public abstract class SensorsHandler implements SensorEventListener {
 
         if (DBG) Log.v(TAG, "Scroll left");
         stopScroll();
-        viewAttacher = getPhotoAttacher();
-        if (viewAttacher == null || viewAttacher.getImageView() == null || viewAttacher.getDisplayRect() == null) return;
-        imageView = viewAttacher.getImageView();
+
+        if (!mPhotoView.isReady()) return;
+
+        mPhotoView
+                .animateCenter(new PointF(0, 0))
+                .withInterruptible(true)
+                .withDuration(5000)
+                .start();
+
+                /*
         viewLeft = 0;
         imageLeft = (int)viewAttacher.getDisplayRect().left;
         if (viewLeft <= imageLeft) {
@@ -182,6 +192,7 @@ public abstract class SensorsHandler implements SensorEventListener {
         });
         mAnimator = va;
         mAnimator.start();
+        */
     }
 
     private void startScrollRight() {
@@ -197,6 +208,16 @@ public abstract class SensorsHandler implements SensorEventListener {
 
         if (DBG) Log.v(TAG, "Scroll left");
         stopScroll();
+
+        if (!mPhotoView.isReady()) return;
+
+        mPhotoView
+                .animateCenter(new PointF(Long.MAX_VALUE, 0))
+                .withInterruptible(true)
+                .withDuration(5000)
+                .start();
+
+        /*
         viewAttacher = getPhotoAttacher();
         if (viewAttacher == null) return;
         imageView = viewAttacher.getImageView();
@@ -227,14 +248,17 @@ public abstract class SensorsHandler implements SensorEventListener {
         });
         mAnimator = va;
         mAnimator.start();
+        */
     }
 
     public void stopScroll() {
         if (DBG) Log.v(TAG, "Scroll stop");
-        if (mAnimator != null) {
+        mPhotoView.clearAnimation();
+        /*if (mAnimator != null) {
             mAnimator.cancel();
             mAnimator = null;
         }
+        */
     }
 
 }
