@@ -150,7 +150,7 @@ public class Relationship implements Parcelable {
         dest.writeParcelable(this.mUser, 0);
     }
 
-    private Relationship(Parcel in) {
+    protected Relationship(Parcel in) {
         this.mId = (Long) in.readValue(Long.class.getClassLoader());
         this.mUserId = in.readLong();
         this.mReaderId = in.readLong();

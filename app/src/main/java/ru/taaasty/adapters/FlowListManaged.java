@@ -247,7 +247,7 @@ public class FlowListManaged implements Parcelable {
         for (int i = 0; i < size; ++i) {
             relationships[i] = mRelationshipMap.valueAt(i);
         }
-        dest.writeArray(relationships);
+        dest.writeTypedArray(relationships, 0);
     }
 
     protected FlowListManaged(Parcel in) {
