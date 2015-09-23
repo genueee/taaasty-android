@@ -341,5 +341,6 @@
     <string name="notifications_events_summary_mentions">Вас упомянули в статье или комментарии</string>
     <string name="flows_tab_all">Все</string>
     <string name="flows_tab_my">Мои</string>
+    <string name="user_can_not_post">Вам не разрешено голосовать, потому что вы меньше месяца на сайте, либо не подтвердили email</string>
 
 </resources>

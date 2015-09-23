@@ -790,9 +790,13 @@ public class ShowPostFragment extends Fragment {
         private final EntryBottomActionBar.OnEntryActionBarListener mEntryActionBarListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
             @Override
-            public void onPostLikesClicked(View view, Entry entry) {
+            public void onPostLikesClicked(View view, Entry entry, boolean canVote) {
                 if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
-                LikesHelper.getInstance().voteUnvote(entry);
+                if (canVote) {
+                    LikesHelper.getInstance().voteUnvote(entry);
+                } else {
+                    Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+                }
             }
 
             @Override

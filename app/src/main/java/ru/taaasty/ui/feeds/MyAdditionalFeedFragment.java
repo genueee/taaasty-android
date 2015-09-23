@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -499,9 +500,13 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
 
         @Override
-        public void onPostLikesClicked(View view, Entry entry) {
+        public void onPostLikesClicked(View view, Entry entry, boolean canVote) {
             if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
-            LikesHelper.getInstance().voteUnvote(entry);
+            if (canVote) {
+                LikesHelper.getInstance().voteUnvote(entry);
+            } else {
+                Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+            }
         }
 
         @Override

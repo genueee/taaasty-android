@@ -31,12 +31,24 @@ public class EntryBottomActionBar {
 
     private TlogDesign mTlogDesign;
 
+    /**
+     * Я могу голосовать за этот пост
+     */
     private boolean mCanVote = false;
-    private boolean mIsVoteable = false;
-    private boolean mIsVoted = false;
-    private boolean mIsRatingInUpdate = false;
-    private int mVotes;
 
+    /**
+     * Пост с голосовалкой
+     */
+    private boolean mIsVoteable = false;
+
+    /**
+     * Я проголосовал за пост
+     */
+    private boolean mIsVoted = false;
+
+    private boolean mIsRatingInUpdate = false;
+
+    private int mVotes;
 
     public EntryBottomActionBar(View root) {
         mTlogDesign = TlogDesign.DUMMY;
@@ -45,7 +57,7 @@ public class EntryBottomActionBar {
     }
 
     public interface OnEntryActionBarListener {
-        void onPostLikesClicked(View view, Entry entry);
+        void onPostLikesClicked(View view, Entry entry, boolean canVote);
         void onPostCommentsClicked(View view, Entry entry);
         void onPostAdditionalMenuClicked(View view, Entry entry);
     }
@@ -138,7 +150,13 @@ public class EntryBottomActionBar {
             TlogDesign design = mTlogDesign == null ? TlogDesign.DUMMY : mTlogDesign;
             mLikesView.setTextColor(design.getFeedActionsTextColor(resources));
             mLikesView.setCompoundDrawablesWithIntrinsicBounds(getNotVotedDrawable(), 0, 0, 0);
-            mLikesView.setClickable(mCanVote);
+            if (mIsVoteable
+                    && mOnItemListenerEntry != null
+                    && !mOnItemListenerEntry.isMyEntry()) {
+                mLikesView.setClickable(true);
+            } else {
+                mLikesView.setClickable(false);
+            }
             mLikesView.setBackgroundResource(R.drawable.list_selector_holo_light);
         }
         mLikesView.setVisibility(View.VISIBLE);
@@ -168,15 +186,17 @@ public class EntryBottomActionBar {
                     action = "Открыто доп. меню";
                     break;
                 case R.id.likes:
+                    mListener.onPostLikesClicked(v, mOnItemListenerEntry, mCanVote);
                     if (mCanVote) {
-                        mListener.onPostLikesClicked(v, mOnItemListenerEntry);
                         action = mIsVoted ? "Снят лайк" : "Поставлен лайк";
+                    } else {
+                        action = "Хотел лайкнуть, а нельзя";
                     }
                     break;
                 default:
                     throw new IllegalArgumentException();
             }
-            if (action != null && v.getContext().getApplicationContext() instanceof  TaaastyApplication) {
+            if (v.getContext().getApplicationContext() instanceof  TaaastyApplication) {
                 ((TaaastyApplication) v.getContext().getApplicationContext())
                         .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, action, null);
             }
