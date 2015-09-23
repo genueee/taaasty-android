@@ -598,14 +598,14 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
             mFeedType = getArguments().getInt(ARG_FEED_TYPE);
             mPreMeasureFunc = new FeedsHelper.PreMeasureFeedFunc(getActivity());
+            super.onCreate(savedInstanceState);
         }
 
         @Override
         protected String getKeysSuffix() {
-            return "ListFeedFragment-" + String.valueOf(mFeedType);
+            return "ListFeedWorkFragment-" + String.valueOf(mFeedType);
         }
 
         @Override

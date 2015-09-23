@@ -34,7 +34,6 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.service.ApiMyFeeds;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
@@ -529,14 +528,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
 
-        private ApiMyFeeds mFeedsService;
         private int mFeedType;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            mFeedsService = RestClient.getAPiMyFeeds();
             mFeedType = getArguments().getInt(BUNDLE_ARG_FEED_TYPE);
+            super.onCreate(savedInstanceState);
         }
 
         @Override
@@ -548,13 +545,13 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             switch (mFeedType) {
                 case FEED_TYPE_MAIN:
-                    return mFeedsService.getMyFeed(sinceEntryId, limit);
+                    return RestClient.getAPiMyFeeds().getMyFeed(sinceEntryId, limit);
                 case FEED_TYPE_FRIENDS:
-                    return mFeedsService.getMyFriendsFeed(sinceEntryId, limit);
+                    return RestClient.getAPiMyFeeds().getMyFriendsFeed(sinceEntryId, limit);
                 case FEED_TYPE_FAVORITES:
-                    return mFeedsService.getMyFavoritesFeed(sinceEntryId, limit);
+                    return RestClient.getAPiMyFeeds().getMyFavoritesFeed(sinceEntryId, limit);
                 case FEED_TYPE_PRIVATE:
-                    return mFeedsService.getMyPrivateFeed(sinceEntryId, limit);
+                    return RestClient.getAPiMyFeeds().getMyPrivateFeed(sinceEntryId, limit);
                 default:
                     throw new IllegalStateException();
             }

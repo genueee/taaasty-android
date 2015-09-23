@@ -411,14 +411,6 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
     public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
 
-        private ApiMyFeeds mFeedsService;
-
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            mFeedsService = RestClient.getAPiMyFeeds();
-        }
-
         @Override
         protected String getKeysSuffix() {
             return "MyFeedWorkFragment";
@@ -426,7 +418,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return mFeedsService.getMyFeed(sinceEntryId, limit);
+            return RestClient.getAPiMyFeeds().getMyFeed(sinceEntryId, limit);
         }
 
         @Override
