@@ -452,18 +452,8 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
                                     subtitle = getResources().getQuantityString(R.plurals.public_records_last_day, mLastPublicEntriesCount, mLastPublicEntriesCount);
                                 }
                                 break;
-                            case FEED_BEST:
-                                if (stats.getBestEntriesInDayCount() != null) {
-                                    mlastBestEntriesCount = stats.getBestEntriesInDayCount();
-                                    subtitle = getResources().getQuantityString(R.plurals.best_records_last_day, mlastBestEntriesCount, mlastBestEntriesCount);
-                                }
-                                break;
                             case FEED_ANONYMOUS:
-                                if (stats.getAnonymousEntriesInDayCount() != null) {
-                                    mlastAnonymousEntriesCount = stats.getAnonymousEntriesInDayCount();
-                                    subtitle = getResources().getQuantityString(R.plurals.anonymous_records_last_day, mlastAnonymousEntriesCount, mlastAnonymousEntriesCount);
-                                }
-                                break;
+                            case FEED_BEST:
                             case FEED_MY_SUBSCRIPTIONS:
                             case FEED_NEWS:
                                 break;

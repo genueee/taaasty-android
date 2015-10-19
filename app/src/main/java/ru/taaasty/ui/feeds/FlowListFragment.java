@@ -169,15 +169,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
                 boolean canCreateFlows = user != null && user.canCreateFlows();
                 ((HeaderViewHolder)viewHolder).buttonCreateFlow.setVisibility(canCreateFlows ? View.VISIBLE : View.GONE);
 
-                String subtitle = null;
-                Stats stats = mListener == null ? null : mListener.getStats();
-                if (stats != null
-                        && stats.getFlowsTotal() != null
-                        && stats.getFlowsTotal() > 0) {
-                    int flowsTotal = stats.getFlowsTotal();
-                    subtitle = getResources().getQuantityString(R.plurals.flows_total, flowsTotal, flowsTotal);
-                }
-                ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(R.string.title_flows, subtitle);
+                ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(R.string.title_flows, null);
             }
 
             @Override
@@ -415,12 +407,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
 
     public interface OnFragmentInteractionListener extends CustomErrorView {
 
-        void startRefreshStats();
-
         void startRefreshCurrentUser();
-
-        public @Nullable
-        Stats getStats();
 
         void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int headerTop);
 

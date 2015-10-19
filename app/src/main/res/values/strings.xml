@@ -31,24 +31,6 @@
         <item quantity="many">%d публикаций за сутки</item>
         <item quantity="other">%d публикаций за сутки</item>
     </plurals>
-    <plurals name="best_records_last_day">
-        <item quantity="one">%d лучшая публикация за сутки</item>
-        <item quantity="few">%d лучшие публикации за сутки</item>
-        <item quantity="many">%d лучших публикаций за сутки</item>
-        <item quantity="other">%d лучших публикаций за сутки</item>
-    </plurals>
-    <plurals name="anonymous_records_last_day">
-        <item quantity="one">%d анонимка за последние 24 часа</item>
-        <item quantity="few">%d анонимки за последние 24 часа</item>
-        <item quantity="many">%d анонимок за последние 24 часа</item>
-        <item quantity="other">%d анонимок за последние 24 часа</item>
-    </plurals>
-    <plurals name="flows_total">
-        <item quantity="one">%d поток</item>
-        <item quantity="few">%d потока</item>
-        <item quantity="many">%d потоков</item>
-        <item quantity="other">%d потоков</item>
-    </plurals>
 
     <string name="user_avatar_content_description">Информация о пользователе</string>
     <string name="additional_menu">Дополнительное меню</string>
