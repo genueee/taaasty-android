@@ -47,7 +47,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
@@ -268,9 +267,8 @@ public class ConversationFragment extends Fragment {
 
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
-        Observable<Conversation.Message> observablePost = AppObservable.bindSupportFragment(this,
-                apiMessenger.postMessage(null, mConversationId, comment,
-                        UUID.randomUUID().toString(), null));
+        Observable<Conversation.Message> observablePost = apiMessenger.postMessage(null,
+                mConversationId, comment, UUID.randomUUID().toString(), null);
 
         //mSendMessageText.setEnabled(false);
         mSendMessageProgress.setVisibility(View.VISIBLE);
@@ -526,9 +524,8 @@ public class ConversationFragment extends Fragment {
 
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
-                Observable<Status.MarkMessagesAsRead> observablePost = AppObservable.bindSupportFragment(ConversationFragment.this,
-                        mApiMessenger.markMessagesAsRead(null, mConversationId,
-                                TextUtils.join(",", postSet)));
+                Observable<Status.MarkMessagesAsRead> observablePost = mApiMessenger.markMessagesAsRead(null, mConversationId,
+                                TextUtils.join(",", postSet));
                 mPostMessageSubscription = observablePost
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Observer<Status.MarkMessagesAsRead>() {

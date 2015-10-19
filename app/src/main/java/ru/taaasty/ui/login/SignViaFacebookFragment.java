@@ -40,7 +40,6 @@ import ru.taaasty.ui.CustomErrorView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -154,8 +153,8 @@ public class SignViaFacebookFragment extends DialogFragment {
 
         ApiSessions sessionService = RestClient.getAPiSessions();
 
-        Observable<CurrentUser> observableUser = AppObservable.bindFragment(this,
-                sessionService.signInFacebook(token.getUserId(), token.getToken()));
+        Observable<CurrentUser> observableUser = sessionService.signInFacebook(token.getUserId(),
+                token.getToken());
 
         mAuthSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -221,8 +220,7 @@ public class SignViaFacebookFragment extends DialogFragment {
         String nickname = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 
         if (DBG) Log.v(TAG, "registerUserFacebook nickname: " + nickname + " avatarUrl: " + avatarUrl);
-        Observable<CurrentUser> observableUser = AppObservable.bindFragment(this,
-                usersService.registerUserFacebook(token.getToken(),
+        Observable<CurrentUser> observableUser = usersService.registerUserFacebook(token.getToken(),
                         nickname,
                         avatarUrl,
                         TextUtils.isEmpty(name) ? null : name,
@@ -230,7 +228,7 @@ public class SignViaFacebookFragment extends DialogFragment {
                         TextUtils.isEmpty(secondName) ? null : secondName,
                         TextUtils.isEmpty(email) ? null : email,
                         sex
-                ));
+                );
 
         mSignupSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())

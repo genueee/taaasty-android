@@ -32,7 +32,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -240,8 +239,7 @@ public class InitiateConversationFragment extends Fragment {
         }
 
         mLoadingNames = true;
-        Observable<List<User>> observable = AppObservable.bindSupportFragment(this,
-                mApiUsers.predict(text.toString(), PREDICT_USERS_LIMIT));
+        Observable<List<User>> observable = mApiUsers.predict(text.toString(), PREDICT_USERS_LIMIT);
         mLoadingNamesSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mUserPreloadObservable);
@@ -251,8 +249,7 @@ public class InitiateConversationFragment extends Fragment {
         mCreatingConversationSubscription.unsubscribe();
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
         mCreatingConversation = true;
-        Observable<Conversation> observable = AppObservable.bindSupportFragment(this,
-                apiMessenger.createConversation(null, userId));
+        Observable<Conversation> observable = apiMessenger.createConversation(null, userId);
         mCreatingConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCreateConversationObservable);

@@ -46,7 +46,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -191,7 +190,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         if (mStatsSubscription.isUnsubscribed()) {
             if (DBG) Log.v(TAG, "startRefreshStats");
             ApiApp api = RestClient.getAPiApp();
-            mStatsSubscription = AppObservable.bindActivity(this, api.getStats())
+            mStatsSubscription = api.getStats()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(mStatsObserver);
         }
@@ -208,8 +207,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         // Выводим пока сюда, чтобы если уже загружаем - не загружать снова
         if (!mCurrentUserSubscription.isUnsubscribed()) return;
         if (DBG) Log.v(TAG, "startRefreshCurrentUser()");
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindActivity(this,
-                Session.getInstance().getCurrentUser());
+        Observable<CurrentUser> observableCurrentUser = Session.getInstance().getCurrentUser();
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())

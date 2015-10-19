@@ -43,7 +43,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -540,8 +539,7 @@ public class UserInfoFragment extends Fragment {
 
         ApiTlog userService = RestClient.getAPiTlog();
 
-        Observable<TlogInfo> observableUser = AppObservable.bindSupportFragment(this,
-                userService.getUserInfo(String.valueOf(mUserId)));
+        Observable<TlogInfo> observableUser = userService.getUserInfo(String.valueOf(mUserId));
 
         mUserInfoSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -554,8 +552,7 @@ public class UserInfoFragment extends Fragment {
 
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                relApi.follow(String.valueOf(mUserId)));
+        Observable<Relationship> observable = relApi.follow(String.valueOf(mUserId));
         showFollowUnfollowProgress();
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -568,8 +565,7 @@ public class UserInfoFragment extends Fragment {
 
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                relApi.unfollow(String.valueOf(mUserId)));
+        Observable<Relationship> observable = relApi.unfollow(String.valueOf(mUserId));
         showFollowUnfollowProgress();
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -580,8 +576,7 @@ public class UserInfoFragment extends Fragment {
         mCreateConversationSubscription.unsubscribe();
 
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
-        Observable<Conversation> observable = AppObservable.bindSupportFragment(this,
-                apiMessenger.createConversation(null, mUserId));
+        Observable<Conversation> observable = apiMessenger.createConversation(null, mUserId);
         mCreateConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCreateConversationObservable);

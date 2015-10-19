@@ -41,7 +41,6 @@ import ru.taaasty.ui.CustomErrorView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -150,8 +149,8 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         ApiSessions sessionService = RestClient.getAPiSessions();
 
-        Observable<CurrentUser> observableUser = AppObservable.bindFragment(this,
-                sessionService.signInVkontakte(token.userId, token.accessToken));
+        Observable<CurrentUser> observableUser = sessionService.signInVkontakte(token.userId,
+                token.accessToken);
 
         mAuthSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -209,7 +208,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         if (TextUtils.isEmpty(nickname)) nickname = "user" + String.valueOf(new Random().nextInt(Integer.MAX_VALUE));
 
-        Observable<CurrentUser> observableUser = AppObservable.bindFragment(this,
+        Observable<CurrentUser> observableUser =
                 usersService.registerUserVkontakte(token.accessToken,
                         nickname,
                         avatarUrl,
@@ -217,7 +216,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
                         firstName,
                         secondName,
                         sex
-                ));
+                );
         mSignupSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new SignupObserver());

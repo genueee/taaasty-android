@@ -61,7 +61,6 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
@@ -347,8 +346,7 @@ public class ShowPostFragment extends Fragment {
         if (DBG) Log.v(TAG, "refreshEntry()  postId: " + mPostId);
         mPostSubscription.unsubscribe();
 
-        Observable<Entry> observablePost = AppObservable.bindSupportFragment(this,
-                mEntriesService.getEntry(mPostId, false));
+        Observable<Entry> observablePost = mEntriesService.getEntry(mPostId, false);
 
         mPostSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
@@ -358,8 +356,7 @@ public class ShowPostFragment extends Fragment {
     private void loadDesign(long userId) {
         if (DBG) Log.v(TAG, "loadDesign()  userId: " + userId);
         mTlogDesignSubscription.unsubscribe();
-        Observable<TlogDesign> observable = AppObservable.bindSupportFragment(this,
-                mTlogDesignService.getDesignSettings(String.valueOf(userId)));
+        Observable<TlogDesign> observable = mTlogDesignService.getDesignSettings(String.valueOf(userId));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mTlogDesignObserver);
@@ -370,12 +367,11 @@ public class ShowPostFragment extends Fragment {
 
         Long topCommentId = mCommentsAdapter.getTopCommentId();
         if (DBG) Log.v(TAG, "loadComments()  topCommentId: " + topCommentId);
-        Observable<Comments> observableComments = AppObservable.bindSupportFragment(this,
-                mCommentsService.getComments(mPostId,
+        Observable<Comments> observableComments = mCommentsService.getComments(mPostId,
                         null,
                         topCommentId,
                         ApiComments.ORDER_DESC,
-                        topCommentId == null ? Constants.SHOW_POST_COMMENTS_COUNT : Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP));
+                        topCommentId == null ? Constants.SHOW_POST_COMMENTS_COUNT : Constants.SHOW_POST_COMMENTS_COUNT_LOAD_STEP);
 
         mLoadComments = true;
         mCommentsSubscription = observableComments
@@ -449,8 +445,7 @@ public class ShowPostFragment extends Fragment {
 
         mPostCommentSubscription.unsubscribe();
 
-        Observable<Comment> observablePost = AppObservable.bindSupportFragment(this,
-                mCommentsService.postComment(mPostId, comment));
+        Observable<Comment> observablePost = mCommentsService.postComment(mPostId, comment);
 
         mReplyToCommentText.setEnabled(false);
         mPostProgress.setVisibility(View.VISIBLE);

@@ -39,7 +39,6 @@ import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -242,7 +241,6 @@ public class SignUpFragment extends Fragment {
             showProgress(true);
             ApiUsers service = RestClient.getAPiUsers();
             mAuthTask = service.registerUser(email, password, slug);
-            AppObservable.bindFragment(this, mAuthTask);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {

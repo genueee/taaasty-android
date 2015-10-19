@@ -39,7 +39,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -350,8 +349,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         mLoafIframelySubscription.unsubscribe();
 
 
-        Observable<IFramely> observable = AppObservable
-                .bindSupportFragment(this, mApiEntries.getIframely(mEmbeddUrl));
+        Observable<IFramely> observable = mApiEntries.getIframely(mEmbeddUrl);
 
         mLoafIframelySubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())

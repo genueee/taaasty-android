@@ -35,7 +35,6 @@ import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -225,8 +224,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         mConversationSubscription.unsubscribe();
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
-        Observable<Conversation> observable = AppObservable.bindActivity(this,
-                apiMessenger.createConversation(null, recipientId));
+        Observable<Conversation> observable = apiMessenger.createConversation(null, recipientId);
 
         mConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())

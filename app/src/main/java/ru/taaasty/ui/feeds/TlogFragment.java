@@ -69,7 +69,6 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
@@ -1005,8 +1004,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             if (mUserId == null) return;
             mFollowSubscription.unsubscribe();
             ApiRelationships relApi = RestClient.getAPiRelationships();
-            Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                    relApi.follow(mUserId.toString()));
+            Observable<Relationship> observable = relApi.follow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {
@@ -1023,8 +1021,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             if (mUserId == null) return;
             mFollowSubscription.unsubscribe();
             ApiRelationships relApi = RestClient.getAPiRelationships();
-            Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                    relApi.unfollow(mUserId.toString()));
+            Observable<Relationship> observable = relApi.unfollow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {

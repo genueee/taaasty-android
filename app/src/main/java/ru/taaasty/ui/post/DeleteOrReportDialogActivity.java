@@ -29,7 +29,6 @@ import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -167,8 +166,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         mButton.setVisibility(View.INVISIBLE);
         mProgress.setVisibility(View.VISIBLE);
 
-        Observable<Object> observable = AppObservable.bindActivity(this,
-                mActionHandler.createObservable());
+        Observable<Object> observable = mActionHandler.createObservable();
 
         mSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())

@@ -36,7 +36,6 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -224,7 +223,7 @@ public class SignViaEmailFragment extends Fragment {
             // perform the author login attempt.
             showProgress(true);
             ApiSessions service = RestClient.getAPiSessions();
-            mAuthTask = AppObservable.bindFragment(this, service.signIn(email, password));
+            mAuthTask = service.signIn(email, password);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {

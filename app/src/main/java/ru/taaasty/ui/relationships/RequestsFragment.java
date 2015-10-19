@@ -31,7 +31,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
@@ -149,8 +148,7 @@ public class RequestsFragment extends Fragment {
 
         if (mProgressBar != null) mProgressBar.setVisibility(View.VISIBLE);
 
-        Observable<Relationships> observable = AppObservable.bindSupportFragment(this,
-                mApiRelationships.getRelationshipsRequested(null, 200, false));
+        Observable<Relationships> observable = mApiRelationships.getRelationshipsRequested(null, 200, false);
 
         mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -162,8 +160,8 @@ public class RequestsFragment extends Fragment {
     }
 
     public void onApproveClicked(View view, Relationship relationship) {
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                mApiRelationships.approveTlogRelationship(String.valueOf(relationship.getReaderId())));
+        Observable<Relationship> observable = mApiRelationships.approveTlogRelationship(
+                String.valueOf(relationship.getReaderId()));
 
         mListView.setEnabled(false);
         observable
@@ -173,8 +171,8 @@ public class RequestsFragment extends Fragment {
     }
 
     public void onDisapproveClicked(View view, Relationship relationship) {
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                mApiRelationships.disapproveTlogRelationship(String.valueOf(relationship.getReaderId())));
+        Observable<Relationship> observable = mApiRelationships.disapproveTlogRelationship(
+                String.valueOf(relationship.getReaderId()));
 
         mListView.setEnabled(false);
         observable

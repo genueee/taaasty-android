@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBar;
@@ -23,11 +22,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
+import com.trello.rxlifecycle.components.support.RxFragmentActivity;
 import com.vk.sdk.VKUIHelper;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public abstract class ActivityBase extends FragmentActivity implements AppCompatCallback,
+public abstract class ActivityBase extends RxFragmentActivity implements AppCompatCallback,
         TaskStackBuilder.SupportParentable, ActionBarDrawerToggle.DelegateProvider {
 
     private AppCompatDelegate mDelegate;

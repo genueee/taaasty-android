@@ -10,7 +10,6 @@ import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiTlog;
 import rx.Observable;
-import rx.android.app.AppObservable;
 
 public class FollowingsFragment extends RelationshipListFragmentBase {
 
@@ -33,8 +32,7 @@ public class FollowingsFragment extends RelationshipListFragmentBase {
 
     Observable<Relationships> createRelationshipsObservable() {
         ApiTlog tlogApi = RestClient.getAPiTlog();
-        return AppObservable.bindSupportFragment(this,
-                tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
+        return tlogApi.getFollowings(String.valueOf(mUserId), null, 200);
     }
 
     @Override

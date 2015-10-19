@@ -3,10 +3,10 @@ package ru.taaasty.adapters;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -84,17 +84,17 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         mTextColorSecondaryNotSubscribed = resources.getColor(R.color.flow_brick_text_color_secondary_not_subscribed);
         mTextColorSecondarySubscribed = resources.getColor(R.color.flow_brick_text_color_secondary_subscribed);
 
-        mEntriesCountDrawableNotSubscribed = resources.getDrawable(R.drawable.ic_posts_count_20dp).mutate();
-        mEntriesCountDrawableNotSubscribed.setColorFilter(mTextColorSecondaryNotSubscribed, PorterDuff.Mode.SRC_IN);
+        mEntriesCountDrawableNotSubscribed = DrawableCompat.wrap(resources.getDrawable(R.drawable.ic_posts_count_20dp).mutate());
+        DrawableCompat.setTint(mEntriesCountDrawableNotSubscribed, mTextColorSecondaryNotSubscribed);
 
-        mEntriesCountDrawableSubscribed = resources.getDrawable(R.drawable.ic_posts_count_20dp).mutate();
-        mEntriesCountDrawableSubscribed.setColorFilter(mTextColorSecondarySubscribed, PorterDuff.Mode.SRC_IN);
+        mEntriesCountDrawableSubscribed = DrawableCompat.wrap(resources.getDrawable(R.drawable.ic_posts_count_20dp).mutate());
+        DrawableCompat.setTint(mEntriesCountDrawableSubscribed, mTextColorSecondarySubscribed);
 
-        mSubscribersCountDrawableNotSubscribed = resources.getDrawable(R.drawable.ic_subscribers_count_20dp).mutate();
-        mSubscribersCountDrawableNotSubscribed.setColorFilter(mTextColorSecondaryNotSubscribed, PorterDuff.Mode.SRC_IN);
+        mSubscribersCountDrawableNotSubscribed = DrawableCompat.wrap(resources.getDrawable(R.drawable.ic_subscribers_count_20dp).mutate());
+        DrawableCompat.setTint(mSubscribersCountDrawableNotSubscribed, mTextColorSecondaryNotSubscribed);
 
-        mSubscribersCountDrawableSubscribed = resources.getDrawable(R.drawable.ic_subscribers_count_20dp).mutate();
-        mSubscribersCountDrawableSubscribed.setColorFilter(mTextColorSecondarySubscribed, PorterDuff.Mode.SRC_IN);
+        mSubscribersCountDrawableSubscribed = DrawableCompat.wrap(resources.getDrawable(R.drawable.ic_subscribers_count_20dp).mutate());
+        DrawableCompat.setTint(mSubscribersCountDrawableSubscribed, mTextColorSecondarySubscribed);
 
         setHasStableIds(true);
     }

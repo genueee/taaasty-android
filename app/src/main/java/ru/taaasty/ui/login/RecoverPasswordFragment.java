@@ -30,7 +30,6 @@ import ru.taaasty.utils.UiUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 
@@ -157,7 +156,6 @@ public class RecoverPasswordFragment extends Fragment {
 
             ApiUsers service = RestClient.getAPiUsers();
             mAuthTask = service.recoveryPassword(email);
-            AppObservable.bindFragment(this, mAuthTask);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
                     .finallyDo(new Action0() {

@@ -35,7 +35,6 @@ import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
@@ -354,7 +353,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             if (DBG) Log.v(TAG, "refreshConversationList");
 
             mConversationsSubscription.unsubscribe();
-            mConversationsSubscription = AppObservable.bindSupportFragment(this, mApiMessenger.getConversations(null))
+            mConversationsSubscription = mApiMessenger.getConversations(null)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(mConversationListObserver);
             if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusLoading();

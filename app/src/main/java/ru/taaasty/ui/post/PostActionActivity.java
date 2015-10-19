@@ -33,7 +33,6 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class PostActionActivity extends ActivityBase implements CustomErrorView {
@@ -63,7 +62,7 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
         } else if (ACTION_SHARE_VKONTAKTE_DIALOG.equals(action)) {
             showVkontakteShareDialog(mEntry);
         } else if(ACTION_ADD_TO_FAVORITES.equals(action)) {
-            Observable<Object> observable = AppObservable.bindActivity(this, createAddToFavoritesObservable());
+            Observable<Object> observable = createAddToFavoritesObservable();
             observable.observeOn(AndroidSchedulers.mainThread()).subscribe(mObserver);
         }
     }

@@ -62,7 +62,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Func1;
@@ -366,8 +365,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     void follow(Notification notification) {
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                relApi.follow(String.valueOf(notification.sender.getId())));
+        Observable<Relationship> observable = relApi.follow(String.valueOf(notification.sender.getId()));
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new FollowerObserver(notification.id));
@@ -376,8 +374,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
     void unfollow(Notification notification) {
         mFollowSubscription.unsubscribe();
         ApiRelationships relApi = RestClient.getAPiRelationships();
-        Observable<Relationship> observable = AppObservable.bindSupportFragment(this,
-                relApi.unfollow(String.valueOf(notification.sender.getId())));
+        Observable<Relationship> observable = relApi.unfollow(String.valueOf(notification.sender.getId()));
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new FollowerObserver(notification.id));

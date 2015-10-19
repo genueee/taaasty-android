@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +13,8 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.trello.rxlifecycle.components.support.RxFragment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +33,10 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public abstract class RelationshipListFragmentBase extends Fragment {
+public abstract class RelationshipListFragmentBase extends RxFragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "RelListFragmentBase";
     static final String ARG_USER_ID = "user_id";
@@ -155,8 +155,7 @@ public abstract class RelationshipListFragmentBase extends Fragment {
 
     Observable<Relationships> createRelationshipsObservable() {
         ApiTlog tlogApi = RestClient.getAPiTlog();
-        return AppObservable.bindSupportFragment(this,
-                tlogApi.getFollowings(String.valueOf(mUserId), null, 200));
+        return tlogApi.getFollowings(String.valueOf(mUserId), null, 200);
     }
 
     void refreshRelationships() {

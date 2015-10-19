@@ -26,7 +26,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
-import rx.android.app.AppObservable;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.functions.Func1;
@@ -197,8 +196,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
     public void refreshUser() {
         if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         mCurrentUserSubscription.unsubscribe();
-        Observable<CurrentUser> observableCurrentUser = AppObservable.bindSupportFragment(this,
-                Session.getInstance().getCurrentUser());
+        Observable<CurrentUser> observableCurrentUser = Session.getInstance().getCurrentUser();
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
