@@ -14,6 +14,7 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
+import com.squareup.leakcanary.LeakCanary;
 
 import java.util.Locale;
 
@@ -52,6 +53,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                     .build());
         }
         super.onCreate();
+        LeakCanary.install(this);
 
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                         .setDefaultFontPath(FontManager.FONT_SYSTEM_DEFAULT_PATH)

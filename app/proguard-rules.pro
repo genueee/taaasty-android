@@ -24,7 +24,6 @@
 -keep class ru.taaasty.rest.model.** { *; }
 
 #Retrofit
--dontwarn org.apache.http.**
 -dontwarn android.net.http.AndroidHttpClient
 -dontwarn retrofit.client.ApacheClient$GenericEntityHttpRequest
 -dontwarn retrofit.client.ApacheClient$GenericHttpRequest
@@ -83,10 +82,13 @@
 # vk
 #-keep class com.vk.** { *;}
 #-dontskipnonpubliclibraryclassmembers
--dontwarn org.apache.http.**
--dontwarn com.vk.sdk.api.httpClient.**
-
 -dontwarn android.util.FloatMath**
 
 -dontwarn android.app.Notification**
 
+
+# pusher
+#-dontwarn javax.management.**
+#-dontwarn javax.xml.**
+#-dontwarn org.apache.log4j.**
+#-dontwarn org.slf4j.*
