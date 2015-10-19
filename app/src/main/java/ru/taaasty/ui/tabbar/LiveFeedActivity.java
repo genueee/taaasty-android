@@ -79,7 +79,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         ((TaaastyApplication)getApplicationContext()).startIntercomSession();
 
-        Intercom.client().openGCMMessage(getIntent().getData());
+        Intercom.client().openGCMMessage(getIntent());
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
