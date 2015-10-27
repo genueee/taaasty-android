@@ -1,28 +1,37 @@
-
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.tabbar.ConversationsActivity"
-    tools:ignore="MergeRootFrame">
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="ru.taaasty.ui.tabbar.ConversationsActivity"
+             tools:ignore="MergeRootFrame">
+
+    <!-- Увеличиваем вложенность у Toolbar, чтобы он был под FAB меню -->
 
     <FrameLayout
-        android:id="@+id/container"
-        android:layout_marginBottom="@dimen/tabbar_size"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent">
+
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="@dimen/tabbar_size"/>
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </FrameLayout>
+
 
     <fragment
         android:id="@+id/tabbar"
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        tools:layout="@layout/tabbar" />
-
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"/>
+        android:layout_height="match_parent"
+        tools:layout="@layout/tabbar"/>
 
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
@@ -30,6 +39,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:text="Мазафака какая-то с сайтом"
-        tools:visibility="visible" />
+        tools:visibility="visible"/>
 
 </FrameLayout>

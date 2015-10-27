@@ -27,6 +27,7 @@ import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TimingLogger;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.aviary.android.feather.sdk.FeatherActivity;

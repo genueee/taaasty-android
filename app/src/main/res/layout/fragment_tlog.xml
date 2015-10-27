@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
+    android:layout_height="match_parent">
 
     <ru.taaasty.widgets.SwipeRefreshLayout
         android:id="@+id/swipe_refresh_widget"
@@ -56,8 +55,29 @@
         android:paddingLeft="4dp"
         android:visibility="invisible"/>
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:contentInsetLeft="0dp"
+        app:contentInsetRight="8dp"
+        app:navigationContentDescription="@string/action_back_content_description"
+        android:fitsSystemWindows="true"
+        app:navigationIcon="@drawable/ic_back_white"
+        app:theme="@style/ToolbarThemeDark"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+        <include
+            layout="@layout/ab_custom_tlog"/>
+
+    </android.support.v7.widget.Toolbar>
+
+    <include
+        android:id="@+id/fab_menu"
+        layout="@layout/fab_menu" />
+
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/post"
+        android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
@@ -65,11 +85,10 @@
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginTop="16dp"
-        android:contentDescription="@string/btn_tabbar_action_post"
         android:cropToPadding="false"
         android:src="@drawable/btn_tabbar_post"
-        android:visibility="gone"
-        app:borderWidth="0dp"
+        android:visibility="visible"
+        tools:visiblity="visible"
         app:elevation="4dp"
         app:fabSize="normal"/>
 

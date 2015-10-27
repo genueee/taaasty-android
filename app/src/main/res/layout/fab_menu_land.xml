@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ru.taaasty.widgets.FabMenuLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="@layout/fragment_tlog"
+    tools:visibility="visible"
+    style="@style/FabMenu.Land">
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/create_flow"
+        style="@style/FabMenuItem.Land"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fab_create_flow_48dp"
+        android:contentDescription="@string/fab_list_item_create_flow"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/create_anonymous_post"
+        style="@style/FabMenuItem.Land"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fab_create_anonymous_post_48dp"
+        android:contentDescription="@string/fab_list_item_create_anonymous_post"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/create_text_post"
+        style="@style/FabMenuItem.Land"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fab_create_text_post_48dp"
+        android:contentDescription="@string/fab_list_item_create_text_post"/>
+
+    <ru.taaasty.widgets.HintedExtendedImageView
+        android:id="@+id/create_image_post"
+        style="@style/FabMenuItem.Land"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_fab_create_image_post_48dp"
+        android:contentDescription="@string/fab_list_item_create_image_post"
+        />
+
+</ru.taaasty.widgets.FabMenuLayout>

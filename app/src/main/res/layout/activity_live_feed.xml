@@ -34,8 +34,7 @@
     <fragment android:id="@+id/tabbar"
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_height="match_parent"
         tools:layout="@layout/tabbar" />
 
 </FrameLayout>

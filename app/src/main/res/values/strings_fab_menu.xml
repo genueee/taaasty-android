@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fab_menu_create_image_post_content_description">Создать картиночный пост</string>
+    <string name="fab_menu_create_image_post">Создать картиночный пост</string>
+</resources>

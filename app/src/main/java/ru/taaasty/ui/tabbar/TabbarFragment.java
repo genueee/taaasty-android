@@ -24,10 +24,12 @@ import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.rest.model.MessagingStatus;
+import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.utils.FabHelper;
+import ru.taaasty.widgets.FabMenuLayout;
 
 
-public class TabbarFragment extends Fragment {
+public class TabbarFragment extends Fragment implements OnBackPressedListener {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TabbarFragment";
@@ -40,7 +42,6 @@ public class TabbarFragment extends Fragment {
     private static final int[] sItemIds = new int[] {
             R.id.btn_tabbar_live,
             R.id.btn_tabbar_conversations,
-            R.id.btn_tabbar_post,
             R.id.btn_tabbar_notifications,
             R.id.btn_tabbar_my_feed
     };
@@ -50,7 +51,7 @@ public class TabbarFragment extends Fragment {
 
     private FabHelper mFabHelper;
 
-    private int mCreatePostViewLocation[] = new int[2];
+    private FabMenuLayout.OnItemClickListener mMenuClickListener;
 
     private onTabbarButtonListener mListener;
 
@@ -80,14 +81,15 @@ public class TabbarFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (onTabbarButtonListener) activity;
+            mListener = (onTabbarButtonListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement onTabbarButtonListener");
         }
+        mMenuClickListener = new FabHelper.FabMenuDefaultListener((Activity)context);
     }
 
     @Override
@@ -97,12 +99,32 @@ public class TabbarFragment extends Fragment {
         View view = inflater.inflate(R.layout.tabbar, container, false);
         mNotificationsCountView = (TextView)view.findViewById(R.id.unread_notifications_count);
         mConversationsCountView = (TextView)view.findViewById(R.id.unread_conversations_count);
-        mFabHelper = new FabHelper(view.findViewById(R.id.btn_tabbar_post), R.dimen.tabbar_size);
+        mFabHelper = new FabHelper(view.findViewById(R.id.tabbar_fab),
+                (FabMenuLayout)view.findViewById(R.id.tabbar_fab_menu),
+                 R.dimen.tabbar_size);
+
+        View.OnClickListener clickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null) mListener.onTabbarButtonClicked(v);
+            }
+        };
 
         for (int id: sItemIds) {
             View v = view.findViewById(id);
-            v.setOnClickListener(mOnClickListener);
+            v.setOnClickListener(clickListener);
         }
+
+        mFabHelper.setMenuListener(new FabMenuLayout.OnItemClickListener() {
+            @Override
+            public boolean onItemClick(View view) {
+                if (mListener != null) {
+                    if (mListener.onFabMenuItemClicked(view)) return true;
+                    if (mMenuClickListener != null) return mMenuClickListener.onItemClick(view);
+                }
+                return false;
+            }
+        });
 
         return view;
     }
@@ -144,6 +166,7 @@ public class TabbarFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+        mMenuClickListener = null;
     }
 
     @Override
@@ -204,6 +227,8 @@ public class TabbarFragment extends Fragment {
         return mFabHelper;
     }
 
+    private final FabMenuLayout.OnItemClickListener clickListener = new FabHelper.FabMenuDefaultListener(getActivity());
+
     private void refreshNotificationIndicator(boolean smoothly) {
         if (DBG) Log.v(TAG, "refreshNotificationIndicator");
         if (mNotificationsCountView == null) return;
@@ -211,15 +236,15 @@ public class TabbarFragment extends Fragment {
         updateIndicatorCount(mConversationsCountView, mUnreadConversationsCount, smoothly);
     }
 
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (mListener != null) mListener.onTabbarButtonClicked(v);
-        }
-    };
+    @Override
+    public boolean onBackPressed() {
+        if (mFabHelper != null) return mFabHelper.onBackPressed();
+        return false;
+    }
 
     public interface onTabbarButtonListener {
         void onTabbarButtonClicked(View v);
+        boolean onFabMenuItemClicked(View v);
     }
 
     private void updateIndicatorCount(TextView view, int count, boolean smoothly) {
@@ -245,7 +270,7 @@ public class TabbarFragment extends Fragment {
     }
 
     private void showIndicatorSmoothly(final TextView view) {
-        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 0f, 1f)
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, View.ALPHA, 0f, 1f)
                 .setDuration(getResources().getInteger(R.integer.longAnimTime));
         animator.addListener(new Animator.AnimatorListener() {
             @Override
@@ -271,7 +296,7 @@ public class TabbarFragment extends Fragment {
     }
 
     private void hideIndicatorSmoothly(final TextView view) {
-        ObjectAnimator animator = ObjectAnimator.ofFloat(view, "alpha", 1f, 0f)
+        ObjectAnimator animator = ObjectAnimator.ofFloat(view, View.ALPHA, 1f, 0f)
                 .setDuration(getResources().getInteger(R.integer.longAnimTime));
         animator.addListener(new Animator.AnimatorListener() {
             @Override

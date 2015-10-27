@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,7 +26,9 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.SharePostActivity;
+import ru.taaasty.utils.FabHelper;
 import ru.taaasty.widgets.ErrorTextView;
+import ru.taaasty.widgets.FabMenuLayout;
 
 /**
  * Избранные и скрытые
@@ -44,6 +47,12 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
+
+    private FabHelper mFabHelper;
+
+    private FabHelper.AutoHideScrollListener mAutoHideScrollListener;
+
+    private boolean mScheduleRefresh;
 
     public static void startFavoriteFeedActivity(Context source, View animateFrom) {
         startAdditionalFeedActivity(source, SECTION_FAVORITES, animateFrom);
@@ -104,6 +113,32 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
                     .add(R.id.container, fragment)
                     .commit();
         }
+
+        mFabHelper = new FabHelper(findViewById(R.id.fab), (FabMenuLayout)findViewById(R.id.fab_menu));
+        mFabHelper.setMenuListener(new FabHelper.FabMenuDefaultListener(this));
+        mAutoHideScrollListener = new FabHelper.AutoHideScrollListener(mFabHelper);
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case Constants.ACTIVITY_REQUEST_CODE_CREATE_POST:
+                if (resultCode == Activity.RESULT_OK) {
+                    mScheduleRefresh = true;
+                }
+                break;
+        }
+    }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (mScheduleRefresh) {
+            mScheduleRefresh = false;
+            refreshData();
+        }
     }
 
     @Override
@@ -117,6 +152,14 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_my_additional_feed, menu);
         return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mFabHelper.onBackPressed()) {
+            return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -170,6 +213,12 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     public void onSharePostMenuClicked(Entry entry) {
         SharePostActivity.startActivity(this, entry);
     }
+
+    @Override
+    public RecyclerView.OnScrollListener getFragmentScrollListener() {
+        return mAutoHideScrollListener;
+    }
+
 
     void refreshData() {
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);

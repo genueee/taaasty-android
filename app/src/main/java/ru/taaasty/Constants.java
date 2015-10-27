@@ -9,6 +9,8 @@ public interface Constants {
     public static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
     public static final int MAX_DISK_CACHE_SIZE = 100 * 1024 * 1024; // 100MB
 
+    int ACTIVITY_REQUEST_CODE_CREATE_POST = 254;
+
     public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
     // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE;
     public static final int CONNECT_TIMEOUT_S = 35;
@@ -24,6 +26,7 @@ public interface Constants {
     public static final int IMAGE_FADE_IN_DURATION = 300;
 
     Character USER_PREFIX = '~';
+
 
     /**
      * Кол-во комментарииев, которые показывать на странице при первоначальном открытии поста
@@ -95,4 +98,6 @@ public interface Constants {
     String ANALYTICS_CATEGORY_PREFERENCES_APP = "Настройки приложения";
 
     String ANALYTICS_CATEGORY_LOGIN = "Логин";
+
+    String ANALYTICS_CATEGORY_FAB = "Кнопка меню";
 }

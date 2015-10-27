@@ -48,7 +48,7 @@ import rx.Observable;
 
 
 public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
-        ListFeedWorkRetainedFragment.TargetFragmentInteraction{
+        ListFeedWorkRetainedFragment.TargetFragmentInteraction {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedFragment";
@@ -99,6 +99,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     private FeedBackground mFeedBackground;
 
+    private boolean mScheduleRefreshData;
+
     public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
         Bundle b = new Bundle();
@@ -141,6 +143,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
+
         mFeedBackground = new FeedBackground(mListView, null, R.dimen.feed_header_height);
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -155,6 +158,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), isUserAvatarShown()));
 
         setupEmptyView(v);
+
 
         return v;
     }
@@ -174,6 +178,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         }
     }
 
+
     @Override
     public void onWorkFragmentActivityCreated() {
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarShown());
@@ -189,6 +194,21 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                 mFeedBackground.setHeaderVisibleFraction(firstVisibleItem == 0 ? firstVisibleFract : 0);
             }
         });
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (mListener != null && mListener.getFragmentScrollListener() != null) {
+                    mListener.getFragmentScrollListener().onScrollStateChanged(recyclerView, newState);
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (mListener != null && mListener.getFragmentScrollListener() != null) {
+                    mListener.getFragmentScrollListener().onScrolled(recyclerView, dx, dy);
+                }
+            }
+        });
 
         setupFeedDesign();
         setupUser();
@@ -198,7 +218,9 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     @Override
     public void onWorkFragmentResume() {
-        if (!mWorkFragment.isRefreshing()) refreshData(false);
+        if (!mWorkFragment.isRefreshing()) {
+            refreshData(false);
+        }
         mDateIndicatorHelper.onResume();
     }
 
@@ -592,5 +614,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
 
         void onSharePostMenuClicked(Entry entry);
+
+        RecyclerView.OnScrollListener getFragmentScrollListener();
     }
 }

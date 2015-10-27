@@ -21,7 +21,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
@@ -39,7 +38,6 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
-import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
@@ -79,8 +77,6 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
 
     private boolean mPendingForceShowRefreshingIndicator;
     private Integer mLastPublicEntriesCount;
-    private Integer mlastBestEntriesCount;
-    private Integer mlastAnonymousEntriesCount;
 
     private Handler mHandler;
 
@@ -267,17 +263,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
                 }
                 break;
             case FEED_BEST:
-                if (!Objects.equals(mlastBestEntriesCount, event.stats.getBestEntriesInDayCount())) {
-                    mlastBestEntriesCount = event.stats.getBestEntriesInDayCount();
-                    mAdapter.notifyItemChanged(0);
-                }
-                break;
             case FEED_ANONYMOUS:
-                if (!Objects.equals(mlastAnonymousEntriesCount, event.stats.getAnonymousEntriesInDayCount())) {
-                    mlastAnonymousEntriesCount = event.stats.getAnonymousEntriesInDayCount();
-                    mAdapter.notifyItemChanged(0);
-                }
-                break;
             case FEED_MY_SUBSCRIPTIONS:
             case FEED_NEWS:
                 break;
@@ -412,19 +398,6 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
                     ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) child.getLayoutParams();
                     params.bottomMargin = 0;
                     child.setLayoutParams(params);
-
-                    if (mFeedType == FEED_ANONYMOUS) {
-                        View anonymousButton = child.findViewById(R.id.create_anonymous_post_or_flow);
-                        anonymousButton.setVisibility(View.VISIBLE);
-                        anonymousButton.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                CreateAnonymousPostActivity.startActivity(v.getContext(), v);
-                                ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FEEDS,
-                                        "Открыто создание анонимки", null);
-                            }
-                        });
-                    }
 
                     return new HeaderTitleSubtitleViewHolder(child) {
                         @Override

@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
     <View
         android:layout_width="match_parent"
         android:layout_height="@dimen/tabbar_size"
-        android:background="@color/tabbar_button_background_normal"
-        android:layout_gravity="bottom" />
+        android:layout_gravity="bottom"
+        android:background="@color/tabbar_button_background_normal"/>
 
     <LinearLayout
+        style="@style/TabbarSize"
         android:layout_gravity="bottom|center_horizontal"
         android:orientation="horizontal"
-        tools:context=".widgets.Tabbar"
-        style="@style/TabbarSize">
+        tools:context=".widgets.Tabbar">
 
         <ru.taaasty.widgets.HintedExtendedImageView
             android:id="@+id/btn_tabbar_live"
             style="@style/TabbarButton.First"
             android:contentDescription="@string/btn_tabbar_live_description"
-            android:src="@drawable/btn_tabbar_live" />
+            android:src="@drawable/btn_tabbar_live"/>
 
         <FrameLayout
             android:layout_width="0dp"
@@ -36,7 +36,7 @@
                 android:layout_height="match_parent"
                 android:clickable="false"
                 android:contentDescription="@string/btn_tabbar_action_notifications"
-                android:src="@drawable/btn_tabbar_conversations" />
+                android:src="@drawable/btn_tabbar_conversations"/>
 
             <ru.taaasty.widgets.SquareTextView
                 android:id="@+id/unread_conversations_count"
@@ -44,6 +44,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|top"
                 android:layout_marginLeft="17dp"
+                android:layout_marginTop="3dp"
                 android:background="@drawable/unread_conversations_count"
                 android:gravity="center"
                 android:padding="4dp"
@@ -53,8 +54,7 @@
                 android:visibility="invisible"
                 tools:ignore="ContentDescription,SmallSp"
                 tools:text="100"
-                tools:visibility="visible"
-                android:layout_marginTop="3dp"/>
+                tools:visibility="visible"/>
         </FrameLayout>
 
         <FrameLayout
@@ -70,16 +70,17 @@
                 android:layout_height="match_parent"
                 android:clickable="false"
                 android:contentDescription="@string/btn_tabbar_action_notifications"
-                android:src="@drawable/btn_tabbar_notifications" />
+                android:src="@drawable/btn_tabbar_notifications"/>
 
             <ru.taaasty.widgets.SquareTextView
                 android:id="@+id/unread_notifications_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|top"
-                android:layout_marginTop="3dp"
                 android:layout_marginLeft="17dp"
+                android:layout_marginTop="3dp"
                 android:background="@drawable/conversations_list_unread_messages_background"
+                android:gravity="center"
                 android:padding="4dp"
                 android:singleLine="true"
                 android:textColor="@android:color/white"
@@ -87,8 +88,7 @@
                 android:visibility="invisible"
                 tools:ignore="ContentDescription,SmallSp"
                 tools:text="100"
-                tools:visibility="visible"
-                android:gravity="center"/>
+                tools:visibility="visible"/>
 
         </FrameLayout>
 
@@ -96,24 +96,26 @@
             android:id="@+id/btn_tabbar_my_feed"
             style="@style/TabbarButton.Last"
             android:contentDescription="@string/tabbar_my_feed_content_description"
-            android:src="@drawable/btn_tabbar_myfeed" />
+            android:src="@drawable/btn_tabbar_myfeed"/>
 
     </LinearLayout>
 
+    <include
+        android:id="@+id/tabbar_fab_menu"
+        layout="@layout/fab_menu"/>
+
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/btn_tabbar_post"
+        android:id="@+id/tabbar_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:borderWidth="0dp"
-        app:elevation="4dp"
-        app:fabSize="normal"
         android:layout_gravity="end|bottom"
-        android:layout_marginRight="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
         android:layout_marginBottom="@dimen/tabbar_fab_padding_bottom"
-        android:contentDescription="@string/btn_tabbar_action_post"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="16dp"
+        android:cropToPadding="false"
         android:src="@drawable/btn_tabbar_post"
-        android:cropToPadding="false" />
+        app:elevation="4dp"
+        app:fabSize="normal"/>
 
-</FrameLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -23,74 +23,100 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:gravity="center_horizontal"
+            android:singleLine="true"
             android:textColor="@android:color/white"
             android:textSize="18sp"
-            android:singleLine="true"
-            android:ellipsize="end"
-            tools:text="#Музыка"
-            android:gravity="center_horizontal"
-            android:layout_marginTop="8dp"/>
+            tools:text="#Музыка"/>
 
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:gravity="center_horizontal"
+            android:maxLines="5"
             android:paddingTop="14dp"
             android:textColor="@color/text_color_semi_transparent_white"
-            android:gravity="center_horizontal"
             android:textSize="14sp"
-            android:maxLines="5"
             tools:text="Поток для меломанов"/>
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="6dp">
 
-            <TextView
-                android:id="@+id/header_flow_subscribe"
-                style="@style/LoginButton"
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginTop="8dp"
-                android:minHeight="32dp"
-                android:textSize="12sp"
-                android:background="@drawable/register_btn_background"
-                android:text="@string/subscribe_button"/>
+                android:layout_gravity="center_horizontal">
+
+                <TextView
+                    android:id="@+id/header_flow_subscribe"
+                    style="@style/LoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/register_btn_background"
+                    android:minHeight="32dp"
+                    android:text="@string/subscribe_button"
+                    android:textSize="12sp"/>
+
+                <TextView
+                    android:id="@+id/header_flow_unsubscribe"
+                    style="@style/LoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginRight="4dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/btn_green_background"
+                    android:minHeight="32dp"
+                    android:text="@string/you_have_subscribed_button"
+                    android:textSize="12sp"
+                    android:visibility="invisible"
+                    />
+
+                <ProgressBar
+                    android:id="@+id/header_flow_follow_unfollow_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:visibility="invisible"
+                    tools:visibility="visible"/>
+
+            </FrameLayout>
 
             <TextView
-                android:id="@+id/header_flow_unsubscribe"
+                android:id="@+id/create_flow_post"
                 style="@style/LoginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="12dp"
-                android:layout_marginRight="12dp"
-                android:layout_marginTop="8dp"
                 android:layout_gravity="center"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="8dp"
                 android:background="@drawable/btn_green_background"
-                android:text="@string/you_have_subscribed_button"
                 android:minHeight="32dp"
+                android:text="@string/write_to_flow"
                 android:textSize="12sp"
-                android:visibility="invisible"
+                android:visibility="gone"
+                tools:visibility="visible"
                 />
 
-            <ProgressBar
-                android:id="@+id/header_flow_follow_unfollow_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="invisible"
-                tools:visibility="visible"/>
-
-        </FrameLayout>
-
+        </LinearLayout>
 
     </LinearLayout>
 

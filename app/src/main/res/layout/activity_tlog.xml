@@ -12,23 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        app:contentInsetLeft="0dp"
-        app:contentInsetRight="8dp"
-        app:navigationContentDescription="@string/action_back_content_description"
-        android:fitsSystemWindows="true"
-        app:navigationIcon="@drawable/ic_back_white"
-        app:theme="@style/ToolbarThemeDark"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
-
-        <include
-            layout="@layout/ab_custom_tlog"/>
-
-    </android.support.v7.widget.Toolbar>
-
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
         tools:text="Неправильный логин или пароль"

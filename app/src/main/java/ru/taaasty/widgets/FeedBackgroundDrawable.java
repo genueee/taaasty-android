@@ -60,7 +60,7 @@ public class FeedBackgroundDrawable extends BitmapDrawable {
         super(res, bitmap);
         setFeedDesign(res, TlogDesign.DUMMY);
         mBorderTopPaint.setColor(res.getColor(R.color.feed_dark_border_background_color));
-        mDrawBitmapOnTopLimit = (int)(48f * res.getDisplayMetrics().densityDpi / 160f + 0.5f);
+        mDrawBitmapOnTopLimit = (int)(24f * res.getDisplayMetrics().densityDpi / 160f + 0.5f);
         mHeaderHeight = headerHeight;
     }
 

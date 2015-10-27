@@ -9,6 +9,7 @@ import android.view.View;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
@@ -22,8 +23,6 @@ import ru.taaasty.widgets.ErrorTextView;
 public abstract class TabbarActivityBase extends ActivityBase implements TabbarFragment.onTabbarButtonListener, CustomErrorView {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TabbarActivityBase";
-
-    static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 4;
 
     Session mSession = Session.getInstance();
     TabbarFragment mTabbar;
@@ -60,7 +59,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+            case Constants.ACTIVITY_REQUEST_CODE_CREATE_POST:
                 onCreatePostActivityClosed(requestCode, resultCode, data);
                 break;
         }
@@ -70,6 +69,14 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     protected void onDestroy() {
         super.onDestroy();
         if (DBG) Log.v(TAG, "onDestroy");
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mTabbar != null) {
+            if (mTabbar.onBackPressed()) return;
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -86,9 +93,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
             case R.id.btn_tabbar_my_feed:
                 switchToMyFeed();
                 break;
-            case R.id.btn_tabbar_post:
-                openCreatePost();
-                break;
             case R.id.btn_tabbar_notifications:
                 switchToNotifications();
                 break;
@@ -98,6 +102,11 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
             default:
                 throw new IllegalStateException();
         }
+    }
+
+    @Override
+    public boolean onFabMenuItemClicked(View v) {
+        return false;
     }
 
     @Override
@@ -153,9 +162,5 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
         startActivity(i);
         finish();
         overridePendingTransition(0, 0);
-    }
-
-    void openCreatePost() {
-        CreatePostActivity.startCreatePostActivityForResult(this, CREATE_POST_ACTIVITY_REQUEST_CODE);
     }
 }

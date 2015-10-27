@@ -11,14 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <fragment
-        android:id="@+id/tabbar"
-        android:name="ru.taaasty.ui.tabbar.TabbarFragment"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        tools:layout="@layout/tabbar"/>
-
     <ru.taaasty.widgets.ErrorTextView
         android:id="@+id/error_text"
         style="@style/ErrorTextView"
@@ -26,5 +18,13 @@
         android:layout_height="wrap_content"
         tools:text="Мазафака какая-то с сайтом"
         tools:visibility="invisible"/>
+
+    <fragment
+        android:id="@+id/tabbar"
+        android:name="ru.taaasty.ui.tabbar.TabbarFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        tools:layout="@layout/tabbar"/>
 
 </android.support.design.widget.CoordinatorLayout>

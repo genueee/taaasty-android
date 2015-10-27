@@ -1,6 +1,7 @@
 package ru.taaasty.ui.post;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -46,7 +47,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
 
     private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreatePostActivity.ARG_TLOG_ID";
+    private static final String ARG_PAGE = "ru.taaasty.ui.post.CreatePostActivity.ARG_PAGE";
     private static final String KEY_TLOG = "TLOG";
+    private static final String KEY_CURRENT_PAGE = "ru.taaasty.ui.post.CreatePostActivity.CURRENT_PAGE";
 
     private static final String SHARED_PREFS_NAME = "CreatePostActivity";
     private static final String SHARED_PREFS_KEY_POST_PRIVACY = "post_privacy";
@@ -64,17 +67,31 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Nullable
     private TlogInfo mTlog;
 
-    public static void startCreatePostActivityForResult(Activity activity, int requestCode) {
-        startCreatePostActivityForResult(activity, null, requestCode);
+    public static void startCreatePostActivityForResult(Context context,
+                                                        Object activityOrFragment,
+                                                        int requestCode) {
+        startCreatePostActivityForResult(context, activityOrFragment, null, null, requestCode);
     }
 
-    public static void startCreatePostActivityForResult(Activity activity, Long tlogId, int requestCode) {
-        Intent intent = new Intent(activity, CreatePostActivity.class);
+    public static void startCreatePostActivityForResult(Context context, Object activityOrFragment,
+                                                        Long tlogId,
+                                                        Page page,
+                                                        int requestCode) {
+        Intent intent = new Intent(context, CreatePostActivity.class);
         if (tlogId != null) {
             intent.putExtra(ARG_TLOG_ID, tlogId.longValue());
         }
+        if (page != null) {
+            intent.putExtra(ARG_PAGE, page.ordinal());
+        }
 
-        activity.startActivityForResult(intent, requestCode);
+        if (activityOrFragment instanceof Fragment) {
+            ((Fragment)activityOrFragment).startActivityForResult(intent, requestCode);
+        } else if (activityOrFragment instanceof Activity) {
+            ((Activity)activityOrFragment).startActivityForResult(intent, requestCode);
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override
@@ -83,7 +100,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         if (DBG) Log.v(TAG, "onCreate()");
         setContentView(R.layout.activity_create_post);
 
-        Page currentItem = Page.TEXT_POST;
+        Page currentItem;
         @Entry.EntryPrivacy
         String postPrivacy = Entry.PRIVACY_PUBLIC;
 
@@ -91,6 +108,12 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, 0);
         } else {
             mTlogId = null;
+        }
+
+        if (getIntent().hasExtra(ARG_PAGE)) {
+            currentItem = Page.values()[getIntent().getIntExtra(ARG_PAGE, 0)];
+        } else {
+            currentItem = Page.TEXT_POST;
         }
 
         mSectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), mTlogId);
@@ -107,11 +130,12 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                 postPrivacy = Entry.PRIVACY_PUBLIC;
             }
             String currentItemString = prefs.getString(SHARED_PREFS_KEY_INITIAL_SECTION, null);
-            if (currentItemString != null) {
+            if (currentItemString != null && !getIntent().hasExtra(ARG_PAGE)) {
                 currentItem = Page.valueOfPrefsName(currentItemString);
             }
         } else {
             mTlog = savedInstanceState.getParcelable(KEY_TLOG);
+            currentItem = Page.values()[savedInstanceState.getInt(KEY_CURRENT_PAGE)];
         }
 
         // Set up the ViewPager with the sections adapter.
@@ -184,6 +208,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mTlog != null) outState.putParcelable(KEY_TLOG, mTlog);
+        outState.putInt(KEY_CURRENT_PAGE, mViewPager.getCurrentItem());
     }
 
     void onCreatePostClicked() {

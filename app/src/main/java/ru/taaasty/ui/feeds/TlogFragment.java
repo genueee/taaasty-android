@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +16,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -33,6 +38,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 import de.greenrobot.event.EventBus;
+import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -55,6 +61,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
+import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
@@ -63,8 +70,10 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
+import ru.taaasty.widgets.FabMenuLayout;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
@@ -73,7 +82,9 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
-public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkRetainedFragment.TargetFragmentInteraction {
+public class TlogFragment extends Fragment implements IRereshable,
+        ListFeedWorkRetainedFragment.TargetFragmentInteraction,
+        OnBackPressedListener {
 
     public static final int FOLLOWING_STATUS_UNKNOWN = 0;
     public static final int FOLLOWING_STATUS_ME_SUBSCRIBED = 0x01;
@@ -91,7 +102,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     private static final String ARG_USER_SLUG = "user_slug";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "avatar_thumbnail_res";
 
-    private static final int CREATE_POST_ACTIVITY_REQUEST_CODE = 5;
+    private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
+    private static final String BUNDLE_KEY_AB_TITLE = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_AB_TITLE";
+
+    private static final int CREATE_POST_ACTIVITY_REQUEST_CODE = Constants.ACTIVITY_REQUEST_CODE_CREATE_POST;
 
     private OnFragmentInteractionListener mListener;
 
@@ -112,9 +126,22 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
     private FabHelper mFabHelper;
 
-    private FabHelper.AutoHideScrollListener mHideFabScrollListener;
+    private View mSubscribeView;
+    private View mUnsubscribeView;
+    private View mFollowUnfollowProgressView;
+
+    private Toolbar mToolbar;
+
+    private Drawable mAbBackgroundDrawable;
+    int mLastAlpha = 0;
+
+    private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
+    private SpannableString mAbTitle;
 
     private boolean mScheduleRefreshData;
+
+    private TlogInterfaceVisibilityController mInterfaceVisibilityController;
+
 
     public static TlogFragment newInstance(long userId) {
         return newInstance(userId, 0);
@@ -157,6 +184,27 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         super.onCreate(savedInstanceState);
         mAvatarThumbnailRes = getArguments().getInt(ARG_AVATAR_THUMBNAIL_RES, 0);
         mHandler = new Handler();
+        mInterfaceVisibilityController = new TlogInterfaceVisibilityController() {
+
+            @Override
+            protected boolean isInterfaceShown() {
+                if (getActivity() == null) return false;
+                return ((ActivityBase)getActivity()).getSupportActionBar().isShowing();
+            }
+
+            @Override
+            protected void onOverlayVisibilityChanged(boolean isShown) {
+                updateDateIndicatorVisibility(isShown);
+
+                boolean isAtTop = mListView == null || !mListView.canScrollVertically(-1);
+
+                if ((isShown || isAtTop)&& getActivity() != null) {
+                    ((ActivityBase)getActivity()).getSupportActionBar().show();
+                } else {
+                    ((ActivityBase)getActivity()).getSupportActionBar().hide();
+                }
+            }
+        };
     }
 
     @Override
@@ -167,8 +215,13 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
         mEmptyView = (TextView)v.findViewById(R.id.empty_view);
-        mFabHelper = new FabHelper(v.findViewById(R.id.post));
-        mFabHelper.hideFab(false);
+        mFabHelper = new FabHelper(v.findViewById(R.id.fab), (FabMenuLayout)v.findViewById(R.id.fab_menu));
+        mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
+        mUnsubscribeView = mToolbar.findViewById(R.id.unsubscribe);
+        mSubscribeView = mToolbar.findViewById(R.id.subscribe);
+        mFollowUnfollowProgressView = mToolbar.findViewById(R.id.follow_unfollow_progress);
+
+        mFabHelper.setMenuListener(new FabHelper.FabMenuDefaultListener(this));
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -182,6 +235,8 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             void onScrolled(RecyclerView recyclerView, int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
                 if (mListener == null) return;
                 mListener.onListScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
+                mInterfaceVisibilityController.onListScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
+                refreshAbAlphaOnScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
             }
         });
 
@@ -193,45 +248,52 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
         mDateIndicatorView.setAutoShow(false);
 
-        final GestureDetector gd = new GestureDetector(getActivity(), new GestureDetector.OnGestureListener() {
-            @Override
-            public boolean onDown(MotionEvent e) { return false; }
-
-            @Override
-            public void onShowPress(MotionEvent e) { }
-
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                if (mListener != null) mListener.onListClicked();
-                return true;
-            }
-
-            @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) { return false; }
-
-            @Override
-            public void onLongPress(MotionEvent e) { }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) { return false; }
-        });
-
         mListView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+
+            final GestureDetector gd = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapUp(MotionEvent e) {
+                    mInterfaceVisibilityController.onListClicked();
+                    return true;
+                }
+            });
+
             @Override
             public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
                 gd.onTouchEvent(e);
                 return false;
             }
         });
+        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mFabHelper));
 
-        mFabHelper.getView().setOnClickListener(new View.OnClickListener() {
+        mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
+        mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
+
+        if (savedInstanceState != null) {
+            mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
+            mLastAlpha = savedInstanceState.getInt(BUNDLE_KEY_LAST_ALPHA);
+            mAbBackgroundDrawable.setAlpha(mLastAlpha);
+        } else {
+            mAbTitle = new SpannableString("");
+            mAbBackgroundDrawable.setAlpha(0);
+        }
+
+        View.OnClickListener onSubscriptionClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreatePostActivity.startCreatePostActivityForResult(getActivity(),
-                        (mWorkFragment.isFlow() ? mWorkFragment.getUser().author.getId() :  null),
-                        CREATE_POST_ACTIVITY_REQUEST_CODE);
+                switch (v.getId()) {
+                    case R.id.subscribe:
+                        startFollow();
+                        break;
+                    case R.id.unsubscribe:
+                        startUnfollow();
+                        break;
+                }
             }
-        });
+        };
+
+        mSubscribeView.setOnClickListener(onSubscriptionClickListener);
+        mUnsubscribeView.setOnClickListener(onSubscriptionClickListener);
 
         return v;
     }
@@ -252,11 +314,20 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        ((ActivityBase)getActivity()).setSupportActionBar(mToolbar);
+        getActivity().setTitle(mAbTitle.toString());
+        mToolbar.setBackgroundDrawable(mAbBackgroundDrawable);
+        mToolbar.setTitle(mAbTitle);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case CREATE_POST_ACTIVITY_REQUEST_CODE:
-                if (requestCode == Activity.RESULT_OK) {
+                if (resultCode == Activity.RESULT_OK) {
                     if (mWorkFragment != null) {
                         refreshData(true);
                     } else {
@@ -270,7 +341,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     @Override
     public void onWorkFragmentActivityCreated() {
         reinitAdapter();
-        refreshFabStatus();
     }
 
     @Override
@@ -281,13 +351,16 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         }
         mDateIndicatorHelper.onResume();
         updateDateIndicatorVisibility();
-        refreshFabStatus();
+        refreshFollowUnfollowView();
+        mInterfaceVisibilityController.onResume();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mHandler.removeCallbacksAndMessages(null);
+        mInterfaceVisibilityController.onDestroy();
+        mInterfaceVisibilityController = null;
         mDateIndicatorView = null;
         mFabHelper = null;
         mWorkFragment.setTargetFragment(null, 0);
@@ -303,9 +376,22 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(BUNDLE_KEY_LAST_ALPHA, mLastAlpha);
+        outState.putString(BUNDLE_KEY_AB_TITLE, mAbTitle.toString());
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        if (mFabHelper != null) return mFabHelper.onBackPressed();
+        return false;
     }
 
     @Override
@@ -336,7 +422,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         setupFeedDesign();
         if (mAdapter != null) mAdapter.setUser(tlogInfo.author);
         setupLoadingState();
-        refreshFabStatus();
+        setupActionBarTitle(tlogInfo);
         if (isFlow()) {
             mAdapter.notifyItemChanged(0);
         }
@@ -345,10 +431,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     @Override
     public RecyclerView.Adapter getAdapter() {
         return mAdapter;
-    }
-
-    public void onOverlayVisibilityChanged(boolean visible) {
-        updateDateIndicatorVisibility(visible);
     }
 
     public void refreshData(boolean forceShowRefreshingIndicator) {
@@ -399,8 +481,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     }
 
     void updateDateIndicatorVisibility() {
-        if (mListener == null) return;
-        updateDateIndicatorVisibility(mListener.isOverlayVisible());
+        updateDateIndicatorVisibility(!mInterfaceVisibilityController.isNavigationHidden());
     }
 
     private void updateDateIndicatorVisibility(boolean overlayVisible) {
@@ -448,11 +529,82 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         updateDateIndicatorVisibility();
     }
 
+    void setupActionBarTitle(TlogInfo tlogInfo) {
+        User author = tlogInfo.author;
+        mAbTitle = new SpannableString(author.getName());
+        mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        refreshFollowUnfollowView();
+    }
+
+    void refreshFollowUnfollowView() {
+        Log.d(TAG, "refreshFollowUnfollowView() called with: " + "");
+        @TlogFragment.FollowingStatus
+        int status;
+
+        boolean subscribeVisible = false;
+        boolean unsubscribeVisible = false;
+        boolean progressVisible = false;
+
+        if (isFlow()) {
+            status = TlogFragment.FOLLOWING_STATUS_UNKNOWN;
+        } else {
+            status = getFollowingStatus();
+        }
+
+        switch (status) {
+            case TlogFragment.FOLLOWING_STATUS_UNKNOWN:
+                break;
+            case TlogFragment.FOLLOWING_STATUS_CHANGING:
+                progressVisible = true;
+                break;
+            case TlogFragment.FOLLOWING_STATUS_ME_SUBSCRIBED:
+                unsubscribeVisible = true;
+                break;
+            case TlogFragment.FOLLOWING_STATUS_ME_UNSUBSCRIBED:
+                subscribeVisible = true;
+                break;
+            default:
+                throw new IllegalStateException();
+        }
+
+        mSubscribeView.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mUnsubscribeView.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mFollowUnfollowProgressView.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private void refreshAbAlphaOnScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
+        float abAlpha;
+        int intAlpha;
+
+        // XXX: неверно работает, когда у юзера мало постов
+        if (totalCount == 0 || visibleCount >= totalCount) {
+            abAlpha = 0;
+        } else {
+            if (totalCount > 5) totalCount = 5;
+            abAlpha = (firstVisibleItem + 1f - firstVisibleFract) / (float)totalCount;
+            abAlpha = UiUtils.clamp(abAlpha, 0f, 1f);
+        }
+        intAlpha = (int)(255f * abAlpha);
+
+        if (intAlpha == 0
+                || (intAlpha == 255 && mLastAlpha != 255)
+                || Math.abs(mLastAlpha - intAlpha) > 20) {
+            mLastAlpha = intAlpha;
+            mAbBackgroundDrawable.setAlpha(intAlpha);
+            if (mAbTitle != null) {
+                mAlphaForegroundColorSpan.setAlpha(abAlpha);
+                mToolbar.setTitle(mAbTitle);
+            }
+        }
+    }
+
     void onFollowingStatusChanged() {
-        if (!isFlow()) return;
         if (DBG) Log.v(TAG, "onFollowingStatusChanged()");
-        if (mAdapter != null) mAdapter.notifyItemChanged(0);
-        refreshFabStatus();
+        if (isFlow()) {
+            if (mAdapter != null) mAdapter.notifyItemChanged(0);
+        } else {
+            refreshFollowUnfollowView();
+        }
     }
 
     private void reinitAdapter() {
@@ -468,12 +620,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         }
 
         final boolean showPostAuthor;
-        final boolean showFab;
         if (mWorkFragment.getUser() != null) {
             showPostAuthor = mWorkFragment.getUser().author.isFlow();
         } else {
             showPostAuthor = false;
-            showFab = false;
         }
 
         mAdapter = new Adapter(mWorkFragment.getEntryList(), showPostAuthor);
@@ -487,31 +637,10 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             mAdapter.setUser(mWorkFragment.getUser().author);
             setupFeedDesign();
             mListener.onTlogInfoLoaded(mWorkFragment.getUser());
+            setupActionBarTitle(mWorkFragment.getUser());
         }
 
         mListView.setAdapter(mAdapter);
-    }
-
-    private void refreshFabStatus() {
-        boolean showFab = false;
-        if (mWorkFragment != null && mWorkFragment.getUser() != null) {
-            // TODO нормальное определение, можно ли писать в поток
-            showFab = mWorkFragment.isFlow() && Relationship.isMeSubscribed(mWorkFragment.getUser().getMyRelationship());
-        }
-
-        if (showFab) {
-            if (mHideFabScrollListener == null) {
-                mHideFabScrollListener = new FabHelper.AutoHideScrollListener(mFabHelper);
-                mListView.addOnScrollListener(mHideFabScrollListener);
-            }
-            mFabHelper.showFab(false);
-        } else {
-            if (mHideFabScrollListener != null) {
-                mListView.removeOnScrollListener(mHideFabScrollListener);
-                mHideFabScrollListener = null;
-            }
-            mFabHelper.hideFab(false);
-        }
     }
 
     private void setupAdapterPendingIndicator() {
@@ -571,6 +700,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                         FlowHeaderHolder holder = new FlowHeaderHolder(child);
                         holder.subscribeButton.setOnClickListener(mOnClickListener);
                         holder.unsubscribeButton.setOnClickListener(mOnClickListener);
+                        holder.writeToTlogButton.setOnClickListener(mOnClickListener);
                         return holder;
                     } else {
                         View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.header_tlog, mListView, false);
@@ -587,6 +717,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                         holder.titleView.setText('#' + UiUtils.capitalize(mUser.getName()));
                         holder.subtitleView.setText(mUser.getTitle());
                         bindHeaderFollowingStatus(holder);
+                        holder.writeToTlogButton.setVisibility(getFollowingStatus() == FOLLOWING_STATUS_ME_SUBSCRIBED ? View.VISIBLE : View.GONE);
                     } else {
                         TlogHeaderHolder holder = (TlogHeaderHolder) viewHolder;
                         holder.titleView.setText(UiUtils.capitalize(mUser.getName()));
@@ -712,6 +843,11 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
                     case R.id.header_flow_unsubscribe:
                         mWorkFragment.startUnfollow();
                         break;
+                    case R.id.create_flow_post:
+                        CreatePostActivity.startCreatePostActivityForResult(getContext(),
+                                TlogFragment.this, mWorkFragment.getUserId(), null,
+                                CREATE_POST_ACTIVITY_REQUEST_CODE);
+                        break;
                 }
             }
         };
@@ -739,6 +875,8 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
 
         View subscribeProgressButton;
 
+        View writeToTlogButton;
+
         public FlowHeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.title_subtitle_container));
 
@@ -747,6 +885,7 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             subscribeButton = itemView.findViewById(R.id.header_flow_subscribe);
             unsubscribeButton = itemView.findViewById(R.id.header_flow_unsubscribe);
             subscribeProgressButton = itemView.findViewById(R.id.header_flow_follow_unfollow_progress);
+            writeToTlogButton = itemView.findViewById(R.id.create_flow_post);
         }
     }
 
@@ -788,7 +927,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
             }
         }
     };
-
 
     public static class WorkRetainedFragment extends Fragment {
 
@@ -1040,7 +1178,6 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
         }
 
         void callFollowingStatusChanged() {
-            if (mListener != null) mListener.onFollowingStatusChanged();
             if (getMainFragment() != null) getMainFragment().onFollowingStatusChanged();
         }
 
@@ -1177,11 +1314,8 @@ public class TlogFragment extends Fragment implements IRereshable, ListFeedWorkR
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
         void onTlogInfoLoaded(TlogInfo info);
-        void onSharePostMenuClicked(Entry entry, long tlogId);
-        void onListClicked();
+        void onSharePostMenuClicked(Entry entry, long tlogId);;
         void onNoSuchUser();
-        void onFollowingStatusChanged();
-        boolean isOverlayVisible();
 
         /**
          * Юзер ткнул на аватарку в списке

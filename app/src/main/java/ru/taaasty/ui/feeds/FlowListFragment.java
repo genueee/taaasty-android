@@ -30,9 +30,7 @@ import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Relationship;
-import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
-import ru.taaasty.ui.CreateFlowActivity;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
@@ -165,10 +163,6 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
                 }
                 ((HeaderViewHolder) viewHolder).bindDesign(design);
                 ((HeaderViewHolder)viewHolder).setActivatedFlowTab(mWorkFragment.getSelectedFlowTab());
-
-                boolean canCreateFlows = user != null && user.canCreateFlows();
-                ((HeaderViewHolder)viewHolder).buttonCreateFlow.setVisibility(canCreateFlows ? View.VISIBLE : View.GONE);
-
                 ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(R.string.title_flows, null);
             }
 
@@ -179,7 +173,6 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
                         HeaderViewHolder headerHolder = (HeaderViewHolder)holder;
                         headerHolder.flowsTabAll.setOnClickListener(mOnFlowTabClickListener);
                         headerHolder.flowsTabMy.setOnClickListener(mOnFlowTabClickListener);
-                        headerHolder.buttonCreateFlow.setOnClickListener(mOnFlowTabClickListener);
                         break;
                     case FlowListAdapter.VIEW_TYPE_ITEM:
                         holder.itemView.setOnClickListener(mOnClickListener);
@@ -198,11 +191,6 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
                         case R.id.flows_my: switchTab(FlowListWorkFragment.FLOwS_TAB_MY);
                             ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FLOWS,
                                     "Переключение на мои потоки", null);
-                            break;
-                        case R.id.create_anonymous_post_or_flow:
-                            CreateFlowActivity.startActivity(v.getContext(), v);
-                            ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FLOWS,
-                                    "Открыто создание потока", null);
                             break;
                         default:
                             throw new IllegalStateException();
@@ -378,16 +366,12 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
 
         public final View flowsTabMy;
 
-        public final View buttonCreateFlow;
-
         public HeaderViewHolder(View v) {
             super(v);
             View tabs = ((ViewStub)v.findViewById(R.id.flows_tab_layout)).inflate();
             flowsTabAll = tabs.findViewById(R.id.flows_all);
             flowsTabMy = tabs.findViewById(R.id.flows_my);
-            buttonCreateFlow = v.findViewById(R.id.create_anonymous_post_or_flow);
 
-            buttonCreateFlow.setContentDescription(v.getContext().getText(R.string.create_flow));
             setActivatedFlowTab(FlowListWorkFragment.FLOWS_TAB_ALL);
         }
 

@@ -16,4 +16,5 @@
 
 <resources>
     <item name="header_shadow" type="drawable">@drawable/bottom_shadow</item>
+    <item name="fab_menu" type="layout">@layout/fab_menu_portait</item>
 </resources>

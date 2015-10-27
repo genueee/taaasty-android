@@ -1,21 +1,13 @@
 package ru.taaasty.ui.feeds;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
-import android.text.Spannable;
-import android.text.SpannableString;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,10 +23,9 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.FeedBackground;
-import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.ErrorTextView;
 
 
@@ -45,25 +36,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.feeds.TlogActivity.avatar_thumbnail_res";
     private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
-
-    private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
-    private static final String BUNDLE_KEY_AB_TITLE = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_AB_TITLE";
-
-    private static final int HIDE_ACTION_BAR_DELAY = 5000;
-
-    private Drawable mAbBackgroundDrawable;
-    int mLastAlpha = 0;
-
-    private AlphaForegroundColorSpan mAlphaForegroundColorSpan;
-    private SpannableString mAbTitle;
-
-    private View mSubscribeView;
-    private View mUnsubscribeView;
-    private View mFollowUnfollowProgressView;
-
-    private Toolbar mToolbar;
-
-    private InterfaceVisibilityController mInterfaceVisibilityController;
 
     private FeedBackground mFeedBackground;
 
@@ -110,11 +82,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tlog);
 
-        mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
-        mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
-
-        mInterfaceVisibilityController = new InterfaceVisibilityController();
-
         View container = findViewById(R.id.container);
         mFeedBackground = new FeedBackground(container, null, R.dimen.feed_header_height);
 
@@ -123,44 +90,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         // системные кнопки и background на activity лежит под ними.
         getWindow().getDecorView().setBackgroundDrawable(null);
 
-        if (savedInstanceState != null) {
-            mAbTitle = new SpannableString(savedInstanceState.getString(BUNDLE_KEY_AB_TITLE));
-            mLastAlpha = savedInstanceState.getInt(BUNDLE_KEY_LAST_ALPHA);
-            mAbBackgroundDrawable.setAlpha(mLastAlpha);
-        } else {
-            mAbTitle = new SpannableString("");
-            mAbBackgroundDrawable.setAlpha(0);
-        }
-
-        mToolbar = (Toolbar)findViewById(R.id.toolbar);
-        mUnsubscribeView = mToolbar.findViewById(R.id.unsubscribe);
-        mSubscribeView = mToolbar.findViewById(R.id.subscribe);
-        mFollowUnfollowProgressView = mToolbar.findViewById(R.id.follow_unfollow_progress);
-
-        setTitle(mAbTitle.toString());
-
-        setSupportActionBar(mToolbar);
-        mToolbar.setBackgroundDrawable(mAbBackgroundDrawable);
-        mToolbar.setTitle(mAbTitle);
-
-        View.OnClickListener onSubscriptionClickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
-                if (fragment == null) return;
-
-                switch (v.getId()) {
-                    case R.id.subscribe:
-                        fragment.startFollow();
-                        break;
-                    case R.id.unsubscribe:
-                        fragment.startUnfollow();
-                        break;
-                }
-            }
-        };
-        mSubscribeView.setOnClickListener(onSubscriptionClickListener);
-        mUnsubscribeView.setOnClickListener(onSubscriptionClickListener);
 
         if (savedInstanceState == null) {
             Fragment tlogFragment;
@@ -177,13 +106,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
                     .replace(R.id.container, tlogFragment)
                     .commit();
         }
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putInt(BUNDLE_KEY_LAST_ALPHA, mLastAlpha);
-        outState.putString(BUNDLE_KEY_AB_TITLE, mAbTitle.toString());
     }
 
     @Override
@@ -215,15 +137,14 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mInterfaceVisibilityController.onResume();
-    }
-
-    @Override
-    protected void onResumeFragments() {
-        super.onResumeFragments();
-        refreshFollowUnfollowView();
+    public void onBackPressed() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
+        if (fragment != null && fragment instanceof OnBackPressedListener) {
+            if (((OnBackPressedListener) fragment).onBackPressed()) {
+                return;
+            }
+        }
+        super.onBackPressed();
     }
 
     @Override
@@ -239,10 +160,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
-        User author = tlogInfo.author;
-        mAbTitle = new SpannableString(author.getName());
-        mAbTitle.setSpan(mAlphaForegroundColorSpan, 0, mAbTitle.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        refreshFollowUnfollowView();
         if (tlogInfo.getDesign() != null) {
             mFeedBackground.setTlogDesign(tlogInfo.getDesign());
         }
@@ -254,24 +171,9 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void onListClicked() {
-        mInterfaceVisibilityController.onListClicked();
-    }
-
-    @Override
     public void onNoSuchUser() {
         Toast.makeText(this, getString(R.string.error_user_with_this_name_not_found), Toast.LENGTH_LONG).show();
         finish();
-    }
-
-    @Override
-    public void onFollowingStatusChanged() {
-        refreshFollowUnfollowView();
-    }
-
-    @Override
-    public boolean isOverlayVisible() {
-        return !mInterfaceVisibilityController.isNavigationHidden();
     }
 
     @Override
@@ -281,156 +183,11 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
-        float abAlpha;
-        int intAlpha;
-
-        mInterfaceVisibilityController.onListScroll(dy, firstVisibleItem, firstVisibleFract, visibleCount, totalCount);
-
-        // XXX: неверно работает, когда у юзера мало постов
-        if (totalCount == 0 || visibleCount >= totalCount) {
-            abAlpha = 0;
-        } else {
-            if (totalCount > 5) totalCount = 5;
-            abAlpha = (firstVisibleItem + 1f - firstVisibleFract) / (float)totalCount;
-            abAlpha = UiUtils.clamp(abAlpha, 0f, 1f);
-        }
-
-        intAlpha = (int)(255f * abAlpha);
-
         mFeedBackground.setHeaderVisibleFraction(firstVisibleItem == 0 ? firstVisibleFract : 0);
-
-        if (intAlpha == 0
-                || (intAlpha == 255 && mLastAlpha != 255)
-                || Math.abs(mLastAlpha - intAlpha) > 20) {
-            mLastAlpha = intAlpha;
-            mAbBackgroundDrawable.setAlpha(intAlpha);
-            if (mAbTitle != null) {
-                mAlphaForegroundColorSpan.setAlpha(abAlpha);
-                mToolbar.setTitle(mAbTitle);
-            }
-        }
     }
 
     private void refreshData() {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) ((IRereshable)fragment).refreshData(true);
-    }
-
-    void refreshFollowUnfollowView() {
-        TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
-
-        @TlogFragment.FollowingStatus
-        int status;
-
-        boolean subscribeVisible = false;
-        boolean unsubscribeVisible = false;
-        boolean progressVisible = false;
-
-        if (fragment == null || fragment.isFlow()) {
-            status = TlogFragment.FOLLOWING_STATUS_UNKNOWN;
-        } else {
-            status = fragment.getFollowingStatus();
-        }
-
-        switch (status) {
-            case TlogFragment.FOLLOWING_STATUS_UNKNOWN:
-                break;
-            case TlogFragment.FOLLOWING_STATUS_CHANGING:
-                progressVisible = true;
-                break;
-            case TlogFragment.FOLLOWING_STATUS_ME_SUBSCRIBED:
-                unsubscribeVisible = true;
-                break;
-            case TlogFragment.FOLLOWING_STATUS_ME_UNSUBSCRIBED:
-                subscribeVisible = true;
-                break;
-            default:
-                throw new IllegalStateException();
-        }
-
-        mSubscribeView.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
-        mUnsubscribeView.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
-        mFollowUnfollowProgressView.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
-    }
-
-    private final class InterfaceVisibilityController {
-
-        private final Handler mHideActionBarHandler;
-        private volatile boolean userForcedToShowInterface = false;
-        private boolean mNavigationHidden;
-
-        public InterfaceVisibilityController() {
-            mHideActionBarHandler = new Handler();
-            userForcedToShowInterface = false;
-        }
-
-        public void onResume() {
-            mNavigationHidden = !getSupportActionBar().isShowing();
-            runHideActionBarTimer();
-        }
-
-        public void onDestroy() {
-            mHideActionBarHandler.removeCallbacks(mHideAbRunnable);
-        }
-
-        public void onListClicked() {
-            if (mNavigationHidden) {
-                userForcedToShowInterface = true;
-            }
-            toggleShowOrHideHideyBarMode();
-        }
-
-        public boolean isNavigationHidden() {
-            return mNavigationHidden;
-        }
-
-        public void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount) {
-            if (dy < -50
-                    || totalCount == 0
-                    || (firstVisibleItem == 0 && firstVisibleFract < 0.1)
-                    ) {
-                userForcedToShowInterface();
-            }
-        }
-
-        void onVisibilityChanged(boolean shown) {
-            mNavigationHidden = !shown;
-            TlogFragment fragment = (TlogFragment)getSupportFragmentManager().findFragmentById(R.id.container);
-            if (fragment != null) fragment.onOverlayVisibilityChanged(shown);
-        }
-
-        private void userForcedToShowInterface() {
-            if (mNavigationHidden) {
-                userForcedToShowInterface = true;
-                toggleShowOrHideHideyBarMode();
-            }
-        }
-
-        @SuppressLint("InlinedApi")
-        private void toggleShowOrHideHideyBarMode() {
-            if (!mNavigationHidden) {
-                getSupportActionBar().hide();
-                onVisibilityChanged(false);
-            } else {
-                getSupportActionBar().show();
-                userForcedToShowInterface = false;
-                onVisibilityChanged(true);
-                runHideActionBarTimer();
-            }
-        }
-
-        private void runHideActionBarTimer() {
-            mHideActionBarHandler.removeCallbacks(mHideAbRunnable);
-            mHideActionBarHandler.postDelayed(mHideAbRunnable, HIDE_ACTION_BAR_DELAY);
-        }
-
-        private final Runnable mHideAbRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (!userForcedToShowInterface && !mNavigationHidden) {
-                    toggleShowOrHideHideyBarMode();
-                }
-            }
-        };
     }
 }
