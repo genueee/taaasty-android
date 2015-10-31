@@ -35,8 +35,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
             switchToLoginForm();
             return;
         }
-
-        PusherService.startPusher(this);
     }
 
     @Override
@@ -53,6 +51,9 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     protected void onStart() {
         super.onStart();
         initTabbar();
+        if (Session.getInstance().getCurrentUserToken() != null) {
+            PusherService.startPusher(this);
+        }
     }
 
     @Override

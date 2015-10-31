@@ -14,7 +14,6 @@ import com.pusher.client.AuthorizationFailureException;
 import com.pusher.client.Authorizer;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
-import com.pusher.client.channel.PrivateChannelEventListener;
 import com.pusher.client.connection.ConnectionEventListener;
 import com.pusher.client.connection.ConnectionState;
 import com.pusher.client.connection.ConnectionStateChange;
@@ -29,6 +28,7 @@ import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.events.NotificationMarkedAsRead;
 import ru.taaasty.events.NotificationReceived;
+import ru.taaasty.events.UiVisibleStatusChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
@@ -36,7 +36,6 @@ import ru.taaasty.rest.model.MessagingStatus;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.PusherEventUpdateNotifications;
 import ru.taaasty.rest.model.UpdateMessages;
-import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
@@ -44,10 +43,12 @@ import rx.Observer;
 import rx.Subscription;
 import rx.subscriptions.Subscriptions;
 
-public class PusherService extends Service implements PrivateChannelEventListener {
+public class PusherService extends Service {
     public static final boolean DBG = BuildConfig.DEBUG;
     public static final String TAG = "PusherService";
     public static final int PUSHER_RECONNECT_TIMEOUT = 10000;
+
+    private static final int BACKGROUND_MAX_WORK_TIME = (DBG ? 1 : 3) * 60 * 1000;
 
     /**
      *  Кол-во активных и непрочитанных переписок и непрочитанных уведомлений
@@ -101,8 +102,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
 
     private Pusher mPusher;
 
-    private ApiMessenger mApiMessenger;
-
     private Handler mHandler;
 
     private Subscription mSendAuthReadySubscription = Subscriptions.unsubscribed();
@@ -110,6 +109,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
     private Gson mGson;
 
     private MessagingStatus mLastMessagingStatus;
+
+    private boolean mIsStarted;
 
     /**
      * Проверяем, что pusher запущен. Пересоединяемся, если нет
@@ -138,8 +139,8 @@ public class PusherService extends Service implements PrivateChannelEventListene
     public void onCreate() {
         super.onCreate();
         mHandler = new Handler();
-        mApiMessenger = RestClient.getAPiMessenger();
         mGson = NetworkUtils.getGson();
+        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -149,7 +150,9 @@ public class PusherService extends Service implements PrivateChannelEventListene
             final String action = intent.getAction();
             if (ACTION_START.equals(action)) {
                 if (DBG) Log.v(TAG, "ACTION_START");
+                mIsStarted = true;
                 pusherConnect();
+                resetBackgroundTimer();
             } else if (ACTION_HANDLE_GCM_PUSH.equals(action)) {
                 onGcmPushReceived(intent);
             }
@@ -163,59 +166,81 @@ public class PusherService extends Service implements PrivateChannelEventListene
     public void onDestroy() {
         super.onDestroy();
         if (DBG) Log.v(TAG, "onDestroy()");
-        mHandler.removeCallbacks(mReconnectPusherRunnable);
+        EventBus.getDefault().unregister(this);
+        mHandler.removeCallbacksAndMessages(null);
         mHandler = null;
         mSendAuthReadySubscription.unsubscribe();
         destroyPusher();
-        mApiMessenger = null;
+        mIsStarted = false;
     }
 
-    @Override
-    public void onEvent(String channelName, String eventName, String data) {
-        if (!getMessagingChannelName().equals(channelName)) {
-            if (DBG) Log.v(TAG, "onEvent() unknown channel: " + channelName + " event: " + eventName + " data: " + data);
-            return;
-        }
-
-        if (DBG) Log.v(TAG, "onEvent() channel: " + channelName + " event: " + eventName + " data: " + data);
-
-        if (eventName == null) eventName = "";
-        switch (eventName) {
-            case EVENT_STATUS:
-                MessagingStatus status = mGson.fromJson(data, MessagingStatus.class);
-                if (!Objects.equals(status, mLastMessagingStatus)) {
-                    mLastMessagingStatus = status;
-                    EventBus.getDefault().post(new MessagingStatusReceived(status));
-                }
-                break;
-            case EVENT_ACTIVE_CONVERSATIONS:
-                break;
-            case EVENT_PUSH_MESSAGE:
-                Conversation.Message message =  mGson.fromJson(data, Conversation.Message.class);
-                EventBus.getDefault().post(new MessageChanged(message));
-                break;
-            case EVENT_UPDATE_CONVERSATION:
-                Conversation conversation =  mGson.fromJson(data, Conversation.class);
-                EventBus.getDefault().post(new ConversationChanged(conversation));
-                break;
-            case EVENT_UPDATE_MESSAGES:
-                UpdateMessages updateMessages =  mGson.fromJson(data, UpdateMessages.class);
-                EventBus.getDefault().post(new UpdateMessagesReceived(updateMessages));
-                break;
-            case EVENT_PUSH_NOTIFICATION:
-                Notification notification = mGson.fromJson(data, Notification.class);
-                EventBus.getDefault().post(new NotificationReceived(notification));
-                break;
-            case EVENT_UPDATE_NOTIFICATIONS:
-                PusherEventUpdateNotifications event = mGson.fromJson(data, PusherEventUpdateNotifications.class);
-                if (!event.notifications.isEmpty()) {
-                    EventBus.getDefault().post(new NotificationMarkedAsRead(event.notifications));
-                }
-                break;
-            default:
-                break;
+    public void onEventMainThread(UiVisibleStatusChanged status) {
+        if (!mIsStarted) return;
+        if (status.activeActivitiesCount == 0) {
+            resetBackgroundTimer();
+        } else {
+            stopBackgroundTimer();
         }
     }
+
+    private final com.pusher.client.channel.PrivateChannelEventListener mPrivateChannelEventListener = new  com.pusher.client.channel.PrivateChannelEventListener() {
+        @Override
+        public void onEvent(String channelName, String eventName, String data) {
+            if (!getMessagingChannelName().equals(channelName)) {
+                if (DBG) Log.v(TAG, "onEvent() unknown channel: " + channelName + " event: " + eventName + " data: " + data);
+                return;
+            }
+
+            if (DBG) Log.v(TAG, "onEvent() channel: " + channelName + " event: " + eventName + " data: " + data);
+
+            if (eventName == null) eventName = "";
+            switch (eventName) {
+                case EVENT_STATUS:
+                    MessagingStatus status = mGson.fromJson(data, MessagingStatus.class);
+                    if (!Objects.equals(status, mLastMessagingStatus)) {
+                        mLastMessagingStatus = status;
+                        EventBus.getDefault().post(new MessagingStatusReceived(status));
+                    }
+                    break;
+                case EVENT_ACTIVE_CONVERSATIONS:
+                    break;
+                case EVENT_PUSH_MESSAGE:
+                    Conversation.Message message =  mGson.fromJson(data, Conversation.Message.class);
+                    EventBus.getDefault().post(new MessageChanged(message));
+                    break;
+                case EVENT_UPDATE_CONVERSATION:
+                    Conversation conversation =  mGson.fromJson(data, Conversation.class);
+                    EventBus.getDefault().post(new ConversationChanged(conversation));
+                    break;
+                case EVENT_UPDATE_MESSAGES:
+                    UpdateMessages updateMessages =  mGson.fromJson(data, UpdateMessages.class);
+                    EventBus.getDefault().post(new UpdateMessagesReceived(updateMessages));
+                    break;
+                case EVENT_PUSH_NOTIFICATION:
+                    Notification notification = mGson.fromJson(data, Notification.class);
+                    EventBus.getDefault().post(new NotificationReceived(notification));
+                    break;
+                case EVENT_UPDATE_NOTIFICATIONS:
+                    PusherEventUpdateNotifications event = mGson.fromJson(data, PusherEventUpdateNotifications.class);
+                    if (!event.notifications.isEmpty()) {
+                        EventBus.getDefault().post(new NotificationMarkedAsRead(event.notifications));
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        @Override
+        public void onAuthenticationFailure(String message, Exception e) {
+            if (DBG) Log.v(TAG, "onAuthenticationFailure() msg: " + message, e);
+        }
+
+        @Override
+        public synchronized void onSubscriptionSucceeded(String channelName) {
+            if (DBG) Log.v(TAG, "onSubscriptionSucceeded() channel: " + channelName);
+            sentAuthReady();
+        }
+    };
 
     @Nullable
     public MessagingStatus getLastMessagingStatus() {
@@ -226,23 +251,6 @@ public class PusherService extends Service implements PrivateChannelEventListene
         return mLastMessagingStatus != null && mLastMessagingStatus.unreadNotificationsCount > 0;
     }
 
-    @Override
-    public void onAuthenticationFailure(String message, Exception e) {
-        if (DBG) Log.v(TAG, "onAuthenticationFailure() msg: " + message, e);
-    }
-
-    @Override
-    public synchronized void onSubscriptionSucceeded(String channelName) {
-        if (DBG) Log.v(TAG, "onSubscriptionSucceeded() channel: " + channelName);
-        sentAuthReady();
-    }
-
-    @Nullable
-    public String getSocketId() {
-        if (mPusher == null || mPusher.getConnection() == null) return null;
-        return mPusher.getConnection().getSocketId();
-    }
-
     private void createPusher() {
         destroyPusher();
         PusherOptions options = new PusherOptions()
@@ -251,7 +259,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 ;
 
         mPusher = new Pusher(BuildConfig.PUSHER_KEY, options);
-        mPusher.subscribePrivate(getMessagingChannelName(), this,
+        mPusher.subscribePrivate(getMessagingChannelName(), mPrivateChannelEventListener,
                 EVENT_STATUS,
                 EVENT_ACTIVE_CONVERSATIONS,
                 EVENT_PUSH_MESSAGE,
@@ -266,7 +274,23 @@ public class PusherService extends Service implements PrivateChannelEventListene
             return;
         }
         if (mPusher == null) createPusher();
-        mPusher.connect(mConnectionEventListener);
+        mPusher.connect(new ConnectionEventListener() {
+            @Override
+            public void onConnectionStateChange(ConnectionStateChange change) {
+                if (DBG) Log.v(TAG, "onConnectionStateChange() change: " + change.getPreviousState() + " -> " + change.getCurrentState());
+                if (mPusher == null) return;
+                if (change.getCurrentState() == ConnectionState.DISCONNECTED) {
+                    reconnectPusherLater();
+                } else if (change.getCurrentState() == ConnectionState.CONNECTED) {
+                    mHandler.removeCallbacks(mReconnectPusherRunnable);
+                }
+            }
+
+            @Override
+            public void onError(String message, String code, Exception e) {
+                if (DBG) Log.v(TAG, "onError() message: " + message + " code: " + code, e);
+            }
+        });
     }
 
     private void destroyPusher() {
@@ -303,7 +327,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
         @Override
         public String authorize(String channelName, String socketId) throws AuthorizationFailureException {
             try {
-                Response response = mApiMessenger.authPusher(channelName, socketId);
+                Response response = RestClient.getAPiMessenger().authPusher(channelName, socketId);
                 TypedInput ti = response.getBody();
                 if (ti == null) throw  new NullPointerException("response is null");
                 return IOUtils.toString(ti.in());
@@ -321,7 +345,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
         mSendAuthReadySubscription.unsubscribe();
 
         // Игнорируем все ошибки и результаты
-        mSendAuthReadySubscription = mApiMessenger.authReady2(mPusher.getConnection().getSocketId())
+        mSendAuthReadySubscription =  RestClient.getAPiMessenger().authReady2(mPusher.getConnection().getSocketId())
                 .subscribe(new Observer<Void>() {
                     @Override
                     public void onCompleted() {}
@@ -350,6 +374,7 @@ public class PusherService extends Service implements PrivateChannelEventListene
                 StatusBarNotifications ssb = StatusBarNotifications.getInstance();
                 ssb.onGcmPushConversationReceived(intent);
                 pusherConnect();
+                resetBackgroundTimer();
             } else {
                 GcmBroadcastReceiver.completeWakefulIntent(intent);
                 throw new IllegalStateException();
@@ -357,21 +382,26 @@ public class PusherService extends Service implements PrivateChannelEventListene
         }
     }
 
-    private final ConnectionEventListener mConnectionEventListener = new ConnectionEventListener() {
+    private void resetBackgroundTimer() {
+        mHandler.removeCallbacks(mCheckStopRunnable);
+        if (((TaaastyApplication)getApplication()).isUiActive()) return;
+        Log.d(TAG, "background timeout timer set to " + BACKGROUND_MAX_WORK_TIME / 1000 + " seconds");
+        mHandler.postDelayed(mCheckStopRunnable, BACKGROUND_MAX_WORK_TIME);
+    }
+
+    private void stopBackgroundTimer() {
+        if (DBG) Log.d(TAG, "background timeout timer stopped");
+        if (mHandler != null) mHandler.removeCallbacks(mCheckStopRunnable);
+    }
+
+    private final Runnable mCheckStopRunnable = new Runnable() {
         @Override
-        public void onConnectionStateChange(ConnectionStateChange change) {
-            if (DBG) Log.v(TAG, "onConnectionStateChange() change: " + change.getPreviousState() + " -> " + change.getCurrentState());
-            if (mPusher == null) return;
-            if (change.getCurrentState() == ConnectionState.DISCONNECTED) {
-                reconnectPusherLater();
-            } else if (change.getCurrentState() == ConnectionState.CONNECTED) {
-                mHandler.removeCallbacks(mReconnectPusherRunnable);
+        public void run() {
+            if (!((TaaastyApplication)getApplication()).isUiActive()) {
+                if (DBG) Log.d(TAG, "stop self on timeout");
+                stopSelf();
             }
         }
-
-        @Override
-        public void onError(String message, String code, Exception e) {
-            if (DBG) Log.v(TAG, "onError() message: " + message + " code: " + code, e);
-        }
     };
+
 }

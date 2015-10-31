@@ -1,7 +1,9 @@
 package ru.taaasty;
 
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.annotation.Nullable;
 import android.support.multidex.MultiDexApplication;
@@ -18,9 +20,11 @@ import com.squareup.leakcanary.LeakCanary;
 
 import java.util.Locale;
 
+import de.greenrobot.event.EventBus;
 import io.intercom.android.sdk.Intercom;
 import io.intercom.android.sdk.identity.Registration;
 import io.intercom.android.sdk.preview.IntercomPreviewPosition;
+import ru.taaasty.events.UiVisibleStatusChanged;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
@@ -33,8 +37,9 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     private volatile Tracker mAnalyticsTracker;
 
-    private volatile Intercom mIntercom;
     private volatile boolean mInterSessionStarted;
+
+    private int mActiveActivitiesCount = 0;
 
     @Override
     public void onCreate() {
@@ -81,15 +86,11 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
         StatusBarNotifications.onAppInit(this);
         FacebookSdk.sdkInitialize(this);
+        initActivityLifecycleTracker();
     }
 
     @Override
     public void onTrimMemory(int level) {
-        if (level ==  TRIM_MEMORY_UI_HIDDEN) {
-            // Интерфейс свернут. Не держим сервис без необходимости
-            // GCM используем только когда приложение не запущено, остальное - pusher
-            if (DBG) PusherService.stopPusher(this);
-        }
         super.onTrimMemory(level);
         if (DBG) Log.v(TAG, "onTrimMemory() " + level);
         NetworkUtils.getInstance().onTrimMemory();
@@ -165,5 +166,54 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
     @Override
     public String getBillingKey() {
         return "";
+    }
+
+    public boolean isUiActive() {
+        return mActiveActivitiesCount > 0;
+    }
+
+    private void initActivityLifecycleTracker() {
+        registerActivityLifecycleCallbacks(new ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+                mActiveActivitiesCount += 1;
+                if (mActiveActivitiesCount == 1) {
+                    EventBus.getDefault().post(new UiVisibleStatusChanged(1));
+                    Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
+                }
+
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+                mActiveActivitiesCount -= 1;
+                if (mActiveActivitiesCount <= 0) {
+                    EventBus.getDefault().post(new UiVisibleStatusChanged(0));
+                    mActiveActivitiesCount = 0;
+                    Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
+                }
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+            }
+        });
     }
 }
