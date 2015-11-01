@@ -131,4 +131,12 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     public void onChoosePhotoButtonClicked(boolean hasPicture) {
         throw new IllegalStateException();
     }
+
+    @Override
+    public void onFragmentAttached(CreatePostFragmentBase fragment) {
+    }
+
+    @Override
+    public void onFragmentDetached(CreatePostFragmentBase fragment) {
+    }
 }

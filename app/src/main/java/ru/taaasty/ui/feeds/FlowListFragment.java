@@ -32,6 +32,7 @@ import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.ui.FragmentStateConsumer;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.widgets.FeedBackgroundDrawable;
@@ -69,6 +70,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
         super.onAttach(context);
         try {
             mListener = (OnFragmentInteractionListener) context;
+            mListener.onFragmentAttached(this);
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -261,6 +263,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onFragmentDetached(this);
         mListener = null;
     }
 
@@ -389,7 +392,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
         }
     }
 
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener extends CustomErrorView, FragmentStateConsumer {
 
         void startRefreshCurrentUser();
 

@@ -134,6 +134,14 @@ public class EditPostActivity extends ActivityBase implements
     }
 
     @Override
+    public void onFragmentAttached(CreatePostFragmentBase fragment) {
+    }
+
+    @Override
+    public void onFragmentDetached(CreatePostFragmentBase fragment) {
+    }
+
+    @Override
     public void onPickPhotoSelected(Fragment fragment) {
         CreateImagePostFragment f = getCurrentImagePostFragment();
         f.onPickPhotoSelected();

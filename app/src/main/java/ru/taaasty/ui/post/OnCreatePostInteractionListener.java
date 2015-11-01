@@ -7,4 +7,8 @@ public interface OnCreatePostInteractionListener {
 
     void onChoosePhotoButtonClicked(boolean hasPicture); // Отдельный интерфейс?
 
+    void onFragmentAttached(CreatePostFragmentBase fragment);
+
+    void onFragmentDetached(CreatePostFragmentBase fragment);
+
 }

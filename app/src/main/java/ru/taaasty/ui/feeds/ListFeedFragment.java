@@ -38,6 +38,7 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
+import ru.taaasty.ui.FragmentStateConsumer;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
@@ -129,6 +130,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
         super.onAttach(context);
         try {
             mListener = (OnFragmentInteractionListener) context;
+            mListener.onFragmentAttached(this);
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -234,6 +236,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onFragmentDetached(this);
         mListener = null;
     }
 
@@ -623,7 +626,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener extends CustomErrorView, FragmentStateConsumer {
         /**
          * Юзер ткнул на аватарку в заголовке записи списка
          * @param view
@@ -644,6 +647,5 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
         void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int headerTop);
 
         TabbarFragment getTabbar();
-
     }
 }

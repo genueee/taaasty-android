@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -19,7 +20,9 @@ import com.google.android.gms.analytics.Tracker;
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import de.greenrobot.event.EventBus;
 import io.intercom.android.sdk.Intercom;
@@ -28,7 +31,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
@@ -64,6 +66,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     private Subscription mCurrentUserSubscription = Subscriptions.unsubscribed();
 
     private Subscription mStatsSubscription = Subscriptions.unsubscribed();
+
+    private Set<Fragment> mAttachedFragments = new HashSet<>(5);
 
     @Nullable
     private Stats mStats;
@@ -181,7 +185,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     @Override
     public void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int viewTop) {
-        if (mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem()) != fragment) return;
+        if (!fragment.getUserVisibleHint()) return;
         updateCircleIndicatorPosition(headerVisible, viewTop);
     }
 
@@ -237,7 +241,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     void refreshData() {
         if (mSectionsPagerAdapter == null || mViewPager == null) return;
-        Fragment page = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+        Fragment page = getVisibleFragment();
         if (page != null && page instanceof ListFeedFragment) {
             ListFeedFragment listFragment = (ListFeedFragment) page;
             listFragment.refreshData(true);
@@ -268,7 +272,32 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         SharePostActivity.startActivity(this, entry);
     }
 
-    public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
+    @Nullable
+    private Fragment getVisibleFragment() {
+        Fragment result = null;
+        for (Fragment fragment : mAttachedFragments) {
+            if (fragment.getUserVisibleHint()) {
+                result = fragment;
+                break;
+            }
+        }
+
+        if (DBG) Log.d(TAG, "getVisibleFragment() result: " + result);
+
+        return result;
+    }
+
+    @Override
+    public void onFragmentAttached(Fragment fragment) {
+        mAttachedFragments.add(fragment);
+    }
+
+    @Override
+    public void onFragmentDetached(Fragment fragment) {
+        mAttachedFragments.remove(fragment);
+    }
+
+    public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
         private IFeedsFragment mPrimaryItem;
 

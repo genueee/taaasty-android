@@ -19,6 +19,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -66,6 +69,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     @Nullable
     private TlogInfo mTlog;
+
+    private Set<CreatePostFragmentBase> mCreatePostFragments = new HashSet<>(4);
+
 
     public static void startCreatePostActivityForResult(Context context,
                                                         Object activityOrFragment,
@@ -116,7 +122,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             currentItem = Page.TEXT_POST;
         }
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), mTlogId);
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), mTlogId);
 
         if (savedInstanceState == null) {
             // Восстанавливаем значения последнего поста
@@ -143,7 +149,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mViewPager.addOnPageChangeListener(mOnPageChangedListener);
         mViewPager.setPageTransformer(true, new FadePageTransformer());
         mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.setOffscreenPageLimit(4);
         mCreatePostButtons = (CreatePostButtons)findViewById(R.id.buttons);
         mCreatePostButtons.setOnItemClickListener(mCreatePostButtonsListener);
         mCreatePostButtons.setPrivacy(postPrivacy);
@@ -215,7 +221,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         PostForm post;
         CreatePostFragmentBase fragment;
 
-        fragment = (CreatePostFragmentBase)mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+        fragment = getVisibleFragment();
         if (!fragment.isFormValid()) {
             // XXX: предупреждать юзера?
             return;
@@ -310,6 +316,16 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     @Override
+    public void onFragmentAttached(CreatePostFragmentBase fragment) {
+        mCreatePostFragments.add(fragment);
+    }
+
+    @Override
+    public void onFragmentDetached(CreatePostFragmentBase fragment) {
+        mCreatePostFragments.remove(fragment);
+    }
+
+    @Override
     public void onPickPhotoSelected(Fragment fragment) {
         if (DBG) Log.v(TAG, "onPickPhotoSelected");
         CreateImagePostFragment f = getCurrentImagePostFragment();
@@ -337,7 +353,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     private CreateImagePostFragment getCurrentImagePostFragment() {
         if (mSectionsPagerAdapter != null) {
-            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+            Fragment fragment = getVisibleFragment();
             if (fragment instanceof CreateImagePostFragment) {
                 return (CreateImagePostFragment)fragment;
             } else {
@@ -350,7 +366,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     @Nullable
     private CreateEmbeddPostFragment getCurrentEmbeddPostFragment() {
         if (mSectionsPagerAdapter != null) {
-            Fragment fragment = mSectionsPagerAdapter.getRegisteredFragment(mViewPager.getCurrentItem());
+            Fragment fragment = getVisibleFragment();
             if (fragment instanceof CreateEmbeddPostFragment) {
                 return (CreateEmbeddPostFragment)fragment;
             } else {
@@ -358,6 +374,21 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             }
         }
         return null;
+    }
+
+    @Nullable
+    private CreatePostFragmentBase getVisibleFragment() {
+        CreatePostFragmentBase result = null;
+        for (CreatePostFragmentBase fragment : mCreatePostFragments) {
+            if (fragment.getUserVisibleHint()) {
+                result = fragment;
+                break;
+            }
+        }
+
+        if (DBG) Log.d(TAG, "getVisibleFragment() result: " + result);
+
+        return result;
     }
 
     private void saveState() {

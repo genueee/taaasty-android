@@ -197,6 +197,14 @@ public class CreateSharedPostActivity extends ActivityBase implements
         dialog.show(getSupportFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
+    @Override
+    public void onFragmentAttached(CreatePostFragmentBase fragment) {
+    }
+
+    @Override
+    public void onFragmentDetached(CreatePostFragmentBase fragment) {
+    }
+
 
     @Override
     public void onMakePhotoSelected(Fragment fragment) {

@@ -1,19 +1,17 @@
 package ru.taaasty.ui.post;
 
-import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-
-import ru.taaasty.adapters.FragmentStatePagerAdapterBase;
+import android.support.v4.app.FragmentStatePagerAdapter;
 
 /**
  * Created by alexey on 05.09.14.
  */
-public class SectionsPagerAdapter extends FragmentStatePagerAdapterBase {
+public class SectionsPagerAdapter extends FragmentStatePagerAdapter {
 
     private final Long mTlogId;
 
-    public SectionsPagerAdapter(Context context, FragmentManager fm, Long tlogId) {
+    public SectionsPagerAdapter(FragmentManager fm, Long tlogId) {
         super(fm);
         mTlogId = tlogId;
     }

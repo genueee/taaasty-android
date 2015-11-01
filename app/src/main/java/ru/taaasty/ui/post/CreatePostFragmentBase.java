@@ -20,6 +20,7 @@ public abstract class CreatePostFragmentBase extends Fragment {
         super.onAttach(context);
         try {
             mListener = (OnCreatePostInteractionListener) context;
+            mListener.onFragmentAttached(this);
         } catch (ClassCastException e) {
             throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -42,6 +43,7 @@ public abstract class CreatePostFragmentBase extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
+        mListener.onFragmentDetached(this);
         mListener = null;
     }
 
