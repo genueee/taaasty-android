@@ -17,6 +17,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 import com.squareup.leakcanary.LeakCanary;
+import com.vk.sdk.VKSdk;
 
 import java.util.Locale;
 
@@ -69,7 +70,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         NetworkUtils.getInstance().onAppInit(this);
         Session.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
-        VkontakteHelper.getInstance().onAppInit();
         getTracker();
         resetLanguage();
         Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
@@ -85,6 +85,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         PreferenceHelper.setDefaultValues(this, false);
 
         StatusBarNotifications.onAppInit(this);
+        VKSdk.initialize(this);
         FacebookSdk.sdkInitialize(this);
         initActivityLifecycleTracker();
     }

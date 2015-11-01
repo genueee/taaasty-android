@@ -537,7 +537,7 @@ public class TlogFragment extends Fragment implements IRereshable,
     }
 
     void refreshFollowUnfollowView() {
-        Log.d(TAG, "refreshFollowUnfollowView() called with: " + "");
+        if (DBG) Log.d(TAG, "refreshFollowUnfollowView() called with: " + "");
         @TlogFragment.FollowingStatus
         int status;
 

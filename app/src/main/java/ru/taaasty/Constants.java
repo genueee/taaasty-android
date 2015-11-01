@@ -1,5 +1,7 @@
 package ru.taaasty;
 
+import com.vk.sdk.VKScope;
+
 import java.util.regex.Pattern;
 
 import retrofit.RestAdapter;
@@ -100,4 +102,11 @@ public interface Constants {
     String ANALYTICS_CATEGORY_LOGIN = "Логин";
 
     String ANALYTICS_CATEGORY_FAB = "Кнопка меню";
+
+    String[] VK_SCOPE = new String[]{
+            VKScope.FRIENDS,
+            VKScope.WALL,
+            VKScope.PHOTOS,
+            VKScope.NOHTTPS
+    };
 }

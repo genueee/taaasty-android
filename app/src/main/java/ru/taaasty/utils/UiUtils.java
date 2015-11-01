@@ -16,6 +16,8 @@ import android.text.format.DateUtils;
 import android.text.style.ImageSpan;
 import android.text.style.URLSpan;
 
+import com.vk.sdk.VKAccessToken;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -344,5 +346,17 @@ public class UiUtils {
         }
 
         return userErrorText;
+    }
+
+    public static String vkTokenToString(VKAccessToken token) {
+        if (token == null) return "null";
+        return "VKAccessToken{" +
+                "accessToken='" + token.accessToken + '\'' +
+                ", expiresIn=" + token.expiresIn +
+                ", userId='" + token.userId + '\'' +
+                ", secret='" + token.secret + '\'' +
+                ", httpsRequired=" + token.httpsRequired +
+                ", created=" + token.created +
+                '}';
     }
 }

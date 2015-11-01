@@ -2,6 +2,7 @@ package ru.taaasty.ui.login;
 
 import android.app.Activity;
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKApi;
 import com.vk.sdk.api.VKApiConst;
@@ -24,20 +26,18 @@ import org.json.JSONObject;
 
 import java.util.Random;
 
-import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.VkontakteHelper;
-import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -60,7 +60,6 @@ public class SignViaVkontakteFragment extends DialogFragment {
     public static SignViaVkontakteFragment createInstance() {
         return new SignViaVkontakteFragment();
     }
-
 
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -85,7 +84,6 @@ public class SignViaVkontakteFragment extends DialogFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.NoFrameDialog);
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -93,7 +91,44 @@ public class SignViaVkontakteFragment extends DialogFragment {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState == null) {
             // Добываем токен
-            VKSdk.authorize(VkontakteHelper.VK_SCOPE, true, false);
+            VKSdk.login(this, Constants.VK_SCOPE);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        VKCallback<VKAccessToken> callback = new VKCallback<VKAccessToken>() {
+            @Override
+            public void onResult(VKAccessToken res) {
+                // User passed Authorization
+                if (DBG) Log.v(TAG, "vkontakte token:" + UiUtils.vkTokenToString(res));
+                loginToTheServer(res);
+            }
+
+            @Override
+            public void onError(VKError vkError) {
+                // User didn't pass Authorization
+                if (vkError.errorCode != VKError.VK_CANCELED) {
+                    CharSequence errorText;
+                    if (TextUtils.isEmpty(vkError.errorMessage)) {
+                        errorText = getText(R.string.error_vkontakte_failed);
+                    } else {
+                        errorText = vkError.errorMessage;
+                    }
+                    if (mListener != null) mListener.notifyError(errorText, null);
+                    if (getActivity() != null) {
+                        ((TaaastyApplication)getActivity().getApplication())
+                                .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
+                                        "Ошибка Вконтакте",
+                                        vkError.toString());
+                    }
+                }
+                getDialog().dismiss();
+            }
+        };
+
+        if (!VKSdk.onActivityResult(requestCode, resultCode, data, callback)) {
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -102,46 +137,12 @@ public class SignViaVkontakteFragment extends DialogFragment {
         super.onDestroy();
         mAuthSubscription.unsubscribe();
         mSignupSubscription.unsubscribe();
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
-    }
-
-    public void onEventMainThread(VkGlobalEvent event) {
-        switch (event.type) {
-            case VkGlobalEvent.VK_ACCESS_DENIED:
-                // Доступ запрещен.
-                assert event.vkError != null;
-                if (event.vkError.errorCode != VKError.VK_CANCELED) {
-                    CharSequence errorText;
-                    if (TextUtils.isEmpty(event.vkError.errorMessage)) {
-                        errorText = getText(R.string.error_vkontakte_failed);
-                    } else {
-                        errorText = event.vkError.errorMessage;
-                    }
-                    if (mListener != null) mListener.notifyError(errorText, null);
-                    if (getActivity() != null) {
-                        ((TaaastyApplication)getActivity().getApplication())
-                                .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                                        "Ошибка Вконтакте",
-                                        event.vkError.toString());
-                    }
-                }
-                getDialog().dismiss();
-                break;
-            case VkGlobalEvent.VK_ACCEPT_USER_TOKEN:
-            case VkGlobalEvent.VK_RECEIVE_NEW_TOKEN:
-                if (DBG) Log.v(TAG, "vkontakte token:" + VkontakteHelper.vkTokenToString(event.token));
-                // Токен добыт. Авторизуемся на сервере.
-                loginToTheServer(event.token);
-                break;
-            default:
-                break;
-        }
     }
 
     public void loginToTheServer(VKAccessToken token) {

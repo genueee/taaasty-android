@@ -1,7 +1,7 @@
 package ru.taaasty.ui.feeds;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.IntDef;
@@ -87,6 +87,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
     private Adapter mAdapter;
 
+    @FeedType
     private int mFeedType = FEED_TYPE_FAVORITES;
 
     private DateIndicatorWidget mDateIndicatorView;
@@ -98,8 +99,6 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
 
     private FeedBackground mFeedBackground;
-
-    private boolean mScheduleRefreshData;
 
     public static MyAdditionalFeedFragment newInstance(@FeedType int type) {
         MyAdditionalFeedFragment usf = new MyAdditionalFeedFragment();
@@ -124,12 +123,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnFragmentInteractionListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }

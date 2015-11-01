@@ -192,6 +192,7 @@ public class ImageUtils {
             float scaledDisplayHeight = dstSize.y / scale;
 
             int leftTop = (int)(region.centerX() - (scaledDisplayWidth / 2));
+            //noinspection ResourceType
             region.intersect(leftTop, 0, (int)Math.ceil(leftTop + scaledDisplayWidth), (int)Math.ceil(scaledDisplayHeight));
             if (DBG) Log.v(TAG, "region: " + region);
 

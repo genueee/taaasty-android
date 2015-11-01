@@ -198,7 +198,6 @@
             android:name=".ui.CreateFlowActivity"
             android:label="@string/title_create_flow"
             android:windowSoftInputMode="adjustResize|stateHidden" />
-        <activity android:name="com.vk.sdk.VKOpenAuthActivity" />
         <activity
             android:name=".ui.post.SharePostActivity"
             android:theme="@style/SharePostTheme" >

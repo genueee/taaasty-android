@@ -4,7 +4,6 @@
     <string name="images_directory">Тейсти</string>
     <string name="tabbar_my_feed_content_description">Мой Дневник</string>
     <string name="btn_tabbar_live_description">Прямой эфир</string>
-    <string name="btn_tabbar_action_post">Написать</string>
     <string name="btn_tabbar_action_notifications">Оповещения</string>
     <string name="feed_item_image_content_description">Открыть на весь экран</string>
     <string name="feed_item_more_content_description">Еще действия</string>

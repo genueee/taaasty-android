@@ -17,6 +17,7 @@ import com.facebook.FacebookSdk;
 import com.facebook.share.Sharer;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
+import com.vk.sdk.api.VKError;
 import com.vk.sdk.dialogs.VKShareDialog;
 
 import java.util.List;
@@ -151,6 +152,11 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
 
                     @Override
                     public void onVkShareCancel() {
+                        finish();
+                    }
+
+                    @Override
+                    public void onVkShareError(VKError error) {
                         finish();
                     }
                 }).show(getSupportFragmentManager(), "VKShareDialog");

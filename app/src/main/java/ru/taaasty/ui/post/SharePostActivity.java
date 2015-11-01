@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,12 +15,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
+import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKSdk;
 import com.vk.sdk.api.VKError;
 
 import java.util.List;
 
-import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -30,11 +29,13 @@ import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.VkontakteHelper;
-import ru.taaasty.events.VkGlobalEvent;
 import ru.taaasty.rest.model.Entry;
+import ru.taaasty.utils.UiUtils;
 
 public class SharePostActivity extends ActivityBase {
+
+    private static final String TAG = "SharePostActivity";
+    private static final boolean DBG = BuildConfig.DEBUG;
 
     private  static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.ARG_ENTRY";
     private  static final String ARG_TLOG_ID = "ru.taaasty.ui.post.SharePostActivity.ARG_TLOG_ID";
@@ -91,7 +92,32 @@ public class SharePostActivity extends ActivityBase {
         findViewById(R.id.ic_save_post).setVisibility(mEntry.getImageUrls(true).isEmpty() ? View.GONE : View.VISIBLE);
 
         setFavoriteIcon();
-        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (!mDoShareVkontakte) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+
+        if (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
+            @Override
+            public void onResult(VKAccessToken res) {
+                // User passed Authorization
+                if (DBG) Log.d(TAG, "onActivityResult onResult() called with: " + "res = [" + UiUtils.vkTokenToString(res)+ "]");
+                showShareVkontakteDialog();
+                finish();
+            }
+
+            @Override
+            public void onError(VKError error) {
+                // User didn't pass Authorization
+                if (DBG) Log.d(TAG, "onActivityResult onError() called with: " + "error = [" + error + "]");
+                finish();
+            }
+        })) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override
@@ -100,11 +126,6 @@ public class SharePostActivity extends ActivityBase {
         outState.putBoolean(KEY_DO_SHARE_VKONTAKTE, mDoShareVkontakte);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        EventBus.getDefault().unregister(this);
-    }
 
     @Override
     public boolean onTouchEvent (MotionEvent event) {
@@ -117,17 +138,41 @@ public class SharePostActivity extends ActivityBase {
         sendAnalyticsShareEvent("Vkontakte");
 
         // Так самый лучший результат
-        if (shareVkontakteByIntent()) {
-            return;
+        if (!DBG) {
+            if (shareVkontakteByIntent()) {
+                return;
+            }
         }
 
-        if (!VKSdk.wakeUpSession()) {
-            mDoShareVkontakte = true;
-            VKSdk.authorize(VkontakteHelper.VK_SCOPE, true, false);
-        } else {
-            mDoShareVkontakte = true;
-            doSharePostVkontakte();
-        }
+        mDoShareVkontakte = true;
+        VKSdk.wakeUpSession(this, new VKCallback<VKSdk.LoginState>() {
+            @Override
+            public void onResult(VKSdk.LoginState res) {
+                if (DBG) Log.d(TAG, "wakeUpSession() onResult() called with: " + "res = [" + res + "]");
+                switch (res) {
+                    case Unknown:
+                    case LoggedOut:
+                        if (!isFinishing()) VKSdk.login(SharePostActivity.this, Constants.VK_SCOPE);
+                        break;
+                    case Pending:
+                        break;
+                    case LoggedIn:
+                        if (!isFinishing()) {
+                            showShareVkontakteDialog();
+                            finish();
+                        }
+                        break;
+                }
+            }
+
+            @Override
+            public void onError(VKError error) {
+                if (DBG) Log.d(TAG, "shareVkontakte onError() called with: " + "error = [" + error + "]");
+                if (!isFinishing()) shareVkontakteByLink();
+            }
+        });
+
+        // TODO Show spinner
     }
 
     public void shareFacebook(View view) {
@@ -224,39 +269,6 @@ public class SharePostActivity extends ActivityBase {
         }
     }
 
-    public void onEventMainThread(VkGlobalEvent event) {
-        if (BuildConfig.DEBUG) Log.v("SharePostActivity", "VkGlobalEvent " + event);
-        if (!mDoShareVkontakte) return;
-
-        switch (event.type) {
-            case VkGlobalEvent.VK_ACCESS_DENIED:
-                // Доступ запрещен.
-                assert event.vkError != null;
-                if (event.vkError.errorCode != VKError.VK_CANCELED) {
-                    CharSequence errorText;
-                    if (TextUtils.isEmpty(event.vkError.errorMessage)) {
-                        errorText = getText(R.string.error_vkontakte_failed);
-                    } else {
-                        errorText = event.vkError.errorMessage;
-                    }
-                    Toast.makeText(this, errorText, Toast.LENGTH_LONG).show();
-                }
-                finish();
-                break;
-            case VkGlobalEvent.VK_ACCEPT_USER_TOKEN:
-            case VkGlobalEvent.VK_RECEIVE_NEW_TOKEN:
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        doSharePostVkontakte();
-                    }
-                }, 64);
-                break;
-            default:
-                break;
-        }
-    }
-
     private Uri getVkontakteUri() {
         final Uri.Builder builder;
         final Uri uri;
@@ -280,18 +292,21 @@ public class SharePostActivity extends ActivityBase {
     }
 
 
-    private void doSharePostVkontakte() {
-        if (VKSdk.wakeUpSession()) {
-            Intent intent = new Intent(this, PostActionActivity.class);
-            intent.putExtra(PostActionActivity.ARG_ENTRY, mEntry);
-            intent.setAction(PostActionActivity.ACTION_SHARE_VKONTAKTE_DIALOG);
-            startActivity(intent);
-            finish();
-        } else {
-            shareVkontakteByLink();
-        }
+    /**
+     * Продолжаем шаринг vkontakte после попытки логина.
+     */
+    private void showShareVkontakteDialog() {
+        if (DBG) Log.d(TAG, "showShareVkontakteDialog() called with: " + "");
+        Intent intent = new Intent(this, PostActionActivity.class);
+        intent.putExtra(PostActionActivity.ARG_ENTRY, mEntry);
+        intent.setAction(PostActionActivity.ACTION_SHARE_VKONTAKTE_DIALOG);
+        startActivity(intent);
     }
 
+    /**
+     * Попытка шаринга по интенту
+     * @return false, если приложение vkontakte не установлено
+     */
     private boolean shareVkontakteByIntent() {
         Intent shareIntent = mEntry.getShareIntent();
         List<ResolveInfo> resInfo = getPackageManager().queryIntentActivities(shareIntent, 0);

@@ -82,6 +82,8 @@
 # vk
 #-keep class com.vk.** { *;}
 #-dontskipnonpubliclibraryclassmembers
+
+#Aviary
 -dontwarn android.util.FloatMath**
 
 -dontwarn android.app.Notification**

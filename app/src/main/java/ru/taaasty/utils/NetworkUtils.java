@@ -21,6 +21,7 @@ import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
+import com.vk.sdk.VKSdk;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,9 +32,10 @@ import java.util.regex.Matcher;
 import retrofit.RetrofitError;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
+import ru.taaasty.PusherService;
+import ru.taaasty.Session;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.Session;
 import ru.taaasty.rest.DateTypeAdapter;
 
 public final class NetworkUtils {
@@ -157,6 +159,8 @@ public final class NetworkUtils {
         ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
         Session.getInstance().logout();
         LoginManager.getInstance().logOut();
+        VKSdk.logout();
+        PusherService.stopPusher(context);
         try {
             mOkHttpClient.getCache().delete();
         } catch (Exception ignore) {}
