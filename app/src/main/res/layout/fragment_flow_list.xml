@@ -17,6 +17,8 @@
             android:clipToPadding="false"
             android:divider="@null"
             android:overScrollHeader="@android:color/black"
+            android:overScrollMode="never"
+            android:scrollbars="none"
             android:paddingBottom="8dp"
              />
 

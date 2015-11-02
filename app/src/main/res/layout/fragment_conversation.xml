@@ -16,6 +16,8 @@
         android:smoothScrollbar="false"
         android:paddingLeft="@dimen/following_followers_horizontal_margin"
         android:paddingRight="@dimen/following_followers_horizontal_margin"
+        android:scrollbars="none"
+        android:overScrollMode="never"
         tools:listheader="@layout/header_user_feed"
         tools:listitem="@layout/feed_item" />
 

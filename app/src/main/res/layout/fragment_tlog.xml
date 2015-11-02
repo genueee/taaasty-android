@@ -19,8 +19,9 @@
             android:overScrollHeader="@android:color/black"
             android:paddingBottom="8dp"
             android:scrollbarStyle="outsideOverlay"
-            android:scrollbars="vertical"
+            android:scrollbars="none"
             android:smoothScrollbar="false"
+            android:overScrollMode="never"
             tools:listheader="@layout/header_tlog"/>
 
     </ru.taaasty.widgets.SwipeRefreshLayout>

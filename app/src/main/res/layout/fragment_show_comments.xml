@@ -15,6 +15,7 @@
         android:overScrollHeader="@android:color/black"
         android:paddingTop="?actionBarSize"
         android:paddingBottom="8dp"
+        android:overScrollMode="never"
         android:layout_above="@+id/reply_to_comment_container"
         tools:listitem="@layout/comments_item2"
         tools:ignore="UnknownIdInLayout" />
