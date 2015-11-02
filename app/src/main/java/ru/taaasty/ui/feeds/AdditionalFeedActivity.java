@@ -27,7 +27,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.FabHelper;
-import ru.taaasty.widgets.ErrorTextView;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.widgets.FabMenuLayout;
 
 /**
@@ -164,12 +164,11 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

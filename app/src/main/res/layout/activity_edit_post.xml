@@ -35,10 +35,4 @@
         android:visibility="gone"
         tools:visibility="visible" />
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        style="@style/ErrorTextView"
-        tools:text="Что-то не так в форме"
-        tools:visibility="visible" />
-
 </RelativeLayout>

@@ -181,7 +181,18 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">12sp</item>
         <item name="android:maxLines">3</item>
-        <item name="android:visibility">invisible</item>
+    </style>
+
+    <style name="SuccessTextView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">20dp</item>
+        <item name="android:layout_alignParentTop">true</item>
+        <item name="android:background">#24b166</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">3</item>
     </style>
 
     <style name="AdditionalMenuItem">

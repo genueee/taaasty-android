@@ -18,9 +18,4 @@
         tools:context=".login.LoginActivity"
         tools:ignore="MergeRootFrame" />
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        style="@style/ErrorTextView"
-        tools:text="Неправильный логин или пароль" />
-
 </FrameLayout>

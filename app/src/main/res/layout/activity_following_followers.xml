@@ -27,8 +27,4 @@
         android:layout_below="@id/tabs"
         tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity"/>
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        style="@style/ErrorTextView"
-        tools:text="Неправильный логин или пароль"/>
 </RelativeLayout>

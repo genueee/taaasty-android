@@ -32,8 +32,8 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.TlogInfo;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.widgets.CreatePostButtons;
-import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
@@ -253,12 +253,11 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     }
 
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

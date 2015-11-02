@@ -36,10 +36,4 @@
         style="?android:progressBarStyleLarge"
         />
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        tools:text="Что-то не так в форме"
-        tools:visibility="invisible"
-        style="@style/ErrorTextView" />
-
 </RelativeLayout>

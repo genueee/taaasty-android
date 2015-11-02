@@ -28,8 +28,8 @@ import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.ErrorTextView;
 
 public class CreateSharedPostActivity extends ActivityBase implements
         OnCreatePostInteractionListener,
@@ -142,12 +142,11 @@ public class CreateSharedPostActivity extends ActivityBase implements
     }
 
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

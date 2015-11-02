@@ -13,15 +13,6 @@
         android:layout_marginBottom="@dimen/tabbar_size"
         tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        style="@style/ErrorTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        tools:text="Мазафака какая-то с сайтом"
-        tools:visibility="visible" />
-
     <com.viewpagerindicator.CirclePageIndicator
         android:id="@+id/circle_page_indicator"
         style="@style/LiveFeedCirclePageIndicator"

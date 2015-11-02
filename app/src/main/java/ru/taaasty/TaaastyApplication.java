@@ -22,6 +22,7 @@ import com.vk.sdk.VKSdk;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
+import frenchtoast.FrenchToast;
 import io.intercom.android.sdk.Intercom;
 import io.intercom.android.sdk.identity.Registration;
 import io.intercom.android.sdk.preview.IntercomPreviewPosition;
@@ -88,6 +89,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         VKSdk.initialize(this);
         FacebookSdk.sdkInitialize(this);
         initActivityLifecycleTracker();
+        FrenchToast.install(this);
     }
 
     @Override

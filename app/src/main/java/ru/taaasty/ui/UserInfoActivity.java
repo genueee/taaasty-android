@@ -42,7 +42,7 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.widgets.ErrorTextView;
+import ru.taaasty.utils.MessageHelper;
 
 public class UserInfoActivity extends ActivityBase implements UserInfoFragment.OnFragmentInteractionListener,
         SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
@@ -364,12 +364,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

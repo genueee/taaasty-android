@@ -16,8 +16,8 @@ import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.ErrorTextView;
 
 /**
  * Created by alexey on 30.12.14.
@@ -78,9 +78,8 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
-        ert.setError(error, exception);
+        MessageHelper.showError(this, error, exception);
     }
 
     @Override

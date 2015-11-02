@@ -12,15 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        style="@style/ErrorTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        tools:text="Мазафака какая-то с сайтом"
-        tools:visibility="visible" />
-
     <include
         android:id="@+id/fab_menu"
         layout="@layout/fab_menu" />

@@ -34,8 +34,8 @@ import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.PostImageForm;
 import ru.taaasty.rest.model.PostQuoteForm;
 import ru.taaasty.rest.model.PostTextForm;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.widgets.CreatePostButtons;
-import ru.taaasty.widgets.ErrorTextView;
 
 public class EditPostActivity extends ActivityBase implements
         OnCreatePostInteractionListener,
@@ -370,12 +370,11 @@ public class EditPostActivity extends ActivityBase implements
     }
 
     private void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

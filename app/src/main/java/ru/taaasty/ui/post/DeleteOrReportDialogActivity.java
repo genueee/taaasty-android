@@ -24,8 +24,8 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.ErrorTextView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -153,12 +153,11 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

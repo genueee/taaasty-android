@@ -17,7 +17,7 @@ import ru.taaasty.R;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.widgets.ErrorTextView;
+import ru.taaasty.utils.MessageHelper;
 
 public class FollowingFollowersActivity extends ActivityBase implements
         FollowingsFragment.OnFragmentInteractionListener,
@@ -85,12 +85,11 @@ public class FollowingFollowersActivity extends ActivityBase implements
 
     @Override
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        ErrorTextView ert = (ErrorTextView) findViewById(R.id.error_text);
         if (exception != null) Log.e(TAG, error.toString(), exception);
         if (DBG) {
-            ert.setError(error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
+            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
         } else {
-            ert.setError(error, exception);
+            MessageHelper.showError(this, error, exception);
         }
     }
 

@@ -25,9 +25,4 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         android:background="@color/semi_transparent_action_bar_dark"/>
 
-    <ru.taaasty.widgets.ErrorTextView
-        android:id="@+id/error_text"
-        tools:text="Неправильный логин или пароль"
-        style="@style/ErrorTextView" />
-
 </FrameLayout>
