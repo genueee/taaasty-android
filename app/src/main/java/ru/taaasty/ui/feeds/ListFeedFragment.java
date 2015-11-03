@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import java.util.Random;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -80,6 +82,8 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     private Integer mLastPublicEntriesCount;
 
     private Handler mHandler;
+
+    private final Random mRandom = new Random();
 
     private FeedsHelper.DateIndicatorUpdateHelper mDateIndicatorHelper;
 
@@ -209,14 +213,55 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     @Override
     public void onWorkFragmentResume() {
         mDateIndicatorHelper.onResume();
-        if (!mWorkFragment.isRefreshing()) refreshData(mPendingForceShowRefreshingIndicator);
-        mPendingForceShowRefreshingIndicator = false;
+
+        if (!getUserVisibleHint()
+                && !mWorkFragment.isRefreshing()
+                && mWorkFragment.getEntryList().isEmpty()
+                && !mPendingForceShowRefreshingIndicator
+                ) {
+            // First run/ Delay refresh
+            long delay = 1000 + mRandom.nextInt(400);
+            Log.d(TAG, "onWorkFragmentResume() delay refresh for " + delay + " ms");
+            mHandler.postDelayed(mRefreshDataDelayed, delay);
+        } else {
+            if (!mWorkFragment.isRefreshing()
+                    && (mPendingForceShowRefreshingIndicator || mWorkFragment.getEntryList().isEmpty())) {
+                refreshData(mPendingForceShowRefreshingIndicator && getUserVisibleHint());
+            }
+            mPendingForceShowRefreshingIndicator = false;
+        }
     }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            mHandler.removeCallbacks(mRefreshDataDelayed);
+            if (isResumed() && mWorkFragment != null) {
+
+                if (!mWorkFragment.isRefreshing() && mWorkFragment.getEntryList().isEmpty()) {
+                    refreshData(true);
+                }
+
+                if (mWorkFragment.isRefreshing() && !mRefreshLayout.isRefreshing()) {
+                    mRefreshLayout.setRefreshing(true);
+                }
+            }
+        }
+    }
+
+    private Runnable mRefreshDataDelayed = new Runnable() {
+        @Override
+        public void run() {
+            if (isResumed() && !mWorkFragment.isRefreshing()) refreshData(false);
+        }
+    };
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         EventBus.getDefault().unregister(this);
+        mHandler.removeCallbacksAndMessages(null);
         mWorkFragment.setTargetFragment(null, 0);
         mDateIndicatorView = null;
         mEmptyView = null;
@@ -285,7 +330,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
 
     public void refreshData(boolean forceShowRefreshingIndicator) {
         if (DBG) Log.v(TAG, "refreshData()");
-        if (!mRefreshLayout.isRefreshing()) {
+        if (!mRefreshLayout.isRefreshing() && getUserVisibleHint()) {
             mRefreshLayout.setRefreshing(mWorkFragment.getEntryList().isEmpty() || forceShowRefreshingIndicator);
         }
         mWorkFragment.refreshData();

@@ -184,7 +184,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = mApiUsers.getMyInfo();
+        Observable<CurrentUser> observableCurrentUser = Session.getInstance().getCurrentUser();
 
         mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())

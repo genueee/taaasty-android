@@ -67,7 +67,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
     private Subscription mStatsSubscription = Subscriptions.unsubscribed();
 
-    private Set<Fragment> mAttachedFragments = new HashSet<>(5);
+    private Set<Fragment> mAttachedFragments = new HashSet<>(6);
 
     @Nullable
     private Stats mStats;
@@ -93,7 +93,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-        mViewPager.setOffscreenPageLimit(5);
+        mViewPager.setOffscreenPageLimit(6);
 
         Tracker t =  ((TaaastyApplication) getApplication()).getTracker();
         t.setScreenName(mSectionsPagerAdapter.getScreenName(mViewPager.getCurrentItem()));
@@ -196,7 +196,23 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             ApiApp api = RestClient.getAPiApp();
             mStatsSubscription = api.getStats()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(mStatsObserver);
+                    .subscribe(new Observer<Stats>() {
+                        @Override
+                        public void onCompleted() {
+                            EventBus.getDefault().post(new OnStatsLoaded(mStats));
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            if (DBG) Log.e(TAG, "onError", e);
+                            notifyError(UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
+                        }
+
+                        @Override
+                        public void onNext(Stats st) {
+                            mStats = st;
+                        }
+                    });
         }
     }
 
@@ -247,10 +263,6 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             listFragment.refreshData(true);
             startRefreshStats();
         }
-    }
-
-    void notifyStatsChanged() {
-        EventBus.getDefault().post(new OnStatsLoaded(mStats));
     }
 
     void updateCircleIndicatorPosition(boolean isFirstItemVisible, int firstItemTop) {
@@ -374,22 +386,4 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             }
         }
     }
-
-    private final Observer<Stats> mStatsObserver = new Observer<Stats>() {
-        @Override
-        public void onCompleted() {
-            notifyStatsChanged();
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            notifyError(UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
-        }
-
-        @Override
-        public void onNext(Stats st) {
-            mStats = st;
-        }
-    };
 }
