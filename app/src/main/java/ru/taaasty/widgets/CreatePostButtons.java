@@ -158,7 +158,8 @@ public class CreatePostButtons extends LinearLayout {
                 .start();
     }
 
-    public @Entry.EntryPrivacy String getPrivacy() {
+    @Entry.EntryPrivacy
+    public String getPrivacy() {
         if (mPrivatePostIndicator.isActivated()) {
             return Entry.PRIVACY_PRIVATE;
         }
@@ -176,7 +177,7 @@ public class CreatePostButtons extends LinearLayout {
             switch (v.getId()) {
                 case R.id.private_post_indicator:
                     if (v.isActivated()) {
-                        setPrivacy(Entry.PRIVACY_PUBLIC);
+                        setPrivacy(Entry.PRIVACY_PUBLIC_WITH_VOTING);
                     } else {
                         setPrivacy(Entry.PRIVACY_PRIVATE);
                     }

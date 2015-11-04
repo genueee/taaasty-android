@@ -54,6 +54,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private static final String KEY_TLOG = "TLOG";
     private static final String KEY_CURRENT_PAGE = "ru.taaasty.ui.post.CreatePostActivity.CURRENT_PAGE";
 
+    @Entry.EntryPrivacy
+    private static final String DEFAULT_ENTRY_PRIVACY = Entry.PRIVACY_PUBLIC_WITH_VOTING;
+
     private static final String SHARED_PREFS_NAME = "CreatePostActivity";
     private static final String SHARED_PREFS_KEY_POST_PRIVACY = "post_privacy";
     private static final String SHARED_PREFS_KEY_INITIAL_SECTION = "initial_section";
@@ -108,7 +111,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
         Page currentItem;
         @Entry.EntryPrivacy
-        String postPrivacy = Entry.PRIVACY_PUBLIC;
+        String postPrivacy = DEFAULT_ENTRY_PRIVACY;
 
         if (getIntent().hasExtra(ARG_TLOG_ID)) {
             mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, 0);
@@ -128,13 +131,13 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             // Восстанавливаем значения последнего поста
             SharedPreferences prefs = getSharedPreferences(SHARED_PREFS_NAME, 0);
             //noinspection ResourceType
-            postPrivacy = prefs.getString(SHARED_PREFS_KEY_POST_PRIVACY, Entry.PRIVACY_PUBLIC);
-            if (!Entry.PRIVACY_PUBLIC.equals(postPrivacy)
-                    && !Entry.PRIVACY_PRIVATE.equals(postPrivacy)
-                    && !Entry.PRIVACY_PUBLIC_WITH_VOTING.equals(postPrivacy)
-                    ) {
-                postPrivacy = Entry.PRIVACY_PUBLIC;
+            postPrivacy = prefs.getString(SHARED_PREFS_KEY_POST_PRIVACY, DEFAULT_ENTRY_PRIVACY);
+
+            // Стараемся чаще показывать голосовалку. Используем сохраненное значение только если там приватный пост
+            if (!Entry.PRIVACY_PRIVATE.equals(postPrivacy)) {
+                postPrivacy = DEFAULT_ENTRY_PRIVACY;
             }
+
             String currentItemString = prefs.getString(SHARED_PREFS_KEY_INITIAL_SECTION, null);
             if (currentItemString != null && !getIntent().hasExtra(ARG_PAGE)) {
                 currentItem = Page.valueOfPrefsName(currentItemString);
@@ -393,9 +396,9 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private void saveState() {
         getSharedPreferences(SHARED_PREFS_NAME, 0)
                 .edit()
-                .putString(SHARED_PREFS_KEY_POST_PRIVACY, mCreatePostButtons.getPrivacy())
                 .putString(SHARED_PREFS_KEY_INITIAL_SECTION,
                         Page.values()[mViewPager.getCurrentItem()].namePrefs)
+                .putString(SHARED_PREFS_KEY_POST_PRIVACY, mCreatePostButtons.getPrivacy())
                 .commit();
     }
 
