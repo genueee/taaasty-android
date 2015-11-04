@@ -2,7 +2,6 @@ package ru.taaasty.rest.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.Nullable;
 
 import java.util.Date;
 
@@ -129,11 +128,6 @@ public class ImageInfo implements Parcelable {
 
         public ImageGeometry geometry = new ImageGeometry();
 
-        @Nullable
-        public String title;
-
-        public String source;
-
         @Override
         public int describeContents() {
             return 0;
@@ -143,8 +137,6 @@ public class ImageInfo implements Parcelable {
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.url);
             dest.writeString(this.path);
-            dest.writeString(this.title);
-            dest.writeString(this.source);
             dest.writeParcelable(this.geometry, flags);
         }
 
@@ -154,8 +146,6 @@ public class ImageInfo implements Parcelable {
         private Image2(Parcel in) {
             this.url = in.readString();
             this.path = in.readString();
-            this.title = in.readString();
-            this.source = in.readString();
             this.geometry = in.readParcelable(ImageGeometry.class.getClassLoader());
         }
 
@@ -175,8 +165,6 @@ public class ImageInfo implements Parcelable {
                     "geometry=" + geometry +
                     ", url='" + url + '\'' +
                     ", path='" + path + '\'' +
-                    ", title='" + title + '\'' +
-                    ", source='" + source + '\'' +
                     '}';
         }
 
@@ -189,10 +177,8 @@ public class ImageInfo implements Parcelable {
 
             if (url != null ? !url.equals(image2.url) : image2.url != null) return false;
             if (path != null ? !path.equals(image2.path) : image2.path != null) return false;
-            if (geometry != null ? !geometry.equals(image2.geometry) : image2.geometry != null)
-                return false;
-            if (title != null ? !title.equals(image2.title) : image2.title != null) return false;
-            return !(source != null ? !source.equals(image2.source) : image2.source != null);
+            return !(geometry != null ? !geometry.equals(image2.geometry) : image2.geometry != null);
+
         }
 
         @Override
@@ -200,8 +186,6 @@ public class ImageInfo implements Parcelable {
             int result = url != null ? url.hashCode() : 0;
             result = 31 * result + (path != null ? path.hashCode() : 0);
             result = 31 * result + (geometry != null ? geometry.hashCode() : 0);
-            result = 31 * result + (title != null ? title.hashCode() : 0);
-            result = 31 * result + (source != null ? source.hashCode() : 0);
             return result;
         }
     }

@@ -2,6 +2,7 @@ package ru.taaasty;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
 import de.greenrobot.event.EventBus;
@@ -20,7 +21,7 @@ public class Session {
 
     private static final String SHARED_PREFS_KEY_USER="author";
 
-    private static Session mSession;
+    private static Session sSession;
 
     private String mAuthtoken;
 
@@ -32,9 +33,10 @@ public class Session {
 
     }
 
+    @MainThread
     public static Session getInstance() {
-        if (mSession == null) mSession = new Session();
-        return mSession;
+        if (sSession == null) sSession = new Session();
+        return sSession;
     }
 
     public void onAppInit(Context context) {
@@ -45,11 +47,6 @@ public class Session {
     @Nullable
     public String getCurrentUserToken() {
         return mAuthtoken;
-    }
-
-    @Nullable
-    public String getCurrentUserSlug() {
-        return mCurrentUser == null ? null : mCurrentUser.getSlug();
     }
 
     public void setCurrentUser(CurrentUser user) {
