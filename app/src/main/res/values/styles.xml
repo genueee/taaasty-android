@@ -440,8 +440,10 @@
     <style name="ShareIconItem">
         <item name="android:padding">6dp</item>
         <item name="android:drawablePadding">4dp</item>
-        <item name="android:layout_width">76dp</item>
+        <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
+        <item name="layout_columnWeight">1</item>
+        <item name="layout_gravity">fill_horizontal</item>
         <item name="android:textColor">#2d2d2d</item>
         <item name="android:singleLine">true</item>
         <item name="android:ellipsize">marquee</item>
@@ -529,5 +531,18 @@
         <item name="android:textColor">#b3ffffff</item>
         <item name="android:textScaleX">0.8</item>
     </style>
+
+    <style name="ShareBottomSheetStyle.Base" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">bottom|center_horizontal</item>
+        <item name="android:background">@drawable/select_share_method_background</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingTop">16dp</item>
+    </style>
+
+    <style name="ShareBottomSheetStyle" parent="ShareBottomSheetStyle.Base" />
 
 </resources>

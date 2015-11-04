@@ -1,123 +1,117 @@
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
+<ru.taaasty.widgets.BottomSheet
+    android:id="@+id/bottom_sheet"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="match_parent"
+    app:scrollingChild="@+id/scroll_container"
+    tools:context="io.plaidapp.ui.PostNewDesignerNewsStory">
 
-    <LinearLayout
+    <android.support.v4.widget.NestedScrollView
+        android:id="@+id/scroll_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/select_share_method_background"
-        android:layout_gravity="bottom"
-        android:showDividers="middle"
-        android:divider="@drawable/select_share_method_horiz_divider"
-        android:dividerPadding="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:clipToPadding="false"
+        android:scrollbars="none"
+        android:overScrollMode="never"
+        android:fadingEdge="none"
         >
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <android.support.v7.widget.GridLayout
+            app:alignmentMode="alignBounds"
+            android:id="@+id/bottom_bar_content"
+            app:columnCount="@integer/share_post_column_count"
+            app:columnOrderPreserved="true"
+            style="@style/ShareBottomSheetStyle">
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/ic_share_vkontankte"
+                android:gravity="center"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_share_vkontakte"
+                android:onClick="shareVkontakte"
+                android:paddingLeft="0dp"
+                android:text="@string/title_share_vkontakte"/>
 
-                <TextView
-                    android:id="@+id/ic_share_vkontankte"
-                    android:drawableTop="@drawable/ic_share_vkontakte"
-                    android:text="@string/title_share_vkontakte"
-                    android:paddingLeft="0dp"
-                    android:onClick="shareVkontakte"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_share_facebook"
-                    android:drawableTop="@drawable/ic_share_facebook"
-                    android:text="@string/title_share_facebook"
-                    android:onClick="shareFacebook"
-                    style="@style/ShareIconItem" />
-
-
-                <TextView
-                    android:id="@+id/ic_share_twitter"
-                    android:drawableTop="@drawable/ic_share_twitter"
-                    android:text="@string/title_share_twitter"
-                    android:onClick="shareTwitter"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_share_other"
-                    android:drawableTop="@drawable/ic_share_other"
-                    android:text="@string/title_share_other"
-                    android:onClick="shareOther"
-                    style="@style/ShareIconItem" />
-
-            </LinearLayout>
-
-        </HorizontalScrollView>
-
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/ic_add_post_to_favorites"
-                    android:drawableTop="@drawable/ic_add_post_to_favorites"
-                    android:text="@string/add_post_to_favorites"
-                    android:paddingLeft="0dp"
-                    android:onClick="addToFavorites"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_link_to_post"
-                    android:drawableTop="@drawable/ic_link_to_post"
-                    android:text="@string/copy_link_to_clipboard"
-                    android:onClick="linkToPost"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_report_post"
-                    android:drawableTop="@drawable/ic_report_post"
-                    android:text="@string/report_post_to_moderator"
-                    android:onClick="reportPost"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_edit_post"
-                    android:drawableTop="@drawable/ic_edit_post"
-                    android:text="@string/edit_post"
-                    android:onClick="editPost"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_delete_post"
-                    android:drawableTop="@drawable/ic_delete_post"
-                    android:text="@string/delete_post"
-                    android:onClick="deletePost"
-                    style="@style/ShareIconItem" />
-
-                <TextView
-                    android:id="@+id/ic_save_post"
-                    android:drawableTop="@drawable/ic_save_post"
-                    android:text="@string/save_post"
-                    android:onClick="savePost"
-                    style="@style/ShareIconItem" />
+            <TextView
+                android:id="@+id/ic_share_facebook"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_share_facebook"
+                android:onClick="shareFacebook"
+                android:text="@string/title_share_facebook"/>
 
 
-            </LinearLayout>
+            <TextView
+                android:id="@+id/ic_share_twitter"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_share_twitter"
+                android:onClick="shareTwitter"
+                android:text="@string/title_share_twitter"/>
+
+            <TextView
+                android:id="@+id/ic_share_other"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_share_other"
+                android:onClick="shareOther"
+                android:text="@string/title_share_other"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:background="@drawable/select_share_method_horiz_divider"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                app:layout_columnSpan="@integer/share_post_column_count"
+                app:layout_gravity="fill_horizontal"/>
+
+            <TextView
+                android:id="@+id/ic_add_post_to_favorites"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_add_post_to_favorites"
+                android:onClick="addToFavorites"
+                android:paddingLeft="0dp"
+                android:text="@string/add_post_to_favorites"/>
+
+            <TextView
+                android:id="@+id/ic_link_to_post"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_link_to_post"
+                android:onClick="linkToPost"
+                android:text="@string/copy_link_to_clipboard"/>
+
+            <TextView
+                android:id="@+id/ic_report_post"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_report_post"
+                android:onClick="reportPost"
+                android:text="@string/report_post_to_moderator"/>
+
+            <TextView
+                android:id="@+id/ic_edit_post"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_edit_post"
+                android:onClick="editPost"
+                android:text="@string/edit_post"/>
+
+            <TextView
+                android:id="@+id/ic_delete_post"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_delete_post"
+                android:onClick="deletePost"
+                android:text="@string/delete_post"/>
+
+            <TextView
+                android:id="@+id/ic_save_post"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_save_post"
+                android:onClick="savePost"
+                android:text="@string/save_post"/>
+        </android.support.v7.widget.GridLayout>
+    </android.support.v4.widget.NestedScrollView>
 
 
-        </HorizontalScrollView>
-    </LinearLayout>
+</ru.taaasty.widgets.BottomSheet>
 
-</merge>
+

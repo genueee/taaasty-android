@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,6 +32,7 @@ import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.BottomSheet;
 
 public class SharePostActivity extends ActivityBase {
 
@@ -70,6 +72,7 @@ public class SharePostActivity extends ActivityBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_post);
+        BottomSheet bottomSheet = (BottomSheet)findViewById(R.id.bottom_sheet);
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
 
@@ -83,15 +86,54 @@ public class SharePostActivity extends ActivityBase {
             mDoShareVkontakte = savedInstanceState.getBoolean(KEY_DO_SHARE_VKONTAKTE);
         }
 
+        bottomSheet.addListener(new BottomSheet.Listener() {
+            @Override
+            public void onDragDismissed() {
+                if (DBG) Log.v(TAG, "onDragDismissed");
+                finish();
+            }
+
+            @Override
+            public void onDrag(int top) {
+
+            }
+        });
+
         boolean isMyEntry = mEntry.isMyEntry();
 
-        findViewById(R.id.ic_add_post_to_favorites).setVisibility(isMyEntry ? View.GONE : View.VISIBLE);
-        findViewById(R.id.ic_report_post).setVisibility(mEntry.canReport() ? View.VISIBLE : View.GONE);
-        findViewById(R.id.ic_delete_post).setVisibility(mEntry.canDelete() ? View.VISIBLE : View.GONE);
-        findViewById(R.id.ic_edit_post).setVisibility(mEntry.canEdit() ? View.VISIBLE : View.GONE);
-        findViewById(R.id.ic_save_post).setVisibility(mEntry.getImageUrls(true).isEmpty() ? View.GONE : View.VISIBLE);
+        GridLayout container = (GridLayout)findViewById(R.id.bottom_bar_content);
+        if (isMyEntry) {
+            container.removeView(findViewById(R.id.ic_add_post_to_favorites));
+        } else {
+            findViewById(R.id.ic_add_post_to_favorites).setVisibility(View.VISIBLE);
+        }
+
+        if (mEntry.canReport()) {
+            findViewById(R.id.ic_report_post).setVisibility(View.VISIBLE);
+        } else {
+            container.removeView(findViewById(R.id.ic_report_post));
+        }
+
+        if (mEntry.canDelete()) {
+            findViewById(R.id.ic_delete_post).setVisibility(View.VISIBLE);
+        } else {
+            container.removeView(findViewById(R.id.ic_delete_post));
+        }
+
+        if (mEntry.canEdit()) {
+            findViewById(R.id.ic_edit_post).setVisibility(View.VISIBLE);
+        } else {
+            container.removeView(findViewById(R.id.ic_edit_post));
+        }
+
+        if (!mEntry.getImageUrls(true).isEmpty()) {
+            findViewById(R.id.ic_save_post).setVisibility(View.VISIBLE);
+        } else {
+            container.removeView(findViewById(R.id.ic_save_post));
+        }
 
         setFavoriteIcon();
+
     }
 
     @Override

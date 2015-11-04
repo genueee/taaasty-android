@@ -3,4 +3,5 @@
 <resources>
     <dimen name="create_post_button_size">48dp</dimen>
     <dimen name="create_post_button_margin">4dp</dimen>
+    <integer name="share_post_column_count">4</integer>
 </resources>

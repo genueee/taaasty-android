@@ -4,4 +4,6 @@
     <integer name="longAnimTime">300</integer>
 
     <integer name="flow_brick_image_aspect_ratio">50</integer>
+
+    <integer name="share_post_column_count">3</integer>
 </resources>

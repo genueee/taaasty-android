@@ -5,4 +5,10 @@
         <item name="android:layout_width">360dp</item>
         <item name="android:layout_height">@dimen/tabbar_size</item>
     </style>
+
+    <style name="ShareBottomSheetStyle" parent="ShareBottomSheetStyle.Base">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:minWidth">420dp</item>
+    </style>
+
 </resources>
