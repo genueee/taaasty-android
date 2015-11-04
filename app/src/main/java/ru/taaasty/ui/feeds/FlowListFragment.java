@@ -103,7 +103,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
             @Override
             public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
                 RecyclerView.ViewHolder vh = parent.getChildViewHolder(view);
-                if (vh instanceof FlowListAdapter.ViewHolderItem) {
+                if (vh != null && vh.getItemViewType() == FlowListAdapter.VIEW_TYPE_ITEM) {
                     outRect.set(mFeedHorizontalMargin, 0, mFeedHorizontalMargin, 0);
                 } else {
                     super.getItemOffsets(outRect, view, parent, state);

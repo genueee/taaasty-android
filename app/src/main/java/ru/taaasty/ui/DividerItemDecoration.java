@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -21,6 +22,8 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 
     private int mOrientation;
 
+    private int mPendingIndicatorViewType = RecyclerView.INVALID_TYPE;
+
     public DividerItemDecoration(Context context, int dividerId) {
         this(context, dividerId, VERTICAL_LIST);
     }
@@ -37,6 +40,13 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         mOrientation = orientation;
     }
 
+    /**
+     * Индикатор под этим viewHolderType не будет показываться
+     */
+    public void setPendingIndicatorViewType(int viewHolderType) {
+        mPendingIndicatorViewType = viewHolderType;
+    }
+
     @Override
     public void onDraw (Canvas c, RecyclerView parent, RecyclerView.State state) {
         if (mOrientation == VERTICAL_LIST) {
@@ -50,14 +60,27 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         final int left = parent.getPaddingLeft();
         final int right = parent.getWidth() - parent.getPaddingRight();
 
-        final int childCount = parent.getChildCount();
+        int childCount = parent.getChildCount();
+
+        if (mPendingIndicatorViewType != RecyclerView.INVALID_TYPE) {
+            if (childCount == 0) return;
+            RecyclerView.ViewHolder vh = parent.getChildViewHolder(parent.getChildAt(childCount - 1));
+            if (vh != null && vh.getItemViewType() == mPendingIndicatorViewType) {
+                childCount -= 1;
+            }
+        }
+
+        final int dividerHeight = mDivider.getIntrinsicHeight();
+
         for (int i = 0; i < childCount; i++) {
             final View child = parent.getChildAt(i);
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child
                     .getLayoutParams();
-            final int top = child.getBottom() + params.bottomMargin;
-            final int bottom = top + mDivider.getIntrinsicHeight();
+            final int top = child.getBottom() + params.bottomMargin
+                    + Math.round(ViewCompat.getTranslationY(child));
+            final int bottom = top + dividerHeight;
             mDivider.setBounds(left, top, right, bottom);
+            mDivider.setAlpha((int)(child.getAlpha() * 255f));
             mDivider.draw(c);
         }
     }
@@ -67,13 +90,16 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
         final int bottom = parent.getHeight() - parent.getPaddingBottom();
 
         final int childCount = parent.getChildCount();
+
         for (int i = 0; i < childCount; i++) {
             final View child = parent.getChildAt(i);
             final RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) child
                     .getLayoutParams();
-            final int left = child.getRight() + params.rightMargin;
+            final int left = child.getRight() + params.rightMargin
+                    + Math.round(ViewCompat.getTranslationX(child));
             final int right = left + mDivider.getIntrinsicHeight();
             mDivider.setBounds(left, top, right, bottom);
+            mDivider.setAlpha((int)(child.getAlpha() * 255f));
             mDivider.draw(c);
         }
     }

@@ -148,7 +148,7 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
         onViewDetachedFromWindow(holder);
-        if (holder instanceof ViewHolderItem) {
+        if (holder.getItemViewType() == VIEW_TYPE_ITEM) {
             stopImageLoading((ViewHolderItem) holder);
         }
     }

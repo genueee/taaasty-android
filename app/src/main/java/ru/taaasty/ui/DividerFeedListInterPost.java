@@ -62,7 +62,7 @@ public class DividerFeedListInterPost extends RecyclerView.ItemDecoration {
         }
 
         if (holder != null && holder.getPosition() > 1) {
-            if (holder instanceof  ListEntryBase) {
+            if (holder instanceof ListEntryBase) {
                 // У всех постов, кроме первого, делаем отступ сверху
                 outRect.set(0, mDividerSize, 0, 0);
                 initialized = true;

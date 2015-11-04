@@ -75,8 +75,6 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
         }
     }
 
-
-
     @Override
     public void onScrollStateChanged(int newState) {
         super.onScrollStateChanged(newState);
