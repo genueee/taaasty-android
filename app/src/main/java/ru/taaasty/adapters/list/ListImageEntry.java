@@ -37,6 +37,8 @@ import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.ExtendedImageView;
 import ru.taaasty.widgets.MyRecyclerView;
+import rx.Subscription;
+import rx.subscriptions.Subscriptions;
 
 public class ListImageEntry extends ListEntryBase implements Callback, MyRecyclerView.ScrollEventConsumerVh {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -60,6 +62,8 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
     private OkHttpClient mOkHttpClient = null;
 
     private final Object mGitLoadTag = this;
+
+    private Subscription mLoadGifSubscription = Subscriptions.unsubscribed();
 
     public ListImageEntry(final Context context, View v, boolean showAuthorAvatar) {
         super(context, v, showAuthorAvatar);
@@ -109,6 +113,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
     @Override
     public void recycle() {
         picasso.cancelRequest(mImageView);
+        mLoadGifSubscription.unsubscribe();
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
         if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag);
         recycleGifDrawable();
@@ -164,6 +169,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
         int imgViewHeight;
         boolean fitMaxTextureSize = false;
 
+        mLoadGifSubscription.unsubscribe();
         recycleGifDrawable();
 
         if (item.getImages().isEmpty()) {

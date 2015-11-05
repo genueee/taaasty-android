@@ -42,6 +42,7 @@ import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
+import com.trello.rxlifecycle.RxLifecycle;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -56,10 +57,14 @@ import java.util.Locale;
 import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.rest.GifLoaderHelper;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.PicassoDrawable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class ImageUtils {
 
@@ -538,190 +543,59 @@ public class ImageUtils {
         return sMaxTextureSize;
     }
 
-    private static void finishGifLoadWithProgress(final ImageView imageView, InputStream stream, final com.squareup.picasso.Callback callback, boolean postpone) throws IOException {
-        final GifDrawable drawable;
-        if (stream instanceof FileInputStream) {
-            drawable = new GifDrawable(((FileInputStream) stream).getFD());
-            stream.close();
-        } else {
-            if (DBG) Log.v(TAG, "Input stream is not file input stream");
-            if (stream.markSupported()) {
-                drawable = new GifDrawable(stream);
-            } else {
-                drawable = new GifDrawable(new BufferedInputStream(stream));
-            }
-        }
-
-        drawable.setLoopCount(0);
-        if (!postpone) {
-            imageView.setImageDrawable(drawable);
-            if (callback != null) callback.onSuccess();
-        } else {
-            imageView.post(new Runnable() {
-                @Override
-                public void run() {
-                    imageView.setImageDrawable(drawable);
-                    if (callback != null) callback.onSuccess();
-                }
-            });
-        }
-    }
-
-    private static final CacheControl CACHE_CONTROL_NO_STORE = new CacheControl.Builder().noStore().build();
-
-    public static void loadGifWithProgress(final ImageView imageView,
+    public static Subscription loadGifWithProgress(final ImageView imageView,
                                            String url,
                                            Object okHttpTag,
                                            int progressWidth, int progressHeight,
                                            final com.squareup.picasso.Callback callback
                                            ) {
-        final String key = NetworkUtils.hashUrlMurmur3(url);
-        if (DBG) Log.v(TAG, "url: " + url + " key: " + key);
-
-        try {
-            DiskLruCache.Snapshot snapshot = NetworkUtils.getInstance().getGifCache().get(key);
-            if (snapshot != null) {
-                if (DBG) Log.v(TAG, "GIF from cache");
-                InputStream is = snapshot.getInputStream(0);
-                finishGifLoadWithProgress(imageView, is, callback, false);
-                return;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-        LayerDrawable loadingDrawable = (LayerDrawable)imageView.getResources()
+        LayerDrawable loadingDrawable = (LayerDrawable) imageView.getResources()
                 .getDrawable(R.drawable.image_loading_with_progress)
                 .mutate();
         Drawable progressBackground = loadingDrawable.findDrawableByLayerId(R.id.progress_background);
         final Drawable progressIndicator = loadingDrawable.findDrawableByLayerId(R.id.progress_indicator);
         ImageUtils.changeDrawableIntristicSizeAndBounds(progressBackground, progressWidth, progressHeight);
-
         progressIndicator.setLevel(0);
         imageView.setImageDrawable(loadingDrawable);
 
-        OkHttpClient httpClient = NetworkUtils.getInstance().getOkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .tag(okHttpTag)
-                .cacheControl(CACHE_CONTROL_NO_STORE)
-                .build();
+        return GifLoaderHelper.getInstance()
+                .loadGifWithProgress(url, okHttpTag)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<GifLoaderHelper.ProgressStatus>() {
 
-        final Call okHttpCall =  httpClient
-                .newCall(request);
+                    boolean onNextCalled = false;
 
-        okHttpCall
-                .enqueue(new com.squareup.okhttp.Callback() {
                     @Override
-                    public void onFailure(Request request, IOException e) {
-                        if (okHttpCall.isCanceled()) {
-                            if (DBG) Log.v(TAG, "load gif cancelled", e);
-                        } else {
-                            reportError(e);
+                    public void onCompleted() {
+                        progressIndicator.setLevel(0);
+                        if (!onNextCalled && callback != null) {
+                            callback.onError();
                         }
                     }
 
                     @Override
-                    public void onResponse(Response response) throws IOException {
-                        DiskLruCache.Editor editor = null;
-                        try {
-                            if (!response.isSuccessful()) {
-                                throw new IOException("Unexpected code " + response);
-                            }
-
-                            editor = NetworkUtils.getInstance().getGifCache().edit(key);
-                            if (editor == null) throw new NullPointerException("No editor");
-                            readResponseWithProgress(response, editor);
-                            editor.commit();
-
-                            DiskLruCache.Snapshot snapshot = NetworkUtils.getInstance().getGifCache().get(key);
-                            if (snapshot == null)
-                                throw new IllegalStateException("Snapshot not available or blocked");
-                            InputStream is = snapshot.getInputStream(0);
-                            finishGifLoadWithProgress(imageView, is, callback, true);
-                        } catch (Throwable e) {
-                            if (editor != null) editor.abort();
-                            reportError(e);
-                        }
-                    }
-
-                    class SetProgressRunnable implements Runnable {
-                        private final Drawable mDrawable;
-                        private final int mLevel;
-
-                        public SetProgressRunnable(Drawable drawable, long progress, long max) {
-                            mDrawable = drawable;
-                            if (max == 0) {
-                                mLevel = 0;
-                            } else {
-                                if (progress > max) progress = max;
-                                mLevel = (int) ((float) progress * 10000f / (float) max);
-                            }
-                        }
-
-                        @Override
-                        public void run() {
-                            //if (DBG) Log.d(TAG, "mDrawable.setLevel " + mLevel);
-                            mDrawable.setLevel(mLevel);
-                        }
-                    }
-
-                    private void readResponseWithProgress(Response response, DiskLruCache.Editor editor) throws IOException {
-                        byte bytes[];
-                        int pos;
-                        int nRead;
-                        long lastTs, lastPos;
-                        boolean contentLengthUndefined = false;
-
-                        long contentLength = response.body().contentLength();
-                        if (contentLength < 0 || contentLength > Integer.MAX_VALUE) {
-                            contentLength = 2;
-                            contentLengthUndefined = true;
-                        }
-                        bytes = new byte[contentLengthUndefined ? 8192 : (int) Math.min(contentLength, 8192)];
-
-                        imageView.post(new SetProgressRunnable(progressIndicator,
-                                contentLengthUndefined ? 1 : 0, contentLength));
-                        InputStream source = response.body().byteStream();
-                        OutputStream dst = editor.newOutputStream(0);
-
-                        pos = 0;
-                        lastTs = System.nanoTime();
-                        lastPos = 0;
-                        try {
-                            while ((nRead = source.read(bytes, 0, bytes.length)) != -1) {
-                                pos += nRead;
-                                dst.write(bytes, 0, nRead);
-                                long newTs = System.nanoTime();
-                                if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
-                                    lastTs = newTs;
-                                    lastPos = pos;
-                                    if (!contentLengthUndefined) {
-                                        imageView.post(new SetProgressRunnable(progressIndicator,
-                                                pos, contentLength));
-                                    }
-                                }
-                                if (pos == bytes.length) break;
-                            }
-                        } finally {
-                            Util.closeQuietly(source);
-                            Util.closeQuietly(dst);
-                            imageView.post(new SetProgressRunnable(progressIndicator, 0, 0));
-                        }
-                    }
-
-                    private void reportError(final Throwable exception) {
+                    public void onError(Throwable exception) {
                         Log.i("ListImageEntry", "load gif error", exception);
-                        imageView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                imageView.setImageResource(R.drawable.image_load_error);
-                                if (callback != null) callback.onError();
+                        imageView.setImageResource(R.drawable.image_load_error);
+                        if (callback != null) callback.onError();
+                    }
+
+                    @Override
+                    public void onNext(GifLoaderHelper.ProgressStatus status) {
+                        onNextCalled = true;
+                        if (status.drawable != null) {
+                            if (imageView.getDrawable() == status.drawable) {
+                                if (DBG) Log.e(TAG, "trying to et the same drawable");
+                            } else {
+                                imageView.setImageDrawable(status.drawable);
                             }
-                        });
+                            if (callback != null) callback.onSuccess();
+                        } else {
+                            progressIndicator.setLevel(status.getDrawableLevel());
+                        }
                     }
                 });
     }
+
 
 }

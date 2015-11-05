@@ -221,7 +221,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
                 ) {
             // First run/ Delay refresh
             long delay = 1000 + mRandom.nextInt(400);
-            Log.d(TAG, "onWorkFragmentResume() delay refresh for " + delay + " ms");
+            if (DBG) Log.d(TAG, "onWorkFragmentResume() delay refresh for " + delay + " ms");
             mHandler.postDelayed(mRefreshDataDelayed, delay);
         } else {
             if (!mWorkFragment.isRefreshing()

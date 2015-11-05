@@ -33,6 +33,8 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.MyRecyclerView;
+import rx.Subscription;
+import rx.subscriptions.Subscriptions;
 
 public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -330,7 +332,7 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         holder.imageLoading = true;
         holder.imageViewUrl = imageUrl;
         if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
-            ImageUtils.loadGifWithProgress(holder.image, imageUrl, holder.gifLoadTag,
+            holder.loadGifSubscription = ImageUtils.loadGifWithProgress(holder.image, imageUrl, holder.gifLoadTag,
                     holder.image.getWidth(), holder.image.getHeight(), holder);
         } else {
             holder.image.setImageResource(getFlowPlaceholderResId(relationship));
@@ -352,6 +354,7 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void stopImageLoading(ViewHolderItem holder) {
+        holder.loadGifSubscription.unsubscribe();
         if (holder.imageLoading) {
             if (DBG) Log.v(TAG, "stopImageLoading() url: " + holder.imageViewUrl);
             mPicasso.cancelRequest(holder.image);
@@ -401,6 +404,8 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public final Object gifLoadTag = this;
 
         public boolean imageLoading;
+
+        public Subscription loadGifSubscription = Subscriptions.unsubscribed();
 
         public ViewHolderItem(View root) {
             super(root);

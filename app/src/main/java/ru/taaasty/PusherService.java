@@ -361,7 +361,7 @@ public class PusherService extends Service {
 
     private void onGcmPushReceived(Intent intent) {
         if (mPusher != null) {
-            Log.v(TAG, "skip GCM sync: pusher is connected");
+            if (DBG) Log.v(TAG, "skip GCM sync: pusher is connected");
             GcmBroadcastReceiver.completeWakefulIntent(intent);
         } else {
             String messageType = GcmUtils.getGcmNotificationType(intent.getExtras());
@@ -385,7 +385,7 @@ public class PusherService extends Service {
     private void resetBackgroundTimer() {
         mHandler.removeCallbacks(mCheckStopRunnable);
         if (((TaaastyApplication)getApplication()).isUiActive()) return;
-        Log.d(TAG, "background timeout timer set to " + BACKGROUND_MAX_WORK_TIME / 1000 + " seconds");
+        if (DBG) Log.d(TAG, "background timeout timer set to " + BACKGROUND_MAX_WORK_TIME / 1000 + " seconds");
         mHandler.postDelayed(mCheckStopRunnable, BACKGROUND_MAX_WORK_TIME);
     }
 
