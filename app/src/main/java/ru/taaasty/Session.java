@@ -76,7 +76,7 @@ public class Session {
                 .doOnNext(new Action1<CurrentUser>() {
                     @Override
                     public void call(CurrentUser currentUser) {
-                        boolean changed = currentUser.equals(mCurrentUser);
+                        boolean changed = !currentUser.equals(mCurrentUser);
                         mCurrentUser = currentUser;
                         if (changed) EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
                     }
