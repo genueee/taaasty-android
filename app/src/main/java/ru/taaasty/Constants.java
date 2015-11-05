@@ -11,6 +11,8 @@ public interface Constants {
     public static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
     public static final int MAX_DISK_CACHE_SIZE = 100 * 1024 * 1024; // 100MB
 
+    public static final int GIF_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 5MB
+
     int ACTIVITY_REQUEST_CODE_CREATE_POST = 254;
 
     public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;

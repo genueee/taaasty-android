@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -20,19 +19,20 @@ import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TimingLogger;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.aviary.android.feather.sdk.FeatherActivity;
 import com.aviary.android.feather.sdk.internal.Constants;
 import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
+import com.jakewharton.disklrucache.DiskLruCache;
+import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -43,9 +43,12 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -535,18 +538,58 @@ public class ImageUtils {
         return sMaxTextureSize;
     }
 
-    // TODO не показывать прогресс и не анимировать GIF при скролле
+    private static void finishGifLoadWithProgress(final ImageView imageView, InputStream stream, final com.squareup.picasso.Callback callback, boolean postpone) throws IOException {
+        final GifDrawable drawable;
+        if (stream instanceof FileInputStream) {
+            drawable = new GifDrawable(((FileInputStream) stream).getFD());
+            stream.close();
+        } else {
+            if (DBG) Log.v(TAG, "Input stream is not file input stream");
+            if (stream.markSupported()) {
+                drawable = new GifDrawable(stream);
+            } else {
+                drawable = new GifDrawable(new BufferedInputStream(stream));
+            }
+        }
+
+        drawable.setLoopCount(0);
+        if (!postpone) {
+            imageView.setImageDrawable(drawable);
+            if (callback != null) callback.onSuccess();
+        } else {
+            imageView.post(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageDrawable(drawable);
+                    if (callback != null) callback.onSuccess();
+                }
+            });
+        }
+    }
+
+    private static final CacheControl CACHE_CONTROL_NO_STORE = new CacheControl.Builder().noStore().build();
+
     public static void loadGifWithProgress(final ImageView imageView,
                                            String url,
                                            Object okHttpTag,
                                            int progressWidth, int progressHeight,
                                            final com.squareup.picasso.Callback callback
                                            ) {
-        OkHttpClient httpClient = NetworkUtils.getInstance().getOkHttpClient();
-        Request request = new Request.Builder()
-                .url(url)
-                .tag(okHttpTag)
-                .build();
+        final String key = NetworkUtils.hashUrlMurmur3(url);
+        if (DBG) Log.v(TAG, "url: " + url + " key: " + key);
+
+        try {
+            DiskLruCache.Snapshot snapshot = NetworkUtils.getInstance().getGifCache().get(key);
+            if (snapshot != null) {
+                if (DBG) Log.v(TAG, "GIF from cache");
+                InputStream is = snapshot.getInputStream(0);
+                finishGifLoadWithProgress(imageView, is, callback, false);
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         LayerDrawable loadingDrawable = (LayerDrawable)imageView.getResources()
                 .getDrawable(R.drawable.image_loading_with_progress)
@@ -557,6 +600,13 @@ public class ImageUtils {
 
         progressIndicator.setLevel(0);
         imageView.setImageDrawable(loadingDrawable);
+
+        OkHttpClient httpClient = NetworkUtils.getInstance().getOkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .tag(okHttpTag)
+                .cacheControl(CACHE_CONTROL_NO_STORE)
+                .build();
 
         final Call okHttpCall =  httpClient
                 .newCall(request);
@@ -574,27 +624,24 @@ public class ImageUtils {
 
                     @Override
                     public void onResponse(Response response) throws IOException {
+                        DiskLruCache.Editor editor = null;
                         try {
                             if (!response.isSuccessful()) {
                                 throw new IOException("Unexpected code " + response);
                             }
-                            byte content[];
-                            if (response.networkResponse() == null) {
-                                content = response.body().bytes();
-                            } else {
-                                content = readResponseWithProgress(response);
-                            }
 
-                            final GifDrawable drawable = new GifDrawable(content);
-                            drawable.setLoopCount(0);
-                            imageView.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    imageView.setImageDrawable(drawable);
-                                    if (callback != null) callback.onSuccess();
-                                }
-                            });
+                            editor = NetworkUtils.getInstance().getGifCache().edit(key);
+                            if (editor == null) throw new NullPointerException("No editor");
+                            readResponseWithProgress(response, editor);
+                            editor.commit();
+
+                            DiskLruCache.Snapshot snapshot = NetworkUtils.getInstance().getGifCache().get(key);
+                            if (snapshot == null)
+                                throw new IllegalStateException("Snapshot not available or blocked");
+                            InputStream is = snapshot.getInputStream(0);
+                            finishGifLoadWithProgress(imageView, is, callback, true);
                         } catch (Throwable e) {
+                            if (editor != null) editor.abort();
                             reportError(e);
                         }
                     }
@@ -620,46 +667,48 @@ public class ImageUtils {
                         }
                     }
 
-                    private byte[] readResponseWithProgress(Response response) throws IOException {
+                    private void readResponseWithProgress(Response response, DiskLruCache.Editor editor) throws IOException {
                         byte bytes[];
                         int pos;
                         int nRead;
                         long lastTs, lastPos;
+                        boolean contentLengthUndefined = false;
 
-                        final long contentLength = response.body().contentLength();
+                        long contentLength = response.body().contentLength();
                         if (contentLength < 0 || contentLength > Integer.MAX_VALUE) {
-                            throw new IOException("Cannot buffer entire body for content length: " + contentLength);
+                            contentLength = 2;
+                            contentLengthUndefined = true;
                         }
+                        bytes = new byte[contentLengthUndefined ? 8192 : (int) Math.min(contentLength, 8192)];
 
-                        imageView.post(new SetProgressRunnable(progressIndicator, 0, contentLength));
+                        imageView.post(new SetProgressRunnable(progressIndicator,
+                                contentLengthUndefined ? 1 : 0, contentLength));
                         InputStream source = response.body().byteStream();
+                        OutputStream dst = editor.newOutputStream(0);
 
-                        bytes = new byte[(int) contentLength];
                         pos = 0;
                         lastTs = System.nanoTime();
                         lastPos = 0;
                         try {
-                            while ((nRead = source.read(bytes, pos, bytes.length - pos)) != -1) {
+                            while ((nRead = source.read(bytes, 0, bytes.length)) != -1) {
                                 pos += nRead;
-
+                                dst.write(bytes, 0, nRead);
                                 long newTs = System.nanoTime();
                                 if ((lastPos != pos) && ((newTs - lastTs >= 200 * 1e6) || (pos == bytes.length))) {
                                     lastTs = newTs;
                                     lastPos = pos;
-                                    imageView.post(new SetProgressRunnable(progressIndicator, pos, contentLength));
+                                    if (!contentLengthUndefined) {
+                                        imageView.post(new SetProgressRunnable(progressIndicator,
+                                                pos, contentLength));
+                                    }
                                 }
                                 if (pos == bytes.length) break;
                             }
                         } finally {
                             Util.closeQuietly(source);
+                            Util.closeQuietly(dst);
                             imageView.post(new SetProgressRunnable(progressIndicator, 0, 0));
                         }
-
-                        if (contentLength != -1 && contentLength != bytes.length) {
-                            throw new IOException("Content-Length and stream length disagree");
-                        }
-
-                        return bytes;
                     }
 
                     private void reportError(final Throwable exception) {

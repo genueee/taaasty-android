@@ -1,6 +1,5 @@
 package ru.taaasty.utils;
 
-
 import android.app.ActivityManager;
 import android.content.Context;
 import android.net.Uri;
@@ -12,11 +11,16 @@ import com.facebook.login.LoginManager;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.okhttp.Cache;
+import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.Interceptor;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 import com.squareup.picasso.LruCache;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
@@ -49,6 +53,8 @@ public final class NetworkUtils {
     private OkHttpClient mOkHttpClient;
 
     private LruCache mPicassoCache;
+
+    private DiskLruCache mGifCache;
 
     private static final Thumbor sThumbor = Thumbor.create(BuildConfig.THUMBOR_SERVER, BuildConfig.THUMBOR_KEY);
 
@@ -92,10 +98,15 @@ public final class NetworkUtils {
         initOkHttpClient(context);
         initLruMemoryCache(context);
         initPicasso(context);
+        initGifCache(context);
     }
 
     public LruCache getImageCache() {
         return mPicassoCache;
+    }
+
+    public DiskLruCache getGifCache() {
+        return mGifCache;
     }
 
     private void initOkHttpClient(Context context) {
@@ -110,6 +121,7 @@ public final class NetworkUtils {
             mOkHttpClient.setCache(cache);
         }
         //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
+        mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
     }
 
     private void initLruMemoryCache(Context context) {
@@ -120,18 +132,68 @@ public final class NetworkUtils {
         mPicassoCache = new LruCache(cacheSize);
     }
 
+    private void initGifCache(Context context) {
+        File cacheDir = NetworkUtils.getGifCacheDir(context);
+        if (cacheDir != null) {
+            long cacheSize = Constants.GIF_DISK_CACHE_SIZE * 1024L * 1024L;
+            try {
+                mGifCache = DiskLruCache.open(cacheDir, 1, 1, cacheSize);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void initPicasso(Context context) {
         Picasso picasso = new Picasso.Builder(context.getApplicationContext())
                 .memoryCache(mPicassoCache)
                 .downloader(new OkHttpDownloader(mOkHttpClient) {
-                                @Override
-                                public Response load(Uri uri, int networkPolicy) throws IOException {
-                                    if (DBG)
-                                        Log.v(TAG, "Load uri: " + uri + " net policy: " + networkPolicy);
-                                    return super.load(uri, networkPolicy);
+
+                    private final CacheControl ALLOW_STALE_CACHE_RESPONSE = new CacheControl.Builder()
+                            .maxStale(Integer.MAX_VALUE, TimeUnit.SECONDS)
+                            .build();
+
+                    private final OkHttpClient client = mOkHttpClient;
+
+                    @Override
+                    public Response load(Uri uri, int networkPolicy) throws IOException {
+                        CacheControl cacheControl = null;
+                        if(networkPolicy != 0) {
+                            if(NetworkPolicy.isOfflineOnly(networkPolicy)) {
+                                cacheControl = CacheControl.FORCE_CACHE;
+                            } else {
+                                CacheControl.Builder builder = new CacheControl.Builder();
+                                if(!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
+                                    builder.noCache();
                                 }
+
+                                if(!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
+                                    builder.noStore();
+                                }
+
+                                cacheControl = builder.build();
                             }
-                )
+                        } else {
+                            cacheControl = ALLOW_STALE_CACHE_RESPONSE; // Хуякс
+                        }
+
+                        com.squareup.okhttp.Request.Builder builder1 = (new com.squareup.okhttp.Request.Builder()).url(uri.toString());
+                        if(cacheControl != null) {
+                            builder1.cacheControl(cacheControl);
+                        }
+
+                        com.squareup.okhttp.Response response = this.client.newCall(builder1.build()).execute();
+                        int responseCode = response.code();
+                        if(responseCode >= 300) {
+                            response.body().close();
+                            throw new ResponseException(responseCode + " " + response.message(), networkPolicy, responseCode);
+                        } else {
+                            boolean fromCache = response.cacheResponse() != null;
+                            ResponseBody responseBody = response.body();
+                            return new Response(responseBody.byteStream(), fromCache, responseBody.contentLength());
+                        }
+                    }
+                })
                 .listener(new Picasso.Listener() {
                     @Override
                     public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
@@ -163,6 +225,10 @@ public final class NetworkUtils {
         PusherService.stopPusher(context);
         try {
             mOkHttpClient.getCache().delete();
+        } catch (Exception ignore) {}
+
+        try {
+            mGifCache.delete();
         } catch (Exception ignore) {}
 
         try {
@@ -228,6 +294,16 @@ public final class NetworkUtils {
         return new File(cacheDir, "taaasty");
     }
 
+    public static File getGifCacheDir(Context context) {
+        File cacheDir = context.getExternalCacheDir();
+        if (cacheDir == null) {
+            cacheDir = context.getCacheDir();
+        }
+        if (cacheDir == null) return null;
+
+        return new File(cacheDir, "gifcache");
+    }
+
     private class OkLoggingInterceptor implements Interceptor {
         @Override public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
@@ -244,4 +320,52 @@ public final class NetworkUtils {
         }
     }
 
+    private class OkLoggingInterceptorInfo implements Interceptor {
+
+        @Override
+        public Response intercept(Chain chain) throws IOException {
+            Response response = chain.proceed(chain.request());
+            if (DBG) Log.i("Ok", String.format("RESP %d %s, %s",
+                    response.code(), response.request().url(), response.cacheResponse() != null ? "from cache" : "from network"));
+            return response;
+        }
+    }
+
+    public static String hashUrlMurmur3(String url) {
+        MurmurHash3.LongPair longpair = new MurmurHash3.LongPair();
+        byte bytes[] = url.getBytes();
+        MurmurHash3.murmurhash3_x64_128(url.getBytes(), 0, bytes.length, 104729, longpair);
+        return unsignedLongToString(longpair.val1, 36) + unsignedLongToString(longpair.val2, 36);
+    }
+
+    public static String unsignedLongToString(long x, int radix) {
+        if (x == 0) {
+            // Simply return "0"
+            return "0";
+        } else {
+            char[] buf = new char[64];
+            int i = buf.length;
+            if (x < 0) {
+                // Split x into high-order and low-order halves.
+                // Individual digits are generated from the bottom half into which
+                // bits are moved continously from the top half.
+                long top = x >>> 32;
+                long bot = (x & 0xffffffffl) + ((top % radix) << 32);
+                top /= radix;
+                while ((bot > 0) || (top > 0)) {
+                    buf[--i] = Character.forDigit((int) (bot % radix), radix);
+                    bot = (bot / radix) + ((top % radix) << 32);
+                    top /= radix;
+                }
+            } else {
+                // Simple modulo/division approach
+                while (x > 0) {
+                    buf[--i] = Character.forDigit((int) (x % radix), radix);
+                    x /= radix;
+                }
+            }
+            // Generate string
+            return new String(buf, i, buf.length - i);
+        }
+    }
 }

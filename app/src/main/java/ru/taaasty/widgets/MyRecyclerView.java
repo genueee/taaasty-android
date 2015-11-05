@@ -3,7 +3,6 @@ package ru.taaasty.widgets;
 import android.content.Context;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import java.util.Collections;
@@ -92,12 +91,5 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
                 }
             }
         }
-        if (DBG) Log.v(TAG, "onScrollStateChanged"
-                + (stopScroll ? " (stop scroll) " : " (start scroll)")
-                + " listeners: " + cnt);
     }
-
-
-
-
 }

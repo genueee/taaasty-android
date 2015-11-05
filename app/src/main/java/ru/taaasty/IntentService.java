@@ -69,7 +69,7 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.utils.ContentTypedOutput;
+import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
