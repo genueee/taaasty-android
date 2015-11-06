@@ -95,7 +95,6 @@ public class SharePostActivity extends ActivityBase {
 
             @Override
             public void onDrag(int top) {
-
             }
         });
 
@@ -106,6 +105,7 @@ public class SharePostActivity extends ActivityBase {
             container.removeView(findViewById(R.id.ic_add_post_to_favorites));
         } else {
             findViewById(R.id.ic_add_post_to_favorites).setVisibility(View.VISIBLE);
+            setFavoriteIcon();
         }
 
         if (mEntry.canReport()) {
@@ -131,8 +131,6 @@ public class SharePostActivity extends ActivityBase {
         } else {
             container.removeView(findViewById(R.id.ic_save_post));
         }
-
-        setFavoriteIcon();
 
     }
 
