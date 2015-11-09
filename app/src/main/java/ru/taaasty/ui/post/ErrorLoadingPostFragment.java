@@ -22,10 +22,9 @@ public class ErrorLoadingPostFragment extends Fragment {
 
     private String mText;
 
-    @Nullable
-    private Integer mIconId;
+    private int mIconId;
 
-    public static ErrorLoadingPostFragment newInstance(String text, Integer iconId) {
+    public static ErrorLoadingPostFragment newInstance(String text, @Nullable Integer iconId) {
         ErrorLoadingPostFragment fragment = new ErrorLoadingPostFragment();
         Bundle args = new Bundle();
         args.putString(ARG_TEXT, text);
@@ -61,7 +60,7 @@ public class ErrorLoadingPostFragment extends Fragment {
             textView.setVisibility(View.GONE);
         }
 
-        if (mIconId != null) {
+        if (mIconId != 0) {
             iconView.setImageResource(mIconId);
         } else {
             iconView.setVisibility(View.GONE);
