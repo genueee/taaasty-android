@@ -1,7 +1,6 @@
 package ru.taaasty.widgets;
 
 import android.content.Context;
-import android.support.v7.widget.SimpleItemAnimator;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -41,9 +40,7 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
     public MyRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         ItemAnimator animator = getItemAnimator();
-        if (animator instanceof SimpleItemAnimator) {
-            ((SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
-        }
+        animator.setSupportsChangeAnimations(false);
         animator.setAddDuration(getResources().getInteger(R.integer.longAnimTime));
     }
 
