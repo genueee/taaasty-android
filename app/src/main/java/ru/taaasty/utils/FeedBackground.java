@@ -8,7 +8,6 @@ import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.ViewTreeObserver;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -109,22 +108,15 @@ public class FeedBackground {
         }
 
         mBackgroundUrl = mTlogDesign.getBackgroundUrl();
-
-        if (mRoot.getWidth() > 0 && mRoot.getHeight() > 0) {
-            reloadBackgroundDrawableAfterPreDraw();
-        } else {
-            mRefreshQueued = true;
-            if (!mRoot.getViewTreeObserver().isAlive()) return;
-            mRoot.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    mRoot.getViewTreeObserver().removeOnPreDrawListener(this);
-                    mRefreshQueued = false;
-                    reloadBackgroundDrawableAfterPreDraw();
-                    return true;
-                }
-            });
-        }
+        mRefreshQueued = true;
+        SafeOnPreDrawListener.runWhenLaidOut(mRoot, new SafeOnPreDrawListener.RunOnLaidOut() {
+            @Override
+            public boolean run(View root) {
+                mRefreshQueued = false;
+                reloadBackgroundDrawableAfterPreDraw();
+                return true;
+            }
+        });
     }
 
     private void reloadBackgroundDrawableAfterPreDraw() {

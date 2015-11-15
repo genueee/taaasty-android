@@ -21,8 +21,8 @@ public class ListScrollController {
     private boolean mPreDrawCheckQueued;
 
     public interface OnListScrollPositionListener {
-        public void onEdgeReached(boolean atTop);
-        public void onEdgeUnreached();
+        void onEdgeReached(boolean atTop);
+        void onEdgeUnreached();
     }
 
     public ListScrollController(View listView, OnListScrollPositionListener listener) {
@@ -65,10 +65,12 @@ public class ListScrollController {
 
     private final ViewTreeObserver.OnPreDrawListener mOnPreDrawListener = new ViewTreeObserver.OnPreDrawListener() {
         public boolean onPreDraw() {
-            mPreDrawCheckQueued = false;
             if (mListView.getViewTreeObserver().isAlive()) {
                 mListView.getViewTreeObserver().removeOnPreDrawListener(this);
-                checkScroll();
+                if (!mPreDrawCheckQueued) {
+                    mPreDrawCheckQueued = false;
+                    checkScroll();
+                }
             }
             return true;
         }

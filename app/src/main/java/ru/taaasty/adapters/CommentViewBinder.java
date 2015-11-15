@@ -7,10 +7,8 @@ import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.TextAppearanceSpan;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
@@ -26,12 +24,16 @@ import ru.taaasty.rest.model.Comment;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.UiUtils;
 
 /**
  * Created by alexey on 06.11.14.
  */
 public class CommentViewBinder {
+
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "CommentViewBinder";
 
     private final ImageUtils mImageUtils;
     private final DateFormat mTimeFormatInstance, mDdMmFormatInstance, mMmYyFormatInstance;
@@ -194,22 +196,13 @@ public class CommentViewBinder {
             return;
         }
 
-        if (vh.actionView.getWidth() == 0) {
-            if (BuildConfig.DEBUG) Log.v("CommentViewBinder", "actionView width is 0");
-            vh.actionView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    if (vh.actionView != null && vh.actionView.getViewTreeObserver().isAlive()) {
-                        vh.actionView.getViewTreeObserver().removeOnPreDrawListener(this);
-                        return !updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
-                    } else {
-                        return true;
-                    }
-                }
-            });
-        } else {
-            updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
-        }
+        SafeOnPreDrawListener.runWhenLaidOut(vh.actionView, new SafeOnPreDrawListener.RunOnLaidOut() {
+            @Override
+            public boolean run(View root) {
+                if (vh.actionView == null) return true;
+                return !updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
+            }
+        });
     }
 
     private boolean updateCommentRightPaddingMeasured(CommentsAdapter.ViewHolder vh, int newRightPadding) {

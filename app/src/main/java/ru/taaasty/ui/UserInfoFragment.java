@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,6 +37,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
@@ -207,6 +207,10 @@ public class UserInfoFragment extends Fragment {
         mUserTitle = null;
         mSubscribeButton = null;
         mUnsubscribeButton = null;
+        if (mSafeOnPreDrawListener != null) {
+            mSafeOnPreDrawListener.cancelAndRemoveListener();
+            mSafeOnPreDrawListener = null;
+        }
         Picasso picasso = Picasso.with(getActivity());
         if (mTargetSetHeaderBackground != null) {
             picasso.cancelRequest(mTargetSetHeaderBackground);
@@ -465,27 +469,22 @@ public class UserInfoFragment extends Fragment {
         }
     }
 
-    private boolean mSetupDesignQueued;
+    @Nullable
+    private SafeOnPreDrawListener mSafeOnPreDrawListener;
 
     private void setupDesign() {
-        if (mSetupDesignQueued) return;
+        if (mSafeOnPreDrawListener != null) return;
 
         final View target = getActivity().findViewById(android.R.id.content);
         if (target == null) return;
-        if (target.getWidth() != 0) {
-            setupDesignAfterPreDraw();
-        } else {
-            mSetupDesignQueued = true;
-            target.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    target.getViewTreeObserver().removeOnPreDrawListener(this);
-                    mSetupDesignQueued = false;
-                    setupDesignAfterPreDraw();
-                    return true;
-                }
-            });
-        }
+        mSafeOnPreDrawListener = SafeOnPreDrawListener.runWhenLaidOut(target, new SafeOnPreDrawListener.RunOnLaidOut() {
+            @Override
+            public boolean run(View root) {
+                mSafeOnPreDrawListener = null;
+                setupDesignAfterPreDraw();
+                return true;
+            }
+        });
     }
 
     private void setupDesignAfterPreDraw() {

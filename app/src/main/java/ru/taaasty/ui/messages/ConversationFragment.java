@@ -15,7 +15,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -43,6 +42,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
@@ -301,25 +301,22 @@ public class ConversationFragment extends Fragment {
         if (DBG) Log.v(TAG, "scrollListToPosition pos: " + newPosition + " smooth: " + smooth);
         if (mListView == null) return;
         if (mAdapter == null || newPosition < 0) return;
-        mListView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                if (mListView == null) return true;
-                if (mListView.getViewTreeObserver().isAlive()) {
-                    mListView.getViewTreeObserver().removeOnPreDrawListener(this);
 
-                    LinearLayoutManager layoutManager = (LinearLayoutManager)mListView.getLayoutManager();
-                    if (smooth) {
-                        mListView.smoothScrollToPosition(newPosition);
-                    } else {
-                        layoutManager.scrollToPositionWithOffset(newPosition, 0);
-                        mListScrollController.checkScrollStateOnViewPreDraw();
-                    }
-                    return false;
+
+        mListView.getViewTreeObserver().addOnPreDrawListener(new SafeOnPreDrawListener(mListView, new SafeOnPreDrawListener.RunOnLaidOut() {
+            @Override
+            public boolean run(View root) {
+                if (mListView == null) return true;
+                LinearLayoutManager layoutManager = (LinearLayoutManager)mListView.getLayoutManager();
+                if (smooth) {
+                    mListView.smoothScrollToPosition(newPosition);
+                } else {
+                    layoutManager.scrollToPositionWithOffset(newPosition, 0);
+                    mListScrollController.checkScrollStateOnViewPreDraw();
                 }
-                return true;
+                return false;
             }
-        });
+        }));
     }
 
     private void addMessagesDoNotScrollList(Conversation.Message[] messages) {

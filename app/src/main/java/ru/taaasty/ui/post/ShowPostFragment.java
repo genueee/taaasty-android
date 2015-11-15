@@ -19,7 +19,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -54,6 +53,7 @@ import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
@@ -513,23 +513,13 @@ public class ShowPostFragment extends Fragment {
         DateIndicatorWidget dateView = (DateIndicatorWidget)fragmentView.findViewById(R.id.date_indicator);
         dateView.setDate(mCurrentEntry.getCreatedAt());
         if (dateView.getVisibility() != View.VISIBLE) {
-            if (fragmentView.getHeight() != 0) {
-                setupDateViewTopMargin();
-            } else {
-                fragmentView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        ViewTreeObserver vo = fragmentView.getViewTreeObserver();
-                        if (vo.isAlive()) {
-                            fragmentView.getViewTreeObserver().removeOnPreDrawListener(this);
-                            setupDateViewTopMargin();
-                            return false;
-                        } else {
-                            return true;
-                        }
-                    }
-                });
-            }
+            SafeOnPreDrawListener.runWhenLaidOut(fragmentView, new SafeOnPreDrawListener.RunOnLaidOut() {
+                @Override
+                public boolean run(View root) {
+                    setupDateViewTopMargin();
+                    return false;
+                }
+            });
         }
         dateView.setVisibility(View.VISIBLE);
     }

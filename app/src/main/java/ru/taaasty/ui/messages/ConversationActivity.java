@@ -30,6 +30,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.MessageHelper;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
@@ -232,18 +233,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private void bindDesign(final TlogDesign design) {
         final View root = getWindow().getDecorView();
-        if (root.getWidth() > 1) {
-            bindDesignMeasured(design);
-            return;
-        }
-
-        root.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+        SafeOnPreDrawListener.runWhenLaidOut(root, new SafeOnPreDrawListener.RunOnLaidOut() {
             @Override
-            public boolean onPreDraw() {
-                if (root.getViewTreeObserver().isAlive()) {
-                    root.getViewTreeObserver().removeOnPreDrawListener(this);
-                    bindDesignMeasured(design);
-                }
+            public boolean run(View root) {
+                bindDesignMeasured(design);
                 return true;
             }
         });

@@ -7,13 +7,13 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -31,6 +31,7 @@ import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.MyRecyclerView;
 import rx.Subscription;
@@ -289,19 +290,16 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void bindImage(final ViewHolderItem holder, final Flow flow, @Nullable final Relationship relationship) {
-        if (holder.image.getWidth() > 0) {
+        if (ViewCompat.isLaidOut(holder.image)) {
             bindImageAfterSizeKnown(holder, flow, relationship);
         } else {
-            holder.image.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            holder.image.getViewTreeObserver().addOnPreDrawListener(new SafeOnPreDrawListener(holder.image, new SafeOnPreDrawListener.RunOnLaidOut() {
                 @Override
-                public boolean onPreDraw() {
-                    if (holder.image.getViewTreeObserver().isAlive()) {
-                        holder.image.getViewTreeObserver().removeOnPreDrawListener(this);
-                        bindImageAfterSizeKnown(holder, flow, relationship);
-                    }
+                public boolean run(View root) {
+                    bindImageAfterSizeKnown(holder, flow, relationship);
                     return false;
                 }
-            });
+            }));
         }
     }
 
