@@ -87,10 +87,3 @@
 -dontwarn android.util.FloatMath**
 
 -dontwarn android.app.Notification**
-
-
-# pusher
-#-dontwarn javax.management.**
-#-dontwarn javax.xml.**
-#-dontwarn org.apache.log4j.**
-#-dontwarn org.slf4j.*
