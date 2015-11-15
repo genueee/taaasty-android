@@ -34,8 +34,8 @@ android {
         applicationId "ru.taaasty"
         minSdkVersion 15
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
-        versionName "1.5.1"
+        versionCode 20
+        versionName "1.5.2"
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
