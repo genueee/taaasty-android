@@ -11,11 +11,13 @@ import java.util.WeakHashMap;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
+import ru.taaasty.recyclerview.DefaultItemAnimator;
+import ru.taaasty.recyclerview.RecyclerView;
 
 /**
  * RecyclerView с параметрами, которые все равно везде ставим
  */
-public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
+public class MyRecyclerView extends RecyclerView {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyRecyclerView";
 
@@ -40,8 +42,11 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
     public MyRecyclerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         ItemAnimator animator = getItemAnimator();
-        animator.setSupportsChangeAnimations(false);
+        if (animator instanceof DefaultItemAnimator) {
+            ((DefaultItemAnimator)animator).setSupportsChangeAnimations(false);
+        }
         animator.setAddDuration(getResources().getInteger(R.integer.longAnimTime));
+        setItemViewCacheSize(10);
     }
 
     @Override

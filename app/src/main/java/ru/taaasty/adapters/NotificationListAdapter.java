@@ -2,7 +2,7 @@ package ru.taaasty.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.RecyclerView;
+import ru.taaasty.recyclerview.RecyclerView;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.LayoutInflater;

@@ -2,7 +2,6 @@ package ru.taaasty.adapters;
 
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -12,6 +11,7 @@ import com.squareup.picasso.RequestCreator;
 
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.recyclerview.RecyclerView;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.TargetSetHeaderBackground;

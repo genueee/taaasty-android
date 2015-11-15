@@ -3,7 +3,7 @@ package ru.taaasty.adapters;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.RecyclerView;
+import ru.taaasty.recyclerview.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;

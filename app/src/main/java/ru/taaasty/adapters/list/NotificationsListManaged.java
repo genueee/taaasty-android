@@ -79,7 +79,7 @@ public final class NotificationsListManaged extends SortedList<Notification> {
         }
     }
 
-    public static abstract class Callback extends android.support.v7.util.SortedList.Callback<Notification> {
+    public static abstract class Callback extends SortedList.Callback<Notification> {
 
         @Override
         public int compare(Notification o1, Notification o2) {

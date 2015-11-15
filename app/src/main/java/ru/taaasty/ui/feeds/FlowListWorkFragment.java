@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 import java.lang.annotation.Retention;
@@ -15,6 +14,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.adapters.FlowListManaged;
+import ru.taaasty.recyclerview.RecyclerView;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.service.ApiFlows;

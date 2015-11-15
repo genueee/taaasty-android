@@ -1,6 +1,6 @@
 package ru.taaasty.adapters;
 
-import android.support.v7.widget.RecyclerView;
+import ru.taaasty.recyclerview.RecyclerView;
 import android.view.View;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;

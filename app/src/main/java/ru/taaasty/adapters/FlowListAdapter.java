@@ -7,7 +7,7 @@ import android.graphics.drawable.Drawable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.RecyclerView;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,10 +23,12 @@ import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.Locale;
+import java.util.UUID;
 
 import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.recyclerview.RecyclerView;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.utils.ImageUtils;
@@ -149,6 +151,7 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onViewRecycled(RecyclerView.ViewHolder holder) {
         super.onViewRecycled(holder);
+        Log.d(TAG, "onViewRecycled() called with: " + "holder = [" + holder + "]");
         onViewDetachedFromWindow(holder);
         if (holder.getItemViewType() == VIEW_TYPE_ITEM) {
             stopImageLoading((ViewHolderItem) holder);
@@ -185,17 +188,24 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (holder instanceof IParallaxedHeaderHolder) {
-            holder.itemView.getViewTreeObserver().addOnScrollChangedListener((IParallaxedHeaderHolder) holder);
-        }
+
     }
 
     @Override
     public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
         super.onViewDetachedFromWindow(holder);
+        Log.d(TAG, "onViewDetachedFromWindow() called with: " + "holder = [" + holder + "]");
         if (holder instanceof IParallaxedHeaderHolder && holder.itemView.getViewTreeObserver().isAlive()) {
             holder.itemView.getViewTreeObserver().removeOnScrollChangedListener((IParallaxedHeaderHolder) holder);
         }
+        /*
+        if (holder instanceof ViewHolderItem) {
+            ViewHolderItem vhi = (ViewHolderItem)holder;
+            if (vhi.preDrawListener != null && vhi.image.getViewTreeObserver().isAlive()) {
+                vhi.image.getViewTreeObserver().removeOnPreDrawListener(vhi.preDrawListener);
+                vhi.preDrawListener = null;
+            }
+        } */
     }
 
     public void onDestroy(RecyclerView parent) {
@@ -289,20 +299,67 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     private void bindImage(final ViewHolderItem holder, final Flow flow, @Nullable final Relationship relationship) {
-        if (holder.image.getWidth() > 0) {
+        if (ViewCompat.isLaidOut(holder.image)) {
             bindImageAfterSizeKnown(holder, flow, relationship);
         } else {
-            holder.image.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    if (holder.image.getViewTreeObserver().isAlive()) {
-                        holder.image.getViewTreeObserver().removeOnPreDrawListener(this);
-                        bindImageAfterSizeKnown(holder, flow, relationship);
-                    }
-                    return false;
-                }
-            });
+            ViewTreeObserver vto = holder.itemView.getViewTreeObserver();
+            final ViewTreeObserver.OnPreDrawListener listener = new MyTreeObserver(holder, flow, relationship);
+
+            if (DBG) Log.v(TAG, "addOnPreDrawListener() holder: " + holder + " vto: " + vto
+                    + " listener: " + listener + " parent: " + holder.itemView.getParent());
+            vto.addOnPreDrawListener(listener);
+            holder.preDrawListener = listener;
         }
+    }
+
+    private class MyTreeObserver implements ViewTreeObserver.OnPreDrawListener{
+
+        final ViewHolderItem holder;
+
+        final Flow flow;
+
+        @Nullable final Relationship relationship;
+
+        public MyTreeObserver(ViewHolderItem holder, Flow flow, @Nullable Relationship relationship) {
+            this.holder = holder;
+            this.flow = flow;
+            this.relationship = relationship;
+        }
+
+        String mUuid = UUID.randomUUID().toString();
+
+        int step = 0;
+
+        @Override
+        public boolean onPreDraw() {
+            step += 1;
+            ViewTreeObserver observer = holder.image.getViewTreeObserver();
+
+            if (DBG) Log.v(TAG, "onPreDraw() step: " + step + " holder: " + holder
+                    + " vto: " + observer + " listener: " + this
+                    + " heidht: " + holder.image.getHeight()
+                    + " is layd out: " + ViewCompat.isLaidOut(holder.image));
+
+            if (observer.isAlive()) {
+                holder.preDrawListener = null;
+                observer.removeOnPreDrawListener(this);
+            } else {
+                if (DBG) Log.v(TAG, "view tree observer is not alive");
+            }
+
+            if (step == 1) {
+                bindImageAfterSizeKnown(holder, flow, relationship);
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return this.mUuid;
+        }
+
     }
 
     private void bindImageAfterSizeKnown(ViewHolderItem holder, Flow flow, Relationship relationship) {
@@ -406,6 +463,8 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public boolean imageLoading;
 
         public Subscription loadGifSubscription = Subscriptions.unsubscribed();
+
+        public ViewTreeObserver.OnPreDrawListener preDrawListener;
 
         public ViewHolderItem(View root) {
             super(root);

@@ -1,14 +1,15 @@
 package ru.taaasty.widgets;
 
 import android.content.Context;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
+import ru.taaasty.recyclerview.LinearLayoutManager;
+import ru.taaasty.recyclerview.RecyclerView;
 
 /**
  * Created by alexey on 16.01.15.
  */
-public class LinearLayoutManagerNonFocusable extends LinearLayoutManager{
+public class LinearLayoutManagerNonFocusable extends LinearLayoutManager {
 
     public LinearLayoutManagerNonFocusable(Context context) {
         super(context);

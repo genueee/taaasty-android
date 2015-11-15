@@ -6,8 +6,6 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,6 +22,8 @@ import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.ConversationChanged;
+import ru.taaasty.recyclerview.LinearLayoutManager;
+import ru.taaasty.recyclerview.RecyclerView;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.service.ApiMessenger;
@@ -243,7 +243,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             super.onCreate(savedInstanceState);
             setRetainInstance(true);
             mApiMessenger = RestClient.getAPiMessenger();
-            mConversationList = new SortedList<>(Conversation.class, new android.support.v7.util.SortedList.Callback<Conversation>() {
+            mConversationList = new SortedList<>(Conversation.class, new SortedList.Callback<Conversation>() {
                 @Override
                 public int compare(Conversation o1, Conversation o2) {
                     return Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);

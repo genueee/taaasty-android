@@ -3,7 +3,7 @@ package ru.taaasty.ui;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
-import android.support.v7.widget.RecyclerView;
+import ru.taaasty.recyclerview.RecyclerView;
 import android.view.View;
 
 import ru.taaasty.R;

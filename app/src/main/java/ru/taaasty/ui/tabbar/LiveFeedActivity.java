@@ -337,7 +337,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
 
         @Override
         public int getCount() {
-            return 5;
+            return 2
+                    ;
         }
 
         @Override

@@ -4,7 +4,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
-import android.support.v7.widget.RecyclerView;
+import ru.taaasty.recyclerview.RecyclerView;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
