@@ -15,10 +15,11 @@ public interface Constants {
 
     int ACTIVITY_REQUEST_CODE_CREATE_POST = 254;
 
-    public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
+    RestAdapter.LogLevel RETROFIT_LOG_LEVEL = RestAdapter.LogLevel.NONE;
+    // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
     // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE;
     public static final int CONNECT_TIMEOUT_S = 35;
-    public static final int READ_TIMEOUT_S = 35;
+    public static final int READ_TIMEOUT_S = 120;
     public static final int LRU_MEMORY_CACHE_PCT = 15;
     public static final String API_VERSION = "v1";
     public static final Pattern THUMBOR_MATCHER_PATTERN = Pattern.compile("http\\://taaasty\\.com/assets/(.+)$");

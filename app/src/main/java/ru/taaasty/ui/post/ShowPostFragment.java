@@ -30,6 +30,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -48,13 +49,12 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
-import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.DateIndicatorWidget;
 import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -81,6 +81,7 @@ public class ShowPostFragment extends Fragment {
     private static final String KEY_TOTAL_COMMENTS_COUNT = "total_comments_count";
     private static final String KEY_LOAD_COMMENTS = "load_comments";
     public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -744,6 +745,8 @@ public class ShowPostFragment extends Fragment {
                     if (!mCommentsAdapter.hasComments()) return;
                     unselectCurrentComment(false);
 
+                    if (!Session.getInstance().isAuthorized()) return;
+
                     ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(holder);
                     va.addListener(new Animator.AnimatorListener() {
                         @Override
@@ -780,7 +783,7 @@ public class ShowPostFragment extends Fragment {
                 if (canVote) {
                     LikesHelper.getInstance().voteUnvote(entry);
                 } else {
-                    Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+                    LikesHelper.showCannotVoteError(getView(), ShowPostFragment.this, REQUEST_CODE_LOGIN);
                 }
             }
 
@@ -861,8 +864,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_comments), e);
+            MessageHelper.showError(ShowPostFragment.this, e, R.string.error_loading_comments, REQUEST_CODE_LOGIN);
             mLoadComments = false;
 
         }
@@ -887,8 +889,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.server_error), e);
+            MessageHelper.showError(ShowPostFragment.this, e, R.string.server_error, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -909,8 +910,7 @@ public class ShowPostFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_user), e);
+            MessageHelper.showError(ShowPostFragment.this, e, R.string.error_loading_user, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -934,7 +934,7 @@ public class ShowPostFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener {
+    public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener {
         void onPostLoaded(Entry entry);
         void onPostLoadError(Throwable e);
         void onAvatarClicked(View view, User user, TlogDesign design);

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -16,7 +15,7 @@
         android:paddingTop="?actionBarSize"
         android:paddingBottom="8dp"
         android:overScrollMode="never"
-        android:layout_above="@+id/reply_to_comment_container"
+        android:layout_above="@+id/bottom_container"
         tools:listitem="@layout/comments_item2"
         tools:ignore="UnknownIdInLayout" />
 
@@ -32,6 +31,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <include layout="@layout/include_reply_container"/>
+    <FrameLayout
+        android:id="@+id/bottom_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <include
+            android:id="@+id/reply_to_comment_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            layout="@layout/include_reply_container"
+            android:layout_gravity="bottom"/>
+
+        <ViewStub
+            android:id="@+id/reply_or_sign_in_container"
+            android:inflatedId="@+id/reply_or_sign_in_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout="@layout/include_login_to_reply"
+            android:layout_gravity="bottom"
+            />
+
+    </FrameLayout>
 
 </RelativeLayout>

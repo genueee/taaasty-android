@@ -39,7 +39,6 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
 
 public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener, ShowPostFragment.OnFragmentInteractionListener {
@@ -249,16 +248,6 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         }
 
         return super.onKeyDown(keycode, e);
-    }
-
-    @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
     }
 
     @Override

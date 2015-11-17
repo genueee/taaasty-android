@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.Random;
 
@@ -32,15 +31,14 @@ import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.OnCurrentUserChanged;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.FragmentStateConsumer;
+import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
@@ -53,18 +51,19 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class ListFeedFragment extends Fragment implements IFeedsFragment,
+public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetainedFragment> implements IFeedsFragment,
         ListFeedWorkRetainedFragment.TargetFragmentInteraction{
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ListFeedFragment";
 
     private static final String ARG_FEED_TYPE = "feed_type";
 
-    static final int FEED_LIVE = 0;
-    static final int FEED_BEST = 1;
-    static final int FEED_NEWS = 2;
-    static final int FEED_ANONYMOUS = 3;
-    static final int FEED_MY_SUBSCRIPTIONS = 4;
+    public static final int FEED_LIVE = 0;
+    public static final int FEED_BEST = 1;
+    public static final int FEED_NEWS = 2;
+    public static final int FEED_ANONYMOUS = 3;
+    public static final int FEED_MY_SUBSCRIPTIONS = 4;
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private int mFeedType;
 
@@ -144,6 +143,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.d(TAG, "onCreateView() called with: " + "inflater = [" + inflater + "], container = [" + container + "], savedInstanceState = [" + savedInstanceState + "]");
         View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
@@ -177,9 +177,14 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
         return v;
     }
 
+    @Nullable
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public ListFeedWorkRetainedFragment getWorkFragment() {
+        return mWorkFragment;
+    }
+
+    @Override
+    public void initWorkFragment() {
         FragmentManager fm = getFragmentManager();
         mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("ListFeedWorkFragment-" + mFeedType);
         if (mWorkFragment == null) {
@@ -195,7 +200,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     }
 
     @Override
-    public void onWorkFragmentActivityCreated() {
+    public void onWorkFragmentActivityCreatedSafe() {
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarVisibleOnPost());
         mAdapter.onCreate();
         mListView.setAdapter(mAdapter);
@@ -211,7 +216,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
     }
 
     @Override
-    public void onWorkFragmentResume() {
+    public void onWorkFragmentResumeSafe() {
         mDateIndicatorHelper.onResume();
 
         if (!getUserVisibleHint()
@@ -336,11 +341,13 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
         mWorkFragment.refreshData();
     }
 
+    public int getFeedType() {
+        return mFeedType;
+    }
+
     @Nullable
     private TlogDesign getDesign() {
-        CurrentUser user = Session.getInstance().getCachedCurrentUser();
-        if (user == null) return null;
-        return user.getDesign();
+        return Session.getInstance().getCachedCurrentUser().getDesign();
     }
 
     void setupFeedDesign() {
@@ -504,6 +511,12 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
                     }
                 }
 
+                @Override
+                public void onVoteError(long entryId, int errResId, Throwable error) {
+                    LikesHelper.showCannotVoteError(getView(), ListFeedFragment.this, REQUEST_CODE_LOGIN,
+                            errResId, error);
+                }
+
                 private int getTitle() {
                     switch (mFeedType) {
                         case FEED_LIVE:
@@ -570,7 +583,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
             } else {
-                Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+                LikesHelper.showCannotVoteError(getView(), ListFeedFragment.this, REQUEST_CODE_LOGIN);
             }
         }
 
@@ -671,7 +684,7 @@ public class ListFeedFragment extends Fragment implements IFeedsFragment,
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView, FragmentStateConsumer {
+    public interface OnFragmentInteractionListener extends FragmentStateConsumer {
         /**
          * Юзер ткнул на аватарку в заголовке записи списка
          * @param view

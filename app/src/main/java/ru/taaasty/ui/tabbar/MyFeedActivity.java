@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
@@ -27,6 +28,7 @@ import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.SettingsActivity;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
@@ -35,10 +37,12 @@ import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
 
 
-public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener {
+public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener,
+        CustomErrorView {
     private static final boolean DBG = BuildConfig.DEBUG && false;
     private static final String TAG = "MyFeedActivity";
 
@@ -46,8 +50,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (Session.getInstance().getCachedCurrentUser() != null
-                && Session.getInstance().getCachedCurrentUser().getDesign() != null) {
+        if (Session.getInstance().getCachedCurrentUser().getDesign() != null) {
             TlogDesign design = Session.getInstance().getCachedCurrentUser().getDesign();
             if (design.isDarkTheme()) {
                 setTheme(R.style.AppThemeDark);
@@ -238,7 +241,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     void openFriends() {
         CurrentUser user = Session.getInstance().getCachedCurrentUser();
-        if (user == null) return;
+        if (!user.isAuthorized()) return;
         Intent i = new Intent(this, FollowingFollowersActivity.class);
         i.putExtra(FollowingFollowersActivity.ARG_USER, user);
         i.putExtra(FollowingFollowersActivity.ARG_KEY_SHOW_SECTION, FollowingFollowersActivity.SECTION_FRIENDS);
@@ -258,7 +261,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void logout() {
-
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getText(R.string.clean_cache));
         progressDialog.setIndeterminate(true);
@@ -284,5 +286,10 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 System.exit(0);
             }
         }.execute();
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.main_container, REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 }

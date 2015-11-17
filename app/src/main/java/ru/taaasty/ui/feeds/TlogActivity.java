@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -36,6 +35,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String ARG_USER_ID = "ru.taaasty.ui.feeds.TlogActivity.user_id";
     private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.feeds.TlogActivity.avatar_thumbnail_res";
     private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private FeedBackground mFeedBackground;
 
@@ -44,10 +44,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         intent.putExtra(ARG_USER_ID, userId);
         intent.putExtra(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailSizeRes);
         return intent;
-    }
-
-    public static Intent getStartTlogActivityIntent(Context source, long userId) {
-        return getStartTlogActivityIntent(source, userId, R.dimen.avatar_extra_small_diameter_34dp);
     }
 
     public static void startTlogActivity(Context source, long userId, View animateFrom, int avatarThumbnailSizeRes) {
@@ -89,7 +85,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
         // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее
         // системные кнопки и background на activity лежит под ними.
         getWindow().getDecorView().setBackgroundDrawable(null);
-
 
         if (savedInstanceState == null) {
             Fragment tlogFragment;
@@ -148,16 +143,6 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
-    }
-
-    @Override
     public void onTlogInfoLoaded(TlogInfo tlogInfo) {
         if (tlogInfo.getDesign() != null) {
             mFeedBackground.setTlogDesign(tlogInfo.getDesign());
@@ -188,5 +173,10 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private void refreshData() {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) ((IRereshable)fragment).refreshData(true);
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.container,  REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 }

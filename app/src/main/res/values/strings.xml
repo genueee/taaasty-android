@@ -62,7 +62,7 @@
     <string name="you_have_no_private_records">У вас нет скрытых записей</string>
     <string name="you_have_no_favorite_records">У вас нет избранных записей</string>
     <string name="title_activity_show_post">Запись</string>
-    <string name="title_activity_comments">Прокомментируйте</string>
+    <string name="title_activity_comments">Комментарии</string>
     <string name="you_have_subscribed_button">Вы подписаны</string>
     <string name="subscribe_button">Подписаться</string>
     <string name="title_my_subscriptions">Мои подписки</string>
@@ -321,6 +321,8 @@
     <string name="flows_tab_all">Все</string>
     <string name="flows_tab_my">Мои</string>
     <string name="user_can_not_post">Вам не разрешено голосовать, потому что вы меньше месяца на сайте, либо не подтвердили email</string>
+    <string name="unauthorized_user_can_not_vote">Голосовать могут только зарегистрированные пользователи</string>
+    <string name="allowed_only_to_registered_users">Нужно войти или зарегистрироваться</string>
 
     <string name="fab_list_item_create_flow">Создать поток</string>
     <string name="fab_list_item_create_anonymous_post">Анонимка</string>
@@ -328,5 +330,6 @@
     <string name="fab_list_item_create_image_post">Картинка в дневник</string>
 
     <string name="write_to_flow">Написать в поток</string>
+    <string name="login_or_register_to_add_comment">Войдите или зарегистрируйтесь, чтобы оставить комментарий</string>
 
 </resources>

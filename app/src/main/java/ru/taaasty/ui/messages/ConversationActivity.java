@@ -15,7 +15,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -32,7 +31,6 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -174,16 +172,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     }
 
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
-    }
-
-    @Override
     public void onEdgeReached(boolean atTop) {
         if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
@@ -273,9 +261,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.v(TAG, getString(R.string.error_create_conversation), e);
-            Toast.makeText(ConversationActivity.this,
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_create_conversation),
-                    Toast.LENGTH_LONG).show();
+            MessageHelper.showError(ConversationActivity.this, R.id.activityRoot, 1, e, R.string.error_create_conversation);
+            // TODO здесь неавторизованным по хорошему надо возвращать ошибку
             finish();
         }
 

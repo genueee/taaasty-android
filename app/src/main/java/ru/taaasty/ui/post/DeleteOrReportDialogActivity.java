@@ -23,9 +23,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiEntries;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.MessageHelper;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -35,7 +33,7 @@ import rx.subscriptions.Subscriptions;
 /**
  * Диалог с удалением, либо жалобой на пост или комментарий
  */
-public class DeleteOrReportDialogActivity extends ActivityBase implements CustomErrorView  {
+public class DeleteOrReportDialogActivity extends ActivityBase {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CommentActionActivity";
 
@@ -67,7 +65,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
     private static Intent createIntent(Context context, int actionId) {
         Intent intent = new Intent(context, DeleteOrReportDialogActivity.class);
-        intent.putExtra(ARG_ACTION_ID, ACTION_DELETE_POST);
+        intent.putExtra(ARG_ACTION_ID, actionId);
         return intent;
     }
 
@@ -151,14 +149,9 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
         mSubscription.unsubscribe();
     }
 
-    @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
+    public void notifyError(@Nullable Throwable exception, int fallbackResId) {
+        // TODO
+        MessageHelper.showError(this, R.id.container, 1, exception, fallbackResId);
     }
 
     void doAction() {
@@ -228,7 +221,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(getString(R.string.error_loading_comments), e);
+            notifyError(e, R.string.error_loading_comments);
         }
 
         @Override
@@ -264,8 +257,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_report_to_comment), e);
+            notifyError(e, R.string.error_report_to_comment);
         }
 
         @Override
@@ -310,8 +302,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_comments), e);
+            notifyError(e, R.string.error_loading_comments);
         }
 
         @Override
@@ -352,8 +343,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase implements Custom
 
         @Override
         public void onError(Throwable e) {
-            notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_report_to_comment), e);
+            notifyError(e, R.string.error_report_to_comment);
         }
 
         @Override

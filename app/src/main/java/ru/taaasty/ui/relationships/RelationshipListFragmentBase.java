@@ -29,7 +29,6 @@ import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -53,7 +52,6 @@ public abstract class RelationshipListFragmentBase extends RxFragment {
     IRelationshipAdapter mRelationshipsAdapter;
     OnFragmentInteractionListener mListener;
     Subscription mRelationshipsSubscription = Subscriptions.unsubscribed();
-
 
     public abstract IRelationshipAdapter createRelationshipsAdapter();
 
@@ -201,8 +199,7 @@ public abstract class RelationshipListFragmentBase extends RxFragment {
         @Override
         public void onError(Throwable e) {
             if (mProgressBar != null) mProgressBar.setVisibility(View.INVISIBLE);
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_relationships), e);
+            mListener.notifyError(RelationshipListFragmentBase.this, e, R.string.error_loading_relationships);
         }
 
         @Override

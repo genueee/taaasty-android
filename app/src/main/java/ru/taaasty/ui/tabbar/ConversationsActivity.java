@@ -1,6 +1,7 @@
 package ru.taaasty.ui.tabbar;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -16,6 +17,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.messages.ConversationsListFragment;
 import ru.taaasty.ui.messages.InitiateConversationFragment;
+import ru.taaasty.utils.MessageHelper;
 
 public class ConversationsActivity extends TabbarActivityBase implements
         ConversationsListFragment.OnFragmentInteractionListener,
@@ -131,5 +133,10 @@ public class ConversationsActivity extends TabbarActivityBase implements
         boolean canback = getSupportFragmentManager().getBackStackEntryCount()>0;
         getSupportActionBar().setDisplayHomeAsUpEnabled(canback);
         if (mCreateConversationMenuItem != null) mCreateConversationMenuItem.setVisible(!canback);
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(ConversationsActivity.this, R.id.main_container, REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 }

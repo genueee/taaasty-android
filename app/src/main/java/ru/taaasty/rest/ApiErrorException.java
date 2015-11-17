@@ -99,6 +99,15 @@ public class ApiErrorException extends RuntimeException {
         return getHttpStatusCode() == 404;
     }
 
+    /**
+     * @return нет токена, т.е. требуется авторизация где бытаемя под анонимным пользователем
+     */
+    public boolean isErrorAuthorizationRequired() {
+        return (error != null)
+                && (getHttpStatusCode() == 417)
+                && "no_token".equals(error.errorCode);
+    }
+
     public boolean isErrorUnauthorized() {
         switch (getHttpStatusCode()) {
             case 401:

@@ -6,6 +6,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.adapters.RelationshipsAdapter;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiRelationships;
@@ -42,8 +43,8 @@ public class FriendsFragment extends RelationshipListFragmentBase {
 
     @Override
     public boolean isListRelationship(Relationship relationship) {
-        Long me = Session.getInstance().getCurrentUserId();
-        if (me == null) return false;
+        long me = Session.getInstance().getCurrentUserId();
+        if (me == CurrentUser.USER_UNAUTHORIZED_ID) return false;
         return relationship.isMyRelationToHim(me)
                 && Relationship.RELATIONSHIP_FRIEND.equals(relationship.getState());
     }

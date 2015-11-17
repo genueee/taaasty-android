@@ -9,7 +9,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +23,7 @@ import ru.taaasty.Session;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.utils.FabHelper;
@@ -33,7 +33,8 @@ import ru.taaasty.widgets.FabMenuLayout;
 /**
  * Избранные и скрытые
  */
-public class AdditionalFeedActivity extends ActivityBase implements MyAdditionalFeedFragment.OnFragmentInteractionListener {
+public class AdditionalFeedActivity extends ActivityBase implements MyAdditionalFeedFragment.OnFragmentInteractionListener,
+        CustomErrorView {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "AdditionalFeedActivity";
 
@@ -44,6 +45,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     private static final String KEY_CURRENT_USER = "ru.taaasty.ui.feeds.AdditionalFeedActivity.KEY_CURRENT_USER";
     private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.feeds.AdditionalFeedActivity.KEY_CURRENT_USER_DESIGN";
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
@@ -78,8 +80,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Session.getInstance().getCachedCurrentUser() != null
-                && Session.getInstance().getCachedCurrentUser().getDesign() != null) {
+        if (Session.getInstance().getCachedCurrentUser().getDesign() != null) {
             TlogDesign design = Session.getInstance().getCachedCurrentUser().getDesign();
             if (design.isDarkTheme()) {
                 setTheme(R.style.AppThemeDark);
@@ -163,16 +164,6 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     }
 
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -222,5 +213,10 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     void refreshData() {
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
         if (current != null) ((IRereshable)current).refreshData(true);
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.main_container, REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 }

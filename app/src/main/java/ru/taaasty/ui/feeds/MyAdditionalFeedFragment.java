@@ -34,7 +34,6 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.FeedBackground;
@@ -78,6 +77,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
     public static final int FEED_TYPE_PRIVATE = 3;
 
     private static final String BUNDLE_ARG_FEED_TYPE = "BUNDLE_ARG_FEED_TYPE";
+
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -462,6 +463,12 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                         mAdapter.addEntry(event.postEntry);
                 }
 
+                @Override
+                public void onVoteError(long entryId, int errResId, Throwable error) {
+                    LikesHelper.showCannotVoteError(getView(), MyAdditionalFeedFragment.this, REQUEST_CODE_LOGIN,
+                            errResId, error);
+                }
+
                 private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -595,7 +602,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener {
         /**
          * Юзер ткнул на аватарку в списке
          * @param view

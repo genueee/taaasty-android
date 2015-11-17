@@ -262,13 +262,18 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
     }
 
     public void onEventMainThread(EntryRatingStatusChanged event) {
-        if (event.newStatus == EntryRatingStatusChanged.STATUS_START_UPDATE) {
+        if (event.newStatus == EntryRatingStatusChanged.STATUS_START_UPDATE
+                || event.newStatus == EntryRatingStatusChanged.STATUS_UPDATE_ERROR) {
             for (int i = mEntries.size() - 1; i >= 0; --i) {
                 if (mEntries.get(i).getId() == event.entryId) {
                     notifyItemChanged(getAdapterPosition(i));
                     break;
                 }
             }
+        }
+
+        if (event.newStatus == EntryRatingStatusChanged.STATUS_UPDATE_ERROR) {
+            if (mInteractionListener != null) mInteractionListener.onVoteError(event.entryId, event.errorResId, event.errorException);
         }
     }
 
@@ -321,6 +326,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
         void onEntryChanged(EntryChanged event);
 
+        void onVoteError(long entryId, int errResId, Throwable error);
     }
 
 

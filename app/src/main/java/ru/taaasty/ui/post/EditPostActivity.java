@@ -13,7 +13,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -48,6 +47,8 @@ public class EditPostActivity extends ActivityBase implements
     private static final String ARG_ENTRY = "ru.taaasty.ui.post.EditPostActivity.ARG_ENTRY";
 
     private static final String TAG_FRAGMENT_EDIT_POST = "TAG_FRAGMENT_EDIT_POST";
+
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private Entry mEntry;
 
@@ -175,7 +176,7 @@ public class EditPostActivity extends ActivityBase implements
         } else {
             // Сообщаем об ошибке
             setUploadingStatus(false);
-            notifyError(status.error, status.exception);
+            notifyError(status.exception, status.errorFallbackResId);
         }
     }
 
@@ -369,13 +370,8 @@ public class EditPostActivity extends ActivityBase implements
         mCreatePostButton.setEnabled(!uploading);
     }
 
-    private void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
+    private void notifyError(@Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.container, REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 
     private CreateImagePostFragment getCurrentImagePostFragment() {

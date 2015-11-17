@@ -113,16 +113,18 @@
 
                 <TextView
                     android:id="@+id/unsubscribe"
-                    style="@style/LoginButton"
+                    style="@style/GreenButton.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minHeight="42dp"
                     android:layout_marginBottom="12dp"
                     android:layout_marginLeft="12dp"
                     android:layout_marginRight="12dp"
                     android:layout_marginTop="28dp"
-                    android:background="@drawable/btn_green_background"
                     android:text="@string/you_have_subscribed_button"
-                    android:visibility="gone" />
+                    android:layout_gravity="center_horizontal"
+                    android:visibility="gone"
+                    tools:visibility="visible"/>
 
                 <ProgressBar
                     android:id="@+id/follow_unfollow_progress"

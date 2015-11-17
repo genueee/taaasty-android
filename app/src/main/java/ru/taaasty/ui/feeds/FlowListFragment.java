@@ -33,6 +33,7 @@ import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.FragmentStateConsumer;
+import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.widgets.FeedBackgroundDrawable;
@@ -41,7 +42,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 /**
  * Created by alexey on 30.08.15.
  */
-public class FlowListFragment extends Fragment implements IFeedsFragment, FlowListWorkFragment.TargetFragmentInteraction {
+public class FlowListFragment extends FragmentWithWorkFragment<FlowListWorkFragment> implements IFeedsFragment, FlowListWorkFragment.TargetFragmentInteraction {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FlowListFragment";
@@ -123,9 +124,14 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
         return v;
     }
 
+    @Nullable
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public FlowListWorkFragment getWorkFragment() {
+        return mWorkFragment;
+    }
+
+    @Override
+    public void initWorkFragment() {
         FragmentManager fm = getFragmentManager();
         mWorkFragment = (FlowListWorkFragment) fm.findFragmentByTag("FlowListWorkFragment");
         if (mWorkFragment == null) {
@@ -138,7 +144,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
     }
 
     @Override
-    public void onWorkFragmentActivityCreated() {
+    public void onWorkFragmentActivityCreatedSafe() {
         mAdapter = new FlowListAdapter(getActivity(), new FlowListAdapter.InteractionListener() {
             @Override
             public void onBindFlow(FlowListAdapter.ViewHolderItem holder, Flow flow, Relationship relationship,  int position) {
@@ -160,12 +166,16 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
             public void onBindHeaderViewHolder(RecyclerView.ViewHolder viewHolder) {
                 TlogDesign design = TlogDesign.createLightTheme(TlogDesign.DUMMY);
                 CurrentUser user = Session.getInstance().getCachedCurrentUser();
-                if (user != null) {
-                    if (user.getDesign() != null) design = user.getDesign();
-                }
+                if (user.getDesign() != null) design = user.getDesign();
                 ((HeaderViewHolder) viewHolder).bindDesign(design);
-                ((HeaderViewHolder)viewHolder).setActivatedFlowTab(mWorkFragment.getSelectedFlowTab());
                 ((HeaderTitleSubtitleViewHolder) viewHolder).setTitleSubtitle(R.string.title_flows, null);
+                if (user.isAuthorized()) {
+                    ((HeaderViewHolder) viewHolder).setActivatedFlowTab(mWorkFragment.getSelectedFlowTab());
+                    ((HeaderViewHolder) viewHolder).flowsTabs.setVisibility(View.VISIBLE);
+                } else {
+                    ((HeaderViewHolder) viewHolder).flowsTabs.setVisibility(View.GONE);
+                }
+
             }
 
             @Override
@@ -243,7 +253,7 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
     }
 
     @Override
-    public void onWorkFragmentResume() {
+    public void onWorkFragmentResumeSafe() {
         refreshData(false);
         setupLoadingState();
     }
@@ -359,11 +369,14 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
     }
 
     @Override
-    public void onLoadError(CharSequence error, @Nullable Throwable exception) {
-        if (mListener != null) mListener.notifyError(error, exception);
+    public void onLoadError(@Nullable Throwable exception, int fallbackResId) {
+        if (mListener != null) mListener.notifyError(
+                FlowListFragment.this, exception, R.string.error_loading_flows);
     }
 
     private class HeaderViewHolder extends HeaderTitleSubtitleViewHolder {
+
+        public final View flowsTabs;
 
         public final View flowsTabAll;
 
@@ -371,9 +384,9 @@ public class FlowListFragment extends Fragment implements IFeedsFragment, FlowLi
 
         public HeaderViewHolder(View v) {
             super(v);
-            View tabs = ((ViewStub)v.findViewById(R.id.flows_tab_layout)).inflate();
-            flowsTabAll = tabs.findViewById(R.id.flows_all);
-            flowsTabMy = tabs.findViewById(R.id.flows_my);
+            flowsTabs = ((ViewStub)v.findViewById(R.id.flows_tab_layout)).inflate();
+            flowsTabAll = flowsTabs.findViewById(R.id.flows_all);
+            flowsTabMy = flowsTabs.findViewById(R.id.flows_my);
 
             setActivatedFlowTab(FlowListWorkFragment.FLOWS_TAB_ALL);
         }

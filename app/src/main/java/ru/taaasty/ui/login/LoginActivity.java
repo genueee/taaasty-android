@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -20,6 +21,8 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.util.Log;
 import android.util.TimingLogger;
 import android.view.Gravity;
@@ -38,15 +41,12 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
-import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.ui.tabbar.LiveFeedActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru0xdc.NdkStackBlur;
 
 /**
  * A login screen that offers login via email/password.
-
  */
 public class LoginActivity extends ActivityBase implements
         SelectSignMethodFragment.OnFragmentInteractionListener,
@@ -54,8 +54,7 @@ public class LoginActivity extends ActivityBase implements
         RecoverPasswordFragment.OnFragmentInteractionListener,
         SignUpFragment.OnFragmentInteractionListener,
         SignViaVkontakteFragment.OnFragmentInteractionListener,
-        SignViaFacebookFragment.OnFragmentInteractionListener,
-        CustomErrorView
+        SignViaFacebookFragment.OnFragmentInteractionListener
 {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LoginActivity";
@@ -74,11 +73,26 @@ public class LoginActivity extends ActivityBase implements
     @DrawableRes
     private int mCurrentBackgroundId;
 
+    public static void startActivity(Activity source, int requestCode, View animateFrom) {
+        Intent intent = new Intent(source, LoginActivity.class);
+        if (animateFrom != null) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            ActivityCompat.startActivityForResult(source, intent, requestCode, options.toBundle());
+        } else {
+            source.startActivityForResult(intent, requestCode);
+        }
+    }
+
+    public static void startActivityFromFragment(Context source, android.support.v4.app.Fragment fragment, int requestCode, View animateFrom) {
+        Intent intent = new Intent(source, LoginActivity.class);
+        fragment.startActivityForResult(intent, requestCode);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        FacebookSdk.sdkInitialize(getApplicationContext());
 
         if(!getResources().getBoolean(R.bool.is_tablet)){
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -200,13 +214,6 @@ public class LoginActivity extends ActivityBase implements
                 .commit();
     }
 
-    private void switchToMainScreen() {
-        Intent i = new Intent(this, LiveFeedActivity.class);
-        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(i);
-        finish();
-    }
-
     private void hideIme() {
         InputMethodManager imm = (InputMethodManager)getSystemService(
                 Context.INPUT_METHOD_SERVICE);
@@ -234,9 +241,10 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignSuccess() {
-        switchToMainScreen();
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
                 "Успешный вход — емайл", null);
+        setResult(Activity.RESULT_OK);
+        finish();
     }
 
     @Override
@@ -277,9 +285,10 @@ public class LoginActivity extends ActivityBase implements
     @Override
     public void onSignUpSuccess() {
         Toast.makeText(this, R.string.sign_up_success, Toast.LENGTH_LONG).show();
-        switchToMainScreen();
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
                 "Успешная регистрация — емайл", null);
+        setResult(Activity.RESULT_OK);
+        finish();
     }
 
     @Override
@@ -295,16 +304,18 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignViaVkontakteSuccess(boolean newUserCreated) {
-        switchToMainScreen();
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
                 (newUserCreated ? "Успешная регистрация — вконакте" : "Успешный вход — вконакте"), null);
+        setResult(Activity.RESULT_OK);
+        finish();
     }
 
     @Override
     public void onSignViaFacebookSuccess(boolean newUserCreated) {
-        switchToMainScreen();
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
                 (newUserCreated ? "Успешная регистрация — facebook" : "Успешный вход — facebook"), null);
+        setResult(Activity.RESULT_OK);
+        finish();
     }
 
     public class Background {
@@ -511,13 +522,6 @@ public class LoginActivity extends ActivityBase implements
                 return mDarkenLayer;
             }
         }
-    }
-
-    public void stopSlides(View view) {
-        closeAllFragments();
-        getFragmentManager().beginTransaction()
-                .replace(R.id.container, SelectSignMethodFragment.newInstance())
-                .commit();
     }
 }
 

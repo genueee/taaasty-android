@@ -128,11 +128,11 @@ public class Relationship implements Parcelable {
     }
 
     public boolean isMyRelationToHim(long myUserId) {
-        return (myUserId != -1) && (myUserId == getFromId());
+        return (myUserId != CurrentUser.USER_UNAUTHORIZED_ID) && (myUserId == getFromId());
     }
 
     public boolean isHisRelationToMe(long myUserId) {
-        return (myUserId != -1) && (myUserId == getToId());
+        return (myUserId != CurrentUser.USER_UNAUTHORIZED_ID) && (myUserId == getToId());
     }
 
     @Override

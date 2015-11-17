@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,6 +21,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,6 +35,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
@@ -46,10 +49,10 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.utils.ListScrollController;
-import ru.taaasty.utils.UiUtils;
+import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -73,6 +76,8 @@ public class ShowCommentsFragment extends Fragment {
     private static final String KEY_TOTAL_COMMENTS_COUNT = "total_comments_count";
     private static final String KEY_LOAD_COMMENTS = "load_comments";
     public static final int REFRESH_DATES_DELAY_MILLIS = 20000;
+
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -143,7 +148,6 @@ public class ShowCommentsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        inflater = getActivity().getLayoutInflater(); // Calligraphy and support-21 bug
         View v = inflater.inflate(R.layout.fragment_show_comments, container, false);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_view);
@@ -216,8 +220,20 @@ public class ShowCommentsFragment extends Fragment {
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_LOGIN && resultCode == Activity.RESULT_OK) {
+            if (getView() != null) {
+                refreshBottomContainer();
+                showSoftInput();
+            }
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+        refreshBottomContainer();
         mListScrollController.checkScroll();
     }
 
@@ -264,7 +280,7 @@ public class ShowCommentsFragment extends Fragment {
 
     public void onEventMainThread(CommentRemoved event) {
         if (mCommentsAdapter != null) mCommentsAdapter.deleteComment(event.commentId);
-        mCurrentEntry.setCommentsCount( mCurrentEntry.getCommentsCount() - 1 );
+        mCurrentEntry.setCommentsCount(mCurrentEntry.getCommentsCount() - 1);
         EventBus.getDefault().post(new EntryChanged(mCurrentEntry));
     }
 
@@ -286,6 +302,34 @@ public class ShowCommentsFragment extends Fragment {
 
     void onCommentsLoadMoreButtonClicked() {
         loadComments();
+    }
+
+    private void refreshBottomContainer() {
+        if (getView() == null) return;
+
+        View buttonsContainer = getView().findViewById(R.id.reply_to_comment_container);
+        View messageContainer = getView().findViewById(R.id.reply_or_sign_in_container);
+
+        if (Session.getInstance().isAuthorized()) {
+            buttonsContainer.setVisibility(View.VISIBLE);
+            if (!(messageContainer instanceof ViewStub)) {
+                messageContainer.setVisibility(View.GONE);
+            }
+        } else {
+            buttonsContainer.setVisibility(View.GONE);
+            if (messageContainer instanceof ViewStub) {
+                messageContainer = ((ViewStub) messageContainer).inflate();
+                messageContainer.setVisibility(View.VISIBLE);
+                messageContainer.findViewById(R.id.login_button).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LoginActivity.startActivityFromFragment(getActivity(), ShowCommentsFragment.this, REQUEST_CODE_LOGIN, v);
+                    }
+                });
+            } else {
+                messageContainer.setVisibility(View.GONE);
+            }
+        }
     }
 
     private void addCommentsDoNotScrollList(Comment[] comments) {
@@ -410,10 +454,16 @@ public class ShowCommentsFragment extends Fragment {
     void replyToComment(Comment comment) {
         unselectCurrentComment();
         appendUserSlugToReplyComment(comment.getAuthor().getName());
+        showSoftInput();
+    }
+
+    private void showSoftInput() {
+        if (mReplyToCommentText == null || getActivity() == null) return;
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT);
         }
+        mReplyToCommentText.requestFocus();
     }
 
     void sendRepyToComment() {
@@ -639,6 +689,8 @@ public class ShowCommentsFragment extends Fragment {
                     if (!mCommentsAdapter.hasComments()) return;
                     unselectCurrentComment(false);
 
+                    if (!Session.getInstance().isAuthorized()) return;
+
                     ValueAnimator va = mCommentsAdapter.createShowButtonsAnimator(holder);
                     va.addListener(new Animator.AnimatorListener() {
                         @Override
@@ -729,8 +781,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_comments), e);
+            MessageHelper.showError(ShowCommentsFragment.this, e, R.string.error_loading_comments, REQUEST_CODE_LOGIN);
             mLoadComments = false;
 
         }
@@ -753,8 +804,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_post_comment), e);
+            MessageHelper.showError(ShowCommentsFragment.this, e, R.string.error_post_comment, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -774,8 +824,7 @@ public class ShowCommentsFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_user), e);
+            MessageHelper.showError(ShowCommentsFragment.this, e, R.string.error_loading_user, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -799,7 +848,7 @@ public class ShowCommentsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener {
+    public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener {
         void onPostLoaded(Entry entry);
         void onPostLoadError(Throwable e);
         void onAvatarClicked(View view, User user, TlogDesign design);

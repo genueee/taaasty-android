@@ -3,6 +3,7 @@ package ru.taaasty;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import de.greenrobot.event.EventBus;
@@ -12,6 +13,7 @@ import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.functions.Action1;
+import rx.subjects.BehaviorSubject;
 
 public class Session {
 
@@ -27,10 +29,10 @@ public class Session {
 
     private Context mAppContext;
 
-    private CurrentUser mCurrentUser;
+    private BehaviorSubject<CurrentUser> mCurrentUser;
 
     private Session() {
-
+        mCurrentUser = BehaviorSubject.create(CurrentUser.UNAUTHORIZED);
     }
 
     @MainThread
@@ -46,47 +48,68 @@ public class Session {
 
     @Nullable
     public String getCurrentUserToken() {
-        return mAuthtoken;
+        CurrentUser user = mCurrentUser.getValue();
+        return user.isAuthorized() ? mAuthtoken : null;
     }
 
-    public void setCurrentUser(CurrentUser user) {
-        mAuthtoken = user.getApiKey().accessToken;
-        mCurrentUser = user;
-        persist();
+    /**
+     * @return ID пользователя. {@linkplain CurrentUser#USER_UNAUTHORIZED_ID} (-1) если не авторизован
+     */
+    public long getCurrentUserId() {
+        return mCurrentUser.getValue().getId();
+    }
+
+    public void setCurrentUser(@NonNull CurrentUser user) {
+        if (user.isAuthorized()) {
+            mAuthtoken = user.getApiKey().accessToken;
+            mCurrentUser.onNext(user);
+            persist();
+        } else {
+            logout();
+        }
     }
 
     public void logout() {
-        mCurrentUser = null;
         mAuthtoken = null;
+        mCurrentUser.onNext(CurrentUser.UNAUTHORIZED);
         mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE).edit().clear().commit();
     }
 
-    @Nullable
-    public Long getCurrentUserId() {
-        return mCurrentUser == null ? null : mCurrentUser.getId();
-    }
-
     public boolean isMe(long id) {
-        return mCurrentUser != null && mCurrentUser.getId() == id;
+        // XXX: unauthorized - это я?
+        return mCurrentUser.getValue().getId() == id;
     }
 
-    public Observable<CurrentUser> getCurrentUser() {
+    public BehaviorSubject<CurrentUser> getUserObservable() {
+        return mCurrentUser;
+    }
+
+    public Observable<CurrentUser> reloadCurrentUser() {
         return RestClient.getAPiUsers()
                 .getMyInfo()
                 .doOnNext(new Action1<CurrentUser>() {
                     @Override
                     public void call(CurrentUser currentUser) {
-                        boolean changed = !currentUser.equals(mCurrentUser);
-                        mCurrentUser = currentUser;
-                        if (changed) EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
+                        boolean changed = !currentUser.equals(mCurrentUser.getValue());
+                        if (changed) {
+                            mCurrentUser.onNext(currentUser);
+                            EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
+                        }
                     }
                 });
         // return Observable.from(mCurrentUser);
     }
 
-    @Nullable
+    // TODO постараться не использовать
     public CurrentUser getCachedCurrentUser() {
-        return mCurrentUser;
+        return mCurrentUser.getValue();
+    }
+
+    /**
+     * @return Пользователь авторизован
+     */
+    public boolean isAuthorized() {
+        return mCurrentUser.getValue().isAuthorized();
     }
 
     private void load() {
@@ -94,13 +117,21 @@ public class Session {
         mAuthtoken = prefs.getString(SHARED_PREFS_KEY_AUTHTOKEN, null);
         String userSerialized = prefs.getString(SHARED_PREFS_KEY_USER, null);
         if (userSerialized != null) {
-            mCurrentUser = NetworkUtils.getGson().fromJson(userSerialized, CurrentUser.class);
+            mCurrentUser.onNext(NetworkUtils.getGson().fromJson(userSerialized, CurrentUser.class));
+        } else {
+            mCurrentUser.onNext(CurrentUser.UNAUTHORIZED);
         }
     }
 
     private void persist() {
         SharedPreferences prefs = mAppContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
-        String userSerialized = NetworkUtils.getGson().toJson(mCurrentUser);
+        String userSerialized;
+        if (mCurrentUser.getValue().isAuthorized()) {
+            userSerialized = NetworkUtils.getGson().toJson(mCurrentUser.getValue());
+        } else {
+            userSerialized = null;
+        }
+
         prefs.edit()
                 .putString(SHARED_PREFS_KEY_AUTHTOKEN, mAuthtoken)
                 .putString(SHARED_PREFS_KEY_USER, userSerialized)

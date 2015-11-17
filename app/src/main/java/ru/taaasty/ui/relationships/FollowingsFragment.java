@@ -37,7 +37,7 @@ public class FollowingsFragment extends RelationshipListFragmentBase {
 
     @Override
     public boolean isListRelationship(Relationship relationship) {
-        Long me = Session.getInstance().getCurrentUserId();
+        long me = Session.getInstance().getCurrentUserId();
         return relationship.isMyRelationToHim(me)
                 && Relationship.RELATIONSHIP_FRIEND.equals(relationship.getState())
                 ;

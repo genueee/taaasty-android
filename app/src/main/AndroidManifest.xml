@@ -49,6 +49,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
+                <data android:scheme="vk3974615" />
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -77,17 +78,12 @@
         </activity>
         <activity
             android:name=".ui.login.LoginActivity"
+            android:documentLaunchMode="never"
+            android:excludeFromRecents="true"
             android:label="@string/title_activity_login"
+            android:launchMode="singleTop"
             android:theme="@style/LoginActivityTheme"
-            android:windowSoftInputMode="adjustResize" >
-            <intent-filter>
-                <data android:scheme="vk3974615" />
-
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.BROWSABLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
+            android:windowSoftInputMode="adjustResize">
         </activity>
         <activity
             android:name=".ui.feeds.AdditionalFeedActivity"

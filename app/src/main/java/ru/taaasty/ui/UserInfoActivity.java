@@ -30,8 +30,8 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.model.Conversation;
@@ -42,7 +42,6 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.utils.MessageHelper;
 
 public class UserInfoActivity extends ActivityBase implements UserInfoFragment.OnFragmentInteractionListener,
         SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
@@ -363,16 +362,6 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     }
 
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
-    }
-
-    @Override
     public void onPickPhotoSelected(Fragment fragment) {
         int requestCode;
         if (DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag())) {
@@ -404,7 +393,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             startActivityForResult(takePictureIntent, requestCode);
             ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
                     ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыто фотографирование",
-                    requestCode == REQUEST_PICK_BACKGROUND_PHOTO ? "фона" : "аватара");
+                    requestCode == REQUEST_MAKE_BACKGROUND_PHOTO ? "фона" : "аватара");
         } catch (ImageUtils.MakePhotoException e) {
             Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
         }

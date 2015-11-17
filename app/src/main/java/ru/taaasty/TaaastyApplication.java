@@ -26,6 +26,7 @@ import io.intercom.android.sdk.Intercom;
 import io.intercom.android.sdk.identity.Registration;
 import io.intercom.android.sdk.preview.IntercomPreviewPosition;
 import ru.taaasty.events.UiVisibleStatusChanged;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
@@ -97,13 +98,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         NetworkUtils.getInstance().onTrimMemory();
     }
 
-    @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        if (DBG) Log.v(TAG, "onLowMemory() ");
-        NetworkUtils.getInstance().onTrimMemory();
-    }
-
     public synchronized Tracker getTracker() {
         if (mAnalyticsTracker == null) {
             GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
@@ -142,8 +136,8 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     public synchronized void startIntercomSession() {
         if (mInterSessionStarted) return;
-        Long userId = Session.getInstance().getCurrentUserId();
-        if (userId == null) return;
+        long userId = Session.getInstance().getCurrentUserId();
+        if (userId == CurrentUser.USER_UNAUTHORIZED_ID) return;
         mInterSessionStarted = true;
         Intercom.client().setPreviewPosition(IntercomPreviewPosition.BOTTOM_RIGHT);
         Intercom.client().registerIdentifiedUser(new Registration().withUserId(String.valueOf(userId)));

@@ -10,7 +10,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
-import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
@@ -22,7 +21,6 @@ import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.Objects;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -33,7 +31,7 @@ import rx.subscriptions.Subscriptions;
 
 public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
-    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final boolean DBG = false;
     private static final String TAG = "ListFeedWorkFrgmnt";
 
     private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.ListFeedWorkRetainedFragment.BUNDLE_KEY_FEED_ITEMS";
@@ -98,7 +96,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
                 mTlogDesign = design;
             }
         }
-        if (mTlogDesign == null && mCurrentUser != null) mTlogDesign = mCurrentUser.getDesign();
+        if (mTlogDesign == null) mTlogDesign = mCurrentUser.getDesign();
     }
 
     @Override
@@ -196,7 +194,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
     public void refreshUser() {
         if (DBG && !isUserRefreshEnabled()) throw new IllegalStateException();
         mCurrentUserSubscription.unsubscribe();
-        Observable<CurrentUser> observableCurrentUser = Session.getInstance().getCurrentUser();
+        Observable<CurrentUser> observableCurrentUser = Session.getInstance().reloadCurrentUser();
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -284,9 +282,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         @Override
         protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
             super.onLoadError(isRefresh, entriesRequested, e);
-            if (mListener != null)
-                mListener.notifyError(
-                        UiUtils.getUserErrorText(getResources(), e, R.string.error_append_feed), e);
+            if (mListener != null) mListener.notifyError(ListFeedWorkRetainedFragment.this, e, R.string.error_append_feed);
         }
 
         protected void onFeedIsUnsubscribed(boolean isRefresh) {

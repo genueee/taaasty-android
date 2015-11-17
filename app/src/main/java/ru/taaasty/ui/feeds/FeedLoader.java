@@ -26,7 +26,7 @@ import rx.subscriptions.Subscriptions;
  */
 public abstract class FeedLoader {
 
-    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final boolean DBG = false;
     private static final String TAG = "FeedLoader";
     public static final int ENTRIES_TO_TRIGGER_APPEND = 7;
 

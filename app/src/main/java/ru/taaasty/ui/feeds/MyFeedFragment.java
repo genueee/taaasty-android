@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -29,8 +28,6 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.service.ApiMyFeeds;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
@@ -48,6 +45,8 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         ListFeedWorkRetainedFragment.TargetFragmentInteraction {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
+
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -332,6 +331,12 @@ public class MyFeedFragment extends Fragment implements IRereshable,
                 public void onEntryChanged(EntryChanged event) {
                     addEntry(event.postEntry);
                 }
+
+                @Override
+                public void onVoteError(long entryId, int errResId, Throwable error) {
+                    LikesHelper.showCannotVoteError(getView(), MyFeedFragment.this, REQUEST_CODE_LOGIN,
+                            errResId, error);
+                }
             });
         }
 
@@ -387,7 +392,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
             } else {
-                Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+                LikesHelper.showCannotVoteError(getView(), MyFeedFragment.this, REQUEST_CODE_LOGIN);
             }
         }
 
@@ -438,7 +443,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener {
         void onShowAdditionalMenuClicked();
         void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
         void onSharePostMenuClicked(Entry entry);

@@ -13,6 +13,6 @@
     android:paddingLeft="@dimen/feed_item_padding_left"
     android:paddingRight="@dimen/feed_item_padding_right"
     android:paddingTop="6dp"
-    android:textColor="@color/text_color_feed_item_gray"
+    android:textColor="@color/text_color_feed_item_gray_clickable"
     android:textSize="14sp"
     tools:text="alyonaruban" />

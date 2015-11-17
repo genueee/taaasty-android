@@ -29,16 +29,16 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
+import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
-import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class ConversationsListFragment extends Fragment implements RetainedFragmentCallbacks {
+public class ConversationsListFragment extends FragmentWithWorkFragment<ConversationsListFragment.WorkRetainedFragment> implements RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationsListFrag";
 
@@ -105,9 +105,14 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         }
     }
 
+    @Nullable
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public WorkRetainedFragment getWorkFragment() {
+        return mWorkFragment;
+    }
+
+    @Override
+    public void initWorkFragment() {
         FragmentManager fm = getFragmentManager();
         mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("ConversationListWorkFragment");
         if (mWorkFragment == null) {
@@ -125,13 +130,10 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         if (DBG) Log.v(TAG, this + " onActivityCreated bundle not null: " + (savedInstanceState != null)
                 + " listener not null: " + (mListener != null));
         mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
-        if (mWorkFragment.isResumed() && mAdapter == null) {
-            onWorkFragmentActivityCreated();
-        }
     }
 
     @Override
-    public void onWorkFragmentActivityCreated() {
+    public void onWorkFragmentActivityCreatedSafe() {
         mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList()) {
             public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -158,7 +160,7 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
     }
 
     @Override
-    public void onWorkFragmentResume() {
+    public void onWorkFragmentResumeSafe() {
         mWorkFragment.refreshConversationList();
     }
 
@@ -207,17 +209,19 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         mProgressView.setVisibility(View.INVISIBLE);
     }
 
-    private void setStatusFailure(String error) {
+    private void setStatusFailure(Throwable e, int fallbackResId) {
         mAdapterEmpty.setVisibility(View.INVISIBLE);
         mProgressView.setVisibility(View.INVISIBLE);
-        if (mListener != null) mListener.notifyError(error, null);
+        notifyError(e, fallbackResId);
+    }
+
+    private void notifyError(Throwable e, int fallbackResId) {
+        if (mListener != null) mListener.notifyError(ConversationsListFragment.this, e, fallbackResId);
     }
 
     public static class WorkRetainedFragment extends Fragment {
 
         private static final String BUNDLE_KEY_SUBSCRIPTION_LIST = "ru.taaasty.ui.messages.ConversationsListFragment.WorkRetainedFragment.BUNDLE_KEY_SUBSCRIPTION_LIST";
-
-        private CustomErrorView mListener;
 
         private ApiMessenger mApiMessenger;
 
@@ -226,17 +230,6 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
         private SortedList<Conversation> mConversationList;
 
         private boolean mIsInitialized;
-
-        @Override
-        public void onAttach(Activity activity) {
-            super.onAttach(activity);
-            try {
-                mListener = (CustomErrorView) activity;
-            } catch (ClassCastException e) {
-                throw new ClassCastException(activity.toString()
-                        + " must implement CustomErrorView");
-            }
-        }
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -327,12 +320,6 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             EventBus.getDefault().unregister(this);
         }
 
-        @Override
-        public void onDetach() {
-            super.onDetach();
-            mListener = null;
-        }
-
         public SortedList<Conversation> getConversationList() {
             return mConversationList;
         }
@@ -383,10 +370,8 @@ public class ConversationsListFragment extends Fragment implements RetainedFragm
             @Override
             public void onError(Throwable e) {
                 if (DBG) Log.v(TAG, "onError");
-                if (mListener != null)
                 if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment())
-                        .setStatusFailure(
-                                UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_conversations));
+                        .setStatusFailure(e, R.string.error_loading_conversations);
             }
 
             @Override

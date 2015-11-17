@@ -18,6 +18,9 @@ import ru.taaasty.Constants;
 */
 public class User implements Parcelable {
 
+    /**
+     * Загрушка. Используется, когда инфа о юзере ещё не загружена чтобы что-то показать
+     */
     public static User DUMMY = new User();
 
     public static User ANONYMOUS = new User();
@@ -32,7 +35,7 @@ public class User implements Parcelable {
         ANONYMOUS.mSlug = "anonymous";
         ANONYMOUS.mTlogUrl = "http://taaasty.com/~anonymous";
         ANONYMOUS.mCreateAt = new Date(1202843744);
-        ANONYMOUS.mUpdatedAt = new Date(1406204110);
+        ANONYMOUS.mUserpic = new Userpic();
         ANONYMOUS.mUserpic.originalUrl = "http://taaasty.com/assets/userpic/72/29/4409_original.png";
         ANONYMOUS.mUserpic.largeUrl = "http://taaasty.com/assets/userpic/72/29/4409_large.png";
         ANONYMOUS.mUserpic.thumb64Url = "http://taaasty.com/assets/userpic/72/29/4409_thumb64.png";
@@ -56,7 +59,7 @@ public class User implements Parcelable {
     }
 
     @SerializedName("id")
-    long mId = -1;
+    long mId = CurrentUser.USER_UNAUTHORIZED_ID;
 
     @SerializedName("name")
     String mName;
@@ -79,8 +82,8 @@ public class User implements Parcelable {
     @SerializedName("created_at")
     Date mCreateAt;
 
-    @SerializedName("updated_at")
-    Date mUpdatedAt;
+    // @SerializedName("updated_at")
+    // Date mUpdatedAt; // Постоянно меняется, пока не используем
 
     @SerializedName("email")
     String mEmail;
@@ -150,10 +153,6 @@ public class User implements Parcelable {
         return mCreateAt;
     }
 
-    public Date getUpdatedAt() {
-        return mUpdatedAt;
-    }
-
     public long getTotalEntriesCount() {
         return mTotalEntriesCount;
     }
@@ -185,8 +184,16 @@ public class User implements Parcelable {
         return mDesign;
     }
 
+    // TODO избавиться
     public void setUserpic(Userpic userpic) {
         mUserpic = userpic;
+    }
+
+    /**
+     * @return Пользователь - авторизованный (не гостевая сессия)
+     */
+    public boolean isAuthorized() {
+        return mId != CurrentUser.USER_UNAUTHORIZED_ID;
     }
 
     @Override
@@ -204,7 +211,6 @@ public class User implements Parcelable {
         dest.writeByte(mIsDaylog ? (byte) 1 : (byte) 0);
         dest.writeString(this.mTlogUrl);
         dest.writeLong(mCreateAt != null ? mCreateAt.getTime() : -1);
-        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
         dest.writeString(this.mEmail);
         dest.writeByte(mIsPrivacy ? (byte) 1 : (byte) 0);
         dest.writeByte(mIsFlow ? (byte) 1 : (byte) 0);
@@ -229,8 +235,6 @@ public class User implements Parcelable {
         this.mTlogUrl = in.readString();
         long tmpMCreateAt = in.readLong();
         this.mCreateAt = tmpMCreateAt == -1 ? null : new Date(tmpMCreateAt);
-        long tmpMUpdatedAt = in.readLong();
-        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
         this.mEmail = in.readString();
         this.mIsPrivacy = in.readByte() != 0;
         this.mIsFlow = in.readByte() != 0;
@@ -263,7 +267,6 @@ public class User implements Parcelable {
                 ", mIsDaylog=" + mIsDaylog +
                 ", mTlogUrl='" + mTlogUrl + '\'' +
                 ", mCreateAt=" + mCreateAt +
-                ", mUpdatedAt=" + mUpdatedAt +
                 ", mEmail='" + mEmail + '\'' +
                 ", mIsPrivacy=" + mIsPrivacy +
                 ", mIsFlow=" + mIsFlow +
@@ -284,6 +287,7 @@ public class User implements Parcelable {
         User user = (User) o;
 
         if (mId != user.mId) return false;
+
         if (mIsFemale != user.mIsFemale) return false;
         if (mIsDaylog != user.mIsDaylog) return false;
         if (mIsPrivacy != user.mIsPrivacy) return false;
@@ -297,8 +301,6 @@ public class User implements Parcelable {
         if (mTlogUrl != null ? !mTlogUrl.equals(user.mTlogUrl) : user.mTlogUrl != null)
             return false;
         if (mCreateAt != null ? !mCreateAt.equals(user.mCreateAt) : user.mCreateAt != null)
-            return false;
-        if (mUpdatedAt != null ? !mUpdatedAt.equals(user.mUpdatedAt) : user.mUpdatedAt != null)
             return false;
         if (mEmail != null ? !mEmail.equals(user.mEmail) : user.mEmail != null) return false;
         if (mUserpic != null ? !mUserpic.equals(user.mUserpic) : user.mUserpic != null)
@@ -319,7 +321,6 @@ public class User implements Parcelable {
         result = 31 * result + (mIsDaylog ? 1 : 0);
         result = 31 * result + (mTlogUrl != null ? mTlogUrl.hashCode() : 0);
         result = 31 * result + (mCreateAt != null ? mCreateAt.hashCode() : 0);
-        result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
         result = 31 * result + (mEmail != null ? mEmail.hashCode() : 0);
         result = 31 * result + (mIsPrivacy ? 1 : 0);
         result = 31 * result + (mIsFlow ? 1 : 0);

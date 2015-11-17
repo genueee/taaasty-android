@@ -43,7 +43,7 @@ public class UiUtils {
     }
 
     public static String capitalize(@Nullable String text) {
-        if (text == null) return "";
+        if (TextUtils.isEmpty(text)) return "";
         return text.substring(0,1).toUpperCase(Locale.getDefault()) + text.substring(1);
     }
 

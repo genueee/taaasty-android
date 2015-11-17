@@ -121,7 +121,7 @@ public final class NetworkUtils {
             mOkHttpClient.setCache(cache);
         }
         //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
-        mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
+        // mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
     }
 
     private void initLruMemoryCache(Context context) {

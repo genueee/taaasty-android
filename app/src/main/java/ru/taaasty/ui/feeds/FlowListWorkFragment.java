@@ -14,11 +14,11 @@ import java.lang.annotation.RetentionPolicy;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
+import ru.taaasty.Session;
 import ru.taaasty.adapters.FlowListManaged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.service.ApiFlows;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -118,6 +118,9 @@ public class FlowListWorkFragment extends Fragment {
     public void onResume() {
         super.onResume();
         ((RetainedFragmentCallbacks)getTargetFragment()).onWorkFragmentResume();
+        if (!Session.getInstance().isAuthorized() && (mSelectedTab == FLOwS_TAB_MY)) {
+            onFlowTabSelected(FLOWS_TAB_ALL);
+        }
     }
 
     @Override
@@ -315,8 +318,7 @@ public class FlowListWorkFragment extends Fragment {
             public void onError(Throwable e) {
                 if (DBG) Log.e(TAG, "onError", e);
                 onNewListPendingIndicatorStatus(false);
-                getInteractionListener().onLoadError(
-                        UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_flows), e);
+                getInteractionListener().onLoadError(e, R.string.error_loading_flows);
             }
 
             @Override
@@ -349,7 +351,7 @@ public class FlowListWorkFragment extends Fragment {
         void onAdapterDataInserted(int listLocation, int count);
         void onAdapterDataItemMoved(int listLocation, int count);
         void onAdapterDataRemoved(int listLocation, int count);
-        void onLoadError(CharSequence error, @Nullable Throwable exception);
+        void onLoadError(@Nullable Throwable exception, int fallbackResId);
     }
 
     private static final TargetFragmentInteraction DUMMY_INTERACTION = new TargetFragmentInteraction() {
@@ -359,7 +361,7 @@ public class FlowListWorkFragment extends Fragment {
         @Override public void onAdapterDataInserted(int listLocation, int count) {}
         @Override public void onAdapterDataItemMoved(int listLocation, int count) {}
         @Override public void onAdapterDataRemoved(int listLocation, int count) {}
-        @Override public void onLoadError(CharSequence error, @Nullable Throwable exception) {}
+        @Override public void onLoadError(@Nullable Throwable exception, int fallbackResId) {}
         @Override public void onWorkFragmentActivityCreated() {}
         @Override public void onWorkFragmentResume() {}
     };

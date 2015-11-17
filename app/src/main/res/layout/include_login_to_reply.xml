@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/feed_white_text"
+    android:visibility="gone"
+    tools:visibility="visible"
+    android:minHeight="48dp"
+    android:theme="@style/AppTheme"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/login_to_reply_text"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:background="@null"
+        android:textSize="14sp"
+        android:layout_marginLeft="@dimen/post_item_comments_padding_left"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginRight="4dp"
+        android:layout_gravity="center_vertical"
+        android:text="@string/login_or_register_to_add_comment"
+        android:hint="@string/add_comment_hint">
+        <requestFocus/>
+    </TextView>
+
+    <TextView
+        android:id="@+id/login_button"
+        style="@style/GreenButton.Small"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:minHeight="38dp"
+        android:layout_marginRight="4dp"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:minWidth="48dp"
+        android:text="@string/action_sign_in"
+        android:textAllCaps="false"
+        android:layout_gravity="center_vertical"
+        android:textSize="16sp" />
+
+</LinearLayout>

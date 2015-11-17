@@ -40,6 +40,30 @@ import java.util.Date;
  */
 public class CurrentUser extends User implements android.os.Parcelable {
 
+    public static final int USER_UNAUTHORIZED_ID = -1;
+
+    public static CurrentUser UNAUTHORIZED = new CurrentUser();
+
+    static {
+        UNAUTHORIZED.mId = -1;
+        UNAUTHORIZED.mTitle = "";
+        UNAUTHORIZED.mName = "";
+        UNAUTHORIZED.mSlug = "";
+        UNAUTHORIZED.mTlogUrl = "";
+        UNAUTHORIZED.mCreateAt = new Date(1167609600);
+        UNAUTHORIZED.mUserpic = new Userpic();
+        UNAUTHORIZED.mUserpic.originalUrl = "";
+        UNAUTHORIZED.mUserpic.largeUrl = "";
+        UNAUTHORIZED.mUserpic.thumb64Url = "";
+        UNAUTHORIZED.mUserpic.defaultColors.background = "#00000000";
+        UNAUTHORIZED.mUserpic.defaultColors.name = "#ffffff";
+        UNAUTHORIZED.mIsConfirmed = false;
+        UNAUTHORIZED.mRelationshipsSummary = new RelationshipsSummary();
+        UNAUTHORIZED.mDesign = TlogDesign.createLightTheme(TlogDesign.DUMMY,
+                "http://taaasty.com/images/hero-cover.jpg", null);
+    }
+
+
     @SerializedName("is_confirmed")
     boolean mIsConfirmed;
 
@@ -54,49 +78,6 @@ public class CurrentUser extends User implements android.os.Parcelable {
 
     public ApiKey getApiKey() {
         return mApiKey;
-    }
-
-    public static class ApiKey implements android.os.Parcelable {
-
-        public static ApiKey DUMMY = new ApiKey();
-
-        public String accessToken = "";
-
-        public long userId;
-
-        private Date expiredAt;
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeString(this.accessToken);
-            dest.writeLong(this.userId);
-            dest.writeLong(expiredAt != null ? expiredAt.getTime() : -1);
-        }
-
-        public ApiKey() {
-        }
-
-        private ApiKey(Parcel in) {
-            this.accessToken = in.readString();
-            this.userId = in.readLong();
-            long tmpExpiredAt = in.readLong();
-            this.expiredAt = tmpExpiredAt == -1 ? null : new Date(tmpExpiredAt);
-        }
-
-        public static final Creator<ApiKey> CREATOR = new Creator<ApiKey>() {
-            public ApiKey createFromParcel(Parcel source) {
-                return new ApiKey(source);
-            }
-
-            public ApiKey[] newArray(int size) {
-                return new ApiKey[size];
-            }
-        };
     }
 
     public long getId() {
@@ -125,14 +106,6 @@ public class CurrentUser extends User implements android.os.Parcelable {
 
     public String getTlogUrl() {
         return mTlogUrl;
-    }
-
-    public Date getmCreateAt() {
-        return mCreateAt;
-    }
-
-    public Date getUpdatedAt() {
-        return mUpdatedAt;
     }
 
     public String getEmail() {

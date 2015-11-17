@@ -28,7 +28,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.utils.UiUtils;
+import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -47,6 +47,8 @@ import rx.subscriptions.Subscriptions;
 public class SettingsFragment extends PreferenceFragmentCompat {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ProfileFragment";
+
+    public static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -184,7 +186,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             mUserSubscription.unsubscribe();
             mStopRefreshingAction.call();
         }
-        Observable<CurrentUser> observableCurrentUser = Session.getInstance().getCurrentUser();
+        Observable<CurrentUser> observableCurrentUser = Session.getInstance().reloadCurrentUser();
 
         mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
@@ -385,8 +387,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         public void onError(Throwable e) {
             if (DBG) Log.e(TAG, "refresh author error", e);
-            if (mListener != null) mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_saving_settings), e);
+            MessageHelper.showError(SettingsFragment.this, e, R.string.error_saving_settings, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -398,10 +399,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         }
     };
 
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener {
         void onErrorRefreshUser(Throwable e);
         void onCurrentUserLoaded(CurrentUser user);
-
         void onNestedPreferenceSelected(String key);
     }
 

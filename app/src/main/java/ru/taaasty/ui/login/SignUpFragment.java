@@ -10,6 +10,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.InputFilter;
 import android.text.LoginFilter;
 import android.text.TextUtils;
@@ -34,7 +35,6 @@ import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
@@ -335,10 +335,11 @@ public class SignUpFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onSignUpSuccess();
-        public void onSignUpBackPressed();
-        public void onIHaveRegisteredPressed();
+    public interface OnFragmentInteractionListener {
+        void onSignUpSuccess();
+        void onSignUpBackPressed();
+        void onIHaveRegisteredPressed();
+        void notifyError(CharSequence error, @Nullable Throwable exception);
     }
 
 }

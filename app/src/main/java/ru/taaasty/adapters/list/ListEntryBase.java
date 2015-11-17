@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,7 +56,13 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     public void applyFeedStyle(TlogDesign design) {
         int textColor = design.getFeedTextColor(getResources());
-        if (mShowUserAvatar) mAvatarAuthor.setTextColor(textColor);
+        if (mShowUserAvatar) {
+            if (design.isLightTheme()) {
+                mAvatarAuthor.setTextColor(ContextCompat.getColorStateList(itemView.getContext(), R.color.text_color_feed_white_clickable));
+            } else {
+                mAvatarAuthor.setTextColor(textColor);
+            }
+        }
         mEntryActionBar.setTlogDesign(design);
     }
 

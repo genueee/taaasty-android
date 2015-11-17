@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 import ru.taaasty.ActivityBase;
@@ -24,6 +23,9 @@ public class FollowingFollowersActivity extends ActivityBase implements
         RequestsFragment.OnFragmentInteractionListener  {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FollowingFollowersAct";
+
+    private static final int REQUEST_CODE_LOGIN = 1;
+
     public static final String ARG_USER = "ru.taaasty.ui.relationships.FollowingFollowersActivity.user";
 
     public static final String ARG_KEY_SHOW_SECTION = "ru.taaasty.ui.relationships.FollowingFollowersActivity.ARG_KEY_SHOW_SECTION";
@@ -84,16 +86,6 @@ public class FollowingFollowersActivity extends ActivityBase implements
     }
 
     @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
-    }
-
-    @Override
     public void onRelationshipClicked(View view, Relationship relationship) {
         long userId;
         switch (viewPagerPosition2Section(mViewPager.getCurrentItem(), mUser.isPrivacy())) {
@@ -144,6 +136,11 @@ public class FollowingFollowersActivity extends ActivityBase implements
             case SECTION_FRIENDS: return showRequests ? 3 : 2;
             default: throw new IllegalStateException();
         }
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.activityRoot,  REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 
     /**

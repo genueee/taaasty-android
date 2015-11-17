@@ -15,15 +15,15 @@ public class UserpicUploadStatus {
 
     public boolean successfully = true;
 
-    public Throwable exception;
-
     public long userId;
 
     public Uri imageUri;
 
     public Userpic newUserpic;
 
-    public String error = "";
+    public Throwable exception;
+
+    public int errorResId;
 
     public UserpicUploadStatus() {
     }
@@ -38,13 +38,13 @@ public class UserpicUploadStatus {
         return status;
     }
 
-    public static UserpicUploadStatus createUploadFinishedWithError(long userId, Uri imageUri, String error, Throwable ex) {
+    public static UserpicUploadStatus createUploadFinishedWithError(long userId, Uri imageUri, int errorResId, Throwable ex) {
         UserpicUploadStatus status = new UserpicUploadStatus();
         status.userId = userId;
         status.imageUri = imageUri;
         status.status = STATUS_UPLOAD_FINISHED;
         status.successfully = false;
-        status.error = error;
+        status.errorResId = errorResId;
         status.exception = ex;
         return status;
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +37,6 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.ui.CustomErrorView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -235,8 +235,9 @@ public class SignViaFacebookFragment extends DialogFragment {
                 .subscribe(new SignupObserver());
     }
 
-    public interface OnFragmentInteractionListener extends CustomErrorView {
+    public interface OnFragmentInteractionListener {
         void onSignViaFacebookSuccess(boolean newUserCreated);
+        void notifyError(CharSequence error, @Nullable Throwable exception);
     }
 
     final class AuthObserver implements Observer<CurrentUser> {

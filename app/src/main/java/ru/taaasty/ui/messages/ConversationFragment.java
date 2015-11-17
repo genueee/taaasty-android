@@ -39,11 +39,10 @@ import ru.taaasty.rest.model.ConversationMessages;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ListScrollController;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -58,6 +57,8 @@ public class ConversationFragment extends Fragment {
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.messages.ConversationFragment.conversation";
 
     private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.messages.ConversationFragment.conversation_id";
+
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
@@ -360,9 +361,7 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_post_comment),
-                    e);
+            MessageHelper.showError(ConversationFragment.this, e, R.string.error_post_comment, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -673,9 +672,7 @@ public class ConversationFragment extends Fragment {
         }
 
         protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
-            if (DBG) Log.e(TAG, "onError", e);
-            if (mListener != null) mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_append_feed), e);
+            MessageHelper.showError(ConversationFragment.this, e, R.string.error_append_feed, REQUEST_CODE_LOGIN);
         }
 
         protected void onLoadNext(boolean isRefresh, int entriesRequested, ConversationMessages messages) {
@@ -740,6 +737,6 @@ public class ConversationFragment extends Fragment {
 
     }
 
-    public interface OnFragmentInteractionListener extends CustomErrorView, ListScrollController.OnListScrollPositionListener  {
+    public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener  {
     }
 }

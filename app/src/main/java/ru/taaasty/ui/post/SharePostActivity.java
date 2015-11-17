@@ -101,7 +101,7 @@ public class SharePostActivity extends ActivityBase {
         boolean isMyEntry = mEntry.isMyEntry();
 
         GridLayout container = (GridLayout)findViewById(R.id.bottom_bar_content);
-        if (isMyEntry) {
+        if (isMyEntry || !Session.getInstance().isAuthorized()) {
             container.removeView(findViewById(R.id.ic_add_post_to_favorites));
         } else {
             findViewById(R.id.ic_add_post_to_favorites).setVisibility(View.VISIBLE);

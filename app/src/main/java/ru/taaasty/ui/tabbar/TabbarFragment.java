@@ -22,6 +22,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.events.MessagingStatusReceived;
 import ru.taaasty.rest.model.MessagingStatus;
 import ru.taaasty.ui.OnBackPressedListener;
@@ -126,20 +127,33 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
             }
         });
 
+
         return view;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        Intent intent = new Intent(getActivity(), PusherService.class);
-        getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
-        refreshActivated();
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onResume() {
+        super.onResume();
+        if (getView() != null) {
+            if (!Session.getInstance().isAuthorized()) {
+                getView().setVisibility(View.GONE);
+            } else {
+                getView().setVisibility(View.VISIBLE);
+                Intent intent = new Intent(getActivity(), PusherService.class);
+                getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
+                refreshActivated();
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
         if (mBound) {
             getActivity().unbindService(mPusherServiceConnection);
             mBound = false;
@@ -215,6 +229,7 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
 
     public void showFab(boolean animate) {
         if (mFabHelper == null) return;
+        if (!Session.getInstance().isAuthorized()) return;
         mFabHelper.showFab(animate);
     }
 
@@ -226,8 +241,6 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
     public FabHelper getFab() {
         return mFabHelper;
     }
-
-    private final FabMenuLayout.OnItemClickListener clickListener = new FabHelper.FabMenuDefaultListener(getActivity());
 
     private void refreshNotificationIndicator(boolean smoothly) {
         if (DBG) Log.v(TAG, "refreshNotificationIndicator");

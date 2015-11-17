@@ -67,15 +67,13 @@
                 android:layout_height="wrap_content">
 
                 <Button
+                    style="@style/GreenButton"
                     android:id="@+id/sign_up_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
-                    android:background="@drawable/btn_green_background"
                     android:minHeight="50dp"
-                    android:text="@string/action_sign_up"
-                    android:textColor="@android:color/white"
-                    android:textStyle="bold" />
+                    android:text="@string/action_sign_up"/>
 
                 <ProgressBar
                     android:id="@+id/login_progress"

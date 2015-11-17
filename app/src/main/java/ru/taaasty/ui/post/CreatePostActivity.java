@@ -49,6 +49,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED = Activity.RESULT_FIRST_USER;
     public static final int CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_HIDDEN = Activity.RESULT_FIRST_USER + 1;
 
+    private static final int REQUEST_CODE_LOGIN = Activity.RESULT_FIRST_USER + 2;
+
     private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.CreatePostActivity.ARG_TLOG_ID";
     private static final String ARG_PAGE = "ru.taaasty.ui.post.CreatePostActivity.ARG_PAGE";
     private static final String KEY_TLOG = "TLOG";
@@ -251,16 +253,8 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         } else {
             // Сообщаем об ошибке
             setUploadingStatus(false);
-            notifyError(status.error, status.exception);
-        }
-    }
-
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
+            MessageHelper.showError(
+                    this, R.id.container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
         }
     }
 

@@ -10,6 +10,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -32,7 +33,6 @@ import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
@@ -316,11 +316,12 @@ public class SignViaEmailFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onSignSuccess();
-        public void onSignViaEmailBackPressed();
-        public void onIForgotPasswordPressed();
-        public void onIHaveNotRegisteredPressed();
+    public interface OnFragmentInteractionListener {
+        void onSignSuccess();
+        void onSignViaEmailBackPressed();
+        void onIForgotPasswordPressed();
+        void onIHaveNotRegisteredPressed();
+        void notifyError(CharSequence error, @Nullable Throwable exception);
     }
 
 }

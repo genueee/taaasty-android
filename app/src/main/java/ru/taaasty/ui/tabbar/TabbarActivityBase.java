@@ -1,9 +1,7 @@
 package ru.taaasty.ui.tabbar;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 
@@ -13,28 +11,18 @@ import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
-import ru.taaasty.utils.MessageHelper;
 
-public abstract class TabbarActivityBase extends ActivityBase implements TabbarFragment.onTabbarButtonListener, CustomErrorView {
+public abstract class TabbarActivityBase extends ActivityBase implements TabbarFragment.onTabbarButtonListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TabbarActivityBase";
 
+    public static final int REQUEST_CODE_LOGIN = 1;
+
     Session mSession = Session.getInstance();
     TabbarFragment mTabbar;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (mSession.getCurrentUserToken() == null) {
-            switchToLoginForm();
-            return;
-        }
-    }
 
     @Override
     public void setContentView(@LayoutRes int layoutResID) {
@@ -50,9 +38,7 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     protected void onStart() {
         super.onStart();
         initTabbar();
-        if (Session.getInstance().getCurrentUserToken() != null) {
-            PusherService.startPusher(this);
-        }
+        if (Session.getInstance().isAuthorized()) PusherService.startPusher(this);
     }
 
     @Override
@@ -107,16 +93,6 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
     @Override
     public boolean onFabMenuItemClicked(View v) {
         return false;
-    }
-
-    @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
     }
 
     void onCreatePostActivityClosed(int requestCode, int resultCode, Intent data) {

@@ -63,7 +63,6 @@
         app:contentInsetLeft="0dp"
         app:contentInsetRight="8dp"
         app:navigationContentDescription="@string/action_back_content_description"
-        android:fitsSystemWindows="true"
         app:navigationIcon="@drawable/ic_back_white"
         app:theme="@style/ToolbarThemeDark"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
@@ -72,6 +71,20 @@
             layout="@layout/ab_custom_tlog"/>
 
     </android.support.v7.widget.Toolbar>
+
+    <Button
+        android:id="@+id/login_button"
+        style="@style/GreenButton"
+        android:text="@string/action_sign_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginRight="12dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="4dp"
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
 
     <include
         android:id="@+id/fab_menu"

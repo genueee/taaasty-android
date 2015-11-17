@@ -15,15 +15,15 @@ public class TlogBackgroundUploadStatus {
 
     public boolean successfully = true;
 
-    public Throwable exception;
-
     public long userId;
 
     public Uri imageUri;
 
     public TlogDesign design;
 
-    public String error = "";
+    public Throwable exception;
+
+    public int errorFallbackResId;
 
     public TlogBackgroundUploadStatus() {
     }
@@ -38,13 +38,13 @@ public class TlogBackgroundUploadStatus {
         return status;
     }
 
-    public static TlogBackgroundUploadStatus createUploadFinishedWithError(long userId, Uri imageUri, String error, Throwable ex) {
+    public static TlogBackgroundUploadStatus createUploadFinishedWithError(long userId, Uri imageUri, int errorFallbackResId, Throwable ex) {
         TlogBackgroundUploadStatus status = new TlogBackgroundUploadStatus();
         status.userId = userId;
         status.imageUri = imageUri;
         status.status = STATUS_UPLOAD_FINISHED;
         status.successfully = false;
-        status.error = error;
+        status.errorFallbackResId = errorFallbackResId;
         status.exception = ex;
         return status;
     }

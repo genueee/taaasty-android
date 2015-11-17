@@ -58,7 +58,6 @@ import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
-import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -424,8 +423,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
 
         @Override
         public void onError(Throwable e) {
-            if (mListener != null) mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
+            if (mListener != null) mListener.notifyError(NotificationListFragment.this, e, R.string.error_follow);
             if (mAdapter != null) mAdapter.onNotificationFollowUnfollowStopped(notificationId);
         }
 
@@ -773,8 +771,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                     if (DBG) Log.e(TAG, "onError", e);
                     onNewListPendingIndicatorStatus(false);
                     if (mListener != null)
-                        mListener.notifyError(
-                                UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_notifications), e);
+                        mListener.notifyError(WorkRetainedFragment.this, e, R.string.error_loading_notifications);
                 }
 
                 @Override

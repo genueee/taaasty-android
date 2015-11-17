@@ -22,7 +22,6 @@ import java.util.Map;
 
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifDrawableBuilder;
-import ru.taaasty.BuildConfig;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Subscriber;
@@ -36,7 +35,7 @@ import rx.schedulers.Schedulers;
  */
 public class GifLoaderHelper {
 
-    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final boolean DBG = false;
     private static final String TAG = "GifLoaderHelper";
 
     private final Map<String, Observable<ProgressStatus>> mLoadingMap = new HashMap<>(3);

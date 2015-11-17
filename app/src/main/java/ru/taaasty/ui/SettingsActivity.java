@@ -2,10 +2,8 @@ package ru.taaasty.ui;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -16,7 +14,6 @@ import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.CurrentUser;
-import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
 
 /**
@@ -74,12 +71,6 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
                 return super.onOptionsItemSelected(item);
         }
         return true;
-    }
-
-    @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        MessageHelper.showError(this, error, exception);
     }
 
     @Override

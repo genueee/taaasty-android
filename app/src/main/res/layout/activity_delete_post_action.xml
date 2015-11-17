@@ -27,16 +27,15 @@
         android:layout_centerInParent="true"
         android:layout_marginTop="24dp">
 
-        <TextView
+        <Button
+            style="@style/GreenButton"
             android:id="@+id/delete_comment_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_green_background"
             android:gravity="center"
             android:minHeight="50dp"
             android:padding="16dp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
+            android:textAllCaps="false"
             tools:text="@string/delete_comment_button" />
 
         <ProgressBar

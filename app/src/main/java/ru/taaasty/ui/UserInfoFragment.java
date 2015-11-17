@@ -37,6 +37,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
@@ -58,6 +59,8 @@ public class UserInfoFragment extends Fragment {
     private static final String BUNDLE_ARG_USER = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_USER";
     private static final String BUNDLE_ARG_DESIGN = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_DESIGN";
     private static final String BUNDLE_ARG_RELATIONSHIPS_SUMMARY = "ru.taaasty.ui.UserInfoFragment.BUNDLE_ARG_RELATIONSHIPS_SUMMARY";
+
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private long mUserId;
 
@@ -269,7 +272,7 @@ public class UserInfoFragment extends Fragment {
         } else {
             mRefreshingUserpic = false;
             if (!status.successfully) {
-                if (mListener != null) mListener.notifyError(status.error, status.exception);
+                MessageHelper.showError(UserInfoFragment.this, status.exception, status.errorResId, REQUEST_CODE_LOGIN);
                 return;
             }
             if (mUserId == status.userId) {
@@ -306,7 +309,7 @@ public class UserInfoFragment extends Fragment {
             // Не вызываем refreshProgressVisibility - иначе оно спрячет прогрессбар, а нам еще
             // новый бэкграунд загрузить надо
             if (!status.successfully) {
-                if (mListener != null) mListener.notifyError(status.error, status.exception);
+                MessageHelper.showError(UserInfoFragment.this, status.exception, status.errorFallbackResId, REQUEST_CODE_LOGIN);
                 return;
             }
             if (mUserId == status.userId) {
@@ -508,8 +511,7 @@ public class UserInfoFragment extends Fragment {
                 public void onBitmapFailed(Drawable errorDrawable) {
                     super.onBitmapFailed(errorDrawable);
                     if (DBG) Log.v(TAG, "onBitmapFailed");
-                    if (mListener != null)
-                        mListener.notifyError(getString(R.string.error_loading_background), null);
+                    MessageHelper.showError(UserInfoFragment.this, null, R.string.error_loading_background, REQUEST_CODE_LOGIN);
                     refreshProgressVisibility();
                 }
             };
@@ -591,8 +593,7 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            if (mListener != null) mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_create_conversation), e);
+            MessageHelper.showError(UserInfoFragment.this, e, R.string.error_create_conversation, REQUEST_CODE_LOGIN);
             setupSubscribeButton();
         }
 
@@ -601,7 +602,6 @@ public class UserInfoFragment extends Fragment {
             if (mListener != null) mListener.onInitiateConversationClicked(conversation);
         }
     };
-
 
     private final Observer<Relationship> mFollowObserver = new Observer<Relationship>() {
         @Override
@@ -612,8 +612,7 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
+            MessageHelper.showError(UserInfoFragment.this, e, R.string.error_follow, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -631,8 +630,7 @@ public class UserInfoFragment extends Fragment {
 
         @Override
         public void onError(Throwable e) {
-            mListener.notifyError(
-                    UiUtils.getUserErrorText(getResources(), e, R.string.error_loading_user), e);
+            MessageHelper.showError(UserInfoFragment.this, e, R.string.error_loading_user, REQUEST_CODE_LOGIN);
         }
 
         @Override
@@ -683,11 +681,11 @@ public class UserInfoFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onEntriesCountClicked(View view);
-        public void onSelectBackgroundClicked();
-        public void onUserAvatarClicked(View view);
-        public void onInitiateConversationClicked(Conversation conversation);
+    public interface OnFragmentInteractionListener {
+        void onEntriesCountClicked(View view);
+        void onSelectBackgroundClicked();
+        void onUserAvatarClicked(View view);
+        void onInitiateConversationClicked(Conversation conversation);
     }
 
 }

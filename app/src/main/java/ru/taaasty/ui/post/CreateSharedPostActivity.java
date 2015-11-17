@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.DialogFragment;
@@ -39,6 +38,7 @@ public class CreateSharedPostActivity extends ActivityBase implements
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreateShrdPostAct";
+    private static final int REQUEST_CODE_LOGIN = 1;
 
     private ImageView mCreatePostButton;
 
@@ -137,16 +137,8 @@ public class CreateSharedPostActivity extends ActivityBase implements
         } else {
             // Сообщаем об ошибке
             setUploadingStatus(false);
-            notifyError(status.error, status.exception);
-        }
-    }
-
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
+            MessageHelper.showError(this, R.id.container, REQUEST_CODE_LOGIN, status.exception,
+                    status.errorFallbackResId);
         }
     }
 
@@ -155,7 +147,6 @@ public class CreateSharedPostActivity extends ActivityBase implements
         progress.setVisibility(uploading ? View.VISIBLE : View.GONE);
         mCreatePostButton.setEnabled(!uploading);
     }
-
 
     @Override
     public void onValidationStatusChanged(boolean postValid) {

@@ -1,12 +1,14 @@
 package ru.taaasty.ui.tabbar;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.ui.messages.NotificationListFragment;
+import ru.taaasty.utils.MessageHelper;
 
 public class NotificationsActivity extends TabbarActivityBase implements
         NotificationListFragment.OnFragmentInteractionListener
@@ -58,5 +60,10 @@ public class NotificationsActivity extends TabbarActivityBase implements
 
     @Override
     void onCurrentTabButtonClicked() {
+    }
+
+    @Override
+    public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
+        MessageHelper.showError(this, R.id.main_container,  REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
 }

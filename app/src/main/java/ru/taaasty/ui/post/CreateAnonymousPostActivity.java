@@ -29,6 +29,8 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreateAnonmusPostAct";
 
+    private static final int REQUEST_CODE_LOGIN = 1;
+
     private ImageView mCreatePostButton;
 
     public static void startActivity(Context context, View animateFrom) {
@@ -102,17 +104,13 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         } else {
             // Сообщаем об ошибке
             setUploadingStatus(false);
-            notifyError(status.error, status.exception);
+            MessageHelper.showError(
+                    this, R.id.container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
         }
     }
 
     public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
-        if (DBG) {
-            MessageHelper.showError(this, error + " " + (exception == null ? "" : exception.getLocalizedMessage()), exception);
-        } else {
-            MessageHelper.showError(this, error, exception);
-        }
+
     }
 
     private void setUploadingStatus(boolean uploading) {

@@ -8,6 +8,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,8 +26,6 @@ import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.ui.CustomErrorView;
-import ru.taaasty.utils.UiUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
@@ -176,8 +175,7 @@ public class RecoverPasswordFragment extends Fragment {
                         @Override
                         public void onError(Throwable e) {
                             if (DBG) Log.e(TAG, "onError", e);
-                            if (mListener != null) mListener.notifyError(
-                                    UiUtils.getUserErrorText(getResources(), e, R.string.error_invalid_email_or_password), e);
+                            if (mListener != null) mListener.notifyError(getText(R.string.error_invalid_email_or_password), e);
                             mEmailView.requestFocus();
                         }
 
@@ -244,9 +242,10 @@ public class RecoverPasswordFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        public void onForgotPasswordRequestSent();
-        public void onForgotPasswordBackPressed();
+    public interface OnFragmentInteractionListener {
+        void onForgotPasswordRequestSent();
+        void onForgotPasswordBackPressed();
+        void notifyError(CharSequence error, @Nullable Throwable exception);
     }
 
 }

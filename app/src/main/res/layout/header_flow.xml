@@ -73,19 +73,15 @@
 
                 <TextView
                     android:id="@+id/header_flow_unsubscribe"
-                    style="@style/LoginButton"
+                    style="@style/GreenButton.Small"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginRight="4dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/btn_green_background"
                     android:minHeight="32dp"
                     android:text="@string/you_have_subscribed_button"
                     android:textSize="12sp"
                     android:visibility="invisible"
+                    tools:visibility="visible"
                     />
 
                 <ProgressBar
@@ -100,15 +96,10 @@
 
             <TextView
                 android:id="@+id/create_flow_post"
-                style="@style/LoginButton"
+                style="@style/GreenButton.Small"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="4dp"
-                android:layout_marginRight="4dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/btn_green_background"
                 android:minHeight="32dp"
                 android:text="@string/write_to_flow"
                 android:textSize="12sp"

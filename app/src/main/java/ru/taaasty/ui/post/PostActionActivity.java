@@ -4,7 +4,6 @@ package ru.taaasty.ui.post;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
@@ -30,13 +29,13 @@ import ru.taaasty.events.EntryChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiEntries;
-import ru.taaasty.ui.CustomErrorView;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class PostActionActivity extends ActivityBase implements CustomErrorView {
+public class PostActionActivity extends ActivityBase {
 
     public static final String ARG_ENTRY = "ru.taaasty.ui.post.PostActionActivity.entry";
 
@@ -66,11 +65,6 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
             Observable<Object> observable = createAddToFavoritesObservable();
             observable.observeOn(AndroidSchedulers.mainThread()).subscribe(mObserver);
         }
-    }
-
-    @Override
-    public void notifyError(CharSequence error, @Nullable Throwable exception) {
-        if (exception != null) Log.e(TAG, error.toString(), exception);
     }
 
     @Override
@@ -178,9 +172,9 @@ public class PostActionActivity extends ActivityBase implements CustomErrorView 
 
         @Override
         public void onError(Throwable e) {
-            Toast.makeText(PostActionActivity.this,
+            MessageHelper.showError(PostActionActivity.this,
                     UiUtils.getUserErrorText(getResources(), e, R.string.adding_to_favourites_fail),
-                    Toast.LENGTH_LONG).show();
+                    e);
             finish();
         }
 

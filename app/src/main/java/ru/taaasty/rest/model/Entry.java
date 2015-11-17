@@ -388,8 +388,8 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     public boolean isMyEntry() {
-        Long me = Session.getInstance().getCurrentUserId();
-        return me != null && (mAuthor != null) && (me == mAuthor.getId());
+        long me = Session.getInstance().getCurrentUserId();
+        return me != CurrentUser.USER_UNAUTHORIZED_ID && (mAuthor != null) && (me == mAuthor.getId());
     }
 
     public boolean canEdit() {

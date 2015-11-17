@@ -1,17 +1,23 @@
 package ru.taaasty.utils;
 
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.support.v4.util.LongSparseArray;
 import android.util.Log;
+import android.view.View;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
+import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Rating;
 import ru.taaasty.rest.service.ApiEntries;
+import ru.taaasty.ui.login.LoginActivity;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -26,6 +32,40 @@ public class LikesHelper {
     private final LongSparseArray<Subscription> mSubscriptions;
 
     private static volatile LikesHelper sInstance;
+
+    public static void showCannotVoteError(final View rootView,
+                                           final Fragment fragment,
+                                           final int requestCode,
+                                           int errResId,
+                                           Throwable exception
+                                           ) {
+        if (!fragment.isResumed()) return;
+        if (fragment.getContext() == null) return;
+        if (exception instanceof ApiErrorException
+                && (((ApiErrorException) exception)).isErrorAuthorizationRequired()
+                && !Session.getInstance().isAuthorized()
+                ) {
+            LikesHelper.showCannotVoteError(rootView, fragment, requestCode);
+        } else {
+            MessageHelper.showError(fragment.getActivity(), rootView.getContext().getText(errResId), exception);
+        }
+    }
+
+    public static void showCannotVoteError(final View rootView, final Fragment fragment, final int requestCode) {
+        if (!fragment.isResumed()) return;
+        if (Session.getInstance().isAuthorized()) {
+            Snackbar.make(rootView,  R.string.user_can_not_post, Snackbar.LENGTH_LONG).show();
+        } else {
+            Snackbar.make(rootView, R.string.unauthorized_user_can_not_vote, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.action_sign_up, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            LoginActivity.startActivityFromFragment(rootView.getContext(), fragment, requestCode, v);
+                        }
+                    })
+                    .show();
+        }
+    }
 
     public static LikesHelper getInstance() {
         if (sInstance == null) {
@@ -44,6 +84,7 @@ public class LikesHelper {
     public boolean isRatingInUpdate(long entryId) {
         return mSubscriptions.get(entryId) != null;
     }
+
 
     /**
      * Лайкаем, либо снимаем лайк, в зависимости от статуса entry.rating

@@ -14,11 +14,11 @@ public class EntryUploadStatus {
 
     public boolean successfully = true;
 
-    public Throwable exception;
-
     public PostForm.PostFormHtml entry;
 
-    public String error = "";
+    public Throwable exception;
+
+    public int errorFallbackResId;
 
     public EntryUploadStatus() {
     }
@@ -31,13 +31,13 @@ public class EntryUploadStatus {
         return status;
     }
 
-    public static EntryUploadStatus createPostFinishedWithError(PostForm.PostFormHtml entry, String error, Throwable ex) {
+    public static EntryUploadStatus createPostFinishedWithError(PostForm.PostFormHtml entry, Throwable ex, int errorFallbackResId) {
         EntryUploadStatus status = new EntryUploadStatus();
         status.entry = entry;
         status.status = STATUS_UPLOAD_FINISHED;
         status.successfully = false;
-        status.error = error;
         status.exception = ex;
+        status.errorFallbackResId = errorFallbackResId;
         return status;
     }
 
@@ -52,7 +52,7 @@ public class EntryUploadStatus {
                 ", successfully=" + successfully +
                 ", exception=" + exception +
                 ", entry=" + entry +
-                ", error='" + error + '\'' +
+                ", errorFallbackResId='" + errorFallbackResId + '\'' +
                 '}';
     }
 }

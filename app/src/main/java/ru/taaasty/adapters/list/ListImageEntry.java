@@ -7,7 +7,6 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.text.method.LinkMovementMethod;
 import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
@@ -32,6 +31,7 @@ import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageSize;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
@@ -72,7 +72,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
         mTitle = (TextView) v.findViewById(R.id.feed_item_title);
         mMoreImagesWidget = (TextView)v.findViewById(R.id.more_photos_indicator);
 
-        mTitle.setMovementMethod(LinkMovementMethod.getInstance());
+        mTitle.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
         if (Build.VERSION.SDK_INT <= 16) {
             // Оно там глючное, текст в списке съезжает вправо иногда
             mTitle.setTextIsSelectable(false);

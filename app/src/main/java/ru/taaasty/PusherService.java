@@ -363,6 +363,9 @@ public class PusherService extends Service {
         if (mPusher != null) {
             if (DBG) Log.v(TAG, "skip GCM sync: pusher is connected");
             GcmBroadcastReceiver.completeWakefulIntent(intent);
+        } else if (!Session.getInstance().isAuthorized()) {
+            if (DBG) Log.v(TAG, "skip GCM sync: not authorized");
+            GcmBroadcastReceiver.completeWakefulIntent(intent);
         } else {
             String messageType = GcmUtils.getGcmNotificationType(intent.getExtras());
             if (GcmUtils.GCM_NOTIFICATION_TYPE_PUSH_NOTIFICATION.equals(messageType)) {

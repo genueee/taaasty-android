@@ -50,6 +50,7 @@ import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.ApiErrorException;
+import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.Entry;
@@ -69,10 +70,8 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;
-import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.utils.UiUtils;
 
 /**
  * An {@link android.app.IntentService} subclass for handling asynchronous task requests in
@@ -326,8 +325,7 @@ public class IntentService extends android.app.IntentService {
             }
             status = EntryUploadStatus.createPostCompleted(form);
         } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_create_post), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form, ex, R.string.error_create_post);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -374,8 +372,7 @@ public class IntentService extends android.app.IntentService {
             }
             status = EntryUploadStatus.createPostCompleted(form);
         } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_post), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form, ex,  R.string.error_saving_post);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -395,8 +392,7 @@ public class IntentService extends android.app.IntentService {
                     null);
             status = FlowUploadStatus.createCompleted(form, response);
         } catch (Throwable ex) {
-            status = FlowUploadStatus.createFinishedWithError(form,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_flow), ex);
+            status = FlowUploadStatus.createFinishedWithError(form, ex, R.string.error_saving_flow);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -417,8 +413,7 @@ public class IntentService extends android.app.IntentService {
                     null,
                     null);
         } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_saving_flow), ex);
+            status = EntryUploadStatus.createPostFinishedWithError(form, ex, R.string.error_saving_flow);
         }
 
         if (DBG) Log.v(TAG, "status: " + status);
@@ -464,7 +459,7 @@ public class IntentService extends android.app.IntentService {
         } catch (Exception ex) {
             if (DBG) throw ex;
             status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_upload_userpic), ex);
+                    R.string.error_upload_userpic, ex);
         }
         EventBus.getDefault().post(status);
     }
@@ -479,7 +474,7 @@ public class IntentService extends android.app.IntentService {
             if (DBG) Log.v(TAG, "userpic response: " + response);
         } catch (Exception ex) {
             status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri,
-                    UiUtils.getUserErrorText(getResources(), ex, R.string.error_upload_userpic), ex);
+                    R.string.error_upload_userpic, ex);
         }
         EventBus.getDefault().post(status);
     }

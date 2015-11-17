@@ -27,9 +27,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.fernandocejas.frodo.annotation.RxLogSubscriber;
 import com.squareup.picasso.Picasso;
+import com.trello.rxlifecycle.FragmentEvent;
+import com.trello.rxlifecycle.components.support.RxFragment;
 
 import junit.framework.Assert;
 
@@ -43,6 +45,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
+import ru.taaasty.Session;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
@@ -52,6 +55,7 @@ import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.Relationship;
@@ -63,6 +67,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.ui.UserInfoActivity;
+import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.FabHelper;
@@ -82,7 +87,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
-public class TlogFragment extends Fragment implements IRereshable,
+public class TlogFragment extends RxFragment implements IRereshable,
         ListFeedWorkRetainedFragment.TargetFragmentInteraction,
         OnBackPressedListener {
 
@@ -105,7 +110,9 @@ public class TlogFragment extends Fragment implements IRereshable,
     private static final String BUNDLE_KEY_LAST_ALPHA = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_LAST_ALPHA";
     private static final String BUNDLE_KEY_AB_TITLE = "ru.taaasty.ui.feeds.TlogActivity.BUNDLE_KEY_AB_TITLE";
 
-    private static final int CREATE_POST_ACTIVITY_REQUEST_CODE = Constants.ACTIVITY_REQUEST_CODE_CREATE_POST;
+    private static final int REQUEST_CODE_LOGIN = 1;
+
+    private static final int REQUEST_CODE_CREATE_POST = Constants.ACTIVITY_REQUEST_CODE_CREATE_POST;
 
     private OnFragmentInteractionListener mListener;
 
@@ -126,11 +133,13 @@ public class TlogFragment extends Fragment implements IRereshable,
 
     private FabHelper mFabHelper;
 
-    private View mSubscribeView;
-    private View mUnsubscribeView;
+    private View mFollowView;
+    private View mUnfollowView;
     private View mFollowUnfollowProgressView;
 
     private Toolbar mToolbar;
+
+    private View mLoginButton;
 
     private Drawable mAbBackgroundDrawable;
     int mLastAlpha = 0;
@@ -142,6 +151,7 @@ public class TlogFragment extends Fragment implements IRereshable,
 
     private TlogInterfaceVisibilityController mInterfaceVisibilityController;
 
+    private FabHelper.AutoHideScrollListener mFabAutoHideScrollListener;
 
     public static TlogFragment newInstance(long userId) {
         return newInstance(userId, 0);
@@ -215,11 +225,14 @@ public class TlogFragment extends Fragment implements IRereshable,
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
         mEmptyView = (TextView)v.findViewById(R.id.empty_view);
-        mFabHelper = new FabHelper(v.findViewById(R.id.fab), (FabMenuLayout)v.findViewById(R.id.fab_menu));
         mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
-        mUnsubscribeView = mToolbar.findViewById(R.id.unsubscribe);
-        mSubscribeView = mToolbar.findViewById(R.id.subscribe);
+        mLoginButton = v.findViewById(R.id.login_button);
+        mUnfollowView = mToolbar.findViewById(R.id.unsubscribe);
+        mFollowView = mToolbar.findViewById(R.id.subscribe);
         mFollowUnfollowProgressView = mToolbar.findViewById(R.id.follow_unfollow_progress);
+
+        mFabHelper = new FabHelper(v.findViewById(R.id.fab), (FabMenuLayout)v.findViewById(R.id.fab_menu));
+        mFabAutoHideScrollListener = new FabHelper.AutoHideScrollListener(mFabHelper);
 
         mFabHelper.setMenuListener(new FabHelper.FabMenuDefaultListener(this));
 
@@ -264,7 +277,6 @@ public class TlogFragment extends Fragment implements IRereshable,
                 return false;
             }
         });
-        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mFabHelper));
 
         mAlphaForegroundColorSpan = new AlphaForegroundColorSpan(Color.WHITE);
         mAbBackgroundDrawable = new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark));
@@ -278,7 +290,7 @@ public class TlogFragment extends Fragment implements IRereshable,
             mAbBackgroundDrawable.setAlpha(0);
         }
 
-        View.OnClickListener onSubscriptionClickListener = new View.OnClickListener() {
+        View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 switch (v.getId()) {
@@ -288,12 +300,17 @@ public class TlogFragment extends Fragment implements IRereshable,
                     case R.id.unsubscribe:
                         startUnfollow();
                         break;
+                    case R.id.login_button:
+                        LoginActivity.startActivityFromFragment(getActivity(), TlogFragment.this, REQUEST_CODE_LOGIN, v);
+                        break;
                 }
             }
         };
 
-        mSubscribeView.setOnClickListener(onSubscriptionClickListener);
-        mUnsubscribeView.setOnClickListener(onSubscriptionClickListener);
+        mFollowView.setOnClickListener(clickListener);
+        mUnfollowView.setOnClickListener(clickListener);
+
+        mLoginButton.setOnClickListener(clickListener);
 
         return v;
     }
@@ -326,7 +343,7 @@ public class TlogFragment extends Fragment implements IRereshable,
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case CREATE_POST_ACTIVITY_REQUEST_CODE:
+            case REQUEST_CODE_CREATE_POST:
                 if (resultCode == Activity.RESULT_OK) {
                     if (mWorkFragment != null) {
                         refreshData(true);
@@ -344,6 +361,12 @@ public class TlogFragment extends Fragment implements IRereshable,
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        mListView.removeOnScrollListener(mFabAutoHideScrollListener);
+    }
+
+    @Override
     public void onWorkFragmentResume() {
         if (!mWorkFragment.isRefreshing() || mScheduleRefreshData) {
             refreshData(mScheduleRefreshData);
@@ -353,6 +376,47 @@ public class TlogFragment extends Fragment implements IRereshable,
         updateDateIndicatorVisibility();
         refreshFollowUnfollowView();
         mInterfaceVisibilityController.onResume();
+
+        Session.getInstance().getUserObservable()
+                .distinctUntilChanged()
+                .compose(this.<CurrentUser>bindUntilEvent(FragmentEvent.PAUSE))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new CurrentUserChangesObservable());
+    }
+
+    @RxLogSubscriber
+    private final class CurrentUserChangesObservable implements Observer<CurrentUser> {
+
+        private boolean mLastIsAuthorized = Session.getInstance().isAuthorized();
+
+        @Override
+        public void onCompleted() {}
+
+        @Override
+        public void onError(Throwable e) {}
+
+        @Override
+        public void onNext(CurrentUser currentUser) {
+            boolean isAuthorized = Session.getInstance().isAuthorized();
+            if (isAuthorized) {
+                mLoginButton.setVisibility(View.GONE);
+                mListView.removeOnScrollListener(mFabAutoHideScrollListener);
+                mListView.addOnScrollListener(mFabAutoHideScrollListener);
+                mLoginButton.setVisibility(View.GONE);
+            } else {
+                mLoginButton.setVisibility(View.VISIBLE);
+                mListView.removeOnScrollListener(mFabAutoHideScrollListener);
+                mFabHelper.hideFab(false);
+            }
+
+            if (mLastIsAuthorized != isAuthorized) {
+                if (mWorkFragment == null) {
+                    mScheduleRefreshData = true;
+                } else {
+                    if (!mWorkFragment.isRefreshing()) refreshData(true);
+                }
+            }
+        }
     }
 
     @Override
@@ -409,6 +473,9 @@ public class TlogFragment extends Fragment implements IRereshable,
     public void onDesignChanged() {
     }
 
+    /*
+     * Вызывается при изменениях открытого тлога
+     */
     @Override
     public void onCurrentUserChanged() {
         TlogInfo tlogInfo = mWorkFragment.getUser();
@@ -567,8 +634,8 @@ public class TlogFragment extends Fragment implements IRereshable,
                 throw new IllegalStateException();
         }
 
-        mSubscribeView.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
-        mUnsubscribeView.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mFollowView.setVisibility(subscribeVisible ? View.VISIBLE : View.INVISIBLE);
+        mUnfollowView.setVisibility(unsubscribeVisible ? View.VISIBLE : View.INVISIBLE);
         mFollowUnfollowProgressView.setVisibility(progressVisible ? View.VISIBLE : View.INVISIBLE);
     }
 
@@ -666,6 +733,7 @@ public class TlogFragment extends Fragment implements IRereshable,
         private User mUser = User.DUMMY;
         private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
         private ImageUtils.DrawableTarget mAvatarLoadTarget;
+
         public Adapter(SortedList<Entry> feed, boolean isFlow) {
             super(feed, isFlow);
             setInteractionListener(new InteractionListener() {
@@ -728,6 +796,12 @@ public class TlogFragment extends Fragment implements IRereshable,
                 @Override
                 public void onEntryChanged(EntryChanged event) {
                     addEntry(event.postEntry);
+                }
+
+                @Override
+                public void onVoteError(long entryId, int errResId, Throwable error) {
+                    LikesHelper.showCannotVoteError(getView(), TlogFragment.this, REQUEST_CODE_LOGIN,
+                            errResId, error);
                 }
             });
         }
@@ -846,7 +920,7 @@ public class TlogFragment extends Fragment implements IRereshable,
                     case R.id.create_flow_post:
                         CreatePostActivity.startCreatePostActivityForResult(getContext(),
                                 TlogFragment.this, mWorkFragment.getUserId(), null,
-                                CREATE_POST_ACTIVITY_REQUEST_CODE);
+                                REQUEST_CODE_CREATE_POST);
                         break;
                 }
             }
@@ -898,7 +972,7 @@ public class TlogFragment extends Fragment implements IRereshable,
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
             } else {
-                Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
+                LikesHelper.showCannotVoteError(getView(), TlogFragment.this, REQUEST_CODE_LOGIN);
             }
         }
 
@@ -1131,6 +1205,8 @@ public class TlogFragment extends Fragment implements IRereshable,
 
             if (mUser == null) return FOLLOWING_STATUS_UNKNOWN;
 
+            if (!Session.getInstance().isAuthorized()) return FOLLOWING_STATUS_UNKNOWN; // XXX
+
             if (Relationship.isMeSubscribed(mUser.getMyRelationship())) {
                 return FOLLOWING_STATUS_ME_SUBSCRIBED;
             } else {
@@ -1195,8 +1271,7 @@ public class TlogFragment extends Fragment implements IRereshable,
                     if (mListener != null) mListener.onNoSuchUser();
                 } else {
                     if (mListener != null) mListener.notifyError(
-                            UiUtils.getUserErrorText(getResources(), exception, R.string.error_loading_user),
-                            exception);
+                            WorkRetainedFragment.this, exception, R.string.error_loading_user);
                 }
             }
 
@@ -1225,7 +1300,7 @@ public class TlogFragment extends Fragment implements IRereshable,
 
             @Override
             public void onError(Throwable e) {
-                if (mListener != null) mListener.notifyError(UiUtils.getUserErrorText(getResources(), e, R.string.error_follow), e);
+                if (mListener != null) mListener.notifyError(WorkRetainedFragment.this, e, R.string.error_follow);
             }
 
             @Override
@@ -1288,9 +1363,7 @@ public class TlogFragment extends Fragment implements IRereshable,
                     mLastErrorForbidden = true;
                 } else {
                     if (mListener != null)
-                        mListener.notifyError(
-                                UiUtils.getUserErrorText(getResources(), exception,
-                                        R.string.error_append_feed), exception);
+                        mListener.notifyError(WorkRetainedFragment.this, exception, R.string.error_append_feed);
                 }
             }
 
