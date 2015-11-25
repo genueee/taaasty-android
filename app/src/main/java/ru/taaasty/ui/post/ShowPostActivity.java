@@ -55,6 +55,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
+    private static final int REQUEST_CODE_SHARE = 3;
+
     private Handler mHideActionBarHandler;
 
     private boolean mShowFullPost;
@@ -222,6 +224,14 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_SHARE) {
+            SharePostActivity.handleActivityResult(this, findViewById(R.id.activity_root), resultCode, data);
+        }
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
@@ -351,9 +361,9 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         Entry entry = getCurrentEntry();
         if (entry != null) {
             if (mTlogId > 0) {
-                SharePostActivity.startActivity(this, entry, mTlogId);
+                SharePostActivity.startActivity(this, entry, mTlogId, REQUEST_CODE_SHARE);
             } else {
-                SharePostActivity.startActivity(this, entry);
+                SharePostActivity.startActivity(this, entry, REQUEST_CODE_SHARE);
             }
         }
     }

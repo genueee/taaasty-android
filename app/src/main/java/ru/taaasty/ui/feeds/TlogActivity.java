@@ -36,6 +36,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     private static final String ARG_AVATAR_THUMBNAIL_RES = "ru.taaasty.ui.feeds.TlogActivity.avatar_thumbnail_res";
     private static final String ARG_USER_SLUG = "ru.taaasty.ui.feeds.TlogActivity.user_slug";
     public static final int REQUEST_CODE_LOGIN = 1;
+    public static final int REQUEST_CODE_SHARE = 2;
 
     private FeedBackground mFeedBackground;
 
@@ -104,6 +105,15 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_SHARE) {
+            SharePostActivity.handleActivityResult(this, findViewById(R.id.container), resultCode, data);
+        }
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         boolean hasMenu = ViewConfiguration.get(this).hasPermanentMenuKey();
 
@@ -151,7 +161,7 @@ public class TlogActivity extends ActivityBase implements TlogFragment.OnFragmen
 
     @Override
     public void onSharePostMenuClicked(Entry entry, long tlogId) {
-        SharePostActivity.startActivity(this, entry, tlogId);
+        SharePostActivity.startActivity(this, entry, tlogId, REQUEST_CODE_SHARE);
     }
 
     @Override

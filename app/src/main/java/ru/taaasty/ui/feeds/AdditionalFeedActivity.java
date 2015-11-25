@@ -46,6 +46,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
     private static final String KEY_CURRENT_USER = "ru.taaasty.ui.feeds.AdditionalFeedActivity.KEY_CURRENT_USER";
     private static final String KEY_CURRENT_USER_DESIGN = "ru.taaasty.ui.feeds.AdditionalFeedActivity.KEY_CURRENT_USER_DESIGN";
     public static final int REQUEST_CODE_LOGIN = 1;
+    public static final int REQUEST_CODE_SHARE = 2;
 
     private User mCurrentUser;
     private TlogDesign mCurrentUserDesign;
@@ -130,6 +131,9 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
                     mScheduleRefresh = true;
                 }
                 break;
+            case REQUEST_CODE_SHARE:
+                SharePostActivity.handleActivityResult(this, findViewById(R.id.main_container), resultCode, data);
+                break;
         }
     }
 
@@ -201,7 +205,7 @@ public class AdditionalFeedActivity extends ActivityBase implements MyAdditional
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        SharePostActivity.startActivity(this, entry);
+        SharePostActivity.startActivity(this, entry, REQUEST_CODE_SHARE);
     }
 
     @Override

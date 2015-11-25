@@ -1,19 +1,21 @@
 package ru.taaasty.ui.post;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.vk.sdk.VKAccessToken;
@@ -39,8 +41,16 @@ public class SharePostActivity extends ActivityBase {
     private static final String TAG = "SharePostActivity";
     private static final boolean DBG = BuildConfig.DEBUG;
 
-    private  static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.ARG_ENTRY";
-    private  static final String ARG_TLOG_ID = "ru.taaasty.ui.post.SharePostActivity.ARG_TLOG_ID";
+    public static final int RESULT_CODE_SHOW_ERROR = Activity.RESULT_FIRST_USER + 1;
+
+    public static final int RESULT_CODE_SHOW_OPEN_IN_BROWSER = Activity.RESULT_FIRST_USER + 2;
+
+    public static final String RESULT_ARG_ERROR_MESSAGE = "RESULT_ARG_ERROR_MESSAGE";
+
+    public static final String RESULT_ARG_URI = "RESULT_ARG_URI";
+
+    private static final String ARG_ENTRY = "ru.taaasty.ui.post.SharePostActivity.ARG_ENTRY";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.post.SharePostActivity.ARG_TLOG_ID";
 
     private static final Uri VKONTAKTE_SHARE_URL = Uri.parse("http://vk.com/share.php");
     private static final String VK_APP_PACKAGE_ID = "com.vkontakte.android";
@@ -55,17 +65,53 @@ public class SharePostActivity extends ActivityBase {
 
     private boolean mDoShareVkontakte;
 
-    public static void startActivity(Context context, Entry entry, long tlogId) {
-        Intent intent = new Intent(context, SharePostActivity.class);
+
+    public static void startActivity(Activity activity, Entry entry, long tlogId, int requestCode) {
+        Intent intent = new Intent(activity, SharePostActivity.class);
         intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
         intent.putExtra(SharePostActivity.ARG_TLOG_ID, tlogId);
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
     }
 
-    public static void startActivity(Context context, Entry entry) {
-        Intent intent = new Intent(context, SharePostActivity.class);
+    public static void startActivity(Activity activity, Entry entry, int requestCode) {
+        Intent intent = new Intent(activity, SharePostActivity.class);
         intent.putExtra(SharePostActivity.ARG_ENTRY, entry);
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
+    }
+
+    public static void handleActivityResult(Activity activity, View rootView, int resultCode, Intent resultIntent) {
+        CharSequence error;
+        switch (resultCode) {
+            case RESULT_CODE_SHOW_ERROR:
+                error = resultIntent.getCharSequenceExtra(RESULT_ARG_ERROR_MESSAGE);
+                Snackbar.make(rootView, error, Snackbar.LENGTH_LONG).show();
+                break;
+            case RESULT_CODE_SHOW_OPEN_IN_BROWSER:
+                error = resultIntent.getCharSequenceExtra(RESULT_ARG_ERROR_MESSAGE);
+                String uri = resultIntent.getStringExtra(RESULT_ARG_URI);
+
+                Snackbar snackbar = Snackbar.make(rootView, error, Snackbar.LENGTH_LONG);
+                final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+                List<ResolveInfo> list = activity.getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+                for (ResolveInfo info: list) {
+                    if (!BuildConfig.APPLICATION_ID.equals(info.activityInfo.packageName)) {
+                        if (DBG) Log.v(TAG, "package name: " + info.activityInfo.packageName + " my name: " + BuildConfig.APPLICATION_ID);
+                        intent.setClassName(info.activityInfo.applicationInfo.packageName,
+                                info.activityInfo.name);
+                        snackbar.setAction(R.string.open_in_browser, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                v.getContext().startActivity(intent);
+                            }
+                        });
+                        break;
+                    }
+                }
+
+                snackbar.show();
+                break;
+        }
+
     }
 
     @Override
@@ -290,9 +336,10 @@ public class SharePostActivity extends ActivityBase {
         Uri copyUri = Uri.parse(mEntry.getEntryUrl());
         ClipData clip = ClipData.newPlainText("URL", mEntry.getEntryUrl());
         clipboard.setPrimaryClip(clip);
-        Toast.makeText(this,
-                getString(R.string.link_have_been_added_to_clipboard, copyUri),
-                Toast.LENGTH_LONG).show();
+        Intent resultIntent = new Intent();
+        resultIntent.putExtra(RESULT_ARG_ERROR_MESSAGE, getString(R.string.link_have_been_added_to_clipboard));
+        resultIntent.putExtra(RESULT_ARG_URI, mEntry.getEntryUrl());
+        setResult(RESULT_CODE_SHOW_OPEN_IN_BROWSER, resultIntent);
         finish();
     }
 

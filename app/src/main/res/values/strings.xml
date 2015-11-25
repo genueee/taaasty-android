@@ -188,7 +188,7 @@
     <string name="edit_post">Редактировать</string>
     <string name="delete_post">Удалить</string>
     <string name="save_post">Сохранить</string>
-    <string name="link_have_been_added_to_clipboard">Ссылка %1s добавлена в буфер обмена</string>
+    <string name="link_have_been_added_to_clipboard">Ссылка добавлена в буфер обмена</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_conversations">Сообщения</string>
     <string name="no_conversations">Здесь будут отображаться ваши переписки</string>
@@ -331,5 +331,7 @@
 
     <string name="write_to_flow">Написать в поток</string>
     <string name="login_or_register_to_add_comment">Войдите или зарегистрируйтесь, чтобы оставить комментарий</string>
+
+    <string name="open_in_browser">Открыть в браузере</string>
 
 </resources>

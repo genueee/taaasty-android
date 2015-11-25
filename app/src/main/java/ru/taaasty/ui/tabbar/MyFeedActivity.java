@@ -46,6 +46,8 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     private static final boolean DBG = BuildConfig.DEBUG && false;
     private static final String TAG = "MyFeedActivity";
 
+    private static final int REQUEST_CODE_SHARE_DIALOG = 3;
+
     private DrawerLayout mDrawerLayout;
 
     @Override
@@ -97,6 +99,14 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     @Override
     void onCurrentTabButtonClicked() {
         refreshData();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_SHARE_DIALOG) {
+            SharePostActivity.handleActivityResult(this, findViewById(R.id.main_container), resultCode, data);
+        }
     }
 
     @Override
@@ -167,7 +177,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        SharePostActivity.startActivity(this, entry);
+        SharePostActivity.startActivity(this, entry, REQUEST_CODE_SHARE_DIALOG);
     }
 
     void refreshData() {

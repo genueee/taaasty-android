@@ -1,5 +1,6 @@
 package ru.taaasty.ui.tabbar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -167,6 +168,14 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
             ((TaaastyApplication) getApplicationContext()).startIntercomSession();
             Intercom.client().openGCMMessage(getIntent());
             mOnCreateTaskDone = true;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_SHARE) {
+            SharePostActivity.handleActivityResult(this, findViewById(R.id.main_container), resultCode, data);
         }
     }
 
@@ -363,7 +372,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
 
     @Override
     public void onSharePostMenuClicked(Entry entry) {
-        SharePostActivity.startActivity(this, entry);
+        SharePostActivity.startActivity(this, entry, REQUEST_CODE_SHARE);
     }
 
     @Nullable

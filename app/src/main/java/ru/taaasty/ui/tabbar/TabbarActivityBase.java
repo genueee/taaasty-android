@@ -21,6 +21,8 @@ public abstract class TabbarActivityBase extends ActivityBase implements TabbarF
 
     public static final int REQUEST_CODE_LOGIN = 1;
 
+    public static final int REQUEST_CODE_SHARE = 2;
+
     Session mSession = Session.getInstance();
     TabbarFragment mTabbar;
 
