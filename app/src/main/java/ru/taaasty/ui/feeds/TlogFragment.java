@@ -88,7 +88,7 @@ import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 public class TlogFragment extends RxFragment implements IRereshable,
-        ListFeedWorkRetainedFragment.TargetFragmentInteraction,
+        FeedWorkFragment.TargetFragmentInteraction,
         OnBackPressedListener {
 
     public static final int FOLLOWING_STATUS_UNKNOWN = 0;

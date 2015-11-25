@@ -29,13 +29,13 @@ import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
-public abstract class ListFeedWorkRetainedFragment extends Fragment {
+public abstract class FeedWorkFragment extends Fragment {
 
     private static final boolean DBG = false;
     private static final String TAG = "ListFeedWorkFrgmnt";
 
-    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.ListFeedWorkRetainedFragment.BUNDLE_KEY_FEED_ITEMS";
-    private static final String BUNDLE_KEY_FEED_DESIGN = "ru.taaasty.ui.feeds.ListFeedWorkRetainedFragment.BUNDLE_KEY_FEED_DESIGN";
+    private static final String BUNDLE_KEY_FEED_ITEMS = "ru.taaasty.ui.feeds.FeedWorkFragment.BUNDLE_KEY_FEED_ITEMS";
+    private static final String BUNDLE_KEY_FEED_DESIGN = "ru.taaasty.ui.feeds.FeedWorkFragment.BUNDLE_KEY_FEED_DESIGN";
 
     private FeedLoader mFeedLoader;
 
@@ -260,12 +260,12 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
 
         @Override
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
-            return ListFeedWorkRetainedFragment.this.createObservable(sinceEntryId, limit);
+            return FeedWorkFragment.this.createObservable(sinceEntryId, limit);
         }
 
         @Nullable
         protected Func1<Feed, Feed> getPostCacheFunc() {
-            return ListFeedWorkRetainedFragment.this.getPostCacheFunc();
+            return FeedWorkFragment.this.getPostCacheFunc();
         }
 
         @Override
@@ -282,7 +282,7 @@ public abstract class ListFeedWorkRetainedFragment extends Fragment {
         @Override
         protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable e) {
             super.onLoadError(isRefresh, entriesRequested, e);
-            if (mListener != null) mListener.notifyError(ListFeedWorkRetainedFragment.this, e, R.string.error_append_feed);
+            if (mListener != null) mListener.notifyError(FeedWorkFragment.this, e, R.string.error_append_feed);
         }
 
         protected void onFeedIsUnsubscribed(boolean isRefresh) {

@@ -39,9 +39,9 @@ import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiApp;
+import ru.taaasty.ui.feeds.FeedFragment;
 import ru.taaasty.ui.feeds.FlowListFragment;
 import ru.taaasty.ui.feeds.IFeedsFragment;
-import ru.taaasty.ui.feeds.ListFeedFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.SharePostActivity;
@@ -53,7 +53,7 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
-public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFragment.OnFragmentInteractionListener,
+public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment.OnFragmentInteractionListener,
         FlowListFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
@@ -340,8 +340,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
     void refreshData() {
         if (mSectionsPagerAdapter == null || mViewPager == null) return;
         Fragment page = getVisibleFragment();
-        if (page != null && page instanceof ListFeedFragment) {
-            ListFeedFragment listFragment = (ListFeedFragment) page;
+        if (page != null && page instanceof FeedFragment) {
+            FeedFragment listFragment = (FeedFragment) page;
             listFragment.refreshData(true);
             startRefreshStats();
         }
@@ -434,15 +434,15 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
         public Fragment getItem(int position) {
             switch (getSectionType(position)) {
                 case MY_SUBSCRIPTIONS:
-                    return ListFeedFragment.createMySubscriptionsFeedInstance();
+                    return FeedFragment.createMySubscriptionsFeedInstance();
                 case FLOWS:
                     return FlowListFragment.createInstance();
                 case LIVE_FEED:
-                    return ListFeedFragment.createLiveFeedInstance();
+                    return FeedFragment.createLiveFeedInstance();
                 case BEST_FEED:
-                    return ListFeedFragment.createBestFeedInstance();
+                    return FeedFragment.createBestFeedInstance();
                 case ANONYMOUS_FEED:
-                    return ListFeedFragment.createAnonymousFeedInstance();
+                    return FeedFragment.createAnonymousFeedInstance();
                 default:
                     throw new IllegalArgumentException();
             }
@@ -456,18 +456,18 @@ public class LiveFeedActivity extends TabbarActivityBase implements ListFeedFrag
             // Не работает этот вариант нихуя https://code.google.com/p/android/issues/detail?id=37990
             if (object instanceof FlowListFragment) {
                 objectType = SectionType.FLOWS;
-            }else if (object instanceof ListFeedFragment) {
-                switch (((ListFeedFragment) object).getFeedType()) {
-                    case ListFeedFragment.FEED_ANONYMOUS:
+            }else if (object instanceof FeedFragment) {
+                switch (((FeedFragment) object).getFeedType()) {
+                    case FeedFragment.FEED_ANONYMOUS:
                         objectType = SectionType.ANONYMOUS_FEED;
                         break;
-                    case ListFeedFragment.FEED_LIVE:
+                    case FeedFragment.FEED_LIVE:
                         objectType = SectionType.LIVE_FEED;
                         break;
-                    case ListFeedFragment.FEED_BEST:
+                    case FeedFragment.FEED_BEST:
                         objectType = SectionType.BEST_FEED;
                         break;
-                    case ListFeedFragment.FEED_MY_SUBSCRIPTIONS:
+                    case FeedFragment.FEED_MY_SUBSCRIPTIONS:
                         objectType = SectionType.MY_SUBSCRIPTIONS;
                         break;
                     default:

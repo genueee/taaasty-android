@@ -51,10 +51,10 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.functions.Func1;
 
-public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetainedFragment> implements IFeedsFragment,
-        ListFeedWorkRetainedFragment.TargetFragmentInteraction{
+public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> implements IFeedsFragment,
+        FeedWorkFragment.TargetFragmentInteraction{
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ListFeedFragment";
+    private static final String TAG = "FeedFragment";
 
     private static final String ARG_FEED_TYPE = "feed_type";
 
@@ -88,35 +88,35 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
 
     private FabHelper.AutoHideScrollListener mHideTabbarListener;
 
-    public static ListFeedFragment createLiveFeedInstance() {
+    public static FeedFragment createLiveFeedInstance() {
         return newInstance(FEED_LIVE);
     }
 
-    public static ListFeedFragment createBestFeedInstance() {
+    public static FeedFragment createBestFeedInstance() {
         return newInstance(FEED_BEST);
     }
 
-    public static ListFeedFragment createAnonymousFeedInstance() {
+    public static FeedFragment createAnonymousFeedInstance() {
         return newInstance(FEED_ANONYMOUS);
     }
 
-    public static ListFeedFragment createNewsFeedInstance() {
+    public static FeedFragment createNewsFeedInstance() {
         return newInstance(FEED_NEWS);
     }
 
-    public static ListFeedFragment createMySubscriptionsFeedInstance() {
+    public static FeedFragment createMySubscriptionsFeedInstance() {
         return newInstance(FEED_MY_SUBSCRIPTIONS);
     }
 
-    private static ListFeedFragment newInstance(int type) {
-        ListFeedFragment fragment = new ListFeedFragment();
+    private static FeedFragment newInstance(int type) {
+        FeedFragment fragment = new FeedFragment();
         Bundle args = new Bundle(1);
         args.putInt(ARG_FEED_TYPE, type);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public ListFeedFragment() {
+    public FeedFragment() {
         // Required empty public constructor
     }
 
@@ -179,7 +179,7 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
 
     @Nullable
     @Override
-    public ListFeedWorkRetainedFragment getWorkFragment() {
+    public FeedWorkFragment getWorkFragment() {
         return mWorkFragment;
     }
 
@@ -457,7 +457,7 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
                     return new HeaderTitleSubtitleViewHolder(child) {
                         @Override
                         public void onScrollChanged() {
-                            if (ListFeedFragment.this.getUserVisibleHint()) {
+                            if (FeedFragment.this.getUserVisibleHint()) {
                                 super.onScrollChanged();
                                 onHeaderMoved(true, itemView.getTop());
                             }
@@ -513,7 +513,7 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
 
                 @Override
                 public void onVoteError(long entryId, int errResId, Throwable error) {
-                    LikesHelper.showCannotVoteError(getView(), ListFeedFragment.this, REQUEST_CODE_LOGIN,
+                    LikesHelper.showCannotVoteError(getView(), FeedFragment.this, REQUEST_CODE_LOGIN,
                             errResId, error);
                 }
 
@@ -583,7 +583,7 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
             } else {
-                LikesHelper.showCannotVoteError(getView(), ListFeedFragment.this, REQUEST_CODE_LOGIN);
+                LikesHelper.showCannotVoteError(getView(), FeedFragment.this, REQUEST_CODE_LOGIN);
             }
         }
 
@@ -614,7 +614,7 @@ public class ListFeedFragment extends FragmentWithWorkFragment<ListFeedWorkRetai
     };
 
 
-    public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
+    public static class WorkRetainedFragment extends FeedWorkFragment {
 
         private int mFeedType = FEED_LIVE;
 

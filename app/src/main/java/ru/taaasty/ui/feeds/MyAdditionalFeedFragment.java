@@ -47,7 +47,7 @@ import rx.Observable;
 
 
 public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
-        ListFeedWorkRetainedFragment.TargetFragmentInteraction {
+        FeedWorkFragment.TargetFragmentInteraction {
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "FeedFragment";
@@ -554,7 +554,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         }
     };
 
-    public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
+    public static class WorkRetainedFragment extends FeedWorkFragment {
 
         private int mFeedType;
 

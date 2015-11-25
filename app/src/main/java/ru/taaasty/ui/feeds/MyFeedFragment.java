@@ -42,7 +42,7 @@ import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 
 public class MyFeedFragment extends Fragment implements IRereshable,
-        ListFeedWorkRetainedFragment.TargetFragmentInteraction {
+        FeedWorkFragment.TargetFragmentInteraction {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
 
@@ -414,7 +414,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         }
     };
 
-    public static class WorkRetainedFragment extends ListFeedWorkRetainedFragment {
+    public static class WorkRetainedFragment extends FeedWorkFragment {
 
         @Override
         protected String getKeysSuffix() {
