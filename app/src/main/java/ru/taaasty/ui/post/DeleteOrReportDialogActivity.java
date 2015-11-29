@@ -1,5 +1,6 @@
 package ru.taaasty.ui.post;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
@@ -23,7 +25,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiEntries;
-import ru.taaasty.utils.MessageHelper;
+import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -32,6 +34,8 @@ import rx.subscriptions.Subscriptions;
 
 /**
  * Диалог с удалением, либо жалобой на пост или комментарий
+ * При startActivityForResult может вернуть {@link ru.taaasty.Constants#ACTIVITY_RESULT_CODE_SHOW_ERROR}
+ *  с текстом в {@link ru.taaasty.Constants#ACTIVITY_RESULT_CODE_SHOW_ERROR}
  */
 public class DeleteOrReportDialogActivity extends ActivityBase {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -69,30 +73,31 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
         return intent;
     }
 
-    public static void startDeletePost(Context context, long tlogId, long postId) {
-        Intent intent = createIntent(context, ACTION_DELETE_POST);
+    public static void startDeletePost(Activity activity, int requestCode, long tlogId, long postId) {
+        Intent intent = createIntent(activity, ACTION_DELETE_POST);
         intent.putExtra(ARG_POST_ID, postId);
         intent.putExtra(ARG_TLOG_ID, tlogId);
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
     }
 
-    public static void startReportPost(Context context, long postId) {
-        Intent intent = createIntent(context, ACTION_REPORT_POST);
+    public static void startReportPost(Activity activity, int requestCode, long postId) {
+        Intent intent = createIntent(activity, ACTION_REPORT_POST);
         intent.putExtra(ARG_POST_ID, postId);
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
     }
 
-    public static void startDeleteComment(Context context, long postId, long commentId) {
-        Intent intent = createIntent(context, ACTION_DELETE_COMMENT);
+    public static void startDeleteComment(Activity activity, int requestCode, long postId, long commentId) {
+        Intent intent = createIntent(activity, ACTION_DELETE_COMMENT);
         intent.putExtra(ARG_POST_ID, postId);
         intent.putExtra(ARG_COMMENT_ID, commentId);
-        context.startActivity(intent);
+        activity.startActivityForResult(intent, requestCode);
+        activity.startActivity(intent);
     }
 
-    public static void startReportComment(Context context, long commentId) {
-        Intent intent = createIntent(context, ACTION_REPORT_COMMENT);
+    public static void startReportComment(Activity activity, int requestCode, long commentId) {
+        Intent intent = createIntent(activity, ACTION_REPORT_COMMENT);
         intent.putExtra(ARG_COMMENT_ID, commentId);
-        context.startActivity(intent);
+        activity.startActivity(intent);
     }
 
     @Override
@@ -150,8 +155,10 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
     }
 
     public void notifyError(@Nullable Throwable exception, int fallbackResId) {
-        // TODO
-        MessageHelper.showError(this, R.id.container, 1, exception, fallbackResId);
+        Intent intent = new Intent();
+        intent.putExtra(Constants.ACTIVITY_RESULT_ARG_ERROR_MESSAGE, UiUtils.getUserErrorText(getResources(), exception, fallbackResId));
+        setResult(Constants.ACTIVITY_RESULT_CODE_SHOW_ERROR, intent);
+        finish();
     }
 
     void doAction() {
@@ -184,6 +191,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
         @Override
         public void onNext(Object o) {
             if (DBG) Log.v(TAG, "response: " + o);
+            setResult(RESULT_OK);
             mActionHandler.onNext(o);
         }
     };
@@ -215,7 +223,6 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
 
         @Override
         public Observable<Object> createObservable() {
-            ApiEntries service = RestClient.getAPiEntries();
             return RestClient.getApiReposts().deletePost(mTlogId, mPostId);
         }
 

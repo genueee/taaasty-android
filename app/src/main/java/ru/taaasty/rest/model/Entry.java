@@ -90,6 +90,9 @@ public class Entry implements Parcelable, Cloneable {
     @SerializedName("author")
     private User mAuthor;
 
+    @SerializedName("tlog")
+    private EntryTlog mTlog;
+
     @SerializedName("comments_count")
     private int mCommentsCount;
 
@@ -227,6 +230,21 @@ public class Entry implements Parcelable, Cloneable {
         return mEntryUrl;
     }
 
+    /**
+     * @return Тлог, в который написан пост. Может отличаться от текущей загруженной ленты (отличается у постов в потоки, репосты и т.п.)
+     */
+    public EntryTlog getTlog() {
+        return mTlog;
+    }
+
+    /**
+     *
+     * @return Эту запись автор написал в свой дневник, а не в поток или ещё куда-нибудь.
+     */
+    public boolean isEntryInOwnTlog() {
+        return mAuthor.mId == mTlog.id;
+    }
+
     public String getTitle() {
         return mTitle == null ? "" : mTitle;
     }
@@ -253,7 +271,7 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     /**
-     * @return Дизайн. Пока тлога автора, но в будущем, возможно, будет дизайн у каждого поста.
+     * @return Дизайн. Пока тлога автора
      */
     @Nullable
     public TlogDesign getDesign() {
@@ -443,15 +461,13 @@ public class Entry implements Parcelable, Cloneable {
         getSourceSpanned();
     }
 
-    public Entry() {
-    }
-
     @Override
     public String toString() {
         return "Entry{" +
                 "mAuthor=" + mAuthor +
                 ", mId=" + mId +
                 ", mType='" + mType + '\'' +
+                ", mTlog=" + mTlog +
                 ", mCommentsCount=" + mCommentsCount +
                 ", mCreatedAt=" + mCreatedAt +
                 ", mUpdatedAt=" + mUpdatedAt +
@@ -476,78 +492,8 @@ public class Entry implements Parcelable, Cloneable {
                 '}';
     }
 
-    @Override
-    public int describeContents() {
-        return 0;
+    public Entry() {
     }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(this.mId);
-        dest.writeString(this.mType);
-        dest.writeParcelable(this.mAuthor, flags);
-        dest.writeInt(this.mCommentsCount);
-        dest.writeLong(mCreatedAt != null ? mCreatedAt.getTime() : -1);
-        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
-        dest.writeString(this.mEntryUrl);
-        dest.writeParcelable(this.mRating, flags);
-        dest.writeString(this.mTitle);
-        dest.writeString(this.mVideoUrl);
-        dest.writeString(this.mCoverUrl);
-        dest.writeParcelable(this.mIframely, flags);
-        dest.writeString(this.mText);
-        dest.writeString(this.mSource);
-        dest.writeString(this.mVia);
-        dest.writeString(this.mPrivacy);
-        dest.writeString(this.mImageUrl);
-        dest.writeTypedList(mImages);
-        dest.writeInt(mFavorited? 1:0);
-        dest.writeInt(mCanEdit? 1:0);
-        dest.writeInt(mCanReport? 1:0);
-        dest.writeInt(mCanDelete? 1:0);
-        dest.writeInt(mCanVote? 1:0);
-        dest.writeInt(mIsVoteable? 1:0);
-    }
-
-    private Entry(Parcel in) {
-        this.mId = in.readLong();
-        this.mType = in.readString();
-        this.mAuthor = in.readParcelable(User.class.getClassLoader());
-        this.mCommentsCount = in.readInt();
-        long tmpMCreatedAt = in.readLong();
-        this.mCreatedAt = tmpMCreatedAt == -1 ? null : new Date(tmpMCreatedAt);
-        long tmpMUpdatedAt = in.readLong();
-        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
-        this.mEntryUrl = in.readString();
-        this.mRating = in.readParcelable(Rating.class.getClassLoader());
-        this.mTitle = in.readString();
-        this.mVideoUrl = in.readString();
-        this.mCoverUrl = in.readString();
-        this.mIframely = in.readParcelable(IFramely.class.getClassLoader());
-        this.mText = in.readString();
-        this.mSource = in.readString();
-        this.mVia = in.readString();
-        //noinspection ResourceType
-        this.mPrivacy = in.readString();
-        this.mImageUrl = in.readString();
-        this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
-        this.mFavorited = (in.readInt() == 1)? true : false;
-        this.mCanEdit = (in.readInt() == 1)? true : false;
-        this.mCanReport = (in.readInt() == 1)? true : false;
-        this.mCanDelete = (in.readInt() == 1)? true : false;
-        this.mCanVote = (in.readInt() == 1)? true : false;
-        this.mIsVoteable = (in.readInt() == 1)? true : false;
-    }
-
-    public static final Creator<Entry> CREATOR = new Creator<Entry>() {
-        public Entry createFromParcel(Parcel source) {
-            return new Entry(source);
-        }
-
-        public Entry[] newArray(int size) {
-            return new Entry[size];
-        }
-    };
 
     @Override
     public boolean equals(Object o) {
@@ -566,6 +512,7 @@ public class Entry implements Parcelable, Cloneable {
         if (mCanDelete != entry.mCanDelete) return false;
         if (mType != null ? !mType.equals(entry.mType) : entry.mType != null) return false;
         if (mAuthor != null ? !mAuthor.equals(entry.mAuthor) : entry.mAuthor != null) return false;
+        if (mTlog != null ? !mTlog.equals(entry.mTlog) : entry.mTlog != null) return false;
         if (mCreatedAt != null ? !mCreatedAt.equals(entry.mCreatedAt) : entry.mCreatedAt != null)
             return false;
         if (mUpdatedAt != null ? !mUpdatedAt.equals(entry.mUpdatedAt) : entry.mUpdatedAt != null)
@@ -586,7 +533,9 @@ public class Entry implements Parcelable, Cloneable {
         if (mPrivacy != null ? !mPrivacy.equals(entry.mPrivacy) : entry.mPrivacy != null)
             return false;
         if (mImages != null ? !mImages.equals(entry.mImages) : entry.mImages != null) return false;
-        return !(mImageUrl != null ? !mImageUrl.equals(entry.mImageUrl) : entry.mImageUrl != null);
+        if (mImageUrl != null ? !mImageUrl.equals(entry.mImageUrl) : entry.mImageUrl != null)
+            return false;
+        return true;
 
     }
 
@@ -595,6 +544,7 @@ public class Entry implements Parcelable, Cloneable {
         int result = (int) (mId ^ (mId >>> 32));
         result = 31 * result + (mType != null ? mType.hashCode() : 0);
         result = 31 * result + (mAuthor != null ? mAuthor.hashCode() : 0);
+        result = 31 * result + (mTlog != null ? mTlog.hashCode() : 0);
         result = 31 * result + mCommentsCount;
         result = 31 * result + (mCreatedAt != null ? mCreatedAt.hashCode() : 0);
         result = 31 * result + (mUpdatedAt != null ? mUpdatedAt.hashCode() : 0);
@@ -616,6 +566,84 @@ public class Entry implements Parcelable, Cloneable {
         result = 31 * result + (mCanEdit ? 1 : 0);
         result = 31 * result + (mCanDelete ? 1 : 0);
         result = 31 * result + (mImageUrl != null ? mImageUrl.hashCode() : 0);
+        result = 31 * result + (mTextSpanned != null ? mTextSpanned.hashCode() : 0);
+        result = 31 * result + (mSourceSpanned != null ? mSourceSpanned.hashCode() : 0);
+        result = 31 * result + (mTitleSpanned != null ? mTitleSpanned.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.mId);
+        dest.writeString(this.mType);
+        dest.writeParcelable(this.mAuthor, 0);
+        dest.writeParcelable(this.mTlog, 0);
+        dest.writeInt(this.mCommentsCount);
+        dest.writeLong(mCreatedAt != null ? mCreatedAt.getTime() : -1);
+        dest.writeLong(mUpdatedAt != null ? mUpdatedAt.getTime() : -1);
+        dest.writeString(this.mEntryUrl);
+        dest.writeParcelable(this.mRating, 0);
+        dest.writeString(this.mTitle);
+        dest.writeString(this.mVideoUrl);
+        dest.writeString(this.mCoverUrl);
+        dest.writeParcelable(this.mIframely, 0);
+        dest.writeString(this.mText);
+        dest.writeString(this.mSource);
+        dest.writeString(this.mVia);
+        dest.writeString(this.mPrivacy);
+        dest.writeTypedList(mImages);
+        dest.writeByte(mFavorited ? (byte) 1 : (byte) 0);
+        dest.writeByte(mIsVoteable ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanVote ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanReport ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanEdit ? (byte) 1 : (byte) 0);
+        dest.writeByte(mCanDelete ? (byte) 1 : (byte) 0);
+        dest.writeString(this.mImageUrl);
+    }
+
+    protected Entry(Parcel in) {
+        this.mId = in.readLong();
+        this.mType = in.readString();
+        this.mAuthor = in.readParcelable(User.class.getClassLoader());
+        this.mTlog = in.readParcelable(EntryTlog.class.getClassLoader());
+        this.mCommentsCount = in.readInt();
+        long tmpMCreatedAt = in.readLong();
+        this.mCreatedAt = tmpMCreatedAt == -1 ? null : new Date(tmpMCreatedAt);
+        long tmpMUpdatedAt = in.readLong();
+        this.mUpdatedAt = tmpMUpdatedAt == -1 ? null : new Date(tmpMUpdatedAt);
+        this.mEntryUrl = in.readString();
+        this.mRating = in.readParcelable(Rating.class.getClassLoader());
+        this.mTitle = in.readString();
+        this.mVideoUrl = in.readString();
+        this.mCoverUrl = in.readString();
+        this.mIframely = in.readParcelable(IFramely.class.getClassLoader());
+        this.mText = in.readString();
+        this.mSource = in.readString();
+        this.mVia = in.readString();
+        //noinspection ResourceType
+        this.mPrivacy = in.readString();
+        this.mImages = in.createTypedArrayList(ImageInfo.CREATOR);
+        this.mFavorited = in.readByte() != 0;
+        this.mIsVoteable = in.readByte() != 0;
+        this.mCanVote = in.readByte() != 0;
+        this.mCanReport = in.readByte() != 0;
+        this.mCanEdit = in.readByte() != 0;
+        this.mCanDelete = in.readByte() != 0;
+        this.mImageUrl = in.readString();
+    }
+
+    public static final Creator<Entry> CREATOR = new Creator<Entry>() {
+        public Entry createFromParcel(Parcel source) {
+            return new Entry(source);
+        }
+
+        public Entry[] newArray(int size) {
+            return new Entry[size];
+        }
+    };
 }

@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.ui.ClickableNicknameSpan;
@@ -339,7 +341,12 @@ public class UiUtils {
     public static String getUserErrorText(Resources resources, @Nullable Throwable e, int fallbackTextResId) {
         String userErrorText;
 
-        if (e != null && e instanceof ApiErrorException) {
+        if (resources != null
+                && e instanceof ApiErrorException
+                && (((ApiErrorException) e)).isErrorAuthorizationRequired()
+                && !Session.getInstance().isAuthorized()) {
+            userErrorText = resources.getString(R.string.allowed_only_to_registered_users);
+        } else if (e != null && e instanceof ApiErrorException) {
             userErrorText = ((ApiErrorException) e).getErrorUserMessage(resources, fallbackTextResId);
         }else {
             userErrorText = resources != null ? resources.getString(fallbackTextResId) : "unknown error";

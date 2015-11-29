@@ -334,4 +334,7 @@
 
     <string name="open_in_browser">Открыть в браузере</string>
 
+    <string name="author_wrote_to_tlog">$from написал в $to</string>
+    <string name="repost_from">репост из тлога $from</string>
+
 </resources>

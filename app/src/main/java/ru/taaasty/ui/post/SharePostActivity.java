@@ -41,11 +41,7 @@ public class SharePostActivity extends ActivityBase {
     private static final String TAG = "SharePostActivity";
     private static final boolean DBG = BuildConfig.DEBUG;
 
-    public static final int RESULT_CODE_SHOW_ERROR = Activity.RESULT_FIRST_USER + 1;
-
     public static final int RESULT_CODE_SHOW_OPEN_IN_BROWSER = Activity.RESULT_FIRST_USER + 2;
-
-    public static final String RESULT_ARG_ERROR_MESSAGE = "RESULT_ARG_ERROR_MESSAGE";
 
     public static final String RESULT_ARG_URI = "RESULT_ARG_URI";
 
@@ -58,6 +54,8 @@ public class SharePostActivity extends ActivityBase {
     private static final String KEY_DO_SHARE_VKONTAKTE = "ru.taaasty.ui.post.SharePostActivity.KEY_DO_SHARE_VKONTAKTE";
 
     private static final Uri TWITTER_SHARE_URL = Uri.parse("https://twitter.com/intent/tweet");
+
+    private static final int REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY = 1;
 
     private Entry mEntry;
 
@@ -82,12 +80,12 @@ public class SharePostActivity extends ActivityBase {
     public static void handleActivityResult(Activity activity, View rootView, int resultCode, Intent resultIntent) {
         CharSequence error;
         switch (resultCode) {
-            case RESULT_CODE_SHOW_ERROR:
-                error = resultIntent.getCharSequenceExtra(RESULT_ARG_ERROR_MESSAGE);
+            case Constants.ACTIVITY_RESULT_CODE_SHOW_ERROR:
+                error = resultIntent.getCharSequenceExtra(Constants.ACTIVITY_RESULT_ARG_ERROR_MESSAGE);
                 Snackbar.make(rootView, error, Snackbar.LENGTH_LONG).show();
                 break;
             case RESULT_CODE_SHOW_OPEN_IN_BROWSER:
-                error = resultIntent.getCharSequenceExtra(RESULT_ARG_ERROR_MESSAGE);
+                error = resultIntent.getCharSequenceExtra(Constants.ACTIVITY_RESULT_ARG_ERROR_MESSAGE);
                 String uri = resultIntent.getStringExtra(RESULT_ARG_URI);
 
                 Snackbar snackbar = Snackbar.make(rootView, error, Snackbar.LENGTH_LONG);
@@ -203,6 +201,11 @@ public class SharePostActivity extends ActivityBase {
             }
         })) {
             super.onActivityResult(requestCode, resultCode, data);
+            if (requestCode == REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY) {
+                setResult(resultCode, data);
+                finish();
+                overridePendingTransition(0, 0);
+            }
         }
     }
 
@@ -295,8 +298,8 @@ public class SharePostActivity extends ActivityBase {
 
     public void reportPost(View view) {
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Пожаловаться", null);
-        DeleteOrReportDialogActivity.startReportPost(this, mEntry.getId());
-        finish();
+        DeleteOrReportDialogActivity.startReportPost(this, REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY, mEntry.getId());
+        overridePendingTransition(0, 0);
     }
 
     public void editPost(View view) {
@@ -307,8 +310,8 @@ public class SharePostActivity extends ActivityBase {
 
     public void deletePost(View view) {
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Удалить", null);
-        DeleteOrReportDialogActivity.startDeletePost(this, mTlogId, mEntry.getId());
-        finish();
+        DeleteOrReportDialogActivity.startDeletePost(this, REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY, mTlogId, mEntry.getId());
+        overridePendingTransition(0, 0);
     }
 
     /**
@@ -337,7 +340,7 @@ public class SharePostActivity extends ActivityBase {
         ClipData clip = ClipData.newPlainText("URL", mEntry.getEntryUrl());
         clipboard.setPrimaryClip(clip);
         Intent resultIntent = new Intent();
-        resultIntent.putExtra(RESULT_ARG_ERROR_MESSAGE, getString(R.string.link_have_been_added_to_clipboard));
+        resultIntent.putExtra(Constants.ACTIVITY_RESULT_ARG_ERROR_MESSAGE, getString(R.string.link_have_been_added_to_clipboard));
         resultIntent.putExtra(RESULT_ARG_URI, mEntry.getEntryUrl());
         setResult(RESULT_CODE_SHOW_OPEN_IN_BROWSER, resultIntent);
         finish();

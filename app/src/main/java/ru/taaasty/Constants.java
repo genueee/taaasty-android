@@ -15,6 +15,10 @@ public interface Constants {
 
     int ACTIVITY_REQUEST_CODE_CREATE_POST = 254;
 
+    int ACTIVITY_RESULT_CODE_SHOW_ERROR = 253;
+
+    String ACTIVITY_RESULT_ARG_ERROR_MESSAGE = "ACTIVITY_RESULT_ARG_ERROR_MESSAGE";
+
     RestAdapter.LogLevel RETROFIT_LOG_LEVEL = RestAdapter.LogLevel.NONE;
     // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
     // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE;
@@ -112,4 +116,5 @@ public interface Constants {
             VKScope.PHOTOS,
             VKScope.NOHTTPS
     };
+
 }

@@ -5,8 +5,10 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -49,9 +51,9 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setupEntry(Entry entry, TlogDesign design) {
+    public void setupEntry(Entry entry, TlogDesign design, String feedId) {
         mEntryActionBar.setupEntry(entry);
-        setAuthor(entry);
+        setAuthor(entry, feedId);
     }
 
     public void applyFeedStyle(TlogDesign design) {
@@ -66,15 +68,54 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         mEntryActionBar.setTlogDesign(design);
     }
 
-    private void setAuthor(Entry item) {
+    /**
+     * Верхная часть: автор (если не отключен)
+     * @param item
+     */
+    private void setAuthor(Entry item, String feedId) {
         if (!mShowUserAvatar) return;
         User author = item.getAuthor();
-        mAvatarAuthor.setText(author.getName());
+        mAvatarAuthor.setText(getAvatarDescription(item, feedId));
         ImageUtils.getInstance().loadAvatar(itemView.getContext(),
                 author.getUserpic(),
                 author.getName(),
                 mAvatarTarget,
                 R.dimen.avatar_extra_small_diameter_34dp);
+    }
+
+    private CharSequence getAvatarDescription(Entry item, @Nullable  String feedId) {
+        String template = "";
+        String author = String.valueOf(item.getAuthor().getId());
+        String tlog = String.valueOf(item.getTlog().id);
+
+        if (!TextUtils.isEmpty(feedId)) {
+            // Просматриваем чей-то фид или поток
+            if (author.equals(tlog)) { // Автор написал в свой тлог
+                if (author.equals(feedId)) {
+                    template = "$from";
+                } else {
+                    template = getResources().getString(R.string.repost_from);
+                }
+            } else { // Авто написал не в свой тлог
+                if (tlog.equals(feedId)) {
+                    template = "$from";
+                } else { // author, tlog, feedId не совпадают между собой
+                    template =  getResources().getString(R.string.author_wrote_to_tlog);
+                }
+            }
+        } else {
+            // Просматриваем общий фид. Здесь репостов нет
+            if (author.equals(tlog)) { // Юзер написал в свой тлог
+                template = "$from";
+            } else { // не в свой
+                template = getResources().getString(R.string.author_wrote_to_tlog);
+            }
+        }
+
+        return TextUtils.replace(template,
+                new String[] {"$from", "$to"}, new CharSequence[] {
+                item.getAuthor().getNameWithPrefix(), item.getTlog().author.getNameWithPrefix()
+        });
     }
 
     public void setParentWidth(int width) {

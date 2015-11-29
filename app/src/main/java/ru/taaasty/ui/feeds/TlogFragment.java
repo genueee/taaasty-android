@@ -693,7 +693,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             showPostAuthor = false;
         }
 
-        mAdapter = new Adapter(mWorkFragment.getEntryList(), showPostAuthor);
+        mAdapter = new Adapter(mWorkFragment.getEntryList(), showPostAuthor, getUserId());
         mAdapter.onCreate();
 
         mDateIndicatorHelper = new FeedsHelper.DateIndicatorUpdateHelper(mListView, mDateIndicatorView, mAdapter);
@@ -734,8 +734,9 @@ public class TlogFragment extends RxFragment implements IRereshable,
         private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
         private ImageUtils.DrawableTarget mAvatarLoadTarget;
 
-        public Adapter(SortedList<Entry> feed, boolean isFlow) {
+        public Adapter(SortedList<Entry> feed, boolean isFlow, Long feedId) {
             super(feed, isFlow);
+            if (feedId != null) setFeedId(feedId.toString());
             setInteractionListener(new InteractionListener() {
                 @Override
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
@@ -814,6 +815,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             if (DBG) Assert.assertTrue(isFlow() == user.isFlow());
             if (!Objects.equals(mUser, user)) {
                 mUser = user;
+                setFeedId(String.valueOf(mUser.getId()));
                 notifyItemChanged(0);
             }
         }

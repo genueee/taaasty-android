@@ -82,11 +82,11 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
     }
 
     @Override
-    public void setupEntry(final Entry entry, TlogDesign design) {
+    public void setupEntry(final Entry entry, TlogDesign design, String feedId) {
         TimingLogger timings = null;
         if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup EmbeddEntry");
 
-        super.setupEntry(entry, design);
+        super.setupEntry(entry, design, feedId);
         mUser = entry.getAuthor();
         setupImage(entry, mParentWidth);
         setupTitle(entry, mParentWidth);

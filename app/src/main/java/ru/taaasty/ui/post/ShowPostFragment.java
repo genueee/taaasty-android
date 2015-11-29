@@ -707,7 +707,7 @@ public class ShowPostFragment extends Fragment {
             if (DBG) Log.v(TAG, "onBindPostHolder()");
             ((ListEntryBase) pHolder).getEntryActionBar().setOnItemListenerEntry(mCurrentEntry);
             ((ListEntryBase)pHolder).getEntryActionBar().setCommentsClickable(false);
-            ((ListEntryBase) pHolder).setupEntry(mCurrentEntry, mFeedDesign);
+            ((ListEntryBase) pHolder).setupEntry(mCurrentEntry, mFeedDesign, String.valueOf(mCurrentEntry.getId()));
         }
 
         private final CommentsAdapter.OnCommentButtonClickListener mOnCommentActionListener = new CommentsAdapter.OnCommentButtonClickListener() {
@@ -721,13 +721,13 @@ public class ShowPostFragment extends Fragment {
             @Override
             public void onDeleteCommentClicked(View view, ViewHolder holder) {
                 long commentId = getItemId(holder.getPosition());
-                DeleteOrReportDialogActivity.startDeleteComment(getActivity(), mPostId, commentId);
+                if (mListener != null) mListener.onDeleteCommentClicked(mPostId, commentId);
             }
 
             @Override
             public void onReportContentClicked(View view, ViewHolder holder) {
                 long commentId = getItemId(holder.getPosition());
-                DeleteOrReportDialogActivity.startReportComment(getActivity(), commentId);
+                if (mListener != null) mListener.onReportCommentClicked(mPostId, commentId);
             }
         };
 
@@ -940,5 +940,7 @@ public class ShowPostFragment extends Fragment {
         void onAvatarClicked(View view, User user, TlogDesign design);
         void onSharePostMenuClicked(Entry entry);
         void setPostBackground(@DrawableRes int resId, boolean animate);
+        void onDeleteCommentClicked(long postId, long commentId);
+        void onReportCommentClicked(long postId, long commentId);
     }
 }

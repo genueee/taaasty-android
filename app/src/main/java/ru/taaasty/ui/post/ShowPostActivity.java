@@ -55,7 +55,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
-    private static final int REQUEST_CODE_SHARE = 3;
+    public static final int REQUEST_CODE_SHARE = 3;
 
     private Handler mHideActionBarHandler;
 
@@ -335,6 +335,16 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         } else {
             getWindow().setBackgroundDrawable(to);
         }
+    }
+
+    @Override
+    public void onDeleteCommentClicked(long postId, long commentId) {
+        DeleteOrReportDialogActivity.startDeleteComment(this, REQUEST_CODE_SHARE, mPostId, commentId);
+    }
+
+    @Override
+    public void onReportCommentClicked(long postId, long commentId) {
+        DeleteOrReportDialogActivity.startReportComment(this, REQUEST_CODE_SHARE, commentId);
     }
 
     private Runnable mHideActionBarRunnable = new Runnable() {

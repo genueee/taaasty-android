@@ -36,8 +36,8 @@ public class ListQuoteEntry extends  ListEntryBase {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design) {
-        super.setupEntry(entry, design);
+    public void setupEntry(Entry entry, TlogDesign design, String feedId) {
+        super.setupEntry(entry, design, feedId);
         mUser = entry.getAuthor();
         setupText(entry);
         setupSource(entry);

@@ -3,7 +3,7 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.FeedItemAdapterLite;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
@@ -29,6 +30,7 @@ import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.DividerFeedListInterPost;
+import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
@@ -41,7 +43,10 @@ import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 
-public class MyFeedFragment extends Fragment implements IRereshable,
+/**
+ * Мои записи
+ */
+public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> implements IRereshable,
         FeedWorkFragment.TargetFragmentInteraction {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyFeedFragment";
@@ -123,9 +128,14 @@ public class MyFeedFragment extends Fragment implements IRereshable,
         }
     }
 
+    @Nullable
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    public FeedWorkFragment getWorkFragment() {
+        return mWorkFragment;
+    }
+
+    @Override
+    public void initWorkFragment() {
         FragmentManager fm = getFragmentManager();
         mWorkFragment = (WorkRetainedFragment) fm.findFragmentByTag("MyFeedWorkFragment");
         if (mWorkFragment == null) {
@@ -138,7 +148,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     }
 
     @Override
-    public void onWorkFragmentActivityCreated() {
+    public void onWorkFragmentActivityCreatedSafe() {
         mAdapter = new Adapter(mWorkFragment.getEntryList());
         mAdapter.onCreate();
         mListView.setAdapter(mAdapter);
@@ -162,7 +172,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
     }
 
     @Override
-    public void onWorkFragmentResume() {
+    public void onWorkFragmentResumeSafe() {
         if (!mWorkFragment.isRefreshing()) refreshData(false);
         mDateIndicatorHelper.onResume();
     }
@@ -293,6 +303,7 @@ public class MyFeedFragment extends Fragment implements IRereshable,
 
         public Adapter(SortedList<Entry> feed) {
             super(feed, false);
+            setFeedId(String.valueOf(Session.getInstance().getCurrentUserId()));
             setInteractionListener(new InteractionListener() {
                 @Override
                 public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {

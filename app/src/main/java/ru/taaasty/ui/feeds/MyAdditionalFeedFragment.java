@@ -392,6 +392,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             Bundle args = getArguments();
             //noinspection ResourceType
 
+            setFeedId(null); // XXX показываем как ов общем фиде, без репостов
+
             switch (mFeedType) {
                 case FEED_TYPE_MAIN:
                     mFeedName = -1;

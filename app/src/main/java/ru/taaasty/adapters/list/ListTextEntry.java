@@ -50,10 +50,12 @@ public class ListTextEntry extends ListEntryBase {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design) {
+    public void setupEntry(Entry entry, TlogDesign design, String feedId) {
         TimingLogger timings = null;
-        if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup TextEntry");
-        super.setupEntry(entry, design);
+        if (BuildConfig.DEBUG) {
+            timings = new TimingLogger(Constants.LOG_TAG, "setup TextEntry");
+        }
+        super.setupEntry(entry, design, feedId);
 
         mUser = entry.getAuthor();
         if (mImageGetter == null) {

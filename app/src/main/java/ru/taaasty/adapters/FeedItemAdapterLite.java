@@ -48,6 +48,11 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
     private final int mPendingResource;
 
+    /**
+     * ID текущей показываемой ленты
+     */
+    private String mFeedId = null;
+
     private AtomicBoolean mLoading = new AtomicBoolean(false);
 
     @Nullable
@@ -129,7 +134,7 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
         int feedLocation = getFeedLocation(adapterPosition);
         Entry entry = mEntries.get(feedLocation);
         ((ListEntryBase) viewHolder).getEntryActionBar().setOnItemListenerEntry(entry);
-        ((ListEntryBase) viewHolder).setupEntry(entry, mFeedDesign);
+        ((ListEntryBase) viewHolder).setupEntry(entry, mFeedDesign, mFeedId);
 
         if (mInteractionListener != null)
             mInteractionListener.onBindViewHolder(viewHolder,feedLocation);
@@ -214,6 +219,13 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
             mFeedDesign = design;
             notifyItemRangeChanged(0, getItemCount());
         }
+    }
+
+    /**
+     * @param feedId ID текущей показываемой ленты
+     */
+    public void setFeedId(String feedId) {
+        this.mFeedId = feedId;
     }
 
     @Nullable

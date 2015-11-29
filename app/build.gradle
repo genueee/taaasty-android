@@ -121,6 +121,18 @@ android {
         }
     }
 
+    productFlavors {
+
+        api21 {
+            minSdkVersion 21
+        }
+
+        prod {
+            minSdkVersion 15
+        }
+
+    }
+
     lintOptions {
         warning 'RtlHardcoded'
         warning 'AppCompatResource'

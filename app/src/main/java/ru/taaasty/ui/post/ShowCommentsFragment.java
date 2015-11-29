@@ -665,13 +665,13 @@ public class ShowCommentsFragment extends Fragment {
             @Override
             public void onDeleteCommentClicked(View view, ViewHolder holder) {
                 long commentId = getItemId(holder.getPosition());
-                DeleteOrReportDialogActivity.startDeleteComment(getActivity(), mPostId, commentId);
+                if (mListener != null) mListener.onDeleteCommentClicked(mPostId, commentId);
             }
 
             @Override
             public void onReportContentClicked(View view, ViewHolder holder) {
-                long commentId = getItemId(holder.getPosition());
-                DeleteOrReportDialogActivity.startReportComment(getActivity(), commentId);
+                long commentId = getItemId(holder.getAdapterPosition());
+                if (mListener != null) mListener.onReportCommentClicked(mPostId, commentId);
             }
         };
 
@@ -855,5 +855,7 @@ public class ShowCommentsFragment extends Fragment {
         void onSharePostMenuClicked(Entry entry);
 
         void setPostBackground(@DrawableRes int background, boolean animate);
+        void onDeleteCommentClicked(long postId, long commentId);
+        void onReportCommentClicked(long postId, long commentId);
     }
 }
