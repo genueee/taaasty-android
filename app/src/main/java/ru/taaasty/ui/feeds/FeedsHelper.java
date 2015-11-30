@@ -26,7 +26,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.list.ListEmbeddEntry;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.adapters.list.ListImageEntry;
@@ -73,7 +73,7 @@ public class FeedsHelper {
 
     public static void updateDateIndicator(RecyclerView listView,
                                            DateIndicatorWidget dateIndicator,
-                                           FeedItemAdapterLite adapter,
+                                           FeedAdapter adapter,
                                            boolean animScrollUp) {
         Date newDate = null;
         if (listView == null || dateIndicator == null) return;
@@ -99,7 +99,7 @@ public class FeedsHelper {
         private final Handler mHandler;
         private final RecyclerView mListView;
         private final DateIndicatorWidget mWidget;
-        private final FeedItemAdapterLite mAdapter;
+        private final FeedAdapter mAdapter;
 
         boolean mQueued = false;
 
@@ -107,7 +107,7 @@ public class FeedsHelper {
 
         public DateIndicatorUpdateHelper(RecyclerView listView,
                                          DateIndicatorWidget dateIndicator,
-                                         FeedItemAdapterLite adapter) {
+                                         FeedAdapter adapter) {
             mHandler = new Handler();
             mListView = listView;
             mWidget = dateIndicator;

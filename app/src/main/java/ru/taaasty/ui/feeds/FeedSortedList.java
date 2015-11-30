@@ -4,7 +4,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
 import ru.taaasty.SortedList;
-import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.rest.model.Entry;
 
 /**
@@ -28,29 +28,29 @@ public class FeedSortedList extends SortedList<Entry> {
             public void onInserted(int position, int count) {
                 RecyclerView.Adapter adapter = adapterProvider.getTargetAdapter();
                 if (adapter != null)
-                    adapter.notifyItemRangeInserted(FeedItemAdapterLite.getAdapterPosition(position), count);
+                    adapter.notifyItemRangeInserted(FeedAdapter.getAdapterPosition(position), count);
             }
 
             @Override
             public void onRemoved(int position, int count) {
                 RecyclerView.Adapter adapter = adapterProvider.getTargetAdapter();
                 if (adapter != null)
-                    adapter.notifyItemRangeRemoved(FeedItemAdapterLite.getAdapterPosition(position), count);
+                    adapter.notifyItemRangeRemoved(FeedAdapter.getAdapterPosition(position), count);
             }
 
             @Override
             public void onMoved(int fromPosition, int toPosition) {
                 RecyclerView.Adapter adapter = adapterProvider.getTargetAdapter();
                 if (adapter != null)
-                    adapter.notifyItemMoved(FeedItemAdapterLite.getAdapterPosition(fromPosition),
-                            FeedItemAdapterLite.getAdapterPosition(toPosition));
+                    adapter.notifyItemMoved(FeedAdapter.getAdapterPosition(fromPosition),
+                            FeedAdapter.getAdapterPosition(toPosition));
             }
 
             @Override
             public void onChanged(int position, int count) {
                 RecyclerView.Adapter adapter = adapterProvider.getTargetAdapter();
                 if (adapter != null)
-                    adapter.notifyItemRangeChanged(FeedItemAdapterLite.getAdapterPosition(position), count);
+                    adapter.notifyItemRangeChanged(FeedAdapter.getAdapterPosition(position), count);
             }
 
             @Override

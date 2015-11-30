@@ -47,7 +47,7 @@ import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
-import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
@@ -728,7 +728,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
         }
     };
 
-    public class Adapter extends FeedItemAdapterLite {
+    public class Adapter extends FeedAdapter {
         private User mUser = User.DUMMY;
         private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
         private ImageUtils.DrawableTarget mAvatarLoadTarget;

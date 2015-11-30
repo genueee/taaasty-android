@@ -22,7 +22,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
-import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -426,7 +426,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
         if (mWorkFragment.getEntryList().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
     }
 
-    class Adapter extends FeedItemAdapterLite {
+    class Adapter extends FeedAdapter {
 
         public Adapter(SortedList<Entry> list, boolean showUserAvatar) {
             super(list, showUserAvatar);

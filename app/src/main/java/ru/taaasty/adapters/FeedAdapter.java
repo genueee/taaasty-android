@@ -29,19 +29,17 @@ import ru.taaasty.ui.feeds.FeedsHelper;
 /**
  * Лента постов. Упрощенная версия без комментариев, только посты.
  */
-public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implements FeedsHelper.IFeedsHelper {
+public abstract class FeedAdapter extends RecyclerView.Adapter implements FeedsHelper.IFeedsHelper {
 
     public static final int VIEW_TYPE_HEADER = R.id.feed_view_type_header;
     public static final int VIEW_TYPE_IMAGE = R.id.feed_view_type_image;
     public static final int VIEW_TYPE_EMBEDD = R.id.feed_view_type_embedd;
     public static final int VIEW_TYPE_QUOTE = R.id.feed_view_type_quote;
-    public static final int VIEW_TYPE_COMMENT = R.id.feed_view_type_comment;
-    public static final int VIEW_TYPE_REPLY_FORM = R.id.feed_view_type_reply_form;
     public static final int VIEW_TYPE_OTHER = R.id.feed_view_type_other;
     public static final int VIEW_TYPE_PENDING = R.id.feed_view_type_pending_indicator;
     private static final int HEADERS_COUNT = 1;
 
-    private static final String TAG = "FeedItemAdapterLite";
+    private static final String TAG = "FeedAdapter";
     private static final boolean DBG = BuildConfig.DEBUG;
 
     private final SortedList<Entry> mEntries;
@@ -62,11 +60,11 @@ public abstract class FeedItemAdapterLite extends RecyclerView.Adapter implement
 
     protected final boolean mShowUserAvatar;
 
-    public FeedItemAdapterLite(SortedList<Entry> list, boolean showUserAvatar) {
+    public FeedAdapter(SortedList<Entry> list, boolean showUserAvatar) {
         this(list, null, showUserAvatar, R.layout.endless_loading_indicator);
     }
 
-    private FeedItemAdapterLite(SortedList<Entry> entries, @Nullable List<Entry> feed, boolean showUserAvatar, int pendingResource) {
+    private FeedAdapter(SortedList<Entry> entries, @Nullable List<Entry> feed, boolean showUserAvatar, int pendingResource) {
         super();
         mEntries = entries != null ? entries : new EntryList();
         mShowUserAvatar = showUserAvatar;

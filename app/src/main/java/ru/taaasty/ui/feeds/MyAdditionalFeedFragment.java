@@ -24,7 +24,7 @@ import java.lang.annotation.RetentionPolicy;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.adapters.FeedItemAdapterLite;
+import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
 import ru.taaasty.events.EntryChanged;
@@ -380,7 +380,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         return feedType != FEED_TYPE_MAIN;
     }
 
-    public class Adapter extends FeedItemAdapterLite {
+    public class Adapter extends FeedAdapter {
         private String mTitle;
         private final int mFeedName;
         private final int mFeedNameLeftDrawable;
