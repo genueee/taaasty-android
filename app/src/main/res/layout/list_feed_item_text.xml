@@ -1,28 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/feed_horizontal_margin"
-    android:layout_marginRight="@dimen/feed_horizontal_margin"
-    android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:layout_marginLeft="@dimen/feed_horizontal_margin"
+              android:layout_marginRight="@dimen/feed_horizontal_margin"
+              android:orientation="vertical">
 
     <include layout="@layout/include_feed_item_author"/>
+
+    <ViewStub
+        android:id="@+id/flow_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout="@layout/include_feed_item_flow_header"
+        />
 
     <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_title"
         style="@style/PostTitle"
         android:paddingTop="0dp"
+        android:textSize="28sp"
         android:visibility="gone"
         tools:text="Ролики"
-        android:textSize="28sp"
-        tools:visibility="visible" />
+        tools:visibility="visible"/>
 
     <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_text"
         style="@style/PostText"
-        tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд" />
+        tools:text="  Купил я короч себе ролики. Последний раз я на них катался лет в 9 примерно. Ну думаю похуй, вспомню. Ага. Ну стоять я могу и отталкиваться, но вот с бордюрами полный кабздец :D Уебался короч на переходе :D \n И еще я почувствовал всю боль девушек, потому что я упал прямо на ноготь правой руки большого пальца(я на гитарке играю, поэтому на правой руке ногти длинные). Это пиздец хд"/>
 
     <include layout="@layout/include_post_bottom_action_bar"/>
 

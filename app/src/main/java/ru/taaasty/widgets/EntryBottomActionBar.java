@@ -14,17 +14,13 @@ import ru.taaasty.rest.model.Rating;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.LikesHelper;
 
-/**
- * Created by alexey on 20.08.14.
- */
-public class EntryBottomActionBar {
+public abstract class EntryBottomActionBar {
     private static final boolean DBG = BuildConfig.DEBUG;
 
     private TextView mCommentsCountView;
     private TextView mLikesView;
     private ImageView mMoreButton;
 
-    private OnEntryActionBarListener mListener;
     private Entry mOnItemListenerEntry;
     private final LikesHelper mLikesHelper;
 
@@ -53,31 +49,54 @@ public class EntryBottomActionBar {
     public EntryBottomActionBar(View root) {
         mTlogDesign = TlogDesign.DUMMY;
         mLikesHelper = LikesHelper.getInstance();
-        setRoot(root);
-    }
-
-    public interface OnEntryActionBarListener {
-        void onPostLikesClicked(View view, Entry entry, boolean canVote);
-        void onPostCommentsClicked(View view, Entry entry);
-        void onPostAdditionalMenuClicked(View view, Entry entry);
-    }
-
-    public void setRoot(View root) {
-        mOnItemListenerEntry = null;
         mCommentsCountView = (TextView)root.findViewById(R.id.comments_count);
         mLikesView = (TextView)root.findViewById(R.id.likes);
         mMoreButton = (ImageView)root.findViewById(R.id.more);
+        mOnItemListenerEntry = null;
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String action = null;
+                if (mOnItemListenerEntry == null) {
+                    if (DBG) throw new IllegalStateException();
+                    return;
+                }
+                switch (v.getId()) {
+                    case R.id.comments_count:
+                        onPostCommentsClicked(v);
+                        action = "Открыты комментарии";
+                        break;
+                    case R.id.more:
+                        onPostAdditionalMenuClicked(v);
+                        action = "Открыто доп. меню";
+                        break;
+                    case R.id.likes:
+                        onPostLikesClicked(v, mCanVote);
+                        if (mCanVote) {
+                            action = mIsVoted ? "Снят лайк" : "Поставлен лайк";
+                        } else {
+                            action = "Хотел лайкнуть, а нельзя";
+                        }
+                        break;
+                    default:
+                        throw new IllegalArgumentException();
+                }
+                if (v.getContext().getApplicationContext() instanceof TaaastyApplication) {
+                    ((TaaastyApplication) v.getContext().getApplicationContext())
+                            .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, action, null);
+                }
+            }
+        };
+
+        mCommentsCountView.setOnClickListener(onClickListener);
+        mLikesView.setOnClickListener(onClickListener);
+        mMoreButton.setOnClickListener(onClickListener);
     }
 
+    // TODO Возможно, можно избавиться
     public void setOnItemListenerEntry(Entry entry) {
         mOnItemListenerEntry = entry;
-    }
-
-    public void setOnItemClickListener(OnEntryActionBarListener listener) {
-        mListener = listener;
-        mCommentsCountView.setOnClickListener(mOnClickListener);
-        mLikesView.setOnClickListener(mOnClickListener);
-        mMoreButton.setOnClickListener(mOnClickListener);
     }
 
     public void setTlogDesign(TlogDesign design) {
@@ -167,39 +186,8 @@ public class EntryBottomActionBar {
         mCommentsCountView.setClickable(clickable);
     }
 
-    private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            String action = null;
-            if (mListener == null) return;
-            if (mOnItemListenerEntry == null) {
-                if (DBG) throw new IllegalStateException();
-                return;
-            }
-            switch (v.getId()) {
-                case R.id.comments_count:
-                    mListener.onPostCommentsClicked(v, mOnItemListenerEntry);
-                    action = "Открыты комментарии";
-                    break;
-                case R.id.more:
-                    mListener.onPostAdditionalMenuClicked(v, mOnItemListenerEntry);
-                    action = "Открыто доп. меню";
-                    break;
-                case R.id.likes:
-                    mListener.onPostLikesClicked(v, mOnItemListenerEntry, mCanVote);
-                    if (mCanVote) {
-                        action = mIsVoted ? "Снят лайк" : "Поставлен лайк";
-                    } else {
-                        action = "Хотел лайкнуть, а нельзя";
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException();
-            }
-            if (v.getContext().getApplicationContext() instanceof  TaaastyApplication) {
-                ((TaaastyApplication) v.getContext().getApplicationContext())
-                        .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, action, null);
-            }
-        }
-    };
+    protected abstract void onPostLikesClicked(View view, boolean canVote);
+    protected abstract void onPostCommentsClicked(View view);
+    protected abstract void onPostAdditionalMenuClicked(View view);
+
 }

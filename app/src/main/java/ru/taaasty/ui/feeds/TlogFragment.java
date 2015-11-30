@@ -77,7 +77,6 @@ import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AlphaForegroundColorSpan;
 import ru.taaasty.widgets.DateIndicatorWidget;
-import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.FabMenuLayout;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
@@ -747,7 +746,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
                 public void initClickListeners(final RecyclerView.ViewHolder pHolder, int pViewType) {
                     // Все посты
                     if (pHolder instanceof ListEntryBase) {
-                        ((ListEntryBase) pHolder).getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                        ((ListEntryBase) pHolder).setEntryClickListener(mOnFeedItemClickListener);
                         FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) pHolder);
                         if (mShowUserAvatar) {
                             ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
@@ -966,10 +965,12 @@ public class TlogFragment extends RxFragment implements IRereshable,
     }
 
 
-    public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
+    public final ListEntryBase.OnEntryClickListener mOnFeedItemClickListener = new ListEntryBase.OnEntryClickListener() {
 
         @Override
-        public void onPostLikesClicked(View view, Entry entry, boolean canVote) {
+        public void onPostLikesClicked(ListEntryBase holder, View view, boolean canVote) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
@@ -979,7 +980,9 @@ public class TlogFragment extends RxFragment implements IRereshable,
         }
 
         @Override
-        public void onPostCommentsClicked(View view, Entry entry) {
+        public void onPostCommentsClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
             if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null)  {
@@ -993,7 +996,10 @@ public class TlogFragment extends RxFragment implements IRereshable,
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+        public void onPostAdditionalMenuClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
+
             if (mWorkFragment != null && mWorkFragment.getUserId() != null) {
                 if (mListener != null) mListener.onSharePostMenuClicked(entry, mWorkFragment.getUserId());
             } else {
@@ -1001,6 +1007,13 @@ public class TlogFragment extends RxFragment implements IRereshable,
                 // TODO что-нибудь делать
                 // TODO запретить такой вариант, показывать посты только после того, как инфа загружена?
             }
+        }
+
+        @Override
+        public void onPostFlowHeaderClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
+            TlogActivity.startTlogActivity(getActivity(), entry.getTlog().id, view);
         }
     };
 

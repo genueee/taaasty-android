@@ -9,8 +9,10 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -30,20 +32,46 @@ import ru.taaasty.widgets.PicassoDrawable;
 
 public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
+    private static final boolean DBG = BuildConfig.DEBUG;
+    private static final String TAG = "ListEntryBase";
+
     private final FontManager mFontManager;
     private final TextView mAvatarAuthor;
+
     private final EntryBottomActionBar mEntryActionBar;
+
+    @Nullable
+    private FlowEntryHeader mFlowEntryHeader;
     private final boolean mShowUserAvatar;
 
     protected int mParentWidth;
     protected final Picasso picasso;
 
-    public ListEntryBase(Context context, View v, boolean showUserAvatar) {
+    protected OnEntryClickListener mEntryClickListener;
+
+    public ListEntryBase(Context context, final View v, boolean showUserAvatar) {
         super(v);
         mFontManager = FontManager.getInstance(context);
         mShowUserAvatar = showUserAvatar;
         mAvatarAuthor = (TextView) v.findViewById(R.id.avatar_author);
-        mEntryActionBar = new EntryBottomActionBar(v.findViewById(R.id.entry_bottom_action_bar));
+        mEntryActionBar = new EntryBottomActionBar(v.findViewById(R.id.entry_bottom_action_bar)) {
+
+            @Override
+            protected void onPostLikesClicked(View view, boolean canVote) {
+                if (mEntryClickListener != null) mEntryClickListener.onPostLikesClicked(ListEntryBase.this, view, canVote);
+            }
+
+            @Override
+            protected void onPostCommentsClicked(View view) {
+                if (mEntryClickListener != null) mEntryClickListener.onPostCommentsClicked(ListEntryBase.this, view);
+            }
+
+            @Override
+            protected void onPostAdditionalMenuClicked(View view) {
+                if (mEntryClickListener != null) mEntryClickListener.onPostAdditionalMenuClicked(ListEntryBase.this, view);
+            }
+        };
+
         picasso = Picasso.with(context);
 
         if (!showUserAvatar) {
@@ -54,6 +82,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     public void setupEntry(Entry entry, TlogDesign design, String feedId) {
         mEntryActionBar.setupEntry(entry);
         setAuthor(entry, feedId);
+        setFlowHeader(entry, feedId);
     }
 
     public void applyFeedStyle(TlogDesign design) {
@@ -66,6 +95,10 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
             }
         }
         mEntryActionBar.setTlogDesign(design);
+    }
+
+    public void setEntryClickListener(OnEntryClickListener listener) {
+        mEntryClickListener = listener;
     }
 
     /**
@@ -88,27 +121,35 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         String author = String.valueOf(item.getAuthor().getId());
         String tlog = String.valueOf(item.getTlog().id);
 
-        if (!TextUtils.isEmpty(feedId)) {
+        boolean authorIsFeMale = item.getAuthor().isFemale();
+        int authorWroteToTlogResId = authorIsFeMale ? R.string.author_female_wrote_to_tlog : R.string.author_male_wrote_to_tlog;
+
+        if (TextUtils.isEmpty(feedId)) {
+            // Просматриваем общий фид. Здесь репостов нет
+            if (author.equals(tlog)) {
+                // Юзер написал в свой тлог
+                template = "$from";
+            } else {
+                // не в свой
+                template = getResources().getString(authorWroteToTlogResId);
+            }
+        } else {
             // Просматриваем чей-то фид или поток
-            if (author.equals(tlog)) { // Автор написал в свой тлог
+            if (author.equals(tlog)) {
+                // Автор написал в свой тлог
                 if (author.equals(feedId)) {
                     template = "$from";
                 } else {
                     template = getResources().getString(R.string.repost_from);
                 }
-            } else { // Авто написал не в свой тлог
+            } else {
+                // Авто написал не в свой тлог
                 if (tlog.equals(feedId)) {
                     template = "$from";
-                } else { // author, tlog, feedId не совпадают между собой
-                    template =  getResources().getString(R.string.author_wrote_to_tlog);
+                } else {
+                    // author, tlog, feedId не совпадают между собой.
+                    template =  getResources().getString(authorWroteToTlogResId);
                 }
-            }
-        } else {
-            // Просматриваем общий фид. Здесь репостов нет
-            if (author.equals(tlog)) { // Юзер написал в свой тлог
-                template = "$from";
-            } else { // не в свой
-                template = getResources().getString(R.string.author_wrote_to_tlog);
             }
         }
 
@@ -116,6 +157,47 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
                 new String[] {"$from", "$to"}, new CharSequence[] {
                 item.getAuthor().getNameWithPrefix(), item.getTlog().author.getNameWithPrefix()
         });
+    }
+
+    private void setFlowHeader(Entry item, @Nullable  String feedId) {
+        if (!item.getTlog().isFlow()
+                || String.valueOf(item.getTlog().id).equals(feedId) /* При просмотре потока не показываем заголовки у всех постов */) {
+            if (mFlowEntryHeader != null) {
+                if (DBG) Log.v(TAG, "setFlowHeader() set gone to inflated header");
+                mFlowEntryHeader.root.setVisibility(View.GONE);
+            }
+        } else {
+            if (mFlowEntryHeader == null) {
+                inflateFlowHeader();
+            } else {
+                if (DBG) Log.v(TAG, "setFlowHeader() set visible to inflated header");
+            }
+            mFlowEntryHeader.root.setVisibility(View.VISIBLE);
+            mFlowEntryHeader.setupEntry(item);
+        }
+    }
+
+    private void inflateFlowHeader() {
+        if (DBG) Log.v(TAG, "inflateFlowHeader()");
+        if (mFlowEntryHeader != null)
+            return;
+
+        ViewStub stub = (ViewStub)itemView.findViewById(R.id.flow_title);
+        View root = stub.inflate();
+        mFlowEntryHeader = new FlowEntryHeader(root) {
+            @Override
+            public int guessVisibleWidth(View view) {
+                return guessViewVisibleWidth(view);
+            }
+        };
+
+        mFlowEntryHeader.root.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mEntryClickListener != null) mEntryClickListener.onPostFlowHeaderClicked(ListEntryBase.this, v);
+            }
+        });
+
     }
 
     public void setParentWidth(int width) {
@@ -138,23 +220,24 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     public void recycle() {
         picasso.cancelRequest(mAvatarTarget);
+        if (mFlowEntryHeader != null) mFlowEntryHeader.stopImageLoading();
     };
 
     int guessViewVisibleWidth(View view) {
         if (view.getWidth() > 0) {
             int width = view.getWidth() - view.getPaddingLeft() - view.getPaddingRight();
             if (BuildConfig.DEBUG && (mParentWidth != 0)) {
-                int guessedWidth = guesViewVisibleWidthFromDimensions(view);
+                int guessedWidth = guessViewVisibleWidthFromDimensions(view);
                 Assert.assertEquals("Ширина может определяться неверно. width: " + width + " guessed: " + guessedWidth,
                         width, guessedWidth);
             }
             return width;
         } else {
-            return guesViewVisibleWidthFromDimensions(view);
+            return guessViewVisibleWidthFromDimensions(view);
         }
     }
 
-    private int guesViewVisibleWidthFromDimensions(View view) {
+    private int guessViewVisibleWidthFromDimensions(View view) {
         if (mParentWidth == 0) return 0;
         ViewGroup.MarginLayoutParams itemViewLayoutParams = (ViewGroup.MarginLayoutParams)itemView.getLayoutParams();
         ViewGroup.MarginLayoutParams viewLayoutParams = (ViewGroup.MarginLayoutParams)view.getLayoutParams();
@@ -199,4 +282,10 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         }
     };
 
+    public interface OnEntryClickListener {
+        void onPostLikesClicked(ListEntryBase holder, View view, boolean canVote);
+        void onPostCommentsClicked(ListEntryBase holder, View view);
+        void onPostAdditionalMenuClicked(ListEntryBase holder, View view);
+        void onPostFlowHeaderClicked(ListEntryBase holder, View view);
+    }
 }

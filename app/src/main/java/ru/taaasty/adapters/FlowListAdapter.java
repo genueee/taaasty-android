@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -70,8 +69,6 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private final int mTextColorPrimaryNotSubscribed;
 
     private final int mTextColorPrimarySubscribed;
-
-    private final OkHttpClient mOkHttpClient = NetworkUtils.getInstance().getOkHttpClient();
 
     public FlowListAdapter(Context context, InteractionListener listener, FlowListManaged flowList) {
         mPendingIndicatorShown = false;
@@ -356,7 +353,6 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (holder.imageLoading) {
             if (DBG) Log.v(TAG, "stopImageLoading() url: " + holder.imageViewUrl);
             mPicasso.cancelRequest(holder.image);
-            mOkHttpClient.cancel(holder);
             holder.imageLoading = false;
             holder.imageViewUrl = null;
         }

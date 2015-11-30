@@ -31,6 +31,7 @@ public class EntryTlog implements Parcelable {
      */
     public User author;
 
+    public RelationshipsSummary relationshipsSummary;
 
     public boolean isFlow() {
         return author.isFlow();
@@ -47,6 +48,9 @@ public class EntryTlog implements Parcelable {
     }
 
 
+    public EntryTlog() {
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -60,9 +64,7 @@ public class EntryTlog implements Parcelable {
         dest.writeString(this.slug);
         dest.writeParcelable(this.design, 0);
         dest.writeParcelable(this.author, 0);
-    }
-
-    public EntryTlog() {
+        dest.writeParcelable(this.relationshipsSummary, 0);
     }
 
     protected EntryTlog(Parcel in) {
@@ -72,9 +74,10 @@ public class EntryTlog implements Parcelable {
         this.slug = in.readString();
         this.design = in.readParcelable(TlogDesign.class.getClassLoader());
         this.author = in.readParcelable(User.class.getClassLoader());
+        this.relationshipsSummary = in.readParcelable(RelationshipsSummary.class.getClassLoader());
     }
 
-    public static final Parcelable.Creator<EntryTlog> CREATOR = new Parcelable.Creator<EntryTlog>() {
+    public static final Creator<EntryTlog> CREATOR = new Creator<EntryTlog>() {
         public EntryTlog createFromParcel(Parcel source) {
             return new EntryTlog(source);
         }

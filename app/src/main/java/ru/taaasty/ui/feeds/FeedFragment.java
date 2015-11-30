@@ -45,7 +45,6 @@ import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.DateIndicatorWidget;
-import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.FeedBackgroundDrawable;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
@@ -536,7 +535,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
 
                 private void setPostClickListener(final ListEntryBase pHolder) {
                     // Клики по элементам панельки снизу
-                    pHolder.getEntryActionBar().setOnItemClickListener(mOnFeedItemClickListener);
+                    pHolder.setEntryClickListener(mOnFeedItemClickListener);
 
                     // Клик по аватарке в заголовке
                     if (mShowUserAvatar) {
@@ -575,10 +574,12 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
         }
     }
 
-    public final EntryBottomActionBar.OnEntryActionBarListener mOnFeedItemClickListener = new EntryBottomActionBar.OnEntryActionBarListener() {
+    public final ListEntryBase.OnEntryClickListener mOnFeedItemClickListener = new ListEntryBase.OnEntryClickListener() {
 
         @Override
-        public void onPostLikesClicked(View view, Entry entry, boolean canVote) {
+        public void onPostLikesClicked(ListEntryBase holder, View view, boolean canVote) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             if (canVote) {
                 LikesHelper.getInstance().voteUnvote(entry);
@@ -588,7 +589,9 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
         }
 
         @Override
-        public void onPostCommentsClicked(View view, Entry entry) {
+        public void onPostCommentsClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design;
             if (entry.getDesign() != null) {
@@ -608,8 +611,17 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
         }
 
         @Override
-        public void onPostAdditionalMenuClicked(View view, Entry entry) {
+        public void onPostAdditionalMenuClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
             if (mListener != null) mListener.onSharePostMenuClicked(entry);
+        }
+
+        @Override
+        public void onPostFlowHeaderClicked(ListEntryBase holder, View view) {
+            Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
+            if (entry == null) return;
+            TlogActivity.startTlogActivity(getActivity(), entry.getTlog().id, view);
         }
     };
 

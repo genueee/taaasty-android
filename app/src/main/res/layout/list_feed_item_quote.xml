@@ -10,6 +10,13 @@
 
     <include layout="@layout/include_feed_item_author"/>
 
+    <ViewStub
+        android:id="@+id/flow_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout="@layout/include_feed_item_flow_header"
+        />
+
     <info.piwai.android.JellyBeanSpanFixTextView
         android:id="@+id/feed_item_text"
         style="@style/PostText"

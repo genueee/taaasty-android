@@ -56,7 +56,6 @@ import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.widgets.DateIndicatorWidget;
-import ru.taaasty.widgets.EntryBottomActionBar;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
 import rx.Observable;
 import rx.Observer;
@@ -584,7 +583,7 @@ public class ShowPostFragment extends Fragment {
             switch (viewType) {
                 case CommentsAdapter.VIEW_TYPE_POST_HEADER:
                     // Клики по элементам панельки снизу
-                    ((ListEntryBase)holder).getEntryActionBar().setOnItemClickListener(mEntryActionBarListener);
+                    ((ListEntryBase)holder).setEntryClickListener(mEntryActionBarListener);
                     // Клики на картинках
                     FeedsHelper.setupListEntryClickListener(new FeedsHelper.IFeedsHelper() {
                         @Override
@@ -775,26 +774,33 @@ public class ShowPostFragment extends Fragment {
             }
         };
 
-        private final EntryBottomActionBar.OnEntryActionBarListener mEntryActionBarListener = new EntryBottomActionBar.OnEntryActionBarListener() {
+        private final ListEntryBase.OnEntryClickListener mEntryActionBarListener = new ListEntryBase.OnEntryClickListener() {
 
             @Override
-            public void onPostLikesClicked(View view, Entry entry, boolean canVote) {
-                if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
+            public void onPostLikesClicked(ListEntryBase holder, View view, boolean canVote) {
+                if (mCurrentEntry == null) return;
+                if (DBG) Log.v(TAG, "onPostLikesClicked post: " + mCurrentEntry);
                 if (canVote) {
-                    LikesHelper.getInstance().voteUnvote(entry);
+                    LikesHelper.getInstance().voteUnvote(mCurrentEntry);
                 } else {
                     LikesHelper.showCannotVoteError(getView(), ShowPostFragment.this, REQUEST_CODE_LOGIN);
                 }
             }
 
             @Override
-            public void onPostCommentsClicked(View view, Entry entry) {
+            public void onPostCommentsClicked(ListEntryBase holder, View view) {
                 if (DBG) Log.v(TAG, "Этот пункт не должен быть тыкабельным", new IllegalStateException());
             }
 
             @Override
-            public void onPostAdditionalMenuClicked(View view, Entry entry) {
-                if (mListener != null) mListener.onSharePostMenuClicked(entry);
+            public void onPostAdditionalMenuClicked(ListEntryBase holder, View view) {
+                if (mCurrentEntry == null) return;
+                if (mListener != null) mListener.onSharePostMenuClicked(mCurrentEntry);
+            }
+
+            @Override
+            public void onPostFlowHeaderClicked(ListEntryBase holder, View view) {
+                if (DBG) Log.v(TAG, "Этот пункт не должен быть тыкабельным", new IllegalStateException());
             }
         };
 
