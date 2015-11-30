@@ -8,8 +8,10 @@ import android.view.View;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.rest.ApiErrorException;
@@ -60,6 +62,11 @@ public class LikesHelper {
                     .setAction(R.string.action_sign_up, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            if (fragment.getActivity() != null) {
+                                ((TaaastyApplication) fragment.getActivity().getApplication()).sendAnalyticsEvent(
+                                        Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки",
+                                        "Голосовать могут только зарегистрированные пользователи");
+                            }
                             LoginActivity.startActivityFromFragment(rootView.getContext(), fragment, requestCode, v);
                         }
                     })

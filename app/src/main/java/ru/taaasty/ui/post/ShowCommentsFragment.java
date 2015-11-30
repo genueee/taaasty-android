@@ -319,16 +319,9 @@ public class ShowCommentsFragment extends Fragment {
             buttonsContainer.setVisibility(View.GONE);
             if (messageContainer instanceof ViewStub) {
                 messageContainer = ((ViewStub) messageContainer).inflate();
-                messageContainer.setVisibility(View.VISIBLE);
-                messageContainer.findViewById(R.id.login_button).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        LoginActivity.startActivityFromFragment(getActivity(), ShowCommentsFragment.this, REQUEST_CODE_LOGIN, v);
-                    }
-                });
-            } else {
-                messageContainer.setVisibility(View.GONE);
             }
+            messageContainer.setVisibility(View.VISIBLE);
+            messageContainer.findViewById(R.id.login_button).setOnClickListener(mOnClickListener);
         }
     }
 
@@ -364,8 +357,7 @@ public class ShowCommentsFragment extends Fragment {
         }
         return null;
     }
-
-
+    
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -378,6 +370,9 @@ public class ShowCommentsFragment extends Fragment {
                     break;
                 case R.id.reply_to_comment_button:
                     sendRepyToComment();
+                    break;
+                case R.id.login_button:
+                    LoginActivity.startActivityFromFragment(getActivity(), ShowCommentsFragment.this, REQUEST_CODE_LOGIN, v);
                     break;
             }
         }

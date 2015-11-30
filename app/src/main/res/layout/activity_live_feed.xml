@@ -5,15 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="top"
-    tools:context=".LiveFeedActivity"
+    tools:context=".ui.tabbar.LiveFeedActivity"
     tools:ignore="MergeRootFrame">
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/tabbar_size"
-        tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
+        android:layout_marginBottom="@dimen/tabbar_size" />
 
     <com.viewpagerindicator.CirclePageIndicator
         android:id="@+id/circle_page_indicator"

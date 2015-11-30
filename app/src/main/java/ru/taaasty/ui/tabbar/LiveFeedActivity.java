@@ -287,6 +287,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
                         .setAction(R.string.action_sign_up, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
+                                ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
+                                        Constants.ANALYTICS_CATEGORY_FAB, "Открытие логина из сообщения ошибки",
+                                        "Создавать потоки могут только зарегистрированные пользователи");
                                 LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v);
                             }
                         })

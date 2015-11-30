@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 
 import frenchtoast.FrenchToast;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
@@ -85,6 +86,8 @@ public class MessageHelper {
                     .setAction(R.string.action_sign_up, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                            ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(
+                                    Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки", null);
                             LoginActivity.startActivityFromFragment(activity, fragment, loginRequestCode, null);
                         }
                     })
@@ -129,6 +132,8 @@ public class MessageHelper {
                     .setAction(R.string.action_sign_up, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
+                                ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(
+                                        Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки", null);
                             LoginActivity.startActivity(activity, loginRequestCode, null);
                         }
                     })
