@@ -17,8 +17,7 @@
         android:paddingBottom="120dp"
         android:paddingTop="?actionBarSize"
         android:overScrollMode="never"
-        android:scrollbars="none"
-        tools:listitem="@layout/post_item"/>
+        android:scrollbars="none"/>
 
     <ru.taaasty.widgets.DateIndicatorWidget
         android:id="@+id/date_indicator"

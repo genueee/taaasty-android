@@ -20,8 +20,10 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.utils.MessageHelper;
 
 public class CreateAnonymousPostActivity extends ActivityBase implements OnCreatePostInteractionListener {
@@ -32,6 +34,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     private static final int REQUEST_CODE_LOGIN = 1;
 
     private ImageView mCreatePostButton;
+    private View mLoginButton;
 
     public static void startActivity(Context context, View animateFrom) {
         Intent intent = new Intent(context , CreateAnonymousPostActivity.class);
@@ -60,14 +63,42 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
 
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
-        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+        mLoginButton = findViewById(R.id.login_button);
+
+        View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onCreatePostClicked();
+                switch (v.getId()) {
+                    case R.id.create_post_button:
+                        onCreatePostClicked();
+                        break;
+                    case R.id.login_button:
+                        LoginActivity.startActivity(CreateAnonymousPostActivity.this, REQUEST_CODE_LOGIN, v);
+                        break;
+                }
             }
-        });
+        };
+
+        mCreatePostButton.setOnClickListener(clickListener);
+        mLoginButton.setOnClickListener(clickListener);
+
         mCreatePostButton.setEnabled(false);
     }
+
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (Session.getInstance().isAuthorized()) {
+            mLoginButton.setVisibility(View.GONE);
+            mCreatePostButton.setVisibility(View.VISIBLE);
+            findViewById(R.id.login_to_create_post).setVisibility(View.GONE);
+        } else {
+            mLoginButton.setVisibility(View.VISIBLE);
+            mCreatePostButton.setVisibility(View.INVISIBLE);
+            findViewById(R.id.login_to_create_post).setVisibility(View.VISIBLE);
+        }
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -105,7 +136,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
             // Сообщаем об ошибке
             setUploadingStatus(false);
             MessageHelper.showError(
-                    this, R.id.container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
+                    this, R.id.main_container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
         }
     }
 

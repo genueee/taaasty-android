@@ -10,21 +10,35 @@
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
         android:layout_below="@id/toolbar"
-        android:layout_above="@+id/buttons"
+        android:layout_above="@+id/buttons_container"
         android:layout_alignWithParentIfMissing="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:context="ru.taaasty.ui.relationships.FollowingFollowersActivity" />
 
-    <ru.taaasty.widgets.CreatePostButtons
-        android:id="@+id/buttons"
+    <LinearLayout
+        android:id="@+id/buttons_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="4dp"
-        android:baselineAligned="false"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"/>
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <TextView
+            android:id="@+id/login_to_create_post"
+            android:hint="@string/add_comment_hint"
+            android:text="@string/login_or_register_to_create_post"
+            style="@style/LoginToPostHintStyle"/>
+
+        <ru.taaasty.widgets.CreatePostButtons
+            android:id="@+id/buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"/>
+
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/create_post_progress"

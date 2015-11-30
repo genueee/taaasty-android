@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -62,6 +63,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
     private ImageView mImageView;
     private View mProgressView;
     private View mCopyLinkPromtView;
+    private TextView mUrlView;
 
     private ApiEntries mApiEntries;
 
@@ -150,6 +152,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         mImageView = (ImageView)root.findViewById(R.id.image);
         mProgressView = root.findViewById(R.id.progress);
         mCopyLinkPromtView = root.findViewById(R.id.copy_link_to_clipboard_text);
+        mUrlView = (TextView)root.findViewById(R.id.url_view);
         mImageView.setAdjustViewBounds(true);
 
         if (mShareIntent == null) {
@@ -333,6 +336,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
             mPicasso.cancelRequest(mImageView);
             mImageView.setImageDrawable(null);
             mProgressView.setVisibility(View.GONE);
+            mUrlView.setVisibility(View.GONE);
         } else {
             mCopyLinkPromtView.setVisibility(View.GONE);
             mProgressView.setVisibility(View.VISIBLE);
@@ -347,7 +351,6 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
     private void reloadIframely() {
         Assert.assertNotNull(mEmbeddUrl);
         mLoafIframelySubscription.unsubscribe();
-
 
         Observable<IFramely> observable = mApiEntries.getIframely(mEmbeddUrl);
 
@@ -384,11 +387,14 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
         } else {
             imageLink = mIframely.getImageLink(mImageView.getWidth());
         }
+        if (DBG) Log.v(TAG, "reloadImage() imageLink: " + imageLink);
         if (imageLink == null) {
             mPicasso.cancelRequest(mImageView);
-            mImageView.setImageResource(R.drawable.image_load_error);
+            mImageView.setImageDrawable(null);
             mImageView.setScaleType(ImageView.ScaleType.FIT_XY);
             mProgressView.setVisibility(View.GONE);
+            mUrlView.setVisibility(View.VISIBLE);
+            mUrlView.setText(mIframely.url);
         } else {
             mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             mPicasso.load(imageLink.getHref())
@@ -421,13 +427,16 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
     };
 
     void onLoadError(int errorResId) {
+        if (DBG) Log.v(TAG, "error: " + getText(errorResId));
         if (getActivity() == null) return;
         mProgressView.setVisibility(View.GONE);
         mCopyLinkPromtView.setVisibility(View.VISIBLE);
         setEmbeddUrl(null);
         validateFormIfVisible();
         if (!mEditPost) saveInputValues();
-        if (this.getUserVisibleHint()) Toast.makeText(getActivity(), errorResId, Toast.LENGTH_LONG).show();
+        if (this.getUserVisibleHint()) {
+            Snackbar.make(getView(), errorResId, Snackbar.LENGTH_LONG).show();
+        }
     }
 
     private void saveInputValues() {

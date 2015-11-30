@@ -200,6 +200,10 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
 
     @Override
     public void onWorkFragmentActivityCreatedSafe() {
+        if (mWorkFragment == null) {
+            Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
+            return;
+        }
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarVisibleOnPost());
         mAdapter.onCreate();
         mListView.setAdapter(mAdapter);
@@ -216,6 +220,10 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
 
     @Override
     public void onWorkFragmentResumeSafe() {
+        if (mWorkFragment == null || mDateIndicatorHelper == null) {
+            Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
+            return;
+        }
         mDateIndicatorHelper.onResume();
 
         if (!getUserVisibleHint()

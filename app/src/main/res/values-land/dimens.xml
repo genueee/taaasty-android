@@ -11,11 +11,12 @@
 
     <dimen name="tabbar_size">34dp</dimen>
     <dimen name="tabbar_notifications_text_size">6sp</dimen>
-    <dimen name="tabbar_fab_padding_bottom">50dp</dimen>
 
     <dimen name="feed_header_height">145dp</dimen>
     <dimen name="feed_header_avatar_normal_diameter">87dp</dimen>
     <dimen name="feed_header_user_name_text_size">20sp</dimen>
     <dimen name="feed_header_user_name_margin_top">12dp</dimen>
+
+    <dimen name="fab_menu_padding_bottom">10dp</dimen>
 
 </resources>

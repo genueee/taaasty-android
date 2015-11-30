@@ -3,6 +3,7 @@ package ru.taaasty.ui.tabbar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -207,11 +208,11 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         @Override
         public void onNext(CurrentUser currentUser) {
             mSectionsPagerAdapter.validateIsAuthorized();
+            mTabbar.showFab(false);
             ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mViewPager.getLayoutParams();
             if (Session.getInstance().isAuthorized()) {
                 lp.bottomMargin = getResources().getDimensionPixelSize(R.dimen.tabbar_size);
                 mViewPager.setLayoutParams(lp);
-                mTabbar.showFab(false);
                 mLoginButton.setVisibility(View.GONE);
                 doOnCreateTask();
             } else {
@@ -276,6 +277,24 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
     public void onGridTopViewScroll(Fragment fragment, boolean headerVisible, int viewTop) {
         if (!fragment.getUserVisibleHint()) return;
         updateCircleIndicatorPosition(headerVisible, viewTop);
+    }
+
+    @Override
+    public boolean onFabMenuItemClicked(View v) {
+        if (!Session.getInstance().isAuthorized()) {
+            if (v.getId() == R.id.create_flow) {
+                Snackbar.make(findViewById(R.id.main_container), R.string.create_flows_can_only_registered_user, Snackbar.LENGTH_LONG)
+                        .setAction(R.string.action_sign_up, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v);
+                            }
+                        })
+                        .show();
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

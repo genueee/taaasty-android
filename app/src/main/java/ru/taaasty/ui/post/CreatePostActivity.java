@@ -27,11 +27,13 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
+import ru.taaasty.Session;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.TlogInfo;
+import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.widgets.CreatePostButtons;
 import rx.Observable;
@@ -67,6 +69,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
     private ViewPager mViewPager;
     private CreatePostButtons mCreatePostButtons;
     private ImageView mCreatePostButton;
+    private View mLoginButton;
 
     private Long mTlogId;
 
@@ -163,12 +166,25 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         setTitle(currentItem.titleViewId);
 
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
-        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
+        mLoginButton = findViewById(R.id.login_button);
+
+        View.OnClickListener clickListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onCreatePostClicked();
+                switch (v.getId()) {
+                    case R.id.create_post_button:
+                        onCreatePostClicked();
+                        break;
+                    case R.id.login_button:
+                        LoginActivity.startActivity(CreatePostActivity.this, REQUEST_CODE_LOGIN, v);
+                        break;
+                }
             }
-        });
+        };
+
+        mCreatePostButton.setOnClickListener(clickListener);
+        mLoginButton.setOnClickListener(clickListener);
+
         mCreatePostButton.setEnabled(false);
 
         mViewPager.setCurrentItem(currentItem.ordinal(), false);
@@ -186,7 +202,20 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                         .subscribe(mTlogInfoObserver);
             }
         }
+    }
 
+    @Override
+    protected void onResumeFragments() {
+        super.onResumeFragments();
+        if (Session.getInstance().isAuthorized()) {
+            mLoginButton.setVisibility(View.GONE);
+            mCreatePostButton.setVisibility(View.VISIBLE);
+            findViewById(R.id.login_to_create_post).setVisibility(View.GONE);
+        } else {
+            mLoginButton.setVisibility(View.VISIBLE);
+            mCreatePostButton.setVisibility(View.INVISIBLE);
+            findViewById(R.id.login_to_create_post).setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
@@ -254,7 +283,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
             // Сообщаем об ошибке
             setUploadingStatus(false);
             MessageHelper.showError(
-                    this, R.id.container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
+                    this, R.id.main_container, REQUEST_CODE_LOGIN, status.exception, status.errorFallbackResId);
         }
     }
 

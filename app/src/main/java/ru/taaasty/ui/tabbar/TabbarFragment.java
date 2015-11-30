@@ -141,9 +141,13 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
         super.onResume();
         if (getView() != null) {
             if (!Session.getInstance().isAuthorized()) {
-                getView().setVisibility(View.GONE);
+                getView().findViewById(R.id.tabbar_buttons).setVisibility(View.GONE);
+                getView().findViewById(R.id.tabbar_background).setVisibility(View.GONE);
+                mFabHelper.setBottomMargin(0);
             } else {
-                getView().setVisibility(View.VISIBLE);
+                getView().findViewById(R.id.tabbar_buttons).setVisibility(View.VISIBLE);
+                getView().findViewById(R.id.tabbar_background).setVisibility(View.VISIBLE);
+                mFabHelper.setBottomMargin(getResources().getDimensionPixelSize(R.dimen.tabbar_size));
                 Intent intent = new Intent(getActivity(), PusherService.class);
                 getActivity().bindService(intent, mPusherServiceConnection, Context.BIND_AUTO_CREATE);
                 refreshActivated();
@@ -229,7 +233,6 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
 
     public void showFab(boolean animate) {
         if (mFabHelper == null) return;
-        if (!Session.getInstance().isAuthorized()) return;
         mFabHelper.showFab(animate);
     }
 

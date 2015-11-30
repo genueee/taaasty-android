@@ -46,6 +46,10 @@ public class FabHelper {
 
     private static final Interpolator sShowHideInterpolator = new LinearOutSlowInInterpolator();
 
+    private final int mInitialMenuPaddingBottom;
+
+    private final int mInitialFabMarginBottom;
+
     private FabMenuLayout.OnItemClickListener mFabMenuClickListener;
 
     public FabHelper(View fab, FabMenuLayout fabMenu) {
@@ -73,10 +77,10 @@ public class FabHelper {
             }
         });
 
-        if (marginBottom != 0) {
-            mFabMenu.setPadding(mFabMenu.getPaddingLeft(), mFabMenu.getPaddingTop(), mFabMenu.getPaddingRight(),
-                    mFabMenu.getPaddingBottom() + mFabMenu.getResources().getDimensionPixelSize(R.dimen.tabbar_size));
-        }
+        mInitialMenuPaddingBottom = mFabView.getResources().getDimensionPixelSize(R.dimen.fab_menu_padding_bottom);
+        mInitialFabMarginBottom = ((ViewGroup.MarginLayoutParams)mFabView.getLayoutParams()).bottomMargin;
+
+        if (marginBottom != 0) setBottomMargin(fab.getResources().getDimensionPixelSize(marginBottom));
 
         mFabMenu.setOnExpandedStateListener(new FabMenuLayout.OnExpandedStateChangedListener() {
             @Override
@@ -110,6 +114,15 @@ public class FabHelper {
         return mFabMenu;
     }
 
+    public void setBottomMargin(int margin) {
+        mFabMenu.setPadding(mFabMenu.getPaddingLeft(), mFabMenu.getPaddingTop(), mFabMenu.getPaddingRight(),
+                mInitialMenuPaddingBottom + margin);
+
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)mFabView.getLayoutParams();
+        lp.bottomMargin = mInitialFabMarginBottom + margin;
+        mFabView.setLayoutParams(lp);
+    }
+
     public void showFab(boolean animate) {
         collapseMenuOnly(false);
         showFabOnly(animate);
@@ -137,6 +150,7 @@ public class FabHelper {
             expandMenu(true);
         }
     }
+
 
     private void hideFabOnly(boolean animate) {
         if (mFabView.getVisibility() != View.VISIBLE) return;

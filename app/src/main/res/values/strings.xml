@@ -323,6 +323,7 @@
     <string name="user_can_not_post">Вам не разрешено голосовать, потому что вы меньше месяца на сайте, либо не подтвердили email</string>
     <string name="unauthorized_user_can_not_vote">Голосовать могут только зарегистрированные пользователи</string>
     <string name="allowed_only_to_registered_users">Нужно войти или зарегистрироваться</string>
+    <string name="create_flows_can_only_registered_user">Создавать потоки могут только зарегистрированные пользователи</string>
 
     <string name="fab_list_item_create_flow">Создать поток</string>
     <string name="fab_list_item_create_anonymous_post">Анонимка</string>
@@ -331,6 +332,8 @@
 
     <string name="write_to_flow">Написать в поток</string>
     <string name="login_or_register_to_add_comment">Войдите или зарегистрируйтесь, чтобы оставить комментарий</string>
+    <string name="login_or_register_to_create_post">Войдите или зарегистрируйтесь, чтобы опубликовать пост</string>
+    <string name="login_or_register_to_create_anonymous_post">Публикация анонимок доступна только зарегистрированным пользователям</string>
 
     <string name="open_in_browser">Открыть в браузере</string>
 

@@ -15,4 +15,5 @@
     android:paddingTop="6dp"
     android:textColor="@color/text_color_feed_item_gray_clickable"
     android:textSize="14sp"
+    android:singleLine="true"
     tools:text="alyonaruban" />
