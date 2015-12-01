@@ -2,18 +2,21 @@ package ru.taaasty.adapters;
 
 import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.SmartTextSwitcher;
 
@@ -30,6 +33,8 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
     private final ParallaxedView mParallaxedView;
 
     public TargetSetHeaderBackground feedDesignTarget;
+
+    private SafeOnPreDrawListener mSafeOnPreDrawListener;
 
     public String backgroundUrl;
 
@@ -74,7 +79,7 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
 
     public void bindDesign(@Nullable TlogDesign design) {
         if (design == null) return;
-        String backgroudUrl = design.getBackgroundUrl();
+        final String backgroudUrl = design.getBackgroundUrl();
 
         if (TextUtils.equals(this.backgroundUrl, backgroudUrl)) return;
 
@@ -86,15 +91,34 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
                 HeaderTitleSubtitleViewHolder.this.onBackgroundBitmapLoaded(bitmap, from);
             }
         };
+
         this.backgroundUrl = backgroudUrl;
-        RequestCreator rq = Picasso.with(itemView.getContext())
-                .load(backgroudUrl)
-                .config(Bitmap.Config.RGB_565);
-        if (itemView.getWidth() > 1 && itemView.getHeight() > 1) {
-            rq.resize(itemView.getWidth() / 2, itemView.getHeight() / 2)
-                    .centerCrop();
+        if (ViewCompat.isLaidOut(itemView)) {
+            loadDesignAfterSizeKnown(backgroudUrl, itemView.getWidth(), itemView.getHeight());
+        } else {
+            if (mSafeOnPreDrawListener != null) {
+                mSafeOnPreDrawListener.cancelAndRemoveListener();
+            }
+            mSafeOnPreDrawListener = new SafeOnPreDrawListener(itemView, new SafeOnPreDrawListener.RunOnLaidOut() {
+                @Override
+                public boolean run(View root) {
+                    loadDesignAfterSizeKnown(backgroudUrl, itemView.getWidth(), itemView.getHeight());
+                    return false;
+                }
+            });
+            itemView.getViewTreeObserver().addOnPreDrawListener(mSafeOnPreDrawListener);
         }
-        rq.into(feedDesignTarget);
+    }
+
+    private void loadDesignAfterSizeKnown(String url, int viewWidth, int viewHeight) {
+        if (BuildConfig.DEBUG) Log.v("HeaderVH", "loadDesignAfterSizeKnown() url: " + url + " view width: " + viewWidth + " view height: " + viewHeight);
+        Picasso.with(itemView.getContext())
+                .load(url)
+                .config(Bitmap.Config.RGB_565)
+                .resize(viewWidth / 2, viewHeight / 2)
+                .onlyScaleDown()
+                .centerCrop()
+                .into(feedDesignTarget);
     }
 
     protected int getBackgroundDimColorRes() {

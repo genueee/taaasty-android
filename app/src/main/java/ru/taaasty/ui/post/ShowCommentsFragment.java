@@ -357,7 +357,7 @@ public class ShowCommentsFragment extends Fragment {
         }
         return null;
     }
-    
+
     private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
