@@ -142,7 +142,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        Log.d(TAG, "onCreateView() called with: " + "inflater = [" + inflater + "], container = [" + container + "], savedInstanceState = [" + savedInstanceState + "]");
+        if (DBG) Log.d(TAG, "onCreateView() called with: " + "inflater = [" + inflater + "], container = [" + container + "], savedInstanceState = [" + savedInstanceState + "]");
         View v = inflater.inflate(R.layout.fragment_list_feed, container, false);
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
@@ -201,7 +201,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
     @Override
     public void onWorkFragmentActivityCreatedSafe() {
         if (mWorkFragment == null) {
-            Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
+            if (DBG) Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
             return;
         }
         mAdapter = new Adapter(mWorkFragment.getEntryList(), isUserAvatarVisibleOnPost());
@@ -221,7 +221,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
     @Override
     public void onWorkFragmentResumeSafe() {
         if (mWorkFragment == null || mDateIndicatorHelper == null) {
-            Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
+            if (DBG) Log.v(TAG, "mWorkFragment is null"); // Странные вещи происходят. Наблюдается после успешного логина
             return;
         }
         mDateIndicatorHelper.onResume();

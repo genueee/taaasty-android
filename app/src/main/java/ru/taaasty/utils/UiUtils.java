@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -24,8 +25,11 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.ui.ClickableNicknameSpan;
@@ -354,6 +358,7 @@ public class UiUtils {
 
         return userErrorText;
     }
+
 
     public static String vkTokenToString(VKAccessToken token) {
         if (token == null) return "null";

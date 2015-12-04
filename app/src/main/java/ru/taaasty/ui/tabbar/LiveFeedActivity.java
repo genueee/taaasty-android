@@ -20,6 +20,7 @@ import com.fernandocejas.frodo.annotation.RxLogSubscriber;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.nirhart.parallaxscroll.views.ParallaxedView;
+import com.trello.rxlifecycle.ActivityEvent;
 import com.viewpagerindicator.CirclePageIndicator;
 
 import java.util.HashSet;
@@ -41,12 +42,15 @@ import ru.taaasty.rest.model.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiApp;
+import ru.taaasty.ui.AppUnsupportedDialogActivity;
+import ru.taaasty.ui.AppUpdateAvailableDialogFragment;
 import ru.taaasty.ui.feeds.FeedFragment;
 import ru.taaasty.ui.feeds.FlowListFragment;
 import ru.taaasty.ui.feeds.IFeedsFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.SharePostActivity;
+import ru.taaasty.utils.CheckAppHelper;
 import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
 import rx.Observer;
@@ -56,7 +60,8 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
 public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment.OnFragmentInteractionListener,
-        FlowListFragment.OnFragmentInteractionListener {
+        FlowListFragment.OnFragmentInteractionListener,
+        AppUpdateAvailableDialogFragment.OnFragmentInteractionListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "LiveFeedActivity";
 
@@ -161,6 +166,9 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         });
 
         doOnCreateTask();
+        if (savedInstanceState == null) {
+            checkAppVersion();
+        }
     }
 
     private void doOnCreateTask() {
@@ -354,6 +362,17 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
     }
 
     @Override
+    public void onUpdateAppClicked() {
+        CheckAppHelper.openUpdateAppLink(this);
+    }
+
+    @Override
+    public void onUpdateAvailableMessageDismissed() {
+        ((TaaastyApplication)getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
+                "сообщение отклонено", BuildConfig.VERSION_NAME);
+    }
+
+    @Override
     public void notifyError(Fragment fragment, @Nullable Throwable exception, int fallbackResId) {
         MessageHelper.showError(this, R.id.main_container,  REQUEST_CODE_LOGIN, exception, fallbackResId);
     }
@@ -385,6 +404,80 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         } else {
             mCircleIndicator.setVisibility(View.GONE);
         }
+    }
+
+    private void checkAppVersion() {
+        if (DBG) Log.v(TAG, "checkAppVersion() complete: " + CheckAppHelper.isNewVersionAvailableShown);
+
+        CheckAppHelper.createCheckVersionObservable(this)
+                .compose(this.<CheckAppHelper.CheckVersionResult>bindUntilEvent(ActivityEvent.DESTROY))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<CheckAppHelper.CheckVersionResult>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (DBG) Log.v(TAG, "Check version error", e);
+                        // ignore
+                    }
+
+                    @Override
+                    public void onNext(CheckAppHelper.CheckVersionResult checkVersionResult) {
+                        switch (checkVersionResult.action) {
+                            case CheckAppHelper.CheckVersionResult.ACTION_SHOW_MESSAGE:
+                                showAppUpdateMessage(checkVersionResult.message, false);
+                                break;
+                            case CheckAppHelper.CheckVersionResult.ACTION_SHOW_NEW_VERSION_AVAILABLE:
+                                if (!CheckAppHelper.isNewVersionAvailableShown) {
+                                    showAppUpdateMessage(checkVersionResult.message != null ? checkVersionResult.message : getString(R.string.new_version_available_default), true);
+                                    CheckAppHelper.isNewVersionAvailableShown = true;
+                                }
+                                break;
+                            case CheckAppHelper.CheckVersionResult.ACTION_SHOW_APP_UNSUPPORTED_MESSAGE:
+                                AppUnsupportedDialogActivity.startActivity(LiveFeedActivity.this, checkVersionResult.message);
+                                break;
+                            case CheckAppHelper.CheckVersionResult.ACTION_DO_NOTHING:
+                            default:
+                                break;
+                        }
+                    }
+                });
+    }
+
+    private void showAppUpdateMessage(String message, boolean showUpdateLink) {
+        if (message.length() < 115 /* 115 */ /* примерно 2 строки текста */) {
+            Snackbar snackbar = Snackbar.make(findViewById(R.id.main_container), message, Snackbar.LENGTH_INDEFINITE);
+            if (showUpdateLink) {
+                snackbar.setAction(R.string.update_app, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CheckAppHelper.openUpdateAppLink(LiveFeedActivity.this);
+                    }
+                });
+            } else {
+                snackbar.setAction(android.R.string.ok, null);
+            }
+            snackbar.setCallback(new Snackbar.Callback() {
+                @Override
+                public void onDismissed(Snackbar snackbar, int event) {
+                    super.onDismissed(snackbar, event);
+                    if (event != DISMISS_EVENT_ACTION) {
+                        onUpdateAvailableMessageDismissed();
+                    }
+                }
+            });
+            snackbar.show();
+        } else {
+            AppUpdateAvailableDialogFragment fragment = AppUpdateAvailableDialogFragment.newInstance(message, showUpdateLink);
+            Fragment old = getSupportFragmentManager().findFragmentByTag("APP_UPDATE_FRAGMENT");
+            if (old != null) return;
+            fragment.show(getSupportFragmentManager(), "APP_UPDATE_FRAGMENT");
+        }
+
+        ((TaaastyApplication)getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
+                "сообщение показано", BuildConfig.VERSION_NAME);
     }
 
     @Override

@@ -446,7 +446,7 @@ public class UserInfoFragment extends Fragment {
         Resources res;
         RelationshipsSummary summary;
 
-        entries = mUser.getTotalEntriesCount();
+        entries = mUser.getPublicEntriesCount();
         summary = mRelationshipsSummary;
         res = getResources();
 

@@ -157,6 +157,14 @@ public class User implements Parcelable {
         return mTotalEntriesCount;
     }
 
+    public long getPublicEntriesCount() {
+        return publicEntriesCount;
+    }
+
+    public long getPrivateEntriesCount() {
+        return privateEntriesCount;
+    }
+
     public boolean isFemale() {
         return mIsFemale;
     }

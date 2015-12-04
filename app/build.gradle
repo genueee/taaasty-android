@@ -4,19 +4,13 @@ apply plugin: 'com.github.ben-manes.versions'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'testfairy'
 
+
 ext.private = new Properties()
 if (rootProject.file('private.properties').exists()) {
     ext.private.load(new FileInputStream(rootProject.file('private.properties')));
 }
 
-def getRevision = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim().replace('-', '–');
-}
+def gitSha = 'git rev-parse --short HEAD'.execute([], project.rootDir).text.trim().replace('-', '–')
 
 repositories {
     maven { url "http://clojars.org/repo" }
@@ -36,7 +30,7 @@ android {
         minSdkVersion 15
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 20
-        versionName "1.5.2"
+        versionName "1.5.2" // Используем semver. Требуется для проверки версии. Hint: 1.6 - неверно, 1.6.0 - верно
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
@@ -100,8 +94,8 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix ".debug"
-            versionNameSuffix "dbg-" + getRevision()
-            resValue "string", "app_name", "Тейсти dbg" + getRevision()
+            versionNameSuffix "+d" + gitSha
+            resValue "string", "app_name", "Тейсти dbg" + gitSha
             manifestPlaceholders = [ facebook_app_id_forprovider:"debug7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
             multiDexEnabled true
         }
@@ -112,7 +106,7 @@ android {
         }
         beta {
             applicationIdSuffix ".beta";
-            versionNameSuffix "b-" + getRevision()
+            versionNameSuffix "+b" + gitSha
             resValue "string", "app_name", "Тейсти beta"
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro', 'proguard-aviary.pro'

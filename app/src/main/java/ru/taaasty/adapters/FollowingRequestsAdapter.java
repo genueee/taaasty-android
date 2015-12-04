@@ -137,7 +137,7 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
 
         vh.userName.setText(author.getName());
 
-        int posts = (int)(author.getTotalEntriesCount() % 1000000);
+        int posts = (int)(author.getPublicEntriesCount() % 1000000);
         vh.entriesCount.setText(vh.entriesCount.getResources().getQuantityString(
                 R.plurals.records_title, posts, posts));
 

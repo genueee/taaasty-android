@@ -76,7 +76,7 @@ public class Session {
     }
 
     public boolean isMe(long id) {
-        // XXX: unauthorized - это я?
+        // XXX: unauthorized - это я? По идее, у незарегенного пользователя не должно быть профиля
         return mCurrentUser.getValue().getId() == id;
     }
 

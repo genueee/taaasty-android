@@ -221,6 +221,12 @@
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />
         </activity>
 
+        <activity
+            android:name=".ui.AppUnsupportedDialogActivity"
+            android:theme="@style/Theme.AppCompat.Light.Dialog"
+            android:excludeFromRecents="true"
+            android:noHistory="true" />
+
         <service
             android:name=".IntentService"
             android:exported="false" >

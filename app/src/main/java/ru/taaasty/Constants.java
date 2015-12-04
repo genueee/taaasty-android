@@ -110,6 +110,8 @@ public interface Constants {
 
     String ANALYTICS_CATEGORY_FAB = "Кнопка меню";
 
+    String ANALYTICS_CATEGORY_APP_UPDATE = "Есть новая версия";
+
     String[] VK_SCOPE = new String[]{
             VKScope.FRIENDS,
             VKScope.WALL,

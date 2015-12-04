@@ -37,7 +37,7 @@ public abstract class FragmentWithWorkFragment<T extends Fragment> extends RxFra
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Log.d(TAG, "onActivityCreated() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onActivityCreated() fragment: " + getTag());
         if (getWorkFragment() != null && getWorkFragment().isResumed()) {
             onWorkFragmentActivityCreated();
         }
@@ -46,7 +46,7 @@ public abstract class FragmentWithWorkFragment<T extends Fragment> extends RxFra
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onResume() fragment: " + getTag());
         if (getWorkFragment() != null && getWorkFragment().isResumed()) {
             onWorkFragmentActivityCreated();
             onWorkFragmentResume();
@@ -56,14 +56,14 @@ public abstract class FragmentWithWorkFragment<T extends Fragment> extends RxFra
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onPause() fragment: " + getTag());
         onWorkFragmentResumeCalled = false;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        Log.d(TAG, "onDestroyView() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onDestroyView() fragment: " + getTag());
         onWorkFragmentActivityCalled = false;
     }
 
@@ -75,7 +75,7 @@ public abstract class FragmentWithWorkFragment<T extends Fragment> extends RxFra
     }
 
     public void onWorkFragmentActivityCreatedSafe() {
-        Log.d(TAG, "onWorkFragmentActivityCreatedSafe() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onWorkFragmentActivityCreatedSafe() fragment: " + getTag());
     }
 
     @Override
@@ -86,7 +86,7 @@ public abstract class FragmentWithWorkFragment<T extends Fragment> extends RxFra
     }
 
     public void onWorkFragmentResumeSafe() {
-        Log.d(TAG, "onWorkFragmentResumeSafe() fragment: " + getTag());
+        if (DBG) Log.d(TAG, "onWorkFragmentResumeSafe() fragment: " + getTag());
     }
 
 }

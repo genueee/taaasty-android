@@ -341,4 +341,8 @@
     <string name="author_female_wrote_to_tlog">$from написала в $to</string>
     <string name="repost_from">репост из тлога $from</string>
 
+    <string name="new_version_available_default">Доступна новая версия приложения</string>
+    <string name="app_version_not_supported">Данная версия приложения больше не поддерживается, её необходимо обновить</string>
+    <string name="update_app">Обновить</string>
+
 </resources>

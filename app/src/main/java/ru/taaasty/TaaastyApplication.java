@@ -61,6 +61,17 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         }
         super.onCreate();
 
+        if (!BuildConfig.DEBUG) {
+            try {
+                EventBus.builder()
+                        .throwSubscriberException(BuildConfig.DEBUG)
+                        .logNoSubscriberMessages(false)
+                        .installDefaultEventBus();
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                         .setDefaultFontPath(FontManager.FONT_SYSTEM_DEFAULT_PATH)
                         .setFontAttrId(R.attr.fontPath)
@@ -178,7 +189,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                 mActiveActivitiesCount += 1;
                 if (mActiveActivitiesCount == 1) {
                     EventBus.getDefault().post(new UiVisibleStatusChanged(1));
-                    Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
+                    if (DBG) Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
                 }
 
             }
@@ -197,7 +208,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                 if (mActiveActivitiesCount <= 0) {
                     EventBus.getDefault().post(new UiVisibleStatusChanged(0));
                     mActiveActivitiesCount = 0;
-                    Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
+                    if (DBG) Log.d(TAG, "UiVisibleStatusChanged activities: " + mActiveActivitiesCount);
                 }
             }
 

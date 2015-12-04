@@ -73,7 +73,7 @@ public abstract class FlowEntryHeader {
     public void setupEntry(Entry entry) {
         this.title.setText('#' + UiUtils.capitalize(entry.getTlog().author.getName()));
         this.subscribersCount.setText(String.valueOf(entry.getTlog().relationshipsSummary.followersCount));
-        this.entriesCount.setText(String.valueOf(entry.getTlog().author.getTotalEntriesCount()));
+        this.entriesCount.setText(String.valueOf(entry.getTlog().author.getPublicEntriesCount()));
         setupImage(entry);
     }
 
