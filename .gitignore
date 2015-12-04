@@ -6,6 +6,7 @@
 bin
 gen
 /build
+scripts/__pycache__
 /local.properties
 /private.properties
 

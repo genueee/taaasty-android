@@ -120,6 +120,7 @@ public final class NetworkUtils {
             Cache cache = new Cache(httpCacheDir, cacheSize);
             mOkHttpClient.setCache(cache);
         }
+        BuildConfig.STETHO.configureInterceptor(mOkHttpClient);
         //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
         // mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
     }

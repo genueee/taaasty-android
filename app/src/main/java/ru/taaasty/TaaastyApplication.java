@@ -72,6 +72,8 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             }
         }
 
+        BuildConfig.STETHO.init(this);
+
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                         .setDefaultFontPath(FontManager.FONT_SYSTEM_DEFAULT_PATH)
                         .setFontAttrId(R.attr.fontPath)

@@ -60,6 +60,8 @@ android {
         buildConfigField "String", "ADOBE_CLIENT_SECRET",
                 project.ext.private.getProperty("default.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
 
+        buildConfigField 'ru.taaasty.stecho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DummyStethoHelper()'
+
         resValue "string", "facebook_app_id", "\"731919696901929\""
         resValue "integer", "com_vk_sdk_AppId", project.ext.private.getProperty("default.VkontakteAppId", "4553661")
 
@@ -98,6 +100,7 @@ android {
             resValue "string", "app_name", "Тейсти dbg" + gitSha
             manifestPlaceholders = [ facebook_app_id_forprovider:"debug7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
             multiDexEnabled true
+            buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DebugStethoHelper()'
         }
         release {
             minifyEnabled true
@@ -182,9 +185,9 @@ dependencies {
         exclude group: 'org.slf4j'
     }
     compile 'org.slf4j:slf4j-nop:1.7.12'
-    compile 'com.squareup.okhttp:okhttp:2.5.0'
-    compile 'com.squareup.okhttp:okhttp-ws:2.5.0'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.5.0' // aviary
+    compile 'com.squareup.okhttp:okhttp:2.6.0'
+    compile 'com.squareup.okhttp:okhttp-ws:2.6.0'
+    compile 'com.squareup.okhttp:okhttp-urlconnection:2.6.0' // aviary
     compile 'com.squareup:pollexor:2.0.4'
     // Picasso из jecenter не используем, пока не починят https://github.com/square/picasso/issues/364,
     // пока своя сборка.
@@ -204,6 +207,9 @@ dependencies {
     compile 'com.android.support:multidex:1.0.1'
     //compile 'com.adobe.creativesdk.foundation:auth:0.3.94'
     compile 'com.adobe.creativesdk:image:4.0.0'
+
+    debugCompile 'com.facebook.stetho:stetho:1.2.0'
+    debugCompile 'com.facebook.stetho:stetho-okhttp:1.2.0'
 
     testCompile 'junit:junit:4.12'
     testCompile "org.robolectric:robolectric:3.0"
