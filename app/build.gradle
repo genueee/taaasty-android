@@ -29,8 +29,8 @@ android {
         applicationId "ru.taaasty"
         minSdkVersion 15
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20
-        versionName "1.5.2" // Используем semver. Требуется для проверки версии. Hint: 1.6 - неверно, 1.6.0 - верно
+        versionCode 21
+        versionName "1.6.0" // Используем semver. Требуется для проверки версии. Hint: 1.6 - неверно, 1.6.0 - верно
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",

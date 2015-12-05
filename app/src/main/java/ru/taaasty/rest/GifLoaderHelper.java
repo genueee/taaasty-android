@@ -2,7 +2,6 @@ package ru.taaasty.rest;
 
 import android.accounts.NetworkErrorException;
 import android.support.annotation.MainThread;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.jakewharton.disklrucache.DiskLruCache;
@@ -104,7 +103,7 @@ public class GifLoaderHelper {
         public ProgressStatus(long progress, long max, GifDrawable drawable) {
             this.progress = progress;
             this.max = max;
-            this.drawable = drawable;
+            this.drawable = drawable;  // XXX recycle'ить такие drawable нельзя, один может использользоваться в нескольких холдерах
         }
 
         public int getDrawableLevel() {
@@ -130,9 +129,6 @@ public class GifLoaderHelper {
         private final Object mOkHttpTag;
 
         private final String mUrl;
-
-        @Nullable
-        public volatile GifDrawable drawable; // XXX recycle'ить такие drawable нельзя, один может использользоваться в нескольких холдерах
 
         public LoadGifWithProcess(String url, Object tag) {
             this.mUrl = url;
@@ -199,9 +195,7 @@ public class GifLoaderHelper {
                 InputStream is = snapshot.getInputStream(0);
                 GifDrawable drawable = createDrawable(is);
                 subscriber.onNext(new ProgressStatus(0, 0, drawable));
-                this.drawable = drawable;
                 subscriber.onCompleted();
-
             } catch (IOException ioExeption) {
                 subscriber.onError(ioExeption);
             } catch (Exception exception) {
