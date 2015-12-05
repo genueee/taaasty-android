@@ -73,7 +73,7 @@ public final class NetworkUtils {
                 if (sGson == null) {
                     sGson = new GsonBuilder()
                             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                            .registerTypeAdapter(Date.class, new DateTypeAdapter())
+                                .registerTypeAdapter(Date.class, new DateTypeAdapter())
                             .create();
                 }
             }
@@ -119,7 +119,8 @@ public final class NetworkUtils {
             Cache cache = new Cache(httpCacheDir, cacheSize);
             mOkHttpClient.setCache(cache);
         }
-        BuildConfig.STETHO.configureInterceptor(mOkHttpClient);
+        if (DBG) BuildConfig.STETHO.configureInterceptor(mOkHttpClient);
+
         //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
         // mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
     }

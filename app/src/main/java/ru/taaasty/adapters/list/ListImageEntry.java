@@ -125,7 +125,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
         if (drawable != null && drawable instanceof GifDrawable){
             mImageView.setImageDrawable(null);
             GifDrawable gifDrawable = ((GifDrawable) drawable);
-            gifDrawable.recycle();
+            // gifDrawable.recycle(); // recycle делать нельзя, так как у нас 1 может быть в нескольких холдерах
         }
     }
 

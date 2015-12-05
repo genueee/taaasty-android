@@ -163,6 +163,8 @@ public abstract class FlowEntryHeader {
                     mMarginLeft + mAvatarSize, top + mAvatarSize);
             canvas.drawBitmap(avatar, srcRect, dstRect, paint);
 
+            avatar.recycle();
+
             return bitmap;
         }
 
@@ -180,7 +182,7 @@ public abstract class FlowEntryHeader {
             paint.setAntiAlias(true);
             float r = size/2f;
             canvas.drawCircle(r, r, r, paint);
-            squaredBitmap.recycle();
+            if (source != squaredBitmap) squaredBitmap.recycle();
             return bitmap;
         }
 

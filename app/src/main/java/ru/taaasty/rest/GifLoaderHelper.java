@@ -38,6 +38,7 @@ public class GifLoaderHelper {
     private static final boolean DBG = false;
     private static final String TAG = "GifLoaderHelper";
 
+    // При скролле вниз и затем скролле вверх к загружаемой гифке курсор должен продолжаться
     private final Map<String, Observable<ProgressStatus>> mLoadingMap = new HashMap<>(3);
 
     private static volatile GifLoaderHelper sInstance;
@@ -131,7 +132,7 @@ public class GifLoaderHelper {
         private final String mUrl;
 
         @Nullable
-        public volatile GifDrawable drawable;
+        public volatile GifDrawable drawable; // XXX recycle'ить такие drawable нельзя, один может использользоваться в нескольких холдерах
 
         public LoadGifWithProcess(String url, Object tag) {
             this.mUrl = url;
@@ -176,32 +177,31 @@ public class GifLoaderHelper {
                     return;
                 }
 
-                synchronized (DiskLruCache.Editor.class) { // TODO более вменяемая синхронизация редактора
-                    try {
-                        editor = NetworkUtils.getInstance().getGifCache().edit(key);
-                        if (editor == null) {
-                            throw new NullPointerException("No editor");
-                        }
-                        readResponseWithProgress(subscriber, response, editor);
-                        editor.commit();
-                    } finally {
-                        if (editor != null) editor.abortUnlessCommitted();
+                try {
+                    editor = NetworkUtils.getInstance().getGifCache().edit(key);
+                    if (editor == null) {
+                        throw new NullPointerException("No editor");
                     }
-
-                    if (subscriber.isUnsubscribed()) {
-                        if (DBG) Log.v(TAG, "subscriber unsubscribed. stop");
-                        return;
-                    }
-
-                    snapshot = NetworkUtils.getInstance().getGifCache().get(key);
-                    if (snapshot == null)
-                        throw new IllegalStateException("Snapshot not available or blocked");
-                    InputStream is = snapshot.getInputStream(0);
-                    GifDrawable drawable = createDrawable(is);
-                    subscriber.onNext(new ProgressStatus(0, 0, drawable));
-                    this.drawable = drawable;
-                    subscriber.onCompleted();
+                    readResponseWithProgress(subscriber, response, editor);
+                    editor.commit();
+                } finally {
+                    if (editor != null) editor.abortUnlessCommitted();
                 }
+
+                if (subscriber.isUnsubscribed()) {
+                    if (DBG) Log.v(TAG, "subscriber unsubscribed. stop");
+                    return;
+                }
+
+                snapshot = NetworkUtils.getInstance().getGifCache().get(key);
+                if (snapshot == null)
+                    throw new IllegalStateException("Snapshot not available or blocked");
+                InputStream is = snapshot.getInputStream(0);
+                GifDrawable drawable = createDrawable(is);
+                subscriber.onNext(new ProgressStatus(0, 0, drawable));
+                this.drawable = drawable;
+                subscriber.onCompleted();
+
             } catch (IOException ioExeption) {
                 subscriber.onError(ioExeption);
             } catch (Exception exception) {

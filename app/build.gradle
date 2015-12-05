@@ -60,7 +60,7 @@ android {
         buildConfigField "String", "ADOBE_CLIENT_SECRET",
                 project.ext.private.getProperty("default.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
 
-        buildConfigField 'ru.taaasty.stecho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DummyStethoHelper()'
+        buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DummyStethoHelper()'
 
         resValue "string", "facebook_app_id", "\"731919696901929\""
         resValue "integer", "com_vk_sdk_AppId", project.ext.private.getProperty("default.VkontakteAppId", "4553661")
