@@ -186,18 +186,12 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         holder.addedButton.setVisibility(View.GONE);
 
         String url;
-        if (!TextUtils.isEmpty(notification.image.path)
-                // Можно убрать, не актуально, сервер http://, и пр. больше не возвращает
-                && !notification.image.path.startsWith("http://")
-                && !notification.image.path.startsWith("https://")
-                ) {
-            ThumborUrlBuilder tb = NetworkUtils.createThumborUrlFromPath(notification.image.path);
-            if (holder.entryImage.getWidth() != 0) {
-                tb.resize(holder.entryImage.getWidth(), holder.entryImage.getHeight());
-            }
-            url = tb.toUrl();
-        } else {
-            url = notification.image.url;
+        url = notification.image.url;
+        if (holder.entryImage.getWidth() != 0) {
+            url = NetworkUtils.createThumborUrl(notification.image.url)
+                    .resize(holder.entryImage.getWidth(), holder.entryImage.getHeight())
+                    .filter(ThumborUrlBuilder.noUpscale())
+                    .toUrlUnsafe();
         }
 
         mPicasso

@@ -18,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.Locale;
@@ -303,48 +302,40 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private void bindImageAfterSizeKnown(ViewHolderItem holder, Flow flow, Relationship relationship) {
         stopImageLoading(holder);
         Flow.FlowPic flowPic = flow.getFlowPic();
-        if ((flowPic != null) && !TextUtils.isEmpty(flowPic.thumborPath)) {
-            bindImageByThumborPath(holder, relationship, flowPic.thumborPath);
-        } else if ((flowPic != null) && !TextUtils.isEmpty(flowPic.originalUrl)) {
-            bindImageByUrl(holder, relationship, flowPic.originalUrl, true);
+
+        if ((flowPic != null) && !TextUtils.isEmpty(flowPic.originalUrl)) {
+            bindImageByUrl(holder, relationship, flowPic.originalUrl);
         } else {
             holder.imageViewUrl = null;
             holder.image.setImageDrawable(null);
         }
     }
 
-    private void bindImageByThumborPath(ViewHolderItem holder, Relationship relationship, String thumborPath) {
-        String imageUrl = NetworkUtils.createThumborUrlFromPath(thumborPath)
+    private void bindImageByUrl(ViewHolderItem holder, Relationship relationship, String originalUrl) {
+        String imageUrl = NetworkUtils.createThumborUrl(originalUrl)
                 .resize(Math.min(holder.image.getWidth(), ImageUtils.getMaxTextureSize()),
                         Math.min(holder.image.getHeight(), ImageUtils.getMaxTextureSize()))
                 .filter(ThumborUrlBuilder.noUpscale())
-                .toUrl();
-        bindImageByUrl(holder, relationship, imageUrl, false);
-    }
+                .toUrlUnsafe();
 
-    private void bindImageByUrl(ViewHolderItem holder, Relationship relationship, String imageUrl, boolean resizeOnPicasso) {
         if (TextUtils.equals(imageUrl, holder.imageViewUrl)) return;
         holder.imageLoading = true;
         holder.imageViewUrl = imageUrl;
-        if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
+        if (originalUrl.toLowerCase(Locale.US).endsWith(".gif")) {
             holder.loadGifSubscription = ImageUtils.loadGifWithProgress(holder.image, imageUrl, holder.gifLoadTag,
                     holder.image.getWidth(), holder.image.getHeight(), holder);
         } else {
             holder.image.setImageResource(getFlowPlaceholderResId(relationship));
-            RequestCreator requestCreator =  mPicasso
+            mPicasso
                     .load(imageUrl)
                     .placeholder(getFlowPlaceholderResId(relationship))
                     .error(R.drawable.image_load_error)
                     .config(Bitmap.Config.RGB_565)
-                    .noFade();
-            if (resizeOnPicasso) {
-                requestCreator
-                        .resize(holder.image.getWidth(), holder.image.getHeight())
-                        .onlyScaleDown()
-                        .centerCrop();
-            }
-
-            requestCreator.into(holder.image, holder);
+                    .resize(holder.image.getWidth(), holder.image.getHeight())
+                    .onlyScaleDown()
+                    .centerCrop()
+                    .noFade()
+                    .into(holder.image, holder);
         }
     }
 

@@ -18,6 +18,7 @@ import android.view.ViewTreeObserver;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
@@ -29,6 +30,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.MessageHelper;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import rx.Observable;
@@ -234,8 +236,16 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         View root = getWindow().getDecorView();
         mBackgroundTarget = new TargetSetHeaderBackground(root,
                 design, R.color.conversation_background_overlay);
+        String originalUrl = design.getBackgroundUrl();
+        ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(originalUrl);
+        if (root.getWidth() > 1 && root.getHeight() > 1) {
+            thumborUrl
+                    .resize(root.getWidth() / 2, root.getHeight() / 2)
+                    .filter(ThumborUrlBuilder.noUpscale());
+        }
+
         RequestCreator rq = Picasso.with(this)
-                .load(design.getBackgroundUrl())
+                .load(thumborUrl.toUrlUnsafe())
                 .config(Bitmap.Config.RGB_565);
         if (root.getWidth() > 1 && root.getHeight() > 1) {
             rq.resize(root.getWidth() / 2, root.getHeight() / 2)

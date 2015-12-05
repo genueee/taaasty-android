@@ -23,7 +23,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.iframely.Link;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
-import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.Size;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.TextViewImgLoader;
@@ -109,7 +109,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
     }
 
     private void setupImage(Entry item, final int parentWidth) {
-        ImageSize imgSize;
+        Size imgSize;
         Link imageLink;
         final int imgViewHeight;
 
@@ -126,7 +126,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
             return;
         }
 
-        imgSize = new ImageSize(imageLink.media.width, imageLink.media.height);
+        imgSize = new Size(imageLink.media.width, imageLink.media.height);
         imgSize.shrinkToWidth(parentWidth);
         imgSize.shrinkToMaxTextureSize();
 

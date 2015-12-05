@@ -257,7 +257,7 @@ public class StatusBarConversationNotification {
         } else {
             Userpic userpic = mLastMessage.conversation.recipient.getUserpic();
             mLoadImagesTask = new LoadNotificationDataTask(mContext);
-            mLoadImagesTask.execute(userpic.largeUrl, userpic.thumborPath);
+            mLoadImagesTask.execute(userpic.originalUrl);
         }
     }
 

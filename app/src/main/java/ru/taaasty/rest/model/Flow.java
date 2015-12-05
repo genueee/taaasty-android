@@ -182,9 +182,6 @@ public class Flow implements Parcelable {
     public static class FlowPic implements Parcelable {
         public String originalUrl;
 
-        public String thumborPath;
-
-
         @Override
         public int describeContents() {
             return 0;
@@ -193,7 +190,6 @@ public class Flow implements Parcelable {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.originalUrl);
-            dest.writeString(this.thumborPath);
         }
 
         public FlowPic() {
@@ -201,7 +197,6 @@ public class Flow implements Parcelable {
 
         protected FlowPic(Parcel in) {
             this.originalUrl = in.readString();
-            this.thumborPath = in.readString();
         }
 
         public static final Parcelable.Creator<FlowPic> CREATOR = new Parcelable.Creator<FlowPic>() {
@@ -218,7 +213,6 @@ public class Flow implements Parcelable {
         public String toString() {
             return "FlowPic{" +
                     "originalUrl='" + originalUrl + '\'' +
-                    ", thumborPath='" + thumborPath + '\'' +
                     '}';
         }
 
@@ -231,14 +225,13 @@ public class Flow implements Parcelable {
 
             if (originalUrl != null ? !originalUrl.equals(flowPic.originalUrl) : flowPic.originalUrl != null)
                 return false;
-            return !(thumborPath != null ? !thumborPath.equals(flowPic.thumborPath) : flowPic.thumborPath != null);
+            return true;
 
         }
 
         @Override
         public int hashCode() {
             int result = originalUrl != null ? originalUrl.hashCode() : 0;
-            result = 31 * result + (thumborPath != null ? thumborPath.hashCode() : 0);
             return result;
         }
     }

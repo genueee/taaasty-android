@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
-import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.Size;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.NetworkUtils;
@@ -164,15 +165,16 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
     }
 
     private void setupImage(Entry item, int parentWidth) {
-        ImageSize imgSize;
-        int resizeToWidth = 0;
-        int imgViewHeight;
+        Size pictureSize, imgViewSize;
+        boolean resizeToWidth;
+        int thumborWidth, thumborHeight;
         boolean fitMaxTextureSize = false;
 
         mLoadGifSubscription.unsubscribe();
         recycleGifDrawable();
 
         if (item.getImages().isEmpty()) {
+            // Если в список изображений пуст, пробуем поле Entry.imageUrl. Вроде никогда не должно срабатывать
             if (!TextUtils.isEmpty(item.getImageUrl())) {
                 setupImageByUrl(item, parentWidth);
             } else {
@@ -183,29 +185,14 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
         }
 
         ImageInfo image = item.getImages().get(0);
-        imgSize = image.image.geometry.toImageSize();
-        imgSize.shrinkToWidth(parentWidth);
+        pictureSize = image.image.geometry.toImageSize(); // Изображение
+        imgViewSize = calculateImageViewSize(pictureSize, parentWidth); // ImageView под неё
 
-        if (imgSize.width < image.image.geometry.width) {
-            // Изображение было уменьшено под размеры imageView
-            resizeToWidth = parentWidth;
-            imgViewHeight = (int)imgSize.height;
-        } else {
-            // Изображение должно быть увеличено под размеры ImageView
-            imgSize.stretchToWidth(parentWidth);
-            imgViewHeight = (int)imgSize.height;
-        }
+        resizeToWidth = pictureSize.width > imgViewSize.width;
+        thumborWidth = (int)Math.min(imgViewSize.width, pictureSize.width);
+        thumborHeight = (int)Math.min(imgViewSize.height, pictureSize.height);
 
-        mImageView.setAdjustViewBounds(true);
-        mImageView.setVisibility(View.VISIBLE);
-
-        // XXX: У некоторых картинок может не быть image.image.path
-        ThumborUrlBuilder b = NetworkUtils.createThumborUrlFromPath(image.image.path);
-
-        // Здесь можем сломать aspect ratio, поэтому потом восстанавливаем его в picasso
         int maxTextureSize = ImageUtils.getInstance().getMaxTextureSize();
-        int thumborWidth = resizeToWidth  > 0 ? resizeToWidth : image.image.geometry.width;
-        int thumborHeight = resizeToWidth > 0 ? imgViewHeight : image.image.geometry.height;
         if (thumborWidth > maxTextureSize) {
             thumborWidth = maxTextureSize;
             fitMaxTextureSize = true;
@@ -214,48 +201,52 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
             thumborHeight = maxTextureSize;
             fitMaxTextureSize = true;
         }
-        if ((resizeToWidth != 0) || fitMaxTextureSize) {
+
+        ThumborUrlBuilder b = NetworkUtils.createThumborUrl(image.image.url);
+        if (resizeToWidth || fitMaxTextureSize) {
             b.resize(thumborWidth,
-                    fitMaxTextureSize ? thumborHeight : 0).fitIn();
+                    fitMaxTextureSize ? thumborHeight : 0)
+                    .filter(ThumborUrlBuilder.noUpscale())
+                    .fitIn(); // иначе оно кропает длиннокартинки
         }
 
-        mImageViewUrl = b.toUrl();
-        if (image.isAnimatedGif()) {
-            ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, parentWidth, imgViewHeight, this);
-        } else {
-            Drawable placeholder = createImageLoadingDrawable(parentWidth, imgViewHeight);
-            mImageView.setImageDrawable(placeholder);
-            picasso
-                    .load(mImageViewUrl)
-                    .placeholder(placeholder)
-                    .error(R.drawable.image_load_error)
-                    .noFade()
-                    .into(mImageView, this);
-        }
+        doLoadUrl(b.toUrlUnsafe(), (int)imgViewSize.width, (int)imgViewSize.height, image.isAnimatedGif(), false);
+    }
+
+    private static Size calculateImageViewSize(Size imgSize, int parentWidth) {
+        Size dst = new Size(imgSize.width, imgSize.height);
+        dst.shrinkToWidth(parentWidth);
+        dst.stretchToWidth(parentWidth);
+        return dst;
     }
 
     private void setupImageByUrl(Entry item, int parentWidth) {
         String imageUrl = item.getImageUrl();
-        assert imageUrl != null;
         int height = (int)Math.ceil((float)parentWidth / Constants.DEFAULT_IMAGE_ASPECT_RATIO);
+        // Геометрии у нас нет, через thumbor не пропускаем
+        doLoadUrl(imageUrl, parentWidth, height, imageUrl.toLowerCase(Locale.US).endsWith(".gif"), true);
+    }
 
-        mImageViewUrl = imageUrl;
+    private void doLoadUrl(String url, int width, int height, boolean isAnimatedGif, boolean resizeToWidth) {
+        mImageViewUrl = url;
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.VISIBLE);
 
-        if (imageUrl.toLowerCase(Locale.US).endsWith(".gif")) {
-            ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, parentWidth, height, this);
+        if (url.toLowerCase(Locale.US).endsWith(".gif")) {
+            ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, width, height, this);
             picasso.cancelRequest(mImageView);
         } else {
-            Drawable placeholder = createImageLoadingDrawable(parentWidth, height);
+            Drawable placeholder = createImageLoadingDrawable(width, height);
             mImageView.setImageDrawable(placeholder);
-            picasso
+            RequestCreator rq = picasso
                     .load(mImageViewUrl)
                     .placeholder(placeholder)
                     .error(R.drawable.image_load_error)
-                    .resize(parentWidth, 0)
-                    .noFade()
-                    .into(mImageView, this);
+                    .noFade();
+            if (resizeToWidth) {
+                rq.resize(width, 0).onlyScaleDown();
+            }
+            rq.into(mImageView, this);
         }
     }
 

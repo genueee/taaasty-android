@@ -11,6 +11,7 @@ import android.view.View;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -120,9 +121,13 @@ public class FeedBackground {
     }
 
     private void reloadBackgroundDrawableAfterPreDraw() {
-        // TODO thumbor path
+        String thumborUrl = NetworkUtils.createThumborUrl(mBackgroundUrl)
+                .resize(mRoot.getWidth(), mRoot.getHeight())
+                .filter(ThumborUrlBuilder.noUpscale())
+                .toUrlUnsafe();
+
         Picasso.with(mRoot.getContext())
-                .load(mBackgroundUrl)
+                .load(thumborUrl)
                 .resize(mRoot.getWidth(), mRoot.getHeight())
                 .onlyScaleDown()
                 .centerCrop()

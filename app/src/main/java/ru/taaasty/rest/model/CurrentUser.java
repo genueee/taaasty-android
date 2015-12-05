@@ -53,14 +53,12 @@ public class CurrentUser extends User implements android.os.Parcelable {
         UNAUTHORIZED.mCreateAt = new Date(1167609600);
         UNAUTHORIZED.mUserpic = new Userpic();
         UNAUTHORIZED.mUserpic.originalUrl = "";
-        UNAUTHORIZED.mUserpic.largeUrl = "";
-        UNAUTHORIZED.mUserpic.thumb64Url = "";
         UNAUTHORIZED.mUserpic.defaultColors.background = "#00000000";
         UNAUTHORIZED.mUserpic.defaultColors.name = "#ffffff";
         UNAUTHORIZED.mIsConfirmed = false;
         UNAUTHORIZED.mRelationshipsSummary = new RelationshipsSummary();
         UNAUTHORIZED.mDesign = TlogDesign.createLightTheme(TlogDesign.DUMMY,
-                "http://taaasty.com/images/hero-cover.jpg", null);
+                "http://taaasty.com/images/hero-cover.jpg");
     }
 
 

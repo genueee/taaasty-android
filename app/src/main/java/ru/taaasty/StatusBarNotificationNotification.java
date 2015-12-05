@@ -278,12 +278,12 @@ public class StatusBarNotificationNotification {
         // Есть картинка - показываем её
         if (lastNotification.hasImage()) {
             mLoadImagesTask = new LoadNotificationDataTask(lastNotification, isCollapsed , mContext, false);
-            mLoadImagesTask.execute(lastNotification.image.url, lastNotification.image.path);
+            mLoadImagesTask.execute(lastNotification.image.url);
         } else if (lastNotification.sender != null && lastNotification.sender.getUserpic() != null) {
             // Есть юзерпик - отлично
             Userpic userpic = lastNotification.sender.getUserpic();
             mLoadImagesTask = new LoadNotificationDataTask(lastNotification, isCollapsed, mContext, true);
-            mLoadImagesTask.execute(userpic.largeUrl, userpic.thumborPath);
+            mLoadImagesTask.execute(userpic.originalUrl);
         } else {
             // Ничего нет. Ну нет так нет.
             refreshNotification(lastNotification, isCollapsed, null, null);

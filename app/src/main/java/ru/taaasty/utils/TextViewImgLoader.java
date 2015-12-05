@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -89,8 +90,19 @@ public class TextViewImgLoader {
 
             if (DBG) Log.v(TAG, "picasso resize: " + maxWidth + "x" + maxHeight);
 
+            String originalUrl = span.getSource();
+            String thumborUrl;
+            if (!originalUrl.startsWith(BuildConfig.THUMBOR_SERVER)) {
+                thumborUrl = NetworkUtils.createThumborUrl(originalUrl)
+                        .resize(maxWidth, maxHeight)
+                        .filter(ThumborUrlBuilder.noUpscale())
+                        .toUrlUnsafe();
+            } else {
+                thumborUrl = originalUrl;
+            }
+
             mPicasso
-                    .load(span.getSource())
+                    .load(thumborUrl)
                     .error(R.drawable.image_load_error)
                     .config(Bitmap.Config.RGB_565)
                     .resize(maxWidth, maxHeight)

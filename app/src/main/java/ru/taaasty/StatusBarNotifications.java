@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.IOException;
 
@@ -104,7 +105,7 @@ public class StatusBarNotifications {
 
     /**
      * AsyncTask для загрузки изображений для нотификации.
-     * В execute() передавать url и thumbor path
+     * В execute() передавать url картинки, не в thumbor
      */
     public static class LoadNotificationDataTask extends AsyncTask<String, Void, Void> {
 
@@ -138,26 +139,22 @@ public class StatusBarNotifications {
          * @param params: url, thumbor path
          * @return
          */
+        @SuppressWarnings("SuspiciousNameCombination")
         @Override
         protected Void doInBackground(String... params) {
             String url;
             String pUrl = params[0];
-            String pThumborPath = params[1];
 
             int largestWidth = Math.max(mBigIconWidth, mWearableBackgroundWidth); // Тут, в принципе, всегда 400
 
-            if (!TextUtils.isEmpty(pThumborPath)) {
-                url = NetworkUtils.createThumborUrlFromPath(pThumborPath)
-                        .resize(largestWidth, largestWidth)
-                        .filter("no_upscale()")
-                        .toUrl();
-            } else {
-                url = pUrl;
-            }
-
-            if (TextUtils.isEmpty(url)) {
+            if (TextUtils.isEmpty(pUrl)) {
                 return null;
             }
+
+            url = NetworkUtils.createThumborUrl(pUrl)
+                    .resize(largestWidth, largestWidth)
+                    .filter(ThumborUrlBuilder.noUpscale())
+                    .toUrl();
 
             try {
                 Bitmap bitmap = mPicasso
@@ -165,10 +162,12 @@ public class StatusBarNotifications {
                         .resize(largestWidth, largestWidth)
                         .get();
 
+
                 bigIcon = Bitmap.createScaledBitmap(bitmap, mBigIconWidth, mBigIconWidth, true);
                 if (mRoundCorners) {
                     bigIcon = new CircleTransformation().transform(bigIcon);
                 }
+
                 wearableBackground = Bitmap.createScaledBitmap(bitmap, mWearableBackgroundWidth, mWearableBackgroundWidth, true);
             } catch (IOException e) {
                 if (DBG) Log.i(TAG, "bitmap load error", e);

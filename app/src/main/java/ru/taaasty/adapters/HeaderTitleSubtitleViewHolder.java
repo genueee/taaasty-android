@@ -10,12 +10,14 @@ import android.view.View;
 
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.squareup.picasso.Picasso;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.widgets.SmartTextSwitcher;
@@ -110,8 +112,14 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
         }
     }
 
-    private void loadDesignAfterSizeKnown(String url, int viewWidth, int viewHeight) {
-        if (BuildConfig.DEBUG) Log.v("HeaderVH", "loadDesignAfterSizeKnown() url: " + url + " view width: " + viewWidth + " view height: " + viewHeight);
+    private void loadDesignAfterSizeKnown(String originUrl, int viewWidth, int viewHeight) {
+        if (BuildConfig.DEBUG) Log.v("HeaderVH", "loadDesignAfterSizeKnown() url: " + originUrl + " view width: " + viewWidth + " view height: " + viewHeight);
+
+        String url = NetworkUtils.createThumborUrl(originUrl)
+                .resize(viewWidth / 2, viewHeight / 2)
+                .filter(ThumborUrlBuilder.noUpscale())
+                .toUrlUnsafe();
+
         Picasso.with(itemView.getContext())
                 .load(url)
                 .config(Bitmap.Config.RGB_565)

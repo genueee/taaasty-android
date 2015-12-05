@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
 
 import retrofit.RetrofitError;
 import ru.taaasty.BuildConfig;
@@ -257,15 +256,10 @@ public final class NetworkUtils {
         return dir.delete();
     }
 
+    // TODO придумать, почему мы этого не делаем интерцептором к picasso
     @Nullable
     public static ThumborUrlBuilder createThumborUrl(String url) {
-        Matcher m = Constants.THUMBOR_MATCHER_PATTERN.matcher(url);
-        if (!m.matches()) return null;
-        return createThumborUrlFromPath(m.group(1));
-    }
-
-    public static ThumborUrlBuilder createThumborUrlFromPath(String path) {
-        return sThumbor.buildImage(path)
+        return sThumbor.buildImage(url)
                 .filter(ThumborUrlBuilder.stripicc());
     }
 

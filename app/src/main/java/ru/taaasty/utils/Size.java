@@ -3,17 +3,17 @@ package ru.taaasty.utils;
 /**
  * Created by alexey on 20.09.14.
  */
-public class ImageSize {
+public class Size {
 
     public float width;
 
     public float height;
 
-    public ImageSize() {
+    public Size() {
 
     }
 
-    public ImageSize(int width, int height) {
+    public Size(float width, float height) {
         this.width = width;
         this.height = height;
     }

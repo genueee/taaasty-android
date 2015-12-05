@@ -5,7 +5,7 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-import ru.taaasty.utils.ImageSize;
+import ru.taaasty.utils.Size;
 
 /**
 * Created by alexey on 12.08.14.
@@ -121,11 +121,6 @@ public class ImageInfo implements Parcelable {
 
         public String url = "";
 
-        /**
-         * Thumbor path
-         */
-        public String path = "";
-
         public ImageGeometry geometry = new ImageGeometry();
 
         @Override
@@ -136,7 +131,6 @@ public class ImageInfo implements Parcelable {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(this.url);
-            dest.writeString(this.path);
             dest.writeParcelable(this.geometry, flags);
         }
 
@@ -145,7 +139,6 @@ public class ImageInfo implements Parcelable {
 
         private Image2(Parcel in) {
             this.url = in.readString();
-            this.path = in.readString();
             this.geometry = in.readParcelable(ImageGeometry.class.getClassLoader());
         }
 
@@ -164,7 +157,6 @@ public class ImageInfo implements Parcelable {
             return "Image2{" +
                     "geometry=" + geometry +
                     ", url='" + url + '\'' +
-                    ", path='" + path + '\'' +
                     '}';
         }
 
@@ -176,7 +168,6 @@ public class ImageInfo implements Parcelable {
             Image2 image2 = (Image2) o;
 
             if (url != null ? !url.equals(image2.url) : image2.url != null) return false;
-            if (path != null ? !path.equals(image2.path) : image2.path != null) return false;
             return !(geometry != null ? !geometry.equals(image2.geometry) : image2.geometry != null);
 
         }
@@ -184,7 +175,6 @@ public class ImageInfo implements Parcelable {
         @Override
         public int hashCode() {
             int result = url != null ? url.hashCode() : 0;
-            result = 31 * result + (path != null ? path.hashCode() : 0);
             result = 31 * result + (geometry != null ? geometry.hashCode() : 0);
             return result;
         }
@@ -200,8 +190,8 @@ public class ImageInfo implements Parcelable {
             return 0;
         }
 
-        public ImageSize toImageSize() {
-            return new ImageSize(width, height);
+        public Size toImageSize() {
+            return new Size(width, height);
         }
 
         @Override

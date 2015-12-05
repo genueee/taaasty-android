@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -38,6 +39,7 @@ import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
+import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
 import ru.taaasty.utils.UiUtils;
@@ -525,8 +527,13 @@ public class UserInfoFragment extends Fragment {
                 }
             }
 
+            String thumborUrl = NetworkUtils.createThumborUrl(backgroudUrl)
+                    .resize(targetView.getWidth(), targetView.getHeight())
+                    .filter(ThumborUrlBuilder.noUpscale())
+                    .toUrlUnsafe();
+
             picasso
-                    .load(backgroudUrl)
+                    .load(thumborUrl)
                     .config(Bitmap.Config.RGB_565)
                     .resize(targetView.getWidth(), targetView.getHeight())
                     .onlyScaleDown()

@@ -416,7 +416,7 @@ public class ImageUtils {
         avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
         defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
-        if (userpic == null || (TextUtils.isEmpty(userpic.thumborPath) && TextUtils.isEmpty(userpic.thumb128Url))) {
+        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
             target.onDrawableReady(defaultUserpicDrawable);
             return;
         }
@@ -425,26 +425,15 @@ public class ImageUtils {
         stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
         stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
-        if (!TextUtils.isEmpty(userpic.thumborPath)) {
-            thumborUrl = NetworkUtils.createThumborUrlFromPath(userpic.thumborPath);
-            String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
-                    .toUrl();
-            // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
-            picasso.load(userpicUrl)
-                    .placeholder(stubPlaceholder)
-                    .error(defaultUserpicDrawable)
-                    .transform(mCircleTransformation)
-                    .into(target);
-        } else {
-            picasso.load(userpic.getOptimalUrlForSize(avatarDiameter, avatarDiameter))
-                    .resize(avatarDiameter, avatarDiameter)
-                    .centerCrop()
-                    .placeholder(stubPlaceholder)
-                    .error(defaultUserpicDrawable)
-                    .transform(mCircleTransformation)
-                    .into(target);
-
-        }
+        thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl);
+        String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
+                .toUrlUnsafe();
+        // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+        picasso.load(userpicUrl)
+                .placeholder(stubPlaceholder)
+                .error(defaultUserpicDrawable)
+                .transform(mCircleTransformation)
+                .into(target);
     }
 
     public interface DrawableTarget extends Target {

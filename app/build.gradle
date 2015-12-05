@@ -44,9 +44,9 @@ android {
         buildConfigField "String", "YOUTUBE_APP_ID",
                 project.ext.private.getProperty("default.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
         buildConfigField "String", "THUMBOR_SERVER",
-                project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor0.tasty0.ru\"")
+                project.ext.private.getProperty("default.ThumborServer", "\"http://thumbor4.tasty0.ru\"")
         buildConfigField "String", "THUMBOR_KEY",
-                project.ext.private.getProperty("default.ThumborKey", "\"golobog\"")
+                project.ext.private.getProperty("default.ThumborKey", "\"f35lN0D83uMByZu9\"")
         buildConfigField "String", "PUSHER_KEY",
                 project.ext.private.getProperty("default.PusherKey", "\"40dbf1d864d4b366b5e6\"")
         buildConfigField "String", "INTERCOM_API_KEY",
@@ -224,9 +224,9 @@ dependencies {
     bt.buildConfigField "String", "API_SERVER_PASSWORD",
             project.ext.private.getProperty("${typeName}.ApiServerPassword", "\"\"")
     bt.buildConfigField "String", "THUMBOR_KEY",
-            project.ext.private.getProperty("${typeName}.ThumborKey", "\"golobog\"")
+            project.ext.private.getProperty("${typeName}.ThumborKey", "\"f35lN0D83uMByZu9\"")
     bt.buildConfigField "String", "THUMBOR_SERVER",
-            project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor0.tasty0.ru\"")
+            project.ext.private.getProperty("${typeName}.ThumborServer", "\"http://thumbor4.tasty0.ru\"")
     bt.buildConfigField "String", "YOUTUBE_APP_ID",
             project.ext.private.getProperty("${typeName}.YoutubeAppId", "\"AIzaSyBP-gucjXR3BVlVCKQtNzFAdBPy3Tw3_E4\"")
     bt.buildConfigField "String", "PUSHER_KEY",

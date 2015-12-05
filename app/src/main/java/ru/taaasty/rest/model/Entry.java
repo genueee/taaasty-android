@@ -26,7 +26,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Session;
 import ru.taaasty.rest.model.iframely.IFramely;
 import ru.taaasty.rest.model.iframely.Link;
-import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.UiUtils;
 
@@ -361,22 +360,18 @@ public class Entry implements Parcelable, Cloneable {
     /**
      * Все картинки из поста: imageUrl, images, из iframely и из текста
      * Не отсортированные и могут встречаться одинаковые урлы.
+     * URL'ы не в thumbor
      * @param includeAnimatedGifs Включать анимированные гифки
      * @return
      */
     public ArrayList<String> getImageUrls(boolean includeAnimatedGifs) {
-        boolean withImageUrl = !TextUtils.isEmpty(mImageUrl);
         final ArrayList<String> images = new ArrayList<>();
 
         if (mImageUrl != null) images.add(mImageUrl);
         if (mImages != null) {
             for (ImageInfo imageInfo : mImages) {
                 if (!includeAnimatedGifs && imageInfo.isAnimatedGif()) continue;
-                if (!TextUtils.isEmpty(imageInfo.image.path)) {
-                    images.add(NetworkUtils.createThumborUrlFromPath(imageInfo.image.path).toUrl());
-                } else {
-                    images.add(imageInfo.image.url);
-                }
+                images.add(imageInfo.image.url);
             }
         }
 

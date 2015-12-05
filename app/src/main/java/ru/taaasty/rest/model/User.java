@@ -37,8 +37,6 @@ public class User implements Parcelable {
         ANONYMOUS.mCreateAt = new Date(1202843744);
         ANONYMOUS.mUserpic = new Userpic();
         ANONYMOUS.mUserpic.originalUrl = "http://taaasty.com/assets/userpic/72/29/4409_original.png";
-        ANONYMOUS.mUserpic.largeUrl = "http://taaasty.com/assets/userpic/72/29/4409_large.png";
-        ANONYMOUS.mUserpic.thumb64Url = "http://taaasty.com/assets/userpic/72/29/4409_thumb64.png";
         ANONYMOUS.mUserpic.defaultColors.background = "#00000000";
         ANONYMOUS.mUserpic.defaultColors.name = "#ffffff";
     }

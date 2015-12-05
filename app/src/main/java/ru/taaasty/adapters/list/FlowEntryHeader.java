@@ -12,12 +12,12 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
+import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
@@ -97,16 +97,11 @@ public abstract class FlowEntryHeader {
     }
 
     private void setupImageAfterSizeKnown(Entry entry, int viewWidth, int viewHeight) {
-        // На данный момент самый вменяемый способ получить URL бэкраунда - это из юзерпика. Только там есть thumbor_path
         Userpic userpic = entry.getTlog().author.getUserpic();
-        String url;
-        if (!TextUtils.isEmpty(userpic.thumborPath)) {
-            url = NetworkUtils.createThumborUrlFromPath(userpic.thumborPath)
-                    .resize(viewWidth, viewHeight)
-                    .toUrl();
-        } else {
-            url = userpic.getOptimalUrlForSize(viewWidth, viewHeight);
-        }
+        String url = NetworkUtils.createThumborUrl(userpic.originalUrl)
+                .resize(viewWidth, viewHeight)
+                .filter(ThumborUrlBuilder.noUpscale())
+                .toUrlUnsafe();
 
         mPicasso.load(url)
                 .placeholder(R.color.embedd_play_gray_background)

@@ -39,41 +39,47 @@
         tools:text="Музыка"
         />
 
-    <TextView
-        android:id="@+id/subscribers_count"
-        android:layout_width="50dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="96dp"
-        android:layout_marginTop="18dp"
-        android:drawableLeft="@drawable/ic_subscribers_count_20dp"
-        android:textAppearance="@style/TextAppearance.PostSans"
-        android:drawablePadding="2dp"
-        android:ellipsize="none"
-        android:paddingRight="2dp"
-        android:gravity="center_vertical"
-        android:singleLine="true"
-        android:textColor="#b2b2b2"
-        android:textSize="12dp"
-        tools:ignore="SpUsage"
-        tools:text="764"/>
-
-    <TextView
-        android:id="@+id/entries_count"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginLeft="146dp"
+        android:orientation="horizontal"
+        android:layout_marginLeft="96dp"
         android:layout_marginTop="18dp"
+        android:layout_marginBottom="8dp"
         android:layout_gravity="center_vertical"
-        android:textAppearance="@style/TextAppearance.PostSans"
-        android:drawableLeft="@drawable/ic_posts_count_20dp"
-        android:drawablePadding="2dp"
-        android:gravity="center_vertical"
-        android:textColor="#b2b2b2"
-        android:textSize="12sp"
-        tools:text="33"
-        />
+        android:gravity="clip_vertical">
+
+        <TextView
+            android:id="@+id/subscribers_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:drawableLeft="@drawable/ic_subscribers_count_20dp"
+            android:drawablePadding="2dp"
+            android:ellipsize="none"
+            android:paddingRight="2dp"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.PostSans"
+            android:gravity="center_vertical"
+            android:textColor="#b2b2b2"
+            android:textSize="12dp"
+            tools:ignore="SpUsage"
+            tools:text="300"/>
+
+        <TextView
+            android:id="@+id/entries_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="6dp"
+            android:drawableLeft="@drawable/ic_posts_count_20dp"
+            android:drawablePadding="2dp"
+            android:gravity="center_vertical"
+            android:textAppearance="@style/TextAppearance.PostSans"
+            android:textColor="#b2b2b2"
+            android:textSize="12sp"
+            tools:text="33"
+            />
+    </LinearLayout>
 
 </FrameLayout>
