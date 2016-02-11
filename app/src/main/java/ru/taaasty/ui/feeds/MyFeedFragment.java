@@ -402,7 +402,7 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             if (canVote) {
-                LikesHelper.getInstance().voteUnvote(entry);
+                LikesHelper.getInstance().voteUnvote(entry, getActivity());
             } else {
                 LikesHelper.showCannotVoteError(getView(), MyFeedFragment.this, REQUEST_CODE_LOGIN);
             }

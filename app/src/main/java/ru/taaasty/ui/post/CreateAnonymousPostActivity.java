@@ -18,9 +18,11 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.ui.login.LoginActivity;
@@ -127,10 +129,16 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         setUploadingStatus(true);
     }
 
+    private void sentAnalytics() {
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_CREATE_ANONYMOUS, Constants.ANALYTICS_LABEL_TEXT);
+    }
+
     public void onEventMainThread(EntryUploadStatus status) {
         if (!status.isFinished()) return;
         if (status.successfully) {
             Toast.makeText(this, R.string.anonymous_post_created, Toast.LENGTH_LONG).show();
+            sentAnalytics();
             finish();
         } else {
             // Сообщаем об ошибке

@@ -590,7 +590,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             if (canVote) {
-                LikesHelper.getInstance().voteUnvote(entry);
+                LikesHelper.getInstance().voteUnvote(entry, getActivity());
             } else {
                 LikesHelper.showCannotVoteError(getView(), FeedFragment.this, REQUEST_CODE_LOGIN);
             }

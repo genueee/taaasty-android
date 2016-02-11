@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.content.Context;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.LongSparseArray;
@@ -97,7 +98,7 @@ public class LikesHelper {
      * Лайкаем, либо снимаем лайк, в зависимости от статуса entry.rating
      * @param entry
      */
-    public void voteUnvote(Entry entry) {
+    public void voteUnvote(Entry entry, Context context) {
         final long entryId = entry.getId();
 
         Rating rating = entry.getRating();
@@ -118,6 +119,14 @@ public class LikesHelper {
             observable = mApiEntriesService.vote(entry.getId());
         }
 
+        if (rating.isVoted) {
+            ((TaaastyApplication) context.getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                    Constants.ANALYTICS_ACTION_UX_UNLIKE, null);
+        } else {
+            ((TaaastyApplication) context.getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                    Constants.ANALYTICS_ACTION_UX_LIKE, null);
+        }
+
         Subscription s = observable.observeOn(AndroidSchedulers.mainThread())
                 .doOnUnsubscribe(new Action0() {
                     @Override
@@ -127,6 +136,7 @@ public class LikesHelper {
                 .subscribe(new UpdateRatingObserver(entry));
         mSubscriptions.append(entryId, s);
         EventBus.getDefault().post(EntryRatingStatusChanged.updateStarted(entry.getId()));
+
     }
 
     private class UpdateRatingObserver implements Observer<Rating> {

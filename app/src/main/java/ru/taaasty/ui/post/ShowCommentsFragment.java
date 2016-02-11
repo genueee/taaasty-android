@@ -36,6 +36,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
@@ -377,6 +378,11 @@ public class ShowCommentsFragment extends Fragment {
             }
         }
     };
+
+    private void sendAnalytics() {
+        ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_COMMENT, null);
+    }
 
     void setupFeedDesign() {
         TlogDesign design = mDesign != null ? mDesign : TlogDesign.DUMMY;
@@ -807,6 +813,7 @@ public class ShowCommentsFragment extends Fragment {
             mCommentsAdapter.appendComment(comment);
             Integer position = mCommentsAdapter.findCommentPosition(comment.getId());
             if (position != null) mListView.smoothScrollToPosition(position);
+            sendAnalytics();
         }
     };
 

@@ -24,6 +24,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -287,6 +288,10 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
             @Override
             protected void onPostExecute(Void aVoid) {
                 progressDialog.dismiss();
+
+                ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
+                        Constants.ANALYTICS_ACTION_ACCOUNT_LOGOUT, null);
+
                 Intent mStartActivity = new Intent(MyFeedActivity.this, LiveFeedActivity.class);
                 int mPendingIntentId = 123456;
                 PendingIntent mPendingIntent = PendingIntent.getActivity(MyFeedActivity.this, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);

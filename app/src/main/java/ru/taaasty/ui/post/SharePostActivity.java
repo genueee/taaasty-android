@@ -292,6 +292,8 @@ public class SharePostActivity extends ActivityBase {
     public void addToFavorites(View view) {
         ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS,
                 mEntry.isFavorited() ? "Удалить из избранного" : "Добавить в избранное", null);
+        ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                mEntry.isFavorited() ? Constants.ANALYTICS_ACTION_UX_REMOVE_FROM_FAVORITE : Constants.ANALYTICS_ACTION_UX_ADD_TO_FAVORITE, null);
         runPostActionActivity(PostActionActivity.ACTION_ADD_TO_FAVORITES);
         finish();
     }
@@ -433,5 +435,7 @@ public class SharePostActivity extends ActivityBase {
                         .setTarget(mEntry.getEntryUrl())
                         .build()
         );
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_SHARE_SOCIAL, network);
     }
 }

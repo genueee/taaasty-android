@@ -10,6 +10,7 @@ import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
 import com.aviary.android.feather.sdk.IAviaryClientCredentials;
+import com.aviary.android.feather.sdk.internal.*;
 import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -31,6 +32,8 @@ import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observer;
+import rx.functions.Action1;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class TaaastyApplication extends MultiDexApplication implements IAviaryClientCredentials {
@@ -122,6 +125,19 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             }
             analytics.setLocalDispatchPeriod(1000);
             mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
+            mAnalyticsTracker.enableAdvertisingIdCollection(true);
+
+            Session.getInstance().subscribe(new Action1<CurrentUser>() {
+                @Override
+                public void call(CurrentUser currentUser) {
+                    if (currentUser.getId() > 0) {
+                        mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));
+                    } else {
+                        mAnalyticsTracker.set("&uid", null);
+                    }
+                }
+            });
+
         }
         return mAnalyticsTracker;
     }
@@ -143,6 +159,12 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     public void sendAnalyticsEvent(String category, String action, @Nullable String label) {
         HitBuilders.EventBuilder eb = new HitBuilders.EventBuilder(category, action);
+        eb.setCustomDimension(Constants.ANALYTICS_DIMENSION_GENDER,
+                Session.getInstance().getCachedCurrentUser().isFemale()
+                        ? Constants.ANALYTICS_GENDER_FEMALE : Constants.ANALYTICS_GENDER_MALE);
+        eb.setCustomDimension(Constants.ANALYTICS_DIMENSION_DIARY_OPEN_STATUS,
+                Session.getInstance().getCachedCurrentUser().isPrivacy()
+                        ? Constants.ANALYTICS_DIARY_STATUS_CLOSED : Constants.ANALYTICS_DIARY_STATUS_OPENED);
         if (label != null) eb.setLabel(label);
         getTracker().send(eb.build());
     }

@@ -533,7 +533,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked post: " + entry);
             if (canVote) {
-                LikesHelper.getInstance().voteUnvote(entry);
+                LikesHelper.getInstance().voteUnvote(entry, getActivity());
             } else {
                 Toast.makeText(view.getContext(), R.string.user_can_not_post, Toast.LENGTH_LONG).show();
             }

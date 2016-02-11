@@ -109,6 +109,47 @@ public interface Constants {
 
     String ANALYTICS_CATEGORY_APP_UPDATE = "Есть новая версия";
 
+    public static final String ANALYTICS_CATEGORY_UX = "UX";
+    public static final String ANALYTICS_CATEGORY_ACCOUNT = "Account";
+
+    public static final int ANALYTICS_DIMENSION_GENDER = 2;
+    public static final int ANALYTICS_DIMENSION_DIARY_OPEN_STATUS = 3;
+
+    public static final String ANALYTICS_GENDER_MALE = "male";
+    public static final String ANALYTICS_GENDER_FEMALE = "female";
+    public static final String ANALYTICS_DIARY_STATUS_OPENED = "true";
+    public static final String ANALYTICS_DIARY_STATUS_CLOSED = "false";
+
+    public static final String ANALYTICS_ACTION_ACCOUNT_LOGIN = "Login";
+    public static final String ANALYTICS_ACTION_ACCOUNT_LOGOUT = "Logout";
+    public static final String ANALYTICS_ACTION_ACCOUNT_REGISTER = "Registered";
+
+    public static final String ANALYTICS_ACTION_UX_CREATE_POST = "CreatePost";
+    public static final String ANALYTICS_ACTION_UX_CREATE_ANONYMOUS = "CreateAnonymous";
+    public static final String ANALYTICS_ACTION_UX_CREATE_FLOW = "CreateFlow";
+    public static final String ANALYTICS_ACTION_UX_FOLLOW_TLOG = "FollowTlog";
+    public static final String ANALYTICS_ACTION_UX_UNFOLLOW_TLOG = "UnFollowTlog";
+    public static final String ANALYTICS_ACTION_UX_FOLLOW_FLOW = "FollowFlow";
+    public static final String ANALYTICS_ACTION_UX_UNFOLLOW_FLOW = "UnFollowFlow";
+    public static final String ANALYTICS_ACTION_UX_COMMENT = "Comment";
+    public static final String ANALYTICS_ACTION_UX_SHARE_SOCIAL = "ShareSocial";
+    public static final String ANALYTICS_ACTION_UX_ADD_TO_FAVORITE = "AddToFavorite";
+    public static final String ANALYTICS_ACTION_UX_REMOVE_FROM_FAVORITE = "RemoveFromFavorite";
+    public static final String ANALYTICS_ACTION_UX_LIKE = "Like";
+    public static final String ANALYTICS_ACTION_UX_UNLIKE = "UnLike";
+    public static final String ANALYTICS_ACTION_UX_SEND_MESSAGE = "SendMessage";
+
+    public static final String ANALYTICS_LABEL_FACEBOOK = "Facebook";
+    public static final String ANALYTICS_LABEL_VK = "VK";
+    public static final String ANALYTICS_LABEL_EMAIL = "Email";
+
+    public static final String ANALYTICS_LABEL_TEXT = "Text";
+    public static final String ANALYTICS_LABEL_IMAGE = "Image";
+    public static final String ANALYTICS_LABEL_LINK = "Link";
+    public static final String ANALYTICS_LABEL_MUSIC = "Music";
+    public static final String ANALYTICS_LABEL_VIDEO = "Video";
+    public static final String ANALYTICS_LABEL_QUOTE = "Quote";
+
     String[] VK_SCOPE = new String[]{
             VKScope.FRIENDS,
             VKScope.WALL,

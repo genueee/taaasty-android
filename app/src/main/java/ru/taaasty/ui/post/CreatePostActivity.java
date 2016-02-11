@@ -25,9 +25,11 @@ import java.util.Set;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Entry;
@@ -251,6 +253,26 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         outState.putInt(KEY_CURRENT_PAGE, mViewPager.getCurrentItem());
     }
 
+    private void sendAnalytics() {
+        String postType = null;
+        switch (mViewPager.getCurrentItem()) {
+            case 0:
+                postType = Constants.ANALYTICS_LABEL_TEXT;
+                break;
+            case 1:
+                postType = Constants.ANALYTICS_LABEL_IMAGE;
+                break;
+            case 2:
+                postType = Constants.ANALYTICS_LABEL_QUOTE;
+                break;
+            case 3:
+                postType = Constants.ANALYTICS_LABEL_LINK;
+                break;
+        }
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_CREATE_POST, postType);
+    }
+
     void onCreatePostClicked() {
         PostForm post;
         CreatePostFragmentBase fragment;
@@ -278,6 +300,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                 // Пост публичный, переход в мой дневник
                 setResult(CREATE_POST_ACTIVITY_RESULT_SWITCH_TO_MY_FEED);
             }
+            sendAnalytics();
             finish();
         } else {
             // Сообщаем об ошибке

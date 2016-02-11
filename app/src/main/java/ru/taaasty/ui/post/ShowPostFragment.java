@@ -781,7 +781,7 @@ public class ShowPostFragment extends Fragment {
                 if (mCurrentEntry == null) return;
                 if (DBG) Log.v(TAG, "onPostLikesClicked post: " + mCurrentEntry);
                 if (canVote) {
-                    LikesHelper.getInstance().voteUnvote(mCurrentEntry);
+                    LikesHelper.getInstance().voteUnvote(mCurrentEntry, getActivity());
                 } else {
                     LikesHelper.showCannotVoteError(getView(), ShowPostFragment.this, REQUEST_CODE_LOGIN);
                 }

@@ -30,6 +30,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
@@ -353,6 +354,11 @@ public class ConversationFragment extends Fragment {
         return null;
     }
 
+    private void sendAnalytics() {
+        ((TaaastyApplication) getActivity().getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_SEND_MESSAGE, null);
+    }
+
     private final Observer<Conversation.Message> mPostMessageObserver = new Observer<Conversation.Message>() {
         @Override
         public void onCompleted() {
@@ -366,6 +372,7 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void onNext(Conversation.Message message) {
+            sendAnalytics();
             addMessageScrollToEnd(message);
         }
     };

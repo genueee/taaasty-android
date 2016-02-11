@@ -47,6 +47,7 @@ import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -58,6 +59,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
+import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
@@ -973,7 +975,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostLikesClicked entry: " + entry);
             if (canVote) {
-                LikesHelper.getInstance().voteUnvote(entry);
+                LikesHelper.getInstance().voteUnvote(entry, getActivity());
             } else {
                 LikesHelper.showCannotVoteError(getView(), TlogFragment.this, REQUEST_CODE_LOGIN);
             }
@@ -1037,7 +1039,6 @@ public class TlogFragment extends RxFragment implements IRereshable,
         private OnFragmentInteractionListener mListener;
 
         private SortedList<Entry> mEntryList;
-
 
         @Override
         public void onAttach(Context context) {
@@ -1138,6 +1139,18 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         protected Observable<Feed> createObservable(Long sinceEntryId, Integer limit) {
             return RestClient.getAPiTlog().getEntries(String.valueOf(mUserId), sinceEntryId, limit);
+        }
+
+        private void sendAnalytics(boolean isFollowing) {
+            String action;
+            if(isFlow()) {
+                action = isFollowing ? Constants.ANALYTICS_ACTION_UX_FOLLOW_FLOW : Constants.ANALYTICS_ACTION_UX_UNFOLLOW_FLOW;
+            } else {
+                action = isFollowing ? Constants.ANALYTICS_ACTION_UX_FOLLOW_TLOG : Constants.ANALYTICS_ACTION_UX_UNFOLLOW_TLOG;
+            }
+
+            ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                    action, mUser.author.getName());
         }
 
         @Nullable
@@ -1270,6 +1283,12 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         void callFollowingStatusChanged() {
             if (getMainFragment() != null) getMainFragment().onFollowingStatusChanged();
+            if (getFollowingStatus() == FOLLOWING_STATUS_ME_SUBSCRIBED) {
+                sendAnalytics(true);
+            }
+            if (getFollowingStatus() == FOLLOWING_STATUS_ME_UNSUBSCRIBED) {
+                sendAnalytics(false);
+            }
         }
 
         private final Observer<TlogInfo> mCurrentUserObserver = new Observer<TlogInfo>() {

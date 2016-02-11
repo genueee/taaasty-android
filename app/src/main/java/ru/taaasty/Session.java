@@ -12,7 +12,9 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
+import rx.Observer;
 import rx.functions.Action1;
+import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 
 public class Session {
@@ -136,6 +138,10 @@ public class Session {
                 .putString(SHARED_PREFS_KEY_AUTHTOKEN, mAuthtoken)
                 .putString(SHARED_PREFS_KEY_USER, userSerialized)
                 .apply();
+    }
+
+    public void subscribe(Action1<CurrentUser> userObserver) {
+        mCurrentUser.subscribe(userObserver);
     }
 
 }

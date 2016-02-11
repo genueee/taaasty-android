@@ -17,8 +17,10 @@ import android.widget.Toast;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.FlowUploadStatus;
 import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.ui.feeds.TlogActivity;
@@ -98,9 +100,16 @@ public class CreateFlowActivity extends ActivityBase implements CreateFlowFragme
         setUploadingStatus(true);
     }
 
+    private void sendAnalytics() {
+        CreateFlowFragment fragment = (CreateFlowFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
+                Constants.ANALYTICS_ACTION_UX_CREATE_FLOW, ((PostFlowForm)fragment.getForm()).title.toString());
+    }
+
     public void onEventMainThread(FlowUploadStatus status) {
         if (status.successfully) {
             Toast.makeText(this, R.string.flow_created, Toast.LENGTH_LONG).show();
+            sendAnalytics();
             finish();
             TlogActivity.startTlogActivity(this, status.flow.getId(), null);
         } else {
