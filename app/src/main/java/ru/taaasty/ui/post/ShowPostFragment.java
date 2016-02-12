@@ -208,6 +208,7 @@ public class ShowPostFragment extends Fragment {
         });
         mListView.setHasFixedSize(false);
         mListView.setAdapter(mCommentsAdapter);
+        mListView.setItemAnimator(null);
 
         if (savedInstanceState != null) {
             mDesign = savedInstanceState.getParcelable(KEY_TLOG_DESIGN);
