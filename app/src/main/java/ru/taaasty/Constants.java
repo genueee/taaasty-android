@@ -117,8 +117,8 @@ public interface Constants {
 
     public static final String ANALYTICS_GENDER_MALE = "male";
     public static final String ANALYTICS_GENDER_FEMALE = "female";
-    public static final String ANALYTICS_DIARY_STATUS_OPENED = "true";
-    public static final String ANALYTICS_DIARY_STATUS_CLOSED = "false";
+    public static final String ANALYTICS_TLOG_STATUS_OPENED = "true";
+    public static final String ANALYTICS_TLOG_STATUS_CLOSED = "false";
 
     public static final String ANALYTICS_ACTION_ACCOUNT_LOGIN = "Login";
     public static final String ANALYTICS_ACTION_ACCOUNT_LOGOUT = "Logout";

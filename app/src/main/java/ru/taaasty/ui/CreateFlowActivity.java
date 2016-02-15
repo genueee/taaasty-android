@@ -100,16 +100,15 @@ public class CreateFlowActivity extends ActivityBase implements CreateFlowFragme
         setUploadingStatus(true);
     }
 
-    private void sendAnalytics() {
-        CreateFlowFragment fragment = (CreateFlowFragment)getSupportFragmentManager().findFragmentById(R.id.container);
+    private void sendAnalytics(String flowName) {
         ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_CREATE_FLOW, ((PostFlowForm)fragment.getForm()).title.toString());
+                Constants.ANALYTICS_ACTION_UX_CREATE_FLOW, flowName);
     }
 
     public void onEventMainThread(FlowUploadStatus status) {
         if (status.successfully) {
             Toast.makeText(this, R.string.flow_created, Toast.LENGTH_LONG).show();
-            sendAnalytics();
+            sendAnalytics(status.flow.getName());
             finish();
             TlogActivity.startTlogActivity(this, status.flow.getId(), null);
         } else {

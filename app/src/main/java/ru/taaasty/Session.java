@@ -140,8 +140,4 @@ public class Session {
                 .apply();
     }
 
-    public void subscribe(Action1<CurrentUser> userObserver) {
-        mCurrentUser.subscribe(userObserver);
-    }
-
 }

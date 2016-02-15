@@ -255,17 +255,17 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
 
     private void sendAnalytics() {
         String postType = null;
-        switch (mViewPager.getCurrentItem()) {
-            case 0:
+        switch (Page.values()[mViewPager.getCurrentItem()]) {
+            case TEXT_POST:
                 postType = Constants.ANALYTICS_LABEL_TEXT;
                 break;
-            case 1:
+            case IMAGE_POST:
                 postType = Constants.ANALYTICS_LABEL_IMAGE;
                 break;
-            case 2:
+            case QUOTE_POST:
                 postType = Constants.ANALYTICS_LABEL_QUOTE;
                 break;
-            case 3:
+            case EMBEDD_POST:
                 postType = Constants.ANALYTICS_LABEL_LINK;
                 break;
         }

@@ -10,7 +10,6 @@ import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
 import com.aviary.android.feather.sdk.IAviaryClientCredentials;
-import com.aviary.android.feather.sdk.internal.*;
 import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -32,7 +31,6 @@ import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import rx.Observer;
 import rx.functions.Action1;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -127,10 +125,10 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
             mAnalyticsTracker.enableAdvertisingIdCollection(true);
 
-            Session.getInstance().subscribe(new Action1<CurrentUser>() {
+            Session.getInstance().getUserObservable().subscribe(new Action1<CurrentUser>() {
                 @Override
                 public void call(CurrentUser currentUser) {
-                    if (currentUser.getId() > 0) {
+                    if (currentUser.isAuthorized()) {
                         mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));
                     } else {
                         mAnalyticsTracker.set("&uid", null);
@@ -164,7 +162,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                         ? Constants.ANALYTICS_GENDER_FEMALE : Constants.ANALYTICS_GENDER_MALE);
         eb.setCustomDimension(Constants.ANALYTICS_DIMENSION_DIARY_OPEN_STATUS,
                 Session.getInstance().getCachedCurrentUser().isPrivacy()
-                        ? Constants.ANALYTICS_DIARY_STATUS_CLOSED : Constants.ANALYTICS_DIARY_STATUS_OPENED);
+                        ? Constants.ANALYTICS_TLOG_STATUS_CLOSED : Constants.ANALYTICS_TLOG_STATUS_OPENED);
         if (label != null) eb.setLabel(label);
         getTracker().send(eb.build());
     }
