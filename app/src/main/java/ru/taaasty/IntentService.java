@@ -70,6 +70,7 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
 
@@ -281,8 +282,7 @@ public class IntentService extends android.app.IntentService {
                     handleVoiceReplyToConversation(conversationId, messageIds, replyContent);
                 }finally {
                     StatusBarNotifications.getInstance().onConversationNotificationCancelled();
-                    ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS,
-                            "Ответ в диалог голосом", null);
+                    AnalyticsHelper.getInstance().sendNotificationsEvent("Ответ в диалог голосом");
                 }
             }
         }

@@ -72,6 +72,7 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
@@ -1148,9 +1149,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             } else {
                 action = isFollowing ? Constants.ANALYTICS_ACTION_UX_FOLLOW_TLOG : Constants.ANALYTICS_ACTION_UX_UNFOLLOW_TLOG;
             }
-
-            ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                    action, mUser.author.getName());
+            AnalyticsHelper.getInstance().sendUXEvent(action, mUser.author.getName());
         }
 
         @Nullable

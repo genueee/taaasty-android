@@ -41,8 +41,7 @@ public final class CheckAppHelper {
     public static void openUpdateAppLink(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=ru.taaasty"));
         activity.startActivity(intent);
-        ((TaaastyApplication)activity.getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
-                "нажато 'обновить'", BuildConfig.VERSION_NAME);
+        AnalyticsHelper.getInstance().sendAppUpdateEvent("нажато 'обновить'", BuildConfig.VERSION_NAME);
     }
 
 

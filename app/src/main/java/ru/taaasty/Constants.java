@@ -103,8 +103,6 @@ public interface Constants {
 
     String ANALYTICS_CATEGORY_PREFERENCES_APP = "Настройки приложения";
 
-    String ANALYTICS_CATEGORY_LOGIN = "Логин";
-
     String ANALYTICS_CATEGORY_FAB = "Кнопка меню";
 
     String ANALYTICS_CATEGORY_APP_UPDATE = "Есть новая версия";

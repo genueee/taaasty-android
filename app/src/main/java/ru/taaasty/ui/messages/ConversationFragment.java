@@ -41,6 +41,7 @@ import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
@@ -355,8 +356,7 @@ public class ConversationFragment extends Fragment {
     }
 
     private void sendAnalytics() {
-        ((TaaastyApplication) getActivity().getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_SEND_MESSAGE, null);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_SEND_MESSAGE);
     }
 
     private final Observer<Conversation.Message> mPostMessageObserver = new Observer<Conversation.Message>() {

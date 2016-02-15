@@ -86,8 +86,7 @@ public class MessageHelper {
                     .setAction(R.string.action_sign_up, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(
-                                    Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки", null);
+                            AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
                             LoginActivity.startActivityFromFragment(activity, fragment, loginRequestCode, null);
                         }
                     })
@@ -132,8 +131,7 @@ public class MessageHelper {
                     .setAction(R.string.action_sign_up, new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                                ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(
-                                        Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки", null);
+                            AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
                             LoginActivity.startActivity(activity, loginRequestCode, null);
                         }
                     })
@@ -160,25 +158,11 @@ public class MessageHelper {
                 .length(getHideDelay(error), TimeUnit.MILLISECONDS)
                 .showDipped(toast)
         ;
-        sendErrorAnalyticsEvent(context, error, exception);
+        AnalyticsHelper.getInstance().sendErrorAnalyticsEvent(error, exception);
     }
 
     public static void showSuccess(Context context, CharSequence message) {
         Toast toast = createSuccessToast(context, message);
         FrenchToast.with(context).length(getHideDelay(message), TimeUnit.MILLISECONDS).showDipped(toast);
-    }
-
-    public static void sendErrorAnalyticsEvent(Context context, CharSequence error, @Nullable Throwable exception) {
-        if (exception == null) return;
-        if (context.getApplicationContext() instanceof TaaastyApplication) {
-            Tracker t = ((TaaastyApplication) context.getApplicationContext()).getTracker();
-            t.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(
-                                    new AnalyticsExceptionParser(context, null)
-                                            .getDescription(Thread.currentThread().getName(), exception))
-                            .setFatal(false)
-                            .build()
-            );
-        }
     }
 }

@@ -28,6 +28,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.ConversationsActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -316,7 +317,7 @@ public class StatusBarConversationNotification {
         }
 
         mNotificationManager.notify(Constants.NOTIFICATION_ID_CONVERSATION, notificationBuilder.build());
-        mContext.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS, "Показано уведомление о новом сообщении", null);
+        AnalyticsHelper.getInstance().sendNotificationsEvent("Показано уведомление о новом сообщении");
     }
 
     private PendingIntent createContentPendingIntent(Conversation.Message message, boolean showConversation) {

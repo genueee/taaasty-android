@@ -14,6 +14,7 @@ import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
 
 /**
@@ -151,9 +152,7 @@ public class SettingsActivity extends ActivityBase implements SettingsFragment.O
 
         private void sendAnalyticsAppEvent(String action, boolean switchedOn) {
             String mainAction = switchedOn ? "Вкл. " : "Выкл. ";
-            TaaastyApplication app = (TaaastyApplication)getApplication();
-            app.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_PREFERENCES_APP, mainAction + action,
-                    null);
+            AnalyticsHelper.getInstance().sendPreferencesAppEvent(mainAction + action);
         }
     };
 }

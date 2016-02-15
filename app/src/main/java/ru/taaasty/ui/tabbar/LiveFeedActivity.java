@@ -50,6 +50,7 @@ import ru.taaasty.ui.feeds.IFeedsFragment;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.ui.post.SharePostActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.CheckAppHelper;
 import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
@@ -131,9 +132,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         mViewPager.setAdapter(mSectionsPagerAdapter);
         mViewPager.setOffscreenPageLimit(6);
 
-        Tracker t =  ((TaaastyApplication) getApplication()).getTracker();
-        t.setScreenName(mSectionsPagerAdapter.getAnalyticsScreenName(mViewPager.getCurrentItem()));
-        t.send(new HitBuilders.AppViewBuilder().build());
+        AnalyticsHelper.getInstance().sendShowScreenEvent(mSectionsPagerAdapter.getAnalyticsScreenName(mViewPager.getCurrentItem()));
 
         mCircleIndicator.setViewPager(mViewPager);
         mCircleIndicator.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -144,9 +143,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
             @Override
             public void onPageSelected(int position) {
                 if (mSectionsPagerAdapter == null) return;
-                Tracker t = ((TaaastyApplication) getApplication()).getTracker();
-                t.setScreenName(mSectionsPagerAdapter.getAnalyticsScreenName(position));
-                t.send(new HitBuilders.AppViewBuilder().build());
+                AnalyticsHelper.getInstance().sendShowScreenEvent(mSectionsPagerAdapter.getAnalyticsScreenName(mViewPager.getCurrentItem()));
             }
 
             @Override
@@ -249,8 +246,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         switch (item.getItemId()) {
             case R.id.menu_refresh:
                 refreshData();
-                ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                        Constants.ANALYTICS_CATEGORY_FEEDS, "Обновление из сист. меню", null);
+                AnalyticsHelper.getInstance().sendFeedsEvent("Обновление из сист. меню");
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -295,8 +291,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
                         .setAction(R.string.action_sign_up, new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                                        Constants.ANALYTICS_CATEGORY_FAB, "Открытие логина из сообщения ошибки",
+                                AnalyticsHelper.getInstance().sendFabEvent("Открытие логина из сообщения ошибки",
                                         "Создавать потоки могут только зарегистрированные пользователи");
                                 LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v);
                             }
@@ -368,8 +363,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
 
     @Override
     public void onUpdateAvailableMessageDismissed() {
-        ((TaaastyApplication)getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
-                "сообщение отклонено", BuildConfig.VERSION_NAME);
+        AnalyticsHelper.getInstance().sendAppUpdateEvent("сообщение отклонено", BuildConfig.VERSION_NAME);
     }
 
     @Override
@@ -476,8 +470,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
             fragment.show(getSupportFragmentManager(), "APP_UPDATE_FRAGMENT");
         }
 
-        ((TaaastyApplication)getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
-                "сообщение показано", BuildConfig.VERSION_NAME);
+        AnalyticsHelper.getInstance().sendAppUpdateEvent("сообщение показано", BuildConfig.VERSION_NAME);
     }
 
     @Override

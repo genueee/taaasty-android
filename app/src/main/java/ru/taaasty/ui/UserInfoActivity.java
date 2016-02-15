@@ -41,6 +41,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
 
 public class UserInfoActivity extends ActivityBase implements UserInfoFragment.OnFragmentInteractionListener,
@@ -319,8 +320,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             default:
                 return super.onOptionsItemSelected(item);
         }
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, action, null);
+        AnalyticsHelper.getInstance().sendUsersEvent(action);
         return true;
     }
 
@@ -336,29 +336,25 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     public void onEntriesCountClicked(View view) {
         if (DBG) Log.v(TAG, "onEntriesCountClicked");
         TlogActivity.startTlogActivity(this, mUserId, view, R.dimen.feed_header_avatar_normal_diameter);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Клик на кол-ве постов", null);
+        AnalyticsHelper.getInstance().sendUsersEvent("Клик на кол-ве постов");
     }
 
     @Override
     public void onSelectBackgroundClicked() {
         showChangeBackgroundDialog();
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыта смена фона", null);
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыта смена фона");
     }
 
     @Override
     public void onUserAvatarClicked(View view) {
         showChangeAvatarDialog();
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыта смена аватара", null);
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыта смена аватара");
     }
 
     @Override
     public void onInitiateConversationClicked(Conversation conversation) {
         ConversationActivity.startConversationActivity(this, conversation, null);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыт диалог с пользователем", null);
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыт диалог с пользователем");
     }
 
     @Override
@@ -372,8 +368,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
         Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
         startActivityForResult(photoPickerIntent, requestCode);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыт выбор изображения",
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыт выбор изображения",
                 requestCode == REQUEST_PICK_BACKGROUND_PHOTO ? "фона" : "аватара");
     }
 
@@ -391,8 +386,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             takePictureIntent = ImageUtils.createMakePhotoIntent(this, requestCode == REQUEST_MAKE_AVATAR_PHOTO);
             mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
             startActivityForResult(takePictureIntent, requestCode);
-            ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                    ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыто фотографирование",
+            AnalyticsHelper.getInstance().sendUsersEvent("Открыто фотографирование",
                     requestCode == REQUEST_MAKE_BACKGROUND_PHOTO ? "фона" : "аватара");
         } catch (ImageUtils.MakePhotoException e) {
             Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
@@ -419,8 +413,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
 
         startFeatherPhoto(isBackground, photoUri);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(
-                ru.taaasty.Constants.ANALYTICS_CATEGORY_USERS, "Открыто редактирование фото в aviary", null);
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыто редактирование фото в aviary");
     }
 
     private @Nullable TlogDesign getDesign() {

@@ -12,6 +12,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Rating;
 import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.LikesHelper;
 
 public abstract class EntryBottomActionBar {
@@ -83,8 +84,7 @@ public abstract class EntryBottomActionBar {
                         throw new IllegalArgumentException();
                 }
                 if (v.getContext().getApplicationContext() instanceof TaaastyApplication) {
-                    ((TaaastyApplication) v.getContext().getApplicationContext())
-                            .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, action, null);
+                    AnalyticsHelper.getInstance().sendPostsEvent(action, null);
                 }
             }
         };

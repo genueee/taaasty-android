@@ -24,6 +24,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.FlowUploadStatus;
 import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 
 /**
@@ -101,8 +102,7 @@ public class CreateFlowActivity extends ActivityBase implements CreateFlowFragme
     }
 
     private void sendAnalytics(String flowName) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_CREATE_FLOW, flowName);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_CREATE_FLOW, flowName);
     }
 
     public void onEventMainThread(FlowUploadStatus status) {

@@ -37,6 +37,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.AnalyticsHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -173,10 +174,8 @@ public class SignViaFacebookFragment extends DialogFragment {
                                 if (msg == null) msg = getString(R.string.error_facebook_failed);
                                 if (mListener != null) mListener.notifyError(msg, response.getError().getException());
                                 if (getActivity() != null) {
-                                    ((TaaastyApplication)getActivity().getApplication())
-                                            .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                                                    "Ошибка Facebook",
-                                                    response.getError().getErrorType() + " code/subcode:" + response.getError().getErrorCode()
+                                    AnalyticsHelper.getInstance().sendAccountEvent("Ошибка Facebook",
+                                            response.getError().getErrorType() + " code/subcode:" + response.getError().getErrorCode()
                                                     + "/" + response.getError().getSubErrorCode());
                                 }
                                 getDialog().dismiss();

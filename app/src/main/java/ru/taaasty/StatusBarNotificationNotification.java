@@ -30,6 +30,7 @@ import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -306,7 +307,7 @@ public class StatusBarNotificationNotification {
         notificationBuilder = createNotification(lastNotification, isCollapsed,
                 largeIcon, wearableBackground);
 
-        mContext.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_NOTIFICATIONS, "Показано уведомление о новом уведомлении", null);
+        AnalyticsHelper.getInstance().sendNotificationsEvent("Показано уведомление о новом уведомлении");
         mNotificationManager.notify(Constants.NOTIFICATION_ID_POST, notificationBuilder.build());
     }
 

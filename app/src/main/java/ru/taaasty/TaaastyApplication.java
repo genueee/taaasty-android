@@ -27,6 +27,7 @@ import io.intercom.android.sdk.identity.Registration;
 import io.intercom.android.sdk.preview.IntercomPreviewPosition;
 import ru.taaasty.events.UiVisibleStatusChanged;
 import ru.taaasty.rest.model.CurrentUser;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
@@ -37,8 +38,6 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class TaaastyApplication extends MultiDexApplication implements IAviaryClientCredentials {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TaaastyApplication";
-
-    private volatile Tracker mAnalyticsTracker;
 
     private volatile boolean mInterSessionStarted;
 
@@ -84,7 +83,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         NetworkUtils.getInstance().onAppInit(this);
         Session.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
-        getTracker();
+        AnalyticsHelper.initInstance(this);
         resetLanguage();
         Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
 
@@ -112,34 +111,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         NetworkUtils.getInstance().onTrimMemory();
     }
 
-    public synchronized Tracker getTracker() {
-        if (mAnalyticsTracker == null) {
-            GoogleAnalytics analytics = GoogleAnalytics.getInstance(this);
-            if (!"release".equals(BuildConfig.BUILD_TYPE)) {
-                analytics.setDryRun(true);
-                analytics.getLogger().setLogLevel(Logger.LogLevel.VERBOSE);
-            } else {
-                analytics.getLogger().setLogLevel(Logger.LogLevel.ERROR);
-            }
-            analytics.setLocalDispatchPeriod(1000);
-            mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
-            mAnalyticsTracker.enableAdvertisingIdCollection(true);
-
-            Session.getInstance().getUserObservable().subscribe(new Action1<CurrentUser>() {
-                @Override
-                public void call(CurrentUser currentUser) {
-                    if (currentUser.isAuthorized()) {
-                        mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));
-                    } else {
-                        mAnalyticsTracker.set("&uid", null);
-                    }
-                }
-            });
-
-        }
-        return mAnalyticsTracker;
-    }
-
     private void resetLanguage() {
         Configuration config = getBaseContext().getResources().getConfiguration();
 
@@ -153,18 +124,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             config.locale = locale;
             getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         }
-    }
-
-    public void sendAnalyticsEvent(String category, String action, @Nullable String label) {
-        HitBuilders.EventBuilder eb = new HitBuilders.EventBuilder(category, action);
-        eb.setCustomDimension(Constants.ANALYTICS_DIMENSION_GENDER,
-                Session.getInstance().getCachedCurrentUser().isFemale()
-                        ? Constants.ANALYTICS_GENDER_FEMALE : Constants.ANALYTICS_GENDER_MALE);
-        eb.setCustomDimension(Constants.ANALYTICS_DIMENSION_DIARY_OPEN_STATUS,
-                Session.getInstance().getCachedCurrentUser().isPrivacy()
-                        ? Constants.ANALYTICS_TLOG_STATUS_CLOSED : Constants.ANALYTICS_TLOG_STATUS_OPENED);
-        if (label != null) eb.setLabel(label);
-        getTracker().send(eb.build());
     }
 
     public synchronized void startIntercomSession() {

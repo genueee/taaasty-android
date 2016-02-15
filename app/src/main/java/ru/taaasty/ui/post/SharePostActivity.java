@@ -33,6 +33,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.Entry;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.BottomSheet;
 
@@ -224,7 +225,7 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void shareVkontakte(View view) {
-        sendAnalyticsShareEvent("Vkontakte");
+        sendAnalyticsShareEvent("Vkontakte", mEntry.getEntryUrl());
 
         // Так самый лучший результат
         if (!DBG) {
@@ -266,11 +267,11 @@ public class SharePostActivity extends ActivityBase {
 
     public void shareFacebook(View view) {
         runPostActionActivity(PostActionActivity.ACTION_SHARE_FACEBOOK);
-        sendAnalyticsShareEvent("Facebook");
+        sendAnalyticsShareEvent("Facebook", mEntry.getEntryUrl());
     }
 
     public void shareTwitter(View view) {
-        sendAnalyticsShareEvent("Twitter");
+        sendAnalyticsShareEvent("Twitter", mEntry.getEntryUrl());
         final Uri.Builder builder;
         builder = TWITTER_SHARE_URL.buildUpon();
         builder.appendQueryParameter("url", mEntry.getEntryUrl());
@@ -282,7 +283,7 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void shareOther(View view) {
-        sendAnalyticsShareEvent("Other");
+        sendAnalyticsShareEvent("Other", mEntry.getEntryUrl());
         Intent intent = mEntry.getShareIntent();
         Intent chooser = Intent.createChooser(intent, getString(R.string.share_title));
         startActivity(chooser);
@@ -290,28 +291,28 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void addToFavorites(View view) {
-        ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS,
-                mEntry.isFavorited() ? "Удалить из избранного" : "Добавить в избранное", null);
-        ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                mEntry.isFavorited() ? Constants.ANALYTICS_ACTION_UX_REMOVE_FROM_FAVORITE : Constants.ANALYTICS_ACTION_UX_ADD_TO_FAVORITE, null);
+        AnalyticsHelper.getInstance().sendUXEvent(mEntry.isFavorited() ?
+                Constants.ANALYTICS_ACTION_UX_REMOVE_FROM_FAVORITE : Constants.ANALYTICS_ACTION_UX_ADD_TO_FAVORITE);
+
+
         runPostActionActivity(PostActionActivity.ACTION_ADD_TO_FAVORITES);
         finish();
     }
 
     public void reportPost(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Пожаловаться", null);
+        AnalyticsHelper.getInstance().sendPostsEvent("Пожаловаться");
         DeleteOrReportDialogActivity.startReportPost(this, REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY, mEntry.getId());
         overridePendingTransition(0, 0);
     }
 
     public void editPost(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Редактировать", null);
+        AnalyticsHelper.getInstance().sendPostsEvent("Редактировать");
         EditPostActivity.startEditPostActivity(this, mEntry);
         finish();
     }
 
     public void deletePost(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Удалить", null);
+        AnalyticsHelper.getInstance().sendPostsEvent("Удалить");
         DeleteOrReportDialogActivity.startDeletePost(this, REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY, mTlogId, mEntry.getId());
         overridePendingTransition(0, 0);
     }
@@ -321,7 +322,7 @@ public class SharePostActivity extends ActivityBase {
      * @param view
      */
     public void savePost(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Сохранить картинки", null);
+        AnalyticsHelper.getInstance().sendPostsEvent("Сохранить картинки");
         IntentService.startDownloadImages(this, mEntry);
         finish();
     }
@@ -335,7 +336,7 @@ public class SharePostActivity extends ActivityBase {
     }
 
     public void linkToPost(View view) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_POSTS, "Копировать ссылку", null);
+        AnalyticsHelper.getInstance().sendPostsEvent("Копировать ссылку");
         ClipboardManager clipboard = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
         Uri copyUri = Uri.parse(mEntry.getEntryUrl());
@@ -428,14 +429,8 @@ public class SharePostActivity extends ActivityBase {
         finish();
     }
 
-    private void sendAnalyticsShareEvent(String network) {
-        ((TaaastyApplication)getApplication()).getTracker().send(new HitBuilders.SocialBuilder()
-                        .setNetwork(network)
-                        .setAction("Share")
-                        .setTarget(mEntry.getEntryUrl())
-                        .build()
-        );
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_SHARE_SOCIAL, network);
+    private void sendAnalyticsShareEvent(String network, String targetUrl) {
+        AnalyticsHelper.getInstance().sendAnalyticsShareEvent(network, targetUrl);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_SHARE_SOCIAL, network);
     }
 }

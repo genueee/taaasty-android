@@ -35,6 +35,7 @@ import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.FragmentStateConsumer;
 import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.tabbar.TabbarFragment;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.widgets.FeedBackgroundDrawable;
 import ru.taaasty.widgets.LinearLayoutManagerNonFocusable;
@@ -197,12 +198,10 @@ public class FlowListFragment extends FragmentWithWorkFragment<FlowListWorkFragm
                 public void onClick(View v) {
                     switch (v.getId()) {
                         case R.id.flows_all: switchTab(FlowListWorkFragment.FLOWS_TAB_ALL);
-                            ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FLOWS,
-                                    "Переключение на все потоки", null);
+                            AnalyticsHelper.getInstance().sendFlowsEvent("Переключение на все потоки");
                             break;
                         case R.id.flows_my: switchTab(FlowListWorkFragment.FLOwS_TAB_MY);
-                            ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FLOWS,
-                                    "Переключение на мои потоки", null);
+                            AnalyticsHelper.getInstance().sendFlowsEvent("Переключение на мои потоки");
                             break;
                         default:
                             throw new IllegalStateException();

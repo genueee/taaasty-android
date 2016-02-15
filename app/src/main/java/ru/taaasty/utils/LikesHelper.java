@@ -64,8 +64,7 @@ public class LikesHelper {
                         @Override
                         public void onClick(View v) {
                             if (fragment.getActivity() != null) {
-                                ((TaaastyApplication) fragment.getActivity().getApplication()).sendAnalyticsEvent(
-                                        Constants.ANALYTICS_CATEGORY_FEEDS, "Открытие логина из сообщения ошибки",
+                                AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки",
                                         "Голосовать могут только зарегистрированные пользователи");
                             }
                             LoginActivity.startActivityFromFragment(rootView.getContext(), fragment, requestCode, v);
@@ -120,11 +119,9 @@ public class LikesHelper {
         }
 
         if (rating.isVoted) {
-            ((TaaastyApplication) context.getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                    Constants.ANALYTICS_ACTION_UX_UNLIKE, null);
+            AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_UNLIKE);
         } else {
-            ((TaaastyApplication) context.getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                    Constants.ANALYTICS_ACTION_UX_LIKE, null);
+            AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_LIKE);
         }
 
         Subscription s = observable.observeOn(AndroidSchedulers.mainThread())

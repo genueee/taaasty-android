@@ -26,6 +26,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 
 public class CreateAnonymousPostActivity extends ActivityBase implements OnCreatePostInteractionListener {
@@ -130,8 +131,7 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
     }
 
     private void sentAnalytics() {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_CREATE_ANONYMOUS, Constants.ANALYTICS_LABEL_TEXT);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_CREATE_ANONYMOUS, Constants.ANALYTICS_LABEL_TEXT);
     }
 
     public void onEventMainThread(EntryUploadStatus status) {

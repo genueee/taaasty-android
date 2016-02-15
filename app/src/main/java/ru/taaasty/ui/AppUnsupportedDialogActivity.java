@@ -15,6 +15,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.CheckAppHelper;
 
 /**
@@ -79,8 +80,7 @@ public class AppUnsupportedDialogActivity extends AppCompatActivity {
         public void onCancel(DialogInterface dialog) {
             super.onCancel(dialog);
             if (getActivity() != null) {
-                ((TaaastyApplication)getActivity().getApplicationContext()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_APP_UPDATE,
-                        "сообщение отклонено", BuildConfig.VERSION_NAME);
+                AnalyticsHelper.getInstance().sendAppUpdateEvent("сообщение отклонено", BuildConfig.VERSION_NAME);
             }
         }
 

@@ -37,6 +37,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observable;
 import rx.Observer;
@@ -117,10 +118,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
                     }
                     if (mListener != null) mListener.notifyError(errorText, null);
                     if (getActivity() != null) {
-                        ((TaaastyApplication)getActivity().getApplication())
-                                .sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                                        "Ошибка Вконтакте",
-                                        vkError.toString());
+                        AnalyticsHelper.getInstance().sendAccountEvent("Ошибка Вконтакте", vkError.toString());
                     }
                 }
                 getDialog().dismiss();

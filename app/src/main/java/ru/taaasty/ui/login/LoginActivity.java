@@ -41,6 +41,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.TaaastyApplication;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru0xdc.NdkStackBlur;
@@ -241,10 +242,7 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignSuccess() {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                "Успешный вход — емайл", null);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_EMAIL);
+        AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_EMAIL);
         setResult(Activity.RESULT_OK);
         finish();
     }
@@ -275,8 +273,7 @@ public class LoginActivity extends ActivityBase implements
     public void onForgotPasswordRequestSent() {
         closeAllFragments();
         Toast.makeText(this, "Спасибо. Мы отправили вам письмо с инструкциями.", Toast.LENGTH_LONG).show();
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                "Восстановление пароля - отправлено на емайл", null);
+        AnalyticsHelper.getInstance().sendAccountEvent("Восстановление пароля - отправлено на емайл");
     }
 
     @Override
@@ -287,10 +284,7 @@ public class LoginActivity extends ActivityBase implements
     @Override
     public void onSignUpSuccess() {
         Toast.makeText(this, R.string.sign_up_success, Toast.LENGTH_LONG).show();
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                "Успешная регистрация — емайл", null);
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_EMAIL);
+        AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_EMAIL);
         setResult(Activity.RESULT_OK);
         finish();
     }
@@ -308,14 +302,10 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignViaVkontakteSuccess(boolean newUserCreated) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                (newUserCreated ? "Успешная регистрация — вконакте" : "Успешный вход — вконакте"), null);
         if (newUserCreated) {
-            ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                    Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_VK);
+            AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_VK);
         } else {
-            ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                    Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_VK);
+            AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_VK);
         }
         setResult(Activity.RESULT_OK);
         finish();
@@ -323,14 +313,10 @@ public class LoginActivity extends ActivityBase implements
 
     @Override
     public void onSignViaFacebookSuccess(boolean newUserCreated) {
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_LOGIN,
-                (newUserCreated ? "Успешная регистрация — facebook" : "Успешный вход — facebook"), null);
         if (newUserCreated) {
-            ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                    Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_FACEBOOK);
+            AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_REGISTER, Constants.ANALYTICS_LABEL_FACEBOOK);
         } else {
-            ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                    Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_FACEBOOK);
+            AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_LOGIN, Constants.ANALYTICS_LABEL_FACEBOOK);
         }
         setResult(Activity.RESULT_OK);
         finish();

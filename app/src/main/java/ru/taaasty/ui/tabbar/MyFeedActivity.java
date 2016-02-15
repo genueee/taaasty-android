@@ -38,6 +38,7 @@ import ru.taaasty.ui.feeds.MyFeedFragment;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
 
@@ -289,8 +290,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
             protected void onPostExecute(Void aVoid) {
                 progressDialog.dismiss();
 
-                ((TaaastyApplication) getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_ACCOUNT,
-                        Constants.ANALYTICS_ACTION_ACCOUNT_LOGOUT, null);
+                AnalyticsHelper.getInstance().sendAccountEvent(Constants.ANALYTICS_ACTION_ACCOUNT_LOGOUT);
 
                 Intent mStartActivity = new Intent(MyFeedActivity.this, LiveFeedActivity.class);
                 int mPendingIntentId = 123456;

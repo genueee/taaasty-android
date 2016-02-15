@@ -52,6 +52,7 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
@@ -380,8 +381,7 @@ public class ShowCommentsFragment extends Fragment {
     };
 
     private void sendAnalytics() {
-        ((TaaastyApplication) getActivity().getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_COMMENT, null);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_COMMENT);
     }
 
     void setupFeedDesign() {

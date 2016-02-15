@@ -28,6 +28,7 @@ import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
 import rx.Observer;
@@ -351,7 +352,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             TaaastyApplication app = (TaaastyApplication)getActivity().getApplication();
             @Override
             public void call() {
-                app.sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_PREFERENCES_PROFILE, action, label);
+                AnalyticsHelper.getInstance().sendPreferencesProfileEvent(action, label);
             }
         };
     }

@@ -36,6 +36,7 @@ import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.TlogInfo;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.widgets.CreatePostButtons;
 import rx.Observable;
@@ -269,8 +270,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                 postType = Constants.ANALYTICS_LABEL_LINK;
                 break;
         }
-        ((TaaastyApplication)getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_UX,
-                Constants.ANALYTICS_ACTION_UX_CREATE_POST, postType);
+        AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_CREATE_POST, postType);
     }
 
     void onCreatePostClicked() {

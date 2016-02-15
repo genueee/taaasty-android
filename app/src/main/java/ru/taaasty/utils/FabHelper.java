@@ -295,27 +295,19 @@ public class FabHelper {
             switch (view.getId()) {
                 case R.id.create_flow:
                     CreateFlowActivity.startActivity(activity, null);
-                    ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FAB,
-                            "Открыто создание потока", null);
                     break;
                 case R.id.create_anonymous_post:
                     CreateAnonymousPostActivity.startActivity(activity, null);
-                    ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FAB,
-                            "Открыто создание анонимки", null);
                     break;
                 case R.id.create_text_post:
                     CreatePostActivity.startCreatePostActivityForResult(view.getContext(),
                             mFragment != null ? mFragment : mActivity, null, Page.TEXT_POST,
                             Constants.ACTIVITY_REQUEST_CODE_CREATE_POST);
-                    ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FAB,
-                            "Открыт текст в дневник", null);
                     break;
                 case R.id.create_image_post:
                     CreatePostActivity.startCreatePostActivityForResult(activity,
                             mFragment != null ? mFragment : mActivity, null, Page.IMAGE_POST,
                             Constants.ACTIVITY_REQUEST_CODE_CREATE_POST);
-                    ((TaaastyApplication) activity.getApplication()).sendAnalyticsEvent(Constants.ANALYTICS_CATEGORY_FAB,
-                            "Открыта картинка в дневник", null);
                     break;
                 default:
                     return false;
