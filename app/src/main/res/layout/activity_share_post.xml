@@ -75,6 +75,14 @@
                 android:text="@string/add_post_to_favorites"/>
 
             <TextView
+                android:id="@+id/ic_repost"
+                style="@style/ShareIconItem"
+                android:drawableTop="@drawable/ic_add_post_to_favorites"
+                android:onClick="repost"
+                android:paddingLeft="0dp"
+                android:text="@string/repost"/>
+
+            <TextView
                 android:id="@+id/ic_link_to_post"
                 style="@style/ShareIconItem"
                 android:drawableTop="@drawable/ic_link_to_post"

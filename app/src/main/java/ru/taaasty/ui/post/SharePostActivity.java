@@ -57,6 +57,7 @@ public class SharePostActivity extends ActivityBase {
     private static final Uri TWITTER_SHARE_URL = Uri.parse("https://twitter.com/intent/tweet");
 
     private static final int REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY = 1;
+    private static final int REQUEST_CODE_REPOST = 2;
 
     private Entry mEntry;
 
@@ -315,6 +316,12 @@ public class SharePostActivity extends ActivityBase {
         AnalyticsHelper.getInstance().sendPostsEvent("Удалить");
         DeleteOrReportDialogActivity.startDeletePost(this, REQUEST_CODE_DELETE_OR_REPORT_ACTIVITY, mTlogId, mEntry.getId());
         overridePendingTransition(0, 0);
+    }
+
+    public void repost(View view) {
+        AnalyticsHelper.getInstance().sendPostsEvent("Репост");
+        RepostActivity.startActivity(this, mEntry, REQUEST_CODE_REPOST);
+        finish();
     }
 
     /**

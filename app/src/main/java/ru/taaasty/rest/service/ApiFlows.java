@@ -17,6 +17,8 @@ import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.model.FlowStaff;
 import rx.Observable;
 
+import java.util.ArrayList;
+
 /**
  * Created by alexey on 29.08.15.
  */
@@ -117,4 +119,10 @@ public interface ApiFlows {
     @FormUrlEncoded
     @DELETE("/flows/{id}/staffs.json")
     Observable<Flow> removeModerator(@Path("id") long flowId, @Field("user_id") long userId);
+
+    /**
+     * Получить доступные потоки для поста/репоста
+     */
+    @GET("/flows/available.json")
+    Observable<FlowList> getAvailableFlows(@Query("page") int page, @Query("limit") int limit, @Query("expose_staffs") boolean exposeStaffs);
 }

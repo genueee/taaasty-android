@@ -200,6 +200,10 @@
             android:theme="@style/SharePostTheme" >
         </activity>
         <activity
+            android:name=".ui.post.RepostActivity"
+            android:theme="@style/SharePostTheme" >
+        </activity>
+        <activity
             android:name=".ui.post.PostActionActivity"
             android:theme="@style/TranslucentTheme" />
         <activity

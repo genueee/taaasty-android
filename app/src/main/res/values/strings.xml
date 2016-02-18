@@ -67,6 +67,7 @@
     <string name="subscribe_button">Подписаться</string>
     <string name="title_my_subscriptions">Мои подписки</string>
     <string name="title_flows">Потоки</string>
+    <string name="search">Поиск</string>
 
     <plurals name="posts_title">
         <item quantity="one">пост</item>
@@ -188,6 +189,7 @@
     <string name="edit_post">Редактировать</string>
     <string name="delete_post">Удалить</string>
     <string name="save_post">Сохранить</string>
+    <string name="repost">Репост</string>
     <string name="link_have_been_added_to_clipboard">Ссылка добавлена в буфер обмена</string>
     <string name="title_notifications">Уведомления</string>
     <string name="title_conversations">Сообщения</string>
@@ -213,6 +215,7 @@
     <string name="adding_to_favourites_fail">Ошибка добавления</string>
     <string name="remove_from_favourites_ok">Пост убран из избранного</string>
     <string name="share_title">Поделиться</string>
+    <string name="repost_successful">Репост выполнен успешно</string>
 
     <string name="notification_received_title">Пришло уведомление</string>
     <string name="notifications_received_title">Есть непрочитанные уведомления</string>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ru.taaasty.widgets.BottomSheet
+    android:id="@+id/bottom_sheet"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:scrollingChild="@+id/scroll_container"
+    tools:context="io.plaidapp.ui.PostNewDesignerNewsStory">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <android.support.v7.widget.SearchView
+            android:id="@+id/search_view"
+            android:layout_width="match_parent"
+            app:queryHint="@string/search"
+            android:layout_height="wrap_content"/>
+
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/scroll_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@style/ShareBottomSheetStyle"/>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"/>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+
+
+</ru.taaasty.widgets.BottomSheet>
