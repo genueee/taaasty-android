@@ -17,13 +17,14 @@ public interface Constants {
 
     String ACTIVITY_RESULT_ARG_ERROR_MESSAGE = "ACTIVITY_RESULT_ARG_ERROR_MESSAGE";
 
-    RestAdapter.LogLevel RETROFIT_LOG_LEVEL = RestAdapter.LogLevel.NONE;
+    RestAdapter.LogLevel RETROFIT_LOG_LEVEL = RestAdapter.LogLevel.FULL;
     // public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
     //public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE;
     public static final int CONNECT_TIMEOUT_S = 35;
     public static final int READ_TIMEOUT_S = 120;
     public static final int LRU_MEMORY_CACHE_PCT = 15;
     public static final String API_VERSION = "v1";
+    public static final String API_VERSION_V2 = "v2";
     public static final String HEADER_X_USER_TOKEN = "X-User-Token";
     public static final String HEADER_X_TASTY_CLIENT = "X-Tasty-Client";
     public static final String HEADER_X_TASTY_CLIENT_VALUE = "android_offical";

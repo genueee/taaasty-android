@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  android:orientation="vertical"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/header_group_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:padding="16dp">
+
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_small_diameter"
+            android:layout_height="@dimen/avatar_small_diameter"
+            android:layout_marginRight="16dp"
+            android:layout_gravity="top"
+            android:foreground="@drawable/clickable_item_circle_background"
+            android:contentDescription="@string/open_user_tlog"
+            android:clickable="true"
+            android:src="@drawable/avatar_dummy"/>
+
+        <EditText
+            android:id="@+id/topic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#303030"
+            android:maxLines="7"
+            android:ellipsize="end"
+            android:textSize="16sp"
+            tools:text="genue sf"
+            android:layout_toRightOf="@+id/avatar"
+            android:layout_centerVertical="true"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#c0c0c0"/>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/user_count"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#303030"
+            android:textSize="18sp"
+            tools:text="@string/user_list"/>
+
+        <TextView
+            android:id="@+id/edit_users"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#303030"
+            android:textSize="18sp"
+            android:text="@string/edit_post"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:background="@drawable/btn_edit_group_users"/>
+
+    </LinearLayout>
+
+    <ru.taaasty.widgets.MyRecyclerView
+        android:id="@+id/user_list"
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_weight="1"/>
+
+    <TextView
+        android:id="@+id/save_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/btn_green_background"
+        android:text="@string/save_post"/>
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/progress_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clickable="true"
+        android:background="@color/black_overlay"
+        android:visibility="gone">
+
+        <ProgressBar
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"/>
+
+    </FrameLayout>
+
+</FrameLayout>

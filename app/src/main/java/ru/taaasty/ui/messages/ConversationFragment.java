@@ -8,40 +8,37 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.Conversation.Message;
 import ru.taaasty.rest.model.ConversationMessages;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.AnalyticsHelper;
+import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
@@ -51,6 +48,12 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConversationFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -148,6 +151,7 @@ public class ConversationFragment extends Fragment {
         mAdapter = new Adapter(getActivity());
         mListView.setAdapter(mAdapter);
 
+        bindGroupHeader();
         initSendMessageForm();
 
         EventBus.getDefault().register(this);
@@ -179,6 +183,11 @@ public class ConversationFragment extends Fragment {
             // List<Conversation.Message> feed = mAdapter.getF();
             // outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
         }
+    }
+
+    public void refresh() {
+        mMessagesLoader.refreshMessages();
+        bindGroupHeader();
     }
 
     @Override
@@ -234,6 +243,32 @@ public class ConversationFragment extends Fragment {
         if (conversation.id != mConversationId) throw new IllegalArgumentException();
         mConversation = conversation;
         if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
+        bindGroupHeader();
+        mMessagesLoader.refreshMessages();
+    }
+
+    public void bindGroupHeader() {
+        if (mConversation != null &&mConversation.isGroup()) {
+            View headerGroup = getActivity().findViewById(R.id.header_group_info);
+            headerGroup.setVisibility(View.VISIBLE);
+            if (mConversation.avatar != null) {
+                ImageView groupAvatar = (ImageView) headerGroup.findViewById(R.id.avatar);
+                ImageUtils.loadImageRounded(groupAvatar, mConversation.avatar.url, R.dimen.avatar_small_diameter);
+            }
+            if (!TextUtils.isEmpty(mConversation.topic)) {
+                ((TextView) headerGroup.findViewById(R.id.topic)).setText(mConversation.topic);
+            }
+            ((TextView) headerGroup.findViewById(R.id.users)).setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
+            if (Session.getInstance().isMe(mConversation.getGroupAdmin().getId())) {
+                headerGroup.setOnClickListener(new OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        mListener.onEditGroupConversation(mConversation);
+                    }
+                });
+            }
+        }
     }
 
     private void initSendMessageForm() {
@@ -377,6 +412,16 @@ public class ConversationFragment extends Fragment {
         }
     };
 
+    static class SystemMessageHolder extends RecyclerView.ViewHolder {
+
+        TextView messageText;
+
+        public SystemMessageHolder(View itemView) {
+            super(itemView);
+            messageText = (TextView) itemView.findViewById(R.id.message);
+        }
+    }
+
     static class LoadMoreButtonHeaderHolder extends RecyclerView.ViewHolder {
 
         View loadButton;
@@ -392,10 +437,21 @@ public class ConversationFragment extends Fragment {
 
     class Adapter extends ConversationAdapter {
 
+        public static final int VIEW_TYPE_SYSTEM_MESSAGE = R.id.conversation_view_system_message;
+
         private Session mSession = Session.getInstance();
 
         public Adapter(Context context) {
             super(context);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            Conversation.Message message = getMessage(position);
+            if (message.isSystemMessage()) {
+                return VIEW_TYPE_SYSTEM_MESSAGE;
+            }
+            return super.getItemViewType(position);
         }
 
         @Override
@@ -429,6 +485,14 @@ public class ConversationFragment extends Fragment {
             }
         }
 
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (VIEW_TYPE_SYSTEM_MESSAGE == viewType) {
+                View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.conversation_system_message, mListView, false);
+                return new SystemMessageHolder(child);
+            }
+            return super.onCreateViewHolder(parent, viewType);
+        }
 
         @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
@@ -444,9 +508,13 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-            super.onBindViewHolder(viewHolder, position);
-            if (mMessagesLoader != null) {
-                mMessagesLoader.onBindViewHolder(viewHolder, position);
+            if (viewHolder instanceof SystemMessageHolder) {
+                bindSystemMessage((SystemMessageHolder)viewHolder, position);
+            } else {
+                super.onBindViewHolder(viewHolder, position);
+                if (mMessagesLoader != null) {
+                    mMessagesLoader.onBindViewHolder(viewHolder, position);
+                }
             }
         }
 
@@ -470,13 +538,25 @@ public class ConversationFragment extends Fragment {
             }
         }
 
+        public void bindSystemMessage(SystemMessageHolder holder, int position) {
+            Message message = getMessage(position);
+            holder.messageText.setText(message.contentHtml);
+        }
+
         @Nullable
         @Override
         protected User getMember(long userUuid) {
             if (mSession.isMe(userUuid)) {
                 return mSession.getCachedCurrentUser();
             } else {
-                return mConversation == null ? null : mConversation.recipient;
+                if (mConversation!= null) {
+                    if (mConversation.isGroup()) {
+                        return mConversation.findUserById(userUuid);
+                    } else  {
+                        return mConversation.recipient;
+                    }
+                }
+                return null;
             }
         }
     }
@@ -745,5 +825,6 @@ public class ConversationFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener  {
+        void onEditGroupConversation(Conversation conversation);
     }
 }

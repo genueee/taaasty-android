@@ -8,12 +8,12 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.events.ConversationChanged;
 import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.messages.ConversationsListFragment;
 import ru.taaasty.ui.messages.InitiateConversationFragment;
@@ -127,6 +127,11 @@ public class ConversationsActivity extends TabbarActivityBase implements
         getSupportFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
         EventBus.getDefault().post(new ConversationChanged(conversation));
         ConversationActivity.startConversationActivity(this, conversation, null);
+    }
+
+    @Override
+    public void onUserPicked(User user) {
+
     }
 
     private void refreshAb() {

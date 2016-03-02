@@ -3,7 +3,10 @@ package ru.taaasty.ui.messages;
 import android.animation.LayoutTransition;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -12,13 +15,10 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-
-import java.util.Collections;
-import java.util.List;
-
 import ru.taaasty.R;
 import ru.taaasty.adapters.UsernameAdapter;
 import ru.taaasty.rest.RestClient;
@@ -34,6 +34,9 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -41,6 +44,10 @@ import rx.subscriptions.Subscriptions;
  * to handle interaction events.
  */
 public class InitiateConversationFragment extends Fragment {
+
+    private static final int REQUEST_CREATE_GROUP = 1;
+
+    public static final String ARG_USED_AS_PICKER = InitiateConversationFragment.class.getName() + ".usedAsPicker";
 
     public static final int PREDICT_USERS_LIMIT = 30;
     private OnFragmentInteractionListener mListener;
@@ -50,6 +57,7 @@ public class InitiateConversationFragment extends Fragment {
     private View mEmptyTextView;
     private View mUserNotFoundView;
     private View mProgressView;
+    private View mCreateGroupButton;
 
     private UsernameAdapter mAdapter;
 
@@ -62,6 +70,8 @@ public class InitiateConversationFragment extends Fragment {
 
     private ApiUsers mApiUsers;
 
+    private  boolean mIsInPickerMode = false;
+
     public InitiateConversationFragment() {
         // Required empty public constructor
     }
@@ -70,6 +80,7 @@ public class InitiateConversationFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mApiUsers = RestClient.getAPiUsers();
+        mIsInPickerMode = getArguments() != null && getArguments().containsKey(ARG_USED_AS_PICKER);
     }
 
     @Override
@@ -81,6 +92,21 @@ public class InitiateConversationFragment extends Fragment {
         mEmptyTextView = root.findViewById(R.id.empty_text);
         mUserNotFoundView = root.findViewById(R.id.user_not_found_text);
         mProgressView = root.findViewById(R.id.progress);
+        mCreateGroupButton = root.findViewById(R.id.create_group_button);
+
+        if (mIsInPickerMode) {
+            root.findViewById(R.id.action_bar).setVisibility(View.GONE);
+        } else {
+            mCreateGroupButton.setVisibility(View.VISIBLE);
+            mCreateGroupButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EditCreateGroupActivity.newGroupConversation(getActivity(),
+                            InitiateConversationFragment.this, REQUEST_CREATE_GROUP);
+                }
+            });
+        }
+
 
         root.findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,10 +117,14 @@ public class InitiateConversationFragment extends Fragment {
         LayoutTransition transition = ((ViewGroup) root).getLayoutTransition();
         if (transition != null) transition.setDuration(getResources().getInteger(R.integer.shortAnimTime));
 
-        initEditText();
-        initListView();
-
         return root;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        initListView();
+        initEditText();
     }
 
     @Override
@@ -182,7 +212,11 @@ public class InitiateConversationFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     long userId = mListView.getChildItemId(v);
-                    onUsernameClicked(userId);
+                    if (mIsInPickerMode) {
+                        onUserPicked(userId);
+                    } else {
+                        onUsernameClicked(userId);
+                    }
                 }
             };
         };
@@ -192,13 +226,19 @@ public class InitiateConversationFragment extends Fragment {
     }
 
     void onTextChanged(CharSequence text) {
-        restartUserPreload(text);
-        setupCurrentState(text);
+        if (mAdapter != null) {
+            restartUserPreload(text);
+            setupCurrentState(text);
+        }
     }
 
     void onUsernameClicked(long userId) {
         startCreateConversation(userId);
         setupCurrentState(mNameView.getText());
+    }
+
+    private void onUserPicked(long userId) {
+        mListener.onUserPicked(mAdapter.getById(userId));
     }
 
     private void updateCurrentState() {
@@ -252,6 +292,21 @@ public class InitiateConversationFragment extends Fragment {
         mCreatingConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mCreateConversationObservable);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == REQUEST_CREATE_GROUP && mListener != null) {
+                new Handler().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mListener.onConversationCreated(
+                                (Conversation) data.getParcelableExtra(EditGroupFragment.RESULT_CONVERSATION));
+                    }
+                });
+            }
+        }
     }
 
     private final RecyclerView.AdapterDataObserver mAdapterDataObserver = new RecyclerView.AdapterDataObserver() {
@@ -317,6 +372,7 @@ public class InitiateConversationFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onConversationCreated(Conversation conversation);
+        void onUserPicked(User user);
     }
 
 }

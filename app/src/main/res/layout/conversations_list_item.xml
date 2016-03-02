@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
@@ -8,6 +8,8 @@
     android:minHeight="64dp"
     android:paddingLeft="16dp"
     android:paddingRight="8dp"
+    android:paddingBottom="8dp"
+    android:paddingTop="8dp"
     android:gravity="center_vertical"
     android:background="?selectableItemBackground"
     tools:ignore="UseCompoundDrawables">
@@ -24,56 +26,83 @@
         android:clickable="true"
         android:src="@drawable/avatar_dummy" />
 
-    <LinearLayout
-        android:layout_width="0dp"
+    <ru.taaasty.widgets.LinkifiedTextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_weight="1"
-        android:layout_gravity="center_vertical"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp">
+        android:textColor="#1b1b1b"
+        android:maxLines="7"
+        android:ellipsize="end"
+        android:textSize="15sp"
+        android:paddingBottom="4dp"
+        tools:text="genue sf"
+        android:layout_toRightOf="@+id/avatar"
+        android:layout_marginRight="80dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignLeft="@+id/title"
+        android:layout_below="@+id/title"
+        android:layout_marginRight="80dp">
+
+        <ru.taaasty.widgets.HintedExtendedImageView
+            android:id="@+id/message_avatar"
+            android:layout_width="@dimen/avatar_small_diameter_24dp"
+            android:layout_height="@dimen/avatar_small_diameter_24dp"
+            android:foreground="@drawable/clickable_item_circle_background"
+            android:contentDescription="@string/open_user_tlog"
+            android:clickable="true"
+            android:src="@drawable/avatar_dummy"
+            android:layout_marginRight="5dp"/>
 
         <ru.taaasty.widgets.LinkifiedTextView
             android:id="@+id/last_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#1b1b1b"
+            android:textColor="#2b2b2b"
             android:maxLines="7"
             android:ellipsize="end"
-            android:textSize="15sp"
-            android:paddingBottom="4dp"
-            tools:text="genue sf" />
-
-        <ru.taaasty.widgets.RelativeDateTextSwitcher
-            android:id="@+id/notification_date"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="#c9c9c9"
-                android:textSize="15sp"
-                tools:text="1 час назад" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:textColor="#c9c9c9"
-                android:textSize="15sp"
-                tools:text="1 час назад" />
-
-        </ru.taaasty.widgets.RelativeDateTextSwitcher>
+            android:textSize="14sp"
+            tools:text="genue sf"
+            android:gravity="center_vertical"
+            android:layout_marginTop="2dp"/>
 
     </LinearLayout>
 
+    <ru.taaasty.widgets.RelativeDateTextSwitcher
+        android:id="@+id/notification_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#c9c9c9"
+            android:textSize="15sp"
+            tools:text="1 час назад" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="#c9c9c9"
+            android:textSize="15sp"
+            tools:text="1 час назад" />
+
+    </ru.taaasty.widgets.RelativeDateTextSwitcher>
+
+
     <FrameLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true">
 
         <ru.taaasty.widgets.SquareTextView
             android:id="@+id/unread_messages_count"
@@ -84,9 +113,10 @@
             android:background="@drawable/conversations_list_unread_messages_background"
             android:gravity="center"
             android:maxWidth="5sp"
-            android:minHeight="32dp"
-            android:minWidth="32dp"
+            android:minHeight="16dp"
+            android:minWidth="16dp"
             android:padding="4dp"
+            android:textSize="12sp"
             android:singleLine="true"
             android:textColor="@android:color/white"
             tools:text="100" />
@@ -102,4 +132,4 @@
             />
     </FrameLayout>
 
-</LinearLayout>
+</RelativeLayout>

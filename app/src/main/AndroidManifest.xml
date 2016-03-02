@@ -78,6 +78,21 @@
             android:label="@string/title_conversations" >
         </activity>
         <activity
+            android:name=".ui.messages.EditCreateGroupActivity"
+            android:theme="@style/NotificationsActivityTheme"
+            android:label="@string/group_chat"
+            android:parentActivityName=".ui.tabbar.NotificationsActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />>
+        </activity>
+        <activity
+            android:name=".ui.messages.UserPickerActivity"
+            android:theme="@style/NotificationsActivityTheme"
+            android:label="@string/add_chat_user" >
+        </activity>
+        <activity
             android:name=".ui.login.LoginActivity"
             android:documentLaunchMode="never"
             android:excludeFromRecents="true"

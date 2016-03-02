@@ -4,17 +4,22 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-
-import java.util.Comparator;
-import java.util.Date;
-
 import ru.taaasty.Session;
 import ru.taaasty.utils.Objects;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 
 /**
  * Created by alexey on 22.10.14.
  */
 public class Conversation implements Parcelable {
+
+    public static final String TYPE_CHAT = "PrivateConversation";
+    public static final String TYPE_GROUP = "GroupConversation";
+
+    public static final String MESSAGE_TYPE_SYSTEM = "SystemMessage";
 
     public long id = -1;
 
@@ -24,15 +29,26 @@ public class Conversation implements Parcelable {
 
     public Date updatedAt;
 
+    public String type;
+
+    public String topic;
+
     public long recipientId;
 
     public User recipient = User.DUMMY;
+
+    public User admin;
+
+    public ArrayList<User> users;
+    public long[] users_left;
 
     public int unreadMessagesCount;
 
     public int unreceivedMessagesCount;
 
     public int messagesCount;
+
+    public Avatar avatar;
 
     public Message lastMessage = Message.DUMMY;
 
@@ -57,6 +73,37 @@ public class Conversation implements Parcelable {
         }
     };
 
+    public boolean isGroup() {
+        return type.equals(TYPE_GROUP);
+    }
+
+    public ArrayList<User> getActualUsers() {
+        ArrayList<User> actualUsers = new ArrayList<>(users);
+        for(long userId: users_left) {
+            User userLeft;
+            if ((userLeft = findUserById(userId)) != null) {
+                actualUsers.remove(userLeft);
+            }
+        }
+        return actualUsers;
+    }
+
+    public User getGroupAdmin() {
+        return admin;
+    }
+
+    public User findUserById(long userId) {
+        if (users == null) {
+            return null;
+        } else {
+            for (User user: users) {
+                if (user.getId() == userId) {
+                    return user;
+                }
+            }
+        }
+        return null;
+    }
 
     public static class Message implements Parcelable {
 
@@ -92,6 +139,9 @@ public class Conversation implements Parcelable {
          */
         public String contentHtml;
 
+        public User author;
+
+        public String type;
 
         @Nullable
         public Conversation conversation;
@@ -105,6 +155,10 @@ public class Conversation implements Parcelable {
 
         public boolean isFromMe() {
             return Session.getInstance().isMe(userId);
+        }
+
+        public boolean isSystemMessage() {
+           return MESSAGE_TYPE_SYSTEM.equals(type);
         }
 
         @Override
@@ -160,6 +214,8 @@ public class Conversation implements Parcelable {
             dest.writeLong(readAt != null ? readAt.getTime() : -1);
             dest.writeString(this.contentHtml);
             dest.writeParcelable(this.conversation, 0);
+            dest.writeParcelable(this.author, 0);
+            dest.writeString(this.type);
         }
 
         private Message(Parcel in) {
@@ -174,6 +230,8 @@ public class Conversation implements Parcelable {
             this.readAt = tmpReadAt == -1 ? null : new Date(tmpReadAt);
             this.contentHtml = in.readString();
             this.conversation = in.readParcelable(Conversation.class.getClassLoader());
+            this.author = in.readParcelable(User.class.getClassLoader());
+            this.type = in.readString();
         }
 
         public static final Creator<Message> CREATOR = new Creator<Message>() {
@@ -187,6 +245,58 @@ public class Conversation implements Parcelable {
         };
     }
 
+    public static class Avatar implements Parcelable {
+
+        public String url;
+        public String path;
+        public Geometry geometry;
+        public String title;
+        public String source;
+
+        public static class Geometry {
+            int width;
+            int height;
+        }
+
+        protected Avatar(Parcel in) {
+            url = in.readString();
+            path = in.readString();
+            Geometry geometry = new Geometry();
+            geometry.width = in.readInt();
+            geometry.height = in.readInt();
+            this.geometry = geometry;
+            title = in.readString();
+            source = in.readString();
+        }
+
+        public static final Creator<Avatar> CREATOR = new Creator<Avatar>() {
+            @Override
+            public Avatar createFromParcel(Parcel in) {
+                return new Avatar(in);
+            }
+
+            @Override
+            public Avatar[] newArray(int size) {
+                return new Avatar[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(url);
+            dest.writeString(path);
+            dest.writeInt(geometry.width);
+            dest.writeInt(geometry.height);
+            dest.writeString(title);
+            dest.writeSerializable(source);
+        }
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -198,12 +308,18 @@ public class Conversation implements Parcelable {
         dest.writeLong(this.userId);
         dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
         dest.writeLong(updatedAt != null ? updatedAt.getTime() : -1);
+        dest.writeString(this.type);
+        dest.writeString(this.topic);
         dest.writeLong(this.recipientId);
+        dest.writeParcelable(this.admin, 0);
+        dest.writeTypedList(users);
+        dest.writeLongArray(users_left);
         dest.writeParcelable(this.recipient, 0);
         dest.writeInt(this.unreadMessagesCount);
         dest.writeInt(this.unreceivedMessagesCount);
         dest.writeInt(this.messagesCount);
         dest.writeParcelable(this.lastMessage, 0);
+        dest.writeParcelable(this.avatar, 0);
     }
 
     public Conversation() {
@@ -216,12 +332,19 @@ public class Conversation implements Parcelable {
         this.createdAt = tmpCreatedAt == -1 ? null : new Date(tmpCreatedAt);
         long tmpUpdatedAt = in.readLong();
         this.updatedAt = tmpUpdatedAt == -1 ? null : new Date(tmpUpdatedAt);
+        this.type = in.readString();
+        this.topic = in.readString();
         this.recipientId = in.readLong();
+        this.admin = in.readParcelable(User.class.getClassLoader());
+        this.users = new ArrayList<>();
+        in.readTypedList(users, User.CREATOR);
+        this.users_left = in.createLongArray();
         this.recipient = in.readParcelable(User.class.getClassLoader());
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
+        this.avatar = in.readParcelable(Avatar.class.getClassLoader());
     }
 
     public static final Parcelable.Creator<Conversation> CREATOR = new Parcelable.Creator<Conversation>() {

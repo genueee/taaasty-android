@@ -51,6 +51,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private static final String BUNDLE_ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.BUNDLE_ARG_CONVERSATION";
 
+    private static final int REQUEST_CODE_EDIT_CONVERSATION = 1;
+
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
     // Anti-picasso weak ref
@@ -196,7 +198,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     public void onConversationLoaded(Conversation conversation) {
         mConversation = conversation;
         setTitle(conversation.recipient.getName());
-        bindDesign(conversation.recipient.getDesign());
+        if (!conversation.isGroup()) {
+            bindDesign(conversation.recipient.getDesign());
+        }
         ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onConversationLoaded(conversation);
     }
@@ -262,6 +266,15 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         }
     };
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == REQUEST_CODE_EDIT_CONVERSATION) {
+                onConversationLoaded((Conversation) data.getParcelableExtra(EditGroupFragment.RESULT_CONVERSATION));
+            }
+        }
+    }
+
     private final Observer<Conversation> mLoadConversationObservable = new Observer<Conversation>() {
 
         @Override
@@ -281,4 +294,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             onConversationLoaded(conversation);
         }
     };
+
+    @Override
+    public void onEditGroupConversation(Conversation conversation) {
+        EditCreateGroupActivity.editGroupConversation(this, conversation, REQUEST_CODE_EDIT_CONVERSATION);
+    }
 }

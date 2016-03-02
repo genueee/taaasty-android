@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/list_selector_holo_light"
+              android:padding="8dp">
+
+    <ru.taaasty.widgets.ExtendedImageView
+        android:id="@+id/flow_image"
+        android:layout_width="@dimen/avatar_small_diameter"
+        android:layout_height="@dimen/avatar_small_diameter"
+        android:cropToPadding="false"
+        android:adjustViewBounds="false"
+        android:scaleType="centerCrop"
+        android:src="@drawable/avatar_dummy_placeholder"
+        android:contentDescription="@string/feed_item_image_content_description" />
+
+    <TextView
+        android:id="@+id/flow_title"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:textSize="16sp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_vertical"
+        android:textColor="@android:color/black"/>
+
+    <ImageView
+        android:id="@+id/menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_more_light"
+        android:layout_marginRight="16dp"
+        android:layout_gravity="center_vertical"/>
+
+</LinearLayout>

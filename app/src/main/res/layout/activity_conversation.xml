@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -23,6 +24,56 @@
         app:navigationIcon="@drawable/ic_back"
         app:theme="@style/ToolbarThemeDark"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:background="@color/semi_transparent_action_bar_dark"/>
+        android:background="@color/semi_transparent_action_bar_dark">
+
+        <RelativeLayout
+            android:id="@+id/header_group_info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingRight="16dp"
+            android:visibility="gone">
+
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_small_diameter"
+                android:layout_height="@dimen/avatar_small_diameter"
+                android:layout_marginRight="16dp"
+                android:layout_gravity="top"
+                android:foreground="@drawable/clickable_item_circle_background"
+                android:contentDescription="@string/open_user_tlog"
+                android:src="@drawable/avatar_dummy"/>
+
+            <ru.taaasty.widgets.LinkifiedTextView
+                android:id="@+id/topic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/feed_white_text"
+                android:maxLines="7"
+                android:ellipsize="end"
+                android:textSize="14sp"
+                android:paddingBottom="4dp"
+                android:includeFontPadding="false"
+                tools:text="genue sf"
+                android:layout_toRightOf="@+id/avatar"
+                android:layout_alignTop="@+id/avatar"/>
+
+            <ru.taaasty.widgets.LinkifiedTextView
+                android:id="@+id/users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="7"
+                android:ellipsize="end"
+                android:textSize="13sp"
+                android:includeFontPadding="false"
+                android:textColor="@color/feed_white_text"
+                tools:text="genue sf"
+                android:layout_marginTop="2dp"
+                android:layout_alignLeft="@+id/topic"
+                android:layout_below="@+id/topic"/>
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>
 
 </FrameLayout>

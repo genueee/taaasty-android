@@ -31,6 +31,7 @@ import android.widget.ImageView;
 import com.aviary.android.feather.sdk.FeatherActivity;
 import com.aviary.android.feather.sdk.internal.Constants;
 import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
+import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.okhttp.CacheControl;
 import com.squareup.okhttp.Call;
@@ -40,6 +41,7 @@ import com.squareup.okhttp.Response;
 import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 import com.trello.rxlifecycle.RxLifecycle;
@@ -434,6 +436,39 @@ public class ImageUtils {
                 .error(defaultUserpicDrawable)
                 .transform(mCircleTransformation)
                 .into(target);
+    }
+
+    public static void loadImageRounded(final ImageView imageView, String picUrl, int dimension) {
+        final int imageSize = imageView.getResources().getDimensionPixelSize(dimension);
+        ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(picUrl);
+        String userpicUrl = thumborUrl.resize(imageSize, imageSize)
+                .toUrlUnsafe();
+
+        Picasso.with(imageView.getContext())
+                .load(userpicUrl)
+                .error(R.drawable.image_load_error)
+                .config(Bitmap.Config.RGB_565)
+                .resize(imageSize, imageSize)
+                .onlyScaleDown()
+                .centerCrop()
+                .noFade()
+                .into(new Target() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap, LoadedFrom loadedFrom) {
+                        imageView.setImageBitmap(BitmapUtils.roundedCorners(bitmap,
+                                imageSize / 2, imageSize / 2));
+                    }
+
+                    @Override
+                    public void onBitmapFailed(Drawable drawable) {
+
+                    }
+
+                    @Override
+                    public void onPrepareLoad(Drawable drawable) {
+
+                    }
+                });
     }
 
     public interface DrawableTarget extends Target {

@@ -1,15 +1,16 @@
 package ru.taaasty.rest.service;
 
-import java.util.List;
-
 import retrofit.client.Response;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
+import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.PUT;
+import retrofit.http.Part;
 import retrofit.http.Path;
 import retrofit.http.Query;
+import retrofit.mime.TypedOutput;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.ConversationMessages;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
@@ -17,6 +18,8 @@ import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.Status;
 import rx.Observable;
+
+import java.util.List;
 
 /**
  * Created by alexey on 21.10.14.
@@ -140,6 +143,32 @@ public interface ApiMessenger {
     Status.MarkMessagesAsRead markMessagesAsReadSync(@Field("socket_id") String socketId,
                                                              @Path("id") long conversationId,
                                                              @Field("ids") String messageIds
+    );
+
+    /**
+     * Создание группового чата с указанными пользователями
+     * @param ids список участников группы через запятую
+     */
+    @Multipart
+    @POST("/messenger/conversations/by_user_ids.json")
+    Observable<Conversation> createGroupConversation(@Part("socket_id") String socketId,
+                                                     @Part("topic") String topic,
+                                                     @Part("ids") String ids,
+                                                     @Part("avatar") TypedOutput avatar,
+                                                     @Part("background_image") TypedOutput background
+    );
+
+    /**
+     * Изменение группового чата
+     */
+    @Multipart
+    @POST("/messenger/conversations/by_id/{conv_id}.json")
+    Observable<Conversation> editGroupConversation(@Path("conv_id") String conv_id,
+                                                     @Part("socket_id") String socketId,
+                                                     @Part("topic") String topic,
+                                                     @Part("ids") String ids,
+                                                     @Part("avatar") TypedOutput avatar,
+                                                     @Part("background_image") TypedOutput background
     );
 
 }

@@ -216,6 +216,7 @@
     <string name="remove_from_favourites_ok">Пост убран из избранного</string>
     <string name="share_title">Поделиться</string>
     <string name="repost_successful">Репост выполнен успешно</string>
+    <string name="user_count">Участников: %1$d</string>
 
     <string name="notification_received_title">Пришло уведомление</string>
     <string name="notifications_received_title">Есть непрочитанные уведомления</string>
@@ -265,6 +266,8 @@
     <string name="title_available_notifications">Уведомления</string>
     <string name="summary_available_notifications">Отправлять мне емейл уведомления обо всех новых комментариях, подписчиках и личных сообщениях?</string>
     <string name="user_error">Ошибка обновления пользователя</string>
+    <string name="add_chat_user">Добавить собеседника</string>
+    <string name="fail_to_save_group">Не удалось сохранить параметры группы</string>
 
     <string name="copy_link_to_clipboard_description">Скопируйте ссылку в буфер обмена</string>
 
@@ -347,5 +350,9 @@
     <string name="new_version_available_default">Доступна новая версия приложения</string>
     <string name="app_version_not_supported">Данная версия приложения больше не поддерживается, её необходимо обновить</string>
     <string name="update_app">Обновить</string>
+    <string name="group_chat">Групповой чат</string>
+    <string name="crate_group_chat">Создать групповой чат</string>
+    <string name="user_list">User list</string>
+    <string name="group_topic_should_not_be_empty">Заголовок группы не должен быть пустым</string>
 
 </resources>

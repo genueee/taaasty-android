@@ -11,17 +11,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.squareup.picasso.Picasso;
-
-import java.util.Collection;
-
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.widgets.PicassoDrawable;
+
+import java.util.Collection;
 
 /**
  * Created by alexey on 06.12.14.
@@ -69,6 +67,15 @@ public class UsernameAdapter extends RecyclerView.Adapter<UsernameAdapter.ViewHo
 
     public void setUsers(Collection<User> users) {
         mUsers.resetItems(users);
+    }
+
+    public User getById(long id) {
+        for (int i = 0; i < mUsers.size(); i++) {
+            if (mUsers.get(i).getId() == id) {
+                return mUsers.get(i);
+            }
+        }
+        return null;
     }
 
     public boolean isEmpty() {

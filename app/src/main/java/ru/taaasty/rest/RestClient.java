@@ -38,6 +38,7 @@ public final class RestClient {
     private static volatile RestClient sInstance;
 
     private RestAdapter mRestAdapter; // http://stackoverflow.com/a/21250503/2971719
+    private RestAdapter mRestAdapterV2;
 
     private volatile ApiApp mApiApp;
     private volatile ApiComments mApiComments;
@@ -58,6 +59,15 @@ public final class RestClient {
         mRestAdapter = new RestAdapter.Builder()
                 .setLogLevel(Constants.RETROFIT_LOG_LEVEL)
                 .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
+                .setConverter(new GsonConverter(NetworkUtils.getGson()))
+                .setRequestInterceptor(new AddHeadersRequestInterceptor())
+                .setErrorHandler(new ResponseErrorExceptionErrorHandler())
+                .setClient(new OkClient(NetworkUtils.getInstance().getOkHttpClient()))
+                .build();
+
+        mRestAdapterV2 = new RestAdapter.Builder()
+                .setLogLevel(Constants.RETROFIT_LOG_LEVEL)
+                .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION_V2)
                 .setConverter(new GsonConverter(NetworkUtils.getGson()))
                 .setRequestInterceptor(new AddHeadersRequestInterceptor())
                 .setErrorHandler(new ResponseErrorExceptionErrorHandler())
@@ -176,7 +186,7 @@ public final class RestClient {
         if (instance.mApiMessenger == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiMessenger == null) {
-                    instance.mApiMessenger = instance.mRestAdapter.create(ApiMessenger.class);
+                    instance.mApiMessenger = instance.mRestAdapterV2.create(ApiMessenger.class);
                 }
             }
         }

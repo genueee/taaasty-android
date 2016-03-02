@@ -18,6 +18,7 @@
     <item type="id" name="conversation_view_more_button"/>
     <item type="id" name="conversation_view_my_message"/>
     <item type="id" name="conversation_view_their_message"/>
+    <item type="id" name="conversation_view_system_message"/>
 
     <item type="id" name="post_header"/>
     <item type="id" name="comments_header"/>
