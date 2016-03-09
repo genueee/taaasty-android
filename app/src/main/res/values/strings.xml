@@ -24,6 +24,13 @@
     <string name="title_embedd_post">Ссылка</string>
     <string name="activity_settings">Настройки</string>
 
+    <string-array name="do_not_disturb_options">
+        <item>1 час</item>
+        <item>8 часов</item>
+        <item>24 часа</item>
+        <item>1 неделя</item>
+    </string-array>
+
     <plurals name="public_records_last_day">
         <item quantity="one">%d публикация за сутки</item>
         <item quantity="few">%d публикации за сутки</item>
@@ -186,7 +193,7 @@
     <string name="post_in_favorites">Из избранного</string>
     <string name="copy_link_to_clipboard">Ссылка</string>
     <string name="report_post_to_moderator">Пожаловаться</string>
-    <string name="edit_post">Редактировать</string>
+    <string name="edit_post">Изменить</string>
     <string name="delete_post">Удалить</string>
     <string name="save_post">Сохранить</string>
     <string name="repost">Репост</string>
@@ -354,5 +361,13 @@
     <string name="crate_group_chat">Создать групповой чат</string>
     <string name="user_list">User list</string>
     <string name="group_topic_should_not_be_empty">Заголовок группы не должен быть пустым</string>
+    <string name="chat">Переписка</string>
+    <string name="do_not_disturb">Не беспокоить</string>
+    <string name="delete_chat">Удалить переписку</string>
+    <string name="leave_group">Покинуть группу</string>
+    <string name="delete_chat_desc">Переписка будет удалена и вы не сможете получать сообщения</string>
+    <string name="leave_chat">Выйти</string>
+    <string name="cancel">Отмена</string>
+    <string name="fail_to_remove_chat">Не удалось удалить переписку</string>
 
 </resources>

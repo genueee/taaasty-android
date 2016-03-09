@@ -302,7 +302,7 @@ public class InitiateConversationFragment extends Fragment {
                     @Override
                     public void run() {
                         mListener.onConversationCreated(
-                                (Conversation) data.getParcelableExtra(EditGroupFragment.RESULT_CONVERSATION));
+                                (Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
                     }
                 });
             }

@@ -52,6 +52,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     private static final String BUNDLE_ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.BUNDLE_ARG_CONVERSATION";
 
     private static final int REQUEST_CODE_EDIT_CONVERSATION = 1;
+    private static final int REQUEST_CODE_CONVERSATION_DETAILS = 2;
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
@@ -269,8 +270,20 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            if (requestCode == REQUEST_CODE_EDIT_CONVERSATION) {
-                onConversationLoaded((Conversation) data.getParcelableExtra(EditGroupFragment.RESULT_CONVERSATION));
+            switch (requestCode) {
+                case REQUEST_CODE_EDIT_CONVERSATION:
+                    if (EditCreateGroupActivity.ACTION_SAVE_CONVERSATION.equals(data.getAction())) {
+                        onConversationLoaded((Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
+                    }
+                    if (EditCreateGroupActivity.ACTION_LEAVE_CONVERSATION.equals(data.getAction())) {
+                        finish();
+                    }
+                    break;
+                case REQUEST_CODE_CONVERSATION_DETAILS:
+                    if (data.getAction().equals(ConversationDetailsActivity.ACTION_CONVERSATION_REMOVED)) {
+                        finish();
+                    }
+                    break;
             }
         }
     }
@@ -298,5 +311,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     @Override
     public void onEditGroupConversation(Conversation conversation) {
         EditCreateGroupActivity.editGroupConversation(this, conversation, REQUEST_CODE_EDIT_CONVERSATION);
+    }
+
+    @Override
+    public void onViewChatDetails(Conversation conversation) {
+        ConversationDetailsActivity.start(this, conversation, REQUEST_CODE_CONVERSATION_DETAILS);
     }
 }

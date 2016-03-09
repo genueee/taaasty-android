@@ -1,8 +1,7 @@
 package ru.taaasty.ui.messages;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -13,6 +12,8 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -27,7 +28,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
-import com.google.gson.Gson;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.ContentTypedOutput;
@@ -59,8 +59,6 @@ import java.util.ArrayList;
  */
 public class EditGroupFragment extends Fragment implements AdapterListener {
 
-    public static final String RESULT_CONVERSATION = EditGroupFragment.class.getName() + ".conversation";
-
     private static final String ARG_CONVERSTION = EditGroupFragment.class.getName() + ".conversation";
 
     private static final String KEY_STATE = EditGroupFragment.class.getName() + ".state";
@@ -75,9 +73,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private RecyclerView mRecyclerView;
     private UserAdapter mAdapter;
     private View mProgressOverlay;
+    private View mLeaveButton;
+    private TextView mDeleteChatText;
+
+    private boolean mIsInLoadingState;
+
+    private InteractionListener mInteractionListener;
 
     private ViewModel mModel;
-    private Gson gson = new Gson();
 
     private TextListener mTextWatcher = new TextListener();
 
@@ -97,6 +100,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_CONVERSTION, conversation);
         fragment.setArguments(bundle);
+        fragment.setRetainInstance(true);
         return fragment;
     }
 
@@ -112,14 +116,10 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mSaveButton = root.findViewById(R.id.save_button);
         mRecyclerView = (RecyclerView) root.findViewById(R.id.user_list);
         mProgressOverlay = root.findViewById(R.id.progress_overlay);
-
-        mAvatar.setOnClickListener(onClickListener);
-        mEditUsersButton.setOnClickListener(onClickListener);
-        mSaveButton.setOnClickListener(onClickListener);
+        mLeaveButton = root.findViewById(R.id.delete_chat_layout);
+        mDeleteChatText = (TextView) root.findViewById(R.id.delete_chat_caption);
 
         mSaveButton.setEnabled(false);
-
-        mTopic.addTextChangedListener(mTextWatcher);
 
         mAdapter = new UserAdapter(getContext(), this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -128,6 +128,30 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mAdapter.setUsers(mModel.getUsers());
 
         mApiMessenger = RestClient.getAPiMessenger();
+
+        if (getConversation() != null) {
+            mLeaveButton.setOnClickListener(onClickListener);
+        } else {
+            mLeaveButton.setVisibility(View.GONE);
+        }
+
+        if (isAuthorMe()) {
+            mDeleteChatText.setText(R.string.delete_chat);
+        } else {
+            mDeleteChatText.setText(R.string.leave_chat);
+        }
+
+        if (!isReadOnly()) {
+            mAvatar.setOnClickListener(onClickListener);
+            mEditUsersButton.setOnClickListener(onClickListener);
+            mSaveButton.setOnClickListener(onClickListener);
+            mTopic.addTextChangedListener(mTextWatcher);
+        } else {
+            mSaveButton.setVisibility(View.GONE);
+            mEditUsersButton.setVisibility(View.GONE);
+            mTopic.setKeyListener(null);
+            mAdapter.setIsReadonly();
+        }
 
         bindModel();
 
@@ -141,9 +165,32 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (savedInstanceState == null) {
             mModel = new ViewModel(getConversation());
         } else {
-            mModel = savedInstanceState.getParcelable(KEY_STATE);
+            if (mModel == null) {
+                mModel = savedInstanceState.getParcelable(KEY_STATE);
+            }
         }
         mModel.setOnChangeListener(mOnChangeListener);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mInteractionListener = (InteractionListener) getActivity();
+    }
+
+    private boolean isAuthorMe() {
+        Conversation conversation = getConversation();
+        if (conversation == null) {
+            return false;
+        }
+        User admin = conversation.getGroupAdmin();
+        if (admin != null && Session.getInstance().isMe(admin.getId())) {
+            return true;
+        }
+        if (Session.getInstance().isMe(conversation.userId)) {
+            return true;
+        }
+        return false;
     }
 
     private boolean isNewConversation() {
@@ -152,6 +199,10 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
     private Conversation getConversation() {
         return getArguments().getParcelable(ARG_CONVERSTION);
+    }
+
+    private boolean isReadOnly() {
+        return getConversation() != null && getConversation().isPublicGroup();
     }
 
     @Override
@@ -167,7 +218,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         super.onDestroyView();
     }
 
-    private void setProgressSate(boolean showProgress) {
+    private void setProgressState(boolean showProgress) {
         mProgressOverlay.setVisibility(showProgress ? View.VISIBLE : View.GONE);
     }
 
@@ -250,7 +301,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         mSaveGroupSubscription.unsubscribe();
-        setProgressSate(true);
+        setProgressState(true);
         String topic = mModel.getTopic();
         String ids = mModel.getUsersIdsString();
         ContentTypedOutput avatar = mModel.getAvatarOutput(getContext());
@@ -263,6 +314,54 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(mSaveConversationObserver);
+    }
+
+    public void requestLeaveChat() {
+        final boolean remove = isAuthorMe();
+        AlertDialog.Builder builder = new Builder(getContext());
+        builder.setTitle(remove ? R.string.delete_chat : R.string.leave_chat);
+        builder.setMessage(R.string.delete_chat_desc);
+        builder.setPositiveButton(R.string.leave_chat, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                leaveChat();
+            }
+        });
+        builder.setNegativeButton(R.string.cancel, null);
+        builder.show();
+    }
+
+    private void leaveChat() {
+        setProgressState(true);
+        mIsInLoadingState = true;
+        final boolean remove = isAuthorMe();
+        final Conversation conversation = getConversation();
+        final Context appContext = getContext().getApplicationContext();
+        Observable<Object> observable = remove ?
+                mApiMessenger.deleteConversation(Long.toString(conversation.id), null)
+                : mApiMessenger.leaveConversation(Long.toString(conversation.id), null);
+        observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Object>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(appContext, R.string.fail_to_remove_chat, Toast.LENGTH_SHORT).show();
+                        mIsInLoadingState = false;
+                        setProgressState(false);
+                    }
+
+                    @Override
+                    public void onNext(Object o) {
+                        mIsInLoadingState = false;
+                        setProgressState(false);
+                        mInteractionListener.onConversationLeaved(conversation);
+                    }
+                });
     }
 
     private OnClickListener onClickListener = new OnClickListener() {
@@ -278,6 +377,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                 case R.id.save_button:
                     startSaveConversation();
                     break;
+                case R.id.delete_chat_layout:
+                    requestLeaveChat();
+                    break;
             }
         }
     };
@@ -290,17 +392,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
         @Override
         public void onError(Throwable e) {
-            setProgressSate(false);
-            Toast.makeText(getContext(), R.string.fail_to_save_group, Toast.LENGTH_SHORT);
+            setProgressState(false);
+            Toast.makeText(getContext(), R.string.fail_to_save_group, Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onNext(Conversation conversation) {
-            setProgressSate(false);
-            Intent intent = new Intent();
-            intent.putExtra(RESULT_CONVERSATION, conversation);
-            getActivity().setResult(Activity.RESULT_OK, intent);
-            getActivity().finish();
+            setProgressState(false);
+            mInteractionListener.onConversationSaved(conversation);
         }
     };
 
@@ -474,8 +573,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public State(Conversation conversation) {
-            topic = conversation.topic;
-            avatarUri = conversation.avatar != null? conversation.avatar.url : null;
+            topic = conversation.getTitle();
+            avatarUri = conversation.getAvatarUrl();
+            if (avatarUri == null) {
+                User user = conversation.getAvatarUser();
+                if (user != null) {
+                    avatarUri = user.getUserpic().originalUrl;
+                }
+            }
             users = new ArrayList<>(conversation.getActualUsers());
         }
 
@@ -558,6 +663,11 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         public void setEnabled(boolean isEnabled) {
             this.isEnabled = isEnabled;
         }
+    }
+
+    public interface InteractionListener {
+        void onConversationLeaved(Conversation conversation);
+        void onConversationSaved(Conversation conversation);
     }
 
 }

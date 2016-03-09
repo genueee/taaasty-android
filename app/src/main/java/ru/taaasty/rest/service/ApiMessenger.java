@@ -1,6 +1,7 @@
 package ru.taaasty.rest.service;
 
 import retrofit.client.Response;
+import retrofit.http.DELETE;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
@@ -170,5 +171,13 @@ public interface ApiMessenger {
                                                      @Part("avatar") TypedOutput avatar,
                                                      @Part("background_image") TypedOutput background
     );
+
+    @DELETE("/messenger/conversations/by_id/{conv_id}.json")
+    Observable<Object> deleteConversation(@Path("conv_id") String conv_id,
+                                          @Query("socket_id") String socketId);
+
+    @PUT("/messenger/conversations/by_id/{conv_id}/leave.json")
+    Observable<Object> leaveConversation(@Path("conv_id") String conv_id,
+                                         @Query("socket_id") String socketId);
 
 }

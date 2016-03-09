@@ -34,6 +34,7 @@ public class UserAdapter extends RecyclerView.Adapter {
 
     private Context context;
     private AdapterListener listener;
+    private boolean isReadOnly;
 
     SortedList<User> users = new SortedList<>(User.class, new SortedListAdapterCallback<User>(this) {
         @Override
@@ -58,6 +59,10 @@ public class UserAdapter extends RecyclerView.Adapter {
     public UserAdapter(Context context, AdapterListener listener) {
         this.context = context;
         this.listener = listener;
+    }
+
+    public void setIsReadonly() {
+        isReadOnly = true;
     }
 
     public void setUsers(ArrayList<User> usersList) {
@@ -118,7 +123,9 @@ public class UserAdapter extends RecyclerView.Adapter {
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         UserHolder holder = new UserHolder(LayoutInflater.from(context).inflate(R.layout.list_item_chat_user, parent, false));
         holder.avatar.setOnClickListener(onAvatarClickListener);
-        holder.menuButton.setOnClickListener(onMenuClickListener);
+        if (!isReadOnly) {
+            holder.menuButton.setOnClickListener(onMenuClickListener);
+        }
         return holder;
     }
 
@@ -131,7 +138,7 @@ public class UserAdapter extends RecyclerView.Adapter {
                 userHolder.avatar, R.dimen.avatar_small_diameter);
         userHolder.avatar.setTag(user);
         userHolder.menuButton.setTag(user);
-        userHolder.menuButton.setVisibility(Session.getInstance().isMe(user.getId()) ? View.GONE : View.VISIBLE);
+        userHolder.menuButton.setVisibility(Session.getInstance().isMe(user.getId()) || isReadOnly ? View.GONE : View.VISIBLE);
     }
 
     @Override

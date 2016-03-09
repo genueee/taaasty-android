@@ -88,6 +88,16 @@
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />>
         </activity>
         <activity
+            android:name=".ui.messages.ConversationDetailsActivity"
+            android:theme="@style/NotificationsActivityTheme"
+            android:label="@string/chat"
+            android:parentActivityName=".ui.tabbar.NotificationsActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />>
+        </activity>
+        <activity
             android:name=".ui.messages.UserPickerActivity"
             android:theme="@style/NotificationsActivityTheme"
             android:label="@string/add_chat_user" >
@@ -307,6 +317,9 @@
         ======================================================================
         -->
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="68a89d9a40186e9c66ae390f364de896580954e7" />
     </application>
 
 </manifest>

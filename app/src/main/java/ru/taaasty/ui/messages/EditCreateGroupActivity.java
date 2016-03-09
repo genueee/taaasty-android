@@ -19,9 +19,12 @@ import ru.taaasty.utils.ImageUtils;
 /**
  * Created by arhis on 25.02.2016.
  */
-public class EditCreateGroupActivity extends ActivityBase implements SelectPhotoSourceDialogListener {
+public class EditCreateGroupActivity extends ActivityBase implements SelectPhotoSourceDialogListener, EditGroupFragment.InteractionListener {
 
+    public static final String RESULT_CONVERSATION = EditCreateGroupActivity.class.getName() + ".conversation";
     private static final String EXTRA_CONVERSATION = EditCreateGroupActivity.class.getName() + ".conversation";
+    public static final String ACTION_LEAVE_CONVERSATION = EditCreateGroupActivity.class.getName() + ".ACTION_LEAVE_CONVERSATION";
+    public static final String ACTION_SAVE_CONVERSATION = EditCreateGroupActivity.class.getName() + ".ACTION_SAVE_CONVERSATION";
 
     private static final int REQUEST_PICK_PHOTO = 1;
     private static final int REQUEST_MAKE_PHOTO = 2;
@@ -123,5 +126,23 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
 
             }
         }
+    }
+
+    @Override
+    public void onConversationLeaved(Conversation conversation) {
+        Intent intent = new Intent();
+        intent.putExtra(RESULT_CONVERSATION, conversation);
+        intent.setAction(ACTION_LEAVE_CONVERSATION);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
+    }
+
+    @Override
+    public void onConversationSaved(Conversation conversation) {
+        Intent intent = new Intent();
+        intent.putExtra(RESULT_CONVERSATION, conversation);
+        intent.setAction(ACTION_SAVE_CONVERSATION);
+        setResult(Activity.RESULT_OK, intent);
+        finish();
     }
 }

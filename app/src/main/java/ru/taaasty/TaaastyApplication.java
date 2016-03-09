@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.aviary.android.feather.sdk.IAviaryClientCredentials;
 import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
+import com.crashlytics.android.Crashlytics;
 import com.facebook.FacebookSdk;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -18,6 +19,7 @@ import com.google.android.gms.analytics.Logger;
 import com.google.android.gms.analytics.Tracker;
 import com.vk.sdk.VKSdk;
 
+import io.fabric.sdk.android.Fabric;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
@@ -60,6 +62,7 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                     .build());
         }
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
 
         if (!BuildConfig.DEBUG) {
             try {

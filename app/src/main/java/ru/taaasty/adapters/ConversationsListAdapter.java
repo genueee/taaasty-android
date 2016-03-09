@@ -75,16 +75,20 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
         holder.messageAvatar.setVisibility(View.GONE);
-        if (!conversation.isGroup()) {
-            mImageUtils.loadAvatar(conversation.recipient, holder.avatar, R.dimen.avatar_small_diameter);
+        holder.avatar.setImageResource(R.drawable.avatar_dummy);
+        String url = conversation.getAvatarUrl();
+        if (url != null) {
+            bindImage(holder.avatar, conversation.avatar.url, R.dimen.avatar_small_diameter);
         } else {
-            if (conversation.avatar != null) {
-                bindImage(holder.avatar, conversation.avatar.url, R.dimen.avatar_small_diameter);
+            User user = conversation.getAvatarUser();
+            if (user != null) {
+                mImageUtils.loadAvatar(user, holder.avatar, R.dimen.avatar_small_diameter);
             }
-            if (conversation.lastMessage != null && conversation.lastMessage.author != null) {
-                holder.messageAvatar.setVisibility(View.VISIBLE);
-                mImageUtils.loadAvatar(conversation.lastMessage.author, holder.messageAvatar, R.dimen.avatar_small_diameter_24dp);
-            }
+        }
+
+        if (conversation.lastMessage != null && conversation.lastMessage.author != null) {
+            holder.messageAvatar.setVisibility(View.VISIBLE);
+            mImageUtils.loadAvatar(conversation.lastMessage.author, holder.messageAvatar, R.dimen.avatar_small_diameter_24dp);
         }
     }
 
@@ -94,8 +98,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindText(ViewHolder holder, Conversation conversation) {
         User author = conversation.recipient;
-        SpannableStringBuilder ssb = new SpannableStringBuilder(
-                conversation.isGroup() ? conversation.topic : author.getNameWithPrefix());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(conversation.getTitle());
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
         holder.title.setText(ssb);
 

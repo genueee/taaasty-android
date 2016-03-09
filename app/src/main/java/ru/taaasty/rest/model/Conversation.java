@@ -18,6 +18,7 @@ public class Conversation implements Parcelable {
 
     public static final String TYPE_CHAT = "PrivateConversation";
     public static final String TYPE_GROUP = "GroupConversation";
+    public static final String TYPE_PUBLIC_GROUP = "PublicConversation";
 
     public static final String MESSAGE_TYPE_SYSTEM = "SystemMessage";
 
@@ -40,7 +41,10 @@ public class Conversation implements Parcelable {
     public User admin;
 
     public ArrayList<User> users;
+
     public long[] users_left;
+
+    public Entry entry;
 
     public int unreadMessagesCount;
 
@@ -74,15 +78,25 @@ public class Conversation implements Parcelable {
     };
 
     public boolean isGroup() {
+        return isPrivateGroup() || isPublicGroup();
+    }
+
+    public boolean isPublicGroup() {
+        return type.equals(TYPE_PUBLIC_GROUP);
+    }
+
+    public boolean isPrivateGroup() {
         return type.equals(TYPE_GROUP);
     }
 
     public ArrayList<User> getActualUsers() {
         ArrayList<User> actualUsers = new ArrayList<>(users);
-        for(long userId: users_left) {
-            User userLeft;
-            if ((userLeft = findUserById(userId)) != null) {
-                actualUsers.remove(userLeft);
+        if (users_left != null) {
+            for (long userId : users_left) {
+                User userLeft;
+                if ((userLeft = findUserById(userId)) != null) {
+                    actualUsers.remove(userLeft);
+                }
             }
         }
         return actualUsers;
@@ -90,6 +104,36 @@ public class Conversation implements Parcelable {
 
     public User getGroupAdmin() {
         return admin;
+    }
+
+    public String getTitle() {
+        if (isPrivateGroup()) {
+            return topic;
+        } else if (isPublicGroup()) {
+            return entry.getTitle();
+        } else {
+            return recipient.getNameWithPrefix();
+        }
+    }
+
+    public String getAvatarUrl() {
+        if (isPrivateGroup() && avatar != null) {
+            return avatar.url;
+        }
+        if (isPublicGroup() && entry.getImageUrl() != null) {
+            return entry.getImageUrl();
+        }
+        return null;
+    }
+
+    public User getAvatarUser() {
+        if (!isGroup()) {
+            return recipient;
+        }
+        if (isPublicGroup()) {
+            return entry.getAuthor();
+        }
+        return null;
     }
 
     public User findUserById(long userId) {
@@ -314,6 +358,7 @@ public class Conversation implements Parcelable {
         dest.writeParcelable(this.admin, 0);
         dest.writeTypedList(users);
         dest.writeLongArray(users_left);
+        dest.writeParcelable(entry, 0);
         dest.writeParcelable(this.recipient, 0);
         dest.writeInt(this.unreadMessagesCount);
         dest.writeInt(this.unreceivedMessagesCount);
@@ -339,6 +384,7 @@ public class Conversation implements Parcelable {
         this.users = new ArrayList<>();
         in.readTypedList(users, User.CREATOR);
         this.users_left = in.createLongArray();
+        this.entry = in.readParcelable(Entry.class.getClassLoader());
         this.recipient = in.readParcelable(User.class.getClassLoader());
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();

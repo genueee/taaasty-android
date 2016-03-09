@@ -151,7 +151,7 @@ public class ConversationFragment extends Fragment {
         mAdapter = new Adapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        bindGroupHeader();
+        bindHeader();
         initSendMessageForm();
 
         EventBus.getDefault().register(this);
@@ -187,7 +187,7 @@ public class ConversationFragment extends Fragment {
 
     public void refresh() {
         mMessagesLoader.refreshMessages();
-        bindGroupHeader();
+        bindHeader();
     }
 
     @Override
@@ -243,31 +243,49 @@ public class ConversationFragment extends Fragment {
         if (conversation.id != mConversationId) throw new IllegalArgumentException();
         mConversation = conversation;
         if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
-        bindGroupHeader();
+        bindHeader();
         mMessagesLoader.refreshMessages();
     }
 
-    public void bindGroupHeader() {
-        if (mConversation != null &&mConversation.isGroup()) {
-            View headerGroup = getActivity().findViewById(R.id.header_group_info);
-            headerGroup.setVisibility(View.VISIBLE);
-            if (mConversation.avatar != null) {
-                ImageView groupAvatar = (ImageView) headerGroup.findViewById(R.id.avatar);
-                ImageUtils.loadImageRounded(groupAvatar, mConversation.avatar.url, R.dimen.avatar_small_diameter);
-            }
-            if (!TextUtils.isEmpty(mConversation.topic)) {
-                ((TextView) headerGroup.findViewById(R.id.topic)).setText(mConversation.topic);
-            }
-            ((TextView) headerGroup.findViewById(R.id.users)).setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
-            if (Session.getInstance().isMe(mConversation.getGroupAdmin().getId())) {
-                headerGroup.setOnClickListener(new OnClickListener() {
+    public void bindHeader() {
+        View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
+        View headerChat = getActivity().findViewById(R.id.header_chat_details);
+        boolean isGroup = mConversation.isGroup();
+        headerGroupChat.setVisibility(isGroup ? View.VISIBLE : View.GONE);
+        headerChat.setVisibility(isGroup ? View.GONE : View.VISIBLE);
 
-                    @Override
-                    public void onClick(View v) {
-                        mListener.onEditGroupConversation(mConversation);
-                    }
-                });
+        if (mConversation.isGroup()) {
+            headerGroupChat.setVisibility(View.VISIBLE);
+            String url = mConversation.getAvatarUrl();
+            ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
+            if (url != null) {
+                ImageUtils.loadImageRounded(avatar, url, R.dimen.avatar_small_diameter);
+            } else {
+                User user = mConversation.getAvatarUser();
+                if (user != null) {
+                    ImageUtils.getInstance().loadAvatar(user, avatar, R.dimen.avatar_small_diameter);
+                }
             }
+
+            TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
+            TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
+            topic.setText(mConversation.getTitle());
+            users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
+            headerGroupChat.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onEditGroupConversation(mConversation);
+                }
+            });
+        } else {
+            TextView headerRecipient = (TextView) headerChat.findViewById(R.id.recipient);
+            headerRecipient.setText(mConversation.getTitle());
+            headerChat.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mListener.onViewChatDetails(mConversation);
+                }
+            });
         }
     }
 
@@ -448,7 +466,7 @@ public class ConversationFragment extends Fragment {
         @Override
         public int getItemViewType(int position) {
             Conversation.Message message = getMessage(position);
-            if (message.isSystemMessage()) {
+            if (message != null && message.isSystemMessage()) {
                 return VIEW_TYPE_SYSTEM_MESSAGE;
             }
             return super.getItemViewType(position);
@@ -826,5 +844,6 @@ public class ConversationFragment extends Fragment {
 
     public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener  {
         void onEditGroupConversation(Conversation conversation);
+        void onViewChatDetails(Conversation conversation);
     }
 }
