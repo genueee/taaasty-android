@@ -82,7 +82,7 @@
             android:theme="@style/NotificationsActivityTheme"
             android:label="@string/group_chat"
             android:parentActivityName=".ui.tabbar.NotificationsActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize" >
+            android:windowSoftInputMode="stateHidden|adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />>
@@ -92,7 +92,7 @@
             android:theme="@style/NotificationsActivityTheme"
             android:label="@string/chat"
             android:parentActivityName=".ui.tabbar.NotificationsActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize" >
+            android:windowSoftInputMode="stateHidden|adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />>
@@ -244,7 +244,7 @@
             android:label="@string/title_activity_conversation"
             android:parentActivityName=".ui.tabbar.NotificationsActivity"
             android:theme="@style/AppThemeOverlayingActionBar"
-            android:windowSoftInputMode="stateVisible|adjustResize" >
+            android:windowSoftInputMode="stateHidden|adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.taaasty.ui.tabbar.NotificationsActivity" />

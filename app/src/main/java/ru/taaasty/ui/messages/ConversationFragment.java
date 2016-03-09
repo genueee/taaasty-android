@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -792,6 +793,11 @@ public class ConversationFragment extends Fragment {
                 } else {
                     addMessagesDoNotScrollList(messages.messages);
                 }
+            }
+
+            if (messages != null && messages.messages.length == 0) {
+                InputMethodManager inputManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.showSoftInput(mSendMessageText, InputMethodManager.SHOW_IMPLICIT);
             }
 
             setKeepOnAppending(keepOnAppending);

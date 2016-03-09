@@ -1,6 +1,7 @@
 package ru.taaasty.ui.messages;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -8,6 +9,7 @@ import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
@@ -72,6 +74,8 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (!((EditGroupFragment)mCurrentFragment).isInProgress()) {
+                    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    inputMethodManager.hideSoftInputFromWindow(mCurrentFragment.getView().getWindowToken(), 0);
                     finish();
                 }
                 break;
