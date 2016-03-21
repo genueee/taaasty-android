@@ -86,7 +86,9 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             }
         }
 
-        if (conversation.lastMessage != null && conversation.lastMessage.author != null) {
+        if (conversation.lastMessage != null
+                && conversation.lastMessage.author != null
+                && !conversation.lastMessage.author.equals(conversation.getAvatarUser())) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
             mImageUtils.loadAvatar(conversation.lastMessage.author, holder.messageAvatar, R.dimen.avatar_small_diameter_24dp);
         }
@@ -98,8 +100,10 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindText(ViewHolder holder, Conversation conversation) {
         User author = conversation.recipient;
-        SpannableStringBuilder ssb = new SpannableStringBuilder(conversation.getTitle());
-        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
+        String title = conversation.getTitle(holder.title.getContext());
+        SpannableStringBuilder ssb = new SpannableStringBuilder(title);
+        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), conversation.isGroup() ? -1 : author.getId(),
+                holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
         holder.title.setText(ssb);
 
         if (conversation.lastMessage != null && !TextUtils.isEmpty(conversation.lastMessage.contentHtml)) {

@@ -15,11 +15,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
-
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
-
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -178,6 +176,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     @Override
     public void onEdgeReached(boolean atTop) {
+        /*
         if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         if (!atTop) {
@@ -187,13 +186,16 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             ActionBar ab = getSupportActionBar();
             if (ab != null) ab.show();
         }
+        */
     }
 
     @Override
     public void onEdgeUnreached() {
+        /*
         if (DBG) Log.v(TAG, "onEdgeUnreached");
         mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
         mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
+        */
     }
 
     public void onConversationLoaded(Conversation conversation) {
@@ -308,13 +310,20 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         }
     };
 
-    @Override
     public void onEditGroupConversation(Conversation conversation) {
         EditCreateGroupActivity.editGroupConversation(this, conversation, REQUEST_CODE_EDIT_CONVERSATION);
     }
 
-    @Override
     public void onViewChatDetails(Conversation conversation) {
         ConversationDetailsActivity.start(this, conversation, REQUEST_CODE_CONVERSATION_DETAILS);
+    }
+
+    @Override
+    public void onSourceDetails(Conversation conversation, View fromView) {
+        if (!conversation.isGroup()) {
+            onViewChatDetails(conversation);
+        } else {
+            onEditGroupConversation(conversation);
+        }
     }
 }

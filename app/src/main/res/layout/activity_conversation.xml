@@ -13,91 +13,60 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
+        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        app:contentInsetLeft="0dp"
-        app:contentInsetRight="8dp"
-        app:navigationContentDescription="@string/action_back_content_description"
-        app:navigationIcon="@drawable/ic_back"
-        app:theme="@style/ToolbarThemeDark"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        android:background="@color/semi_transparent_action_bar_dark">
+        android:layout_height="?actionBarSize">
 
-        <FrameLayout
+        <RelativeLayout
+            android:id="@+id/header_group_info"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="?actionBarSize"
+            android:gravity="center_vertical"
+            android:paddingRight="16dp"
+            android:paddingLeft="16dp">
 
-            <RelativeLayout
-                android:id="@+id/header_group_info"
+            <ru.taaasty.widgets.HintedExtendedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_small_diameter_42dp"
+                android:layout_height="@dimen/avatar_small_diameter_42dp"
+                android:layout_marginRight="8dp"
+                android:foreground="@drawable/clickable_item_circle_background"
+                android:clickable="false"
+                android:contentDescription="@string/open_user_tlog"
+                android:src="@drawable/avatar_dummy"
+                android:layout_centerVertical="true"/>
+
+            <ru.taaasty.widgets.LinkifiedTextView
+                android:id="@+id/topic"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:paddingRight="16dp"
-                android:visibility="gone">
+                android:textColor="@color/feed_white_text"
+                android:maxLines="7"
+                android:ellipsize="end"
+                android:paddingTop="2dp"
+                android:textSize="15sp"
+                android:includeFontPadding="false"
+                tools:text="genue sf"
+                android:layout_toRightOf="@+id/avatar"
+                android:layout_alignTop="@+id/avatar"/>
 
-                <ru.taaasty.widgets.HintedExtendedImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="@dimen/avatar_small_diameter"
-                    android:layout_height="@dimen/avatar_small_diameter"
-                    android:layout_marginRight="16dp"
-                    android:layout_gravity="top"
-                    android:foreground="@drawable/clickable_item_circle_background"
-                    android:contentDescription="@string/open_user_tlog"
-                    android:src="@drawable/avatar_dummy"/>
-
-                <ru.taaasty.widgets.LinkifiedTextView
-                    android:id="@+id/topic"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/feed_white_text"
-                    android:maxLines="7"
-                    android:ellipsize="end"
-                    android:textSize="14sp"
-                    android:paddingBottom="4dp"
-                    android:includeFontPadding="false"
-                    tools:text="genue sf"
-                    android:layout_toRightOf="@+id/avatar"
-                    android:layout_alignTop="@+id/avatar"/>
-
-                <ru.taaasty.widgets.LinkifiedTextView
-                    android:id="@+id/users"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:maxLines="7"
-                    android:ellipsize="end"
-                    android:textSize="13sp"
-                    android:includeFontPadding="false"
-                    android:textColor="@color/feed_white_text"
-                    tools:text="genue sf"
-                    android:layout_marginTop="2dp"
-                    android:layout_alignLeft="@+id/topic"
-                    android:layout_below="@+id/topic"/>
-
-            </RelativeLayout>
-
-            <RelativeLayout
+            <ru.taaasty.widgets.LinkifiedTextView
+                android:id="@+id/users"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/header_chat_details">
+                android:layout_height="wrap_content"
+                android:maxLines="7"
+                android:ellipsize="end"
+                android:textSize="13sp"
+                android:includeFontPadding="false"
+                android:textColor="@color/feed_white_text"
+                tools:text="genue sf"
+                android:layout_marginTop="2dp"
+                android:layout_alignLeft="@+id/topic"
+                android:layout_below="@+id/topic"/>
 
-                <ru.taaasty.widgets.LinkifiedTextView
-                    android:id="@+id/recipient"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:textColor="@color/feed_white_text"
-                    android:maxLines="7"
-                    android:ellipsize="end"
-                    android:textSize="18sp"
-                    android:gravity="center_vertical"
-                    android:layout_marginLeft="16dp"
-                    tools:text="genue sf"/>
-
-            </RelativeLayout>
-
-        </FrameLayout>
+        </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>
 

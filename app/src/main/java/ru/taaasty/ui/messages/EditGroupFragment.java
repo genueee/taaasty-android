@@ -39,6 +39,7 @@ import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
+import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
@@ -142,7 +143,6 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         if (!isReadOnly()) {
-            mAvatar.setOnClickListener(onClickListener);
             mEditUsersButton.setOnClickListener(onClickListener);
             mSaveButton.setOnClickListener(onClickListener);
             mTopic.addTextChangedListener(mTextWatcher);
@@ -152,6 +152,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             mTopic.setKeyListener(null);
             mAdapter.setIsReadonly();
         }
+        mAvatar.setOnClickListener(onClickListener);
 
         bindModel();
 
@@ -163,7 +164,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
-            mModel = new ViewModel(getConversation());
+            mModel = new ViewModel(getContext(), getConversation());
         } else {
             if (mModel == null) {
                 mModel = savedInstanceState.getParcelable(KEY_STATE);
@@ -372,7 +373,16 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                     UserPickerActivity.startPicker(getActivity(), EditCreateGroupActivity.REQUEST_PICK_USER);
                     break;
                 case R.id.avatar:
-                    showLoadAvatar();
+                    if (!isReadOnly()) {
+                        showLoadAvatar();
+                    } else {
+                        if (getConversation().isPublicGroup()) {
+                            new ShowPostActivity.Builder(getContext())
+                                    .setEntryId(getConversation().entry.getId())
+                                    .setShowFullPost(true)
+                                    .startActivity();
+                        }
+                    }
                     break;
                 case R.id.save_button:
                     startSaveConversation();
@@ -404,8 +414,10 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     };
 
     public void showLoadAvatar() {
-        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
-        dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
+        if (!getConversation().isPublicGroup()) {
+            DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
+            dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
+        }
     }
 
     public void onImagePicked(Uri uri) {
@@ -436,14 +448,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         private State current;
         OnChangeListener onChangeListener;
 
-        public ViewModel(Conversation conversation) {
+        public ViewModel(Context context, Conversation conversation) {
             if (conversation == null) {
                 last = new State();
                 current = new State();
                 current.users.add(Session.getInstance().getCachedCurrentUser());
             } else {
-                last = new State(conversation);
-                current = new State(conversation);
+                last = new State(context, conversation);
+                current = new State(context, conversation);
             }
         }
 
@@ -572,8 +584,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             avatarUri = "";
         }
 
-        public State(Conversation conversation) {
-            topic = conversation.getTitle();
+        public State(Context context, Conversation conversation) {
+            topic = conversation.getTitle(context);
             avatarUri = conversation.getAvatarUrl();
             if (avatarUri == null) {
                 User user = conversation.getAvatarUser();

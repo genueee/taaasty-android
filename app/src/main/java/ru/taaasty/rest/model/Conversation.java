@@ -1,9 +1,11 @@
 package ru.taaasty.rest.model;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.utils.Objects;
 
@@ -104,6 +106,20 @@ public class Conversation implements Parcelable {
 
     public User getGroupAdmin() {
         return admin;
+    }
+
+    public String getTitle(Context context) {
+        if (isPrivateGroup()) {
+            return topic;
+        } else if (isPublicGroup()) {
+            if (TextUtils.isEmpty(entry.getTitle().trim())) {
+                return context.getString(R.string.public_conversation_default_title);
+            } else {
+                return entry.getTitle().trim();
+            }
+        } else {
+            return recipient.getNameWithPrefix();
+        }
     }
 
     public String getTitle() {

@@ -369,5 +369,6 @@
     <string name="leave_chat">Выйти</string>
     <string name="cancel">Отмена</string>
     <string name="fail_to_remove_chat">Не удалось удалить переписку</string>
+    <string name="public_conversation_default_title">Обсуждение записи</string>
 
 </resources>

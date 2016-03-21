@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -109,6 +108,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
 
     @Override
     public void onListScrolled(int dy, boolean atTop) {
+        /*
         ActionBar ab = getSupportActionBar();
         if (ab == null) return;
         if (!atTop) {
@@ -116,6 +116,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
         } else {
             ab.show();
         }
+        */
     }
 
     @Override

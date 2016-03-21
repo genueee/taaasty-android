@@ -17,8 +17,10 @@ public class ClickableNicknameSpan extends ClickableSpan {
     }
 
     public void onClick(View widget) {
-        Context context = widget.getContext();
-        TlogActivity.startTlogActivity(context, mUserId, widget);
+        if (mUserId > 0) {
+            Context context = widget.getContext();
+            TlogActivity.startTlogActivity(context, mUserId, widget);
+        }
     }
 
     @Override

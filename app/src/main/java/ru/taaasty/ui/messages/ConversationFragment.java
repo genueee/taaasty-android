@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import de.greenrobot.event.EventBus;
@@ -250,44 +251,37 @@ public class ConversationFragment extends Fragment {
 
     public void bindHeader() {
         View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
-        View headerChat = getActivity().findViewById(R.id.header_chat_details);
-        boolean isGroup = mConversation.isGroup();
-        headerGroupChat.setVisibility(isGroup ? View.VISIBLE : View.GONE);
-        headerChat.setVisibility(isGroup ? View.GONE : View.VISIBLE);
 
-        if (mConversation.isGroup()) {
-            headerGroupChat.setVisibility(View.VISIBLE);
-            String url = mConversation.getAvatarUrl();
-            ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
-            if (url != null) {
-                ImageUtils.loadImageRounded(avatar, url, R.dimen.avatar_small_diameter);
-            } else {
-                User user = mConversation.getAvatarUser();
-                if (user != null) {
-                    ImageUtils.getInstance().loadAvatar(user, avatar, R.dimen.avatar_small_diameter);
-                }
-            }
-
-            TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
-            TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
-            topic.setText(mConversation.getTitle());
-            users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
-            headerGroupChat.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mListener.onEditGroupConversation(mConversation);
-                }
-            });
+        String url = mConversation.getAvatarUrl();
+        ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
+        if (url != null) {
+            ImageUtils.loadImageRounded(avatar, url, R.dimen.avatar_small_diameter);
         } else {
-            TextView headerRecipient = (TextView) headerChat.findViewById(R.id.recipient);
-            headerRecipient.setText(mConversation.getTitle());
-            headerChat.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mListener.onViewChatDetails(mConversation);
-                }
-            });
+            User user = mConversation.getAvatarUser();
+            if (user != null) {
+                ImageUtils.getInstance().loadAvatar(user, avatar, R.dimen.avatar_small_diameter);
+            }
         }
+
+        TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
+        TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
+        topic.setText(mConversation.getTitle(getContext()));
+        if (mConversation.isGroup()) {
+            users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
+        } else {
+            users.setVisibility(View.GONE);
+            RelativeLayout.LayoutParams lp =  (RelativeLayout.LayoutParams)topic.getLayoutParams();
+            lp.addRule(RelativeLayout.ALIGN_TOP, 0);
+            lp.addRule(RelativeLayout.CENTER_VERTICAL);
+            topic.setPadding(0, 0, 0, 0);
+        }
+
+        headerGroupChat.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mListener.onSourceDetails(mConversation, v);
+            }
+        });
     }
 
     private void initSendMessageForm() {
@@ -849,7 +843,6 @@ public class ConversationFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener  {
-        void onEditGroupConversation(Conversation conversation);
-        void onViewChatDetails(Conversation conversation);
+        void onSourceDetails(Conversation conversation, View fromView);
     }
 }
