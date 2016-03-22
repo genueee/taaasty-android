@@ -77,6 +77,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private View mLeaveButton;
     private TextView mDeleteChatText;
 
+    private ViewGroup mGroupHeaderLayout;
+
     private boolean mIsInLoadingState;
 
     private InteractionListener mInteractionListener;
@@ -120,9 +122,12 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mLeaveButton = root.findViewById(R.id.delete_chat_layout);
         mDeleteChatText = (TextView) root.findViewById(R.id.delete_chat_caption);
 
+        mGroupHeaderLayout = (ViewGroup) root.findViewById(R.id.group_header_layout);
+        ((ViewGroup)mGroupHeaderLayout.getParent()).removeView(mGroupHeaderLayout);
+
         mSaveButton.setEnabled(false);
 
-        mAdapter = new UserAdapter(getContext(), this);
+        mAdapter = new UserAdapter(getContext(), mGroupHeaderLayout, this);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.notification_list_divider));

@@ -27,6 +27,9 @@ import java.util.ArrayList;
  */
 public class UserAdapter extends RecyclerView.Adapter {
 
+    private static int ITEM_TYPE_HEADER = 0;
+    private static int ITEM_TYPE_USER = 1;
+
     public interface AdapterListener {
         void onUserAvatarClicked(View view, User user);
         void onUserRemoved(User user);
@@ -35,6 +38,7 @@ public class UserAdapter extends RecyclerView.Adapter {
     private Context context;
     private AdapterListener listener;
     private boolean isReadOnly;
+    private ViewGroup header;
 
     SortedList<User> users = new SortedList<>(User.class, new SortedListAdapterCallback<User>(this) {
         @Override
@@ -56,9 +60,10 @@ public class UserAdapter extends RecyclerView.Adapter {
         }
     });
 
-    public UserAdapter(Context context, AdapterListener listener) {
+    public UserAdapter(Context context, ViewGroup header, AdapterListener listener) {
         this.context = context;
         this.listener = listener;
+        this.header = header;
     }
 
     public void setIsReadonly() {
@@ -121,29 +126,41 @@ public class UserAdapter extends RecyclerView.Adapter {
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        UserHolder holder = new UserHolder(LayoutInflater.from(context).inflate(R.layout.list_item_chat_user, parent, false));
-        holder.avatar.setOnClickListener(onAvatarClickListener);
-        if (!isReadOnly) {
-            holder.menuButton.setOnClickListener(onMenuClickListener);
+        if (viewType == ITEM_TYPE_HEADER) {
+            HeaderHolder headerHolder = new HeaderHolder(header);
+            return headerHolder;
+        } else {
+            UserHolder holder = new UserHolder(LayoutInflater.from(context).inflate(R.layout.list_item_chat_user, parent, false));
+            holder.avatar.setOnClickListener(onAvatarClickListener);
+            if (!isReadOnly) {
+                holder.menuButton.setOnClickListener(onMenuClickListener);
+            }
+            return holder;
         }
-        return holder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        User user = users.get(position);
-        UserHolder userHolder = (UserHolder) holder;
-        userHolder.name.setText(user.getName());
-        ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                userHolder.avatar, R.dimen.avatar_small_diameter);
-        userHolder.avatar.setTag(user);
-        userHolder.menuButton.setTag(user);
-        userHolder.menuButton.setVisibility(Session.getInstance().isMe(user.getId()) || isReadOnly ? View.GONE : View.VISIBLE);
+        if (position > 0) {
+            User user = users.get(position - 1);
+            UserHolder userHolder = (UserHolder) holder;
+            userHolder.name.setText(user.getName());
+            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
+                    userHolder.avatar, R.dimen.avatar_small_diameter);
+            userHolder.avatar.setTag(user);
+            userHolder.menuButton.setTag(user);
+            userHolder.menuButton.setVisibility(Session.getInstance().isMe(user.getId()) || isReadOnly ? View.GONE : View.VISIBLE);
+        }
     }
 
     @Override
     public int getItemCount() {
-        return users.size();
+        return users.size() + 1;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position == 0 ? ITEM_TYPE_HEADER : ITEM_TYPE_USER;
     }
 
     static class UserHolder extends ViewHolder {
@@ -159,6 +176,16 @@ public class UserAdapter extends RecyclerView.Adapter {
             name = (TextView) itemView.findViewById(R.id.flow_title);
             avatar = (ImageView) itemView.findViewById(R.id.flow_image);
             menuButton = itemView.findViewById(R.id.menu);
+        }
+    }
+
+    static class HeaderHolder extends ViewHolder {
+
+        private View root;
+
+        public HeaderHolder(View itemView) {
+            super(itemView);
+            root = itemView;
         }
     }
 }
