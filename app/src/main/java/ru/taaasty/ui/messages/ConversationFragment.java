@@ -2,6 +2,7 @@ package ru.taaasty.ui.messages;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -44,6 +45,7 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -260,6 +262,12 @@ public class ConversationFragment extends Fragment {
             User user = mConversation.getAvatarUser();
             if (user != null) {
                 ImageUtils.getInstance().loadAvatar(user, avatar, R.dimen.avatar_small_diameter);
+            } else {
+                DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(getActivity(),
+                        mConversation.getTitle(), getResources().getColor(R.color.avatar_default), Color.WHITE);
+                int avatarDiameter = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+                userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
+                avatar.setImageDrawable(userpicDrawable);
             }
         }
 

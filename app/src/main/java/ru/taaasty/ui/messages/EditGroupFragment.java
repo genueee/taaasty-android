@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -41,6 +42,7 @@ import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Observer;
@@ -247,56 +249,63 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
     private void bindGroupAvatar() {
         final Uri imageUri = mModel.getAvatarUri();
-        mGroupAvatarThumbnailSubscription.unsubscribe();
-        Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
-            @Override
-            public void call(Subscriber<? super Bitmap> subscriber) {
-                if (imageUri != null) {
-                    if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
-                        ImageUtils.loadImageRounded(mAvatar, imageUri.toString(), R.dimen.avatar_small_diameter);
-                    } else {
-                        InputStream is = null;
-                        try {
-                            is = getActivity().getContentResolver().openInputStream(imageUri);
-                            final int imageSize = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-                            Bitmap bitmap = BitmapFactory.decodeStream(is);
-                            if (bitmap.getWidth() >= bitmap.getHeight()) {
-                                final float aspect = (float) bitmap.getHeight() / bitmap.getWidth();
-                                bitmap = BitmapUtils.createThumbnail(bitmap, (int) (imageSize / aspect), imageSize, 0, 0);
-                            } else  {
-                                final float aspect = (float) bitmap.getWidth() / bitmap.getHeight();
-                                bitmap = BitmapUtils.createThumbnail(bitmap, imageSize, (int) (imageSize / aspect), 0, 0);
-                            }
-                            bitmap = BitmapUtils.cropCenter(bitmap, imageSize, imageSize, Config.ARGB_8888);
-                            bitmap = BitmapUtils.roundedCorners(bitmap, imageSize / 2, imageSize / 2);
-                            subscriber.onNext(bitmap);
-                        } catch (FileNotFoundException e) {
-                            subscriber.onError(e);
-                            e.printStackTrace();
-                        } finally {
-                            if (is != null) {
-                                try {
-                                    is.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    subscriber.onError(e);
+        if (imageUri != null) {
+            mGroupAvatarThumbnailSubscription.unsubscribe();
+            Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
+                @Override
+                public void call(Subscriber<? super Bitmap> subscriber) {
+                    if (imageUri != null) {
+                        if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
+                            ImageUtils.loadImageRounded(mAvatar, imageUri.toString(), R.dimen.avatar_small_diameter);
+                        } else {
+                            InputStream is = null;
+                            try {
+                                is = getActivity().getContentResolver().openInputStream(imageUri);
+                                final int imageSize = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+                                Bitmap bitmap = BitmapFactory.decodeStream(is);
+                                if (bitmap.getWidth() >= bitmap.getHeight()) {
+                                    final float aspect = (float) bitmap.getHeight() / bitmap.getWidth();
+                                    bitmap = BitmapUtils.createThumbnail(bitmap, (int) (imageSize / aspect), imageSize, 0, 0);
+                                } else {
+                                    final float aspect = (float) bitmap.getWidth() / bitmap.getHeight();
+                                    bitmap = BitmapUtils.createThumbnail(bitmap, imageSize, (int) (imageSize / aspect), 0, 0);
+                                }
+                                bitmap = BitmapUtils.cropCenter(bitmap, imageSize, imageSize, Config.ARGB_8888);
+                                bitmap = BitmapUtils.roundedCorners(bitmap, imageSize / 2, imageSize / 2);
+                                subscriber.onNext(bitmap);
+                            } catch (FileNotFoundException e) {
+                                subscriber.onError(e);
+                                e.printStackTrace();
+                            } finally {
+                                if (is != null) {
+                                    try {
+                                        is.close();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        subscriber.onError(e);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
 
-        mGroupAvatarThumbnailSubscription = bitmapObservable
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Action1<Bitmap>() {
-            @Override
-            public void call(Bitmap bitmap) {
-                mAvatar.setImageBitmap(bitmap);
-            }
-        });
-
+            mGroupAvatarThumbnailSubscription = bitmapObservable
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Action1<Bitmap>() {
+                        @Override
+                        public void call(Bitmap bitmap) {
+                            mAvatar.setImageBitmap(bitmap);
+                        }
+                    });
+        } else if (getConversation() != null) {
+            DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(getActivity(),
+                    getConversation().getTitle(), getResources().getColor(R.color.avatar_default), Color.WHITE);
+            int avatarDiameter = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+            userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
+            mAvatar.setImageDrawable(userpicDrawable);
+        }
     }
 
     private void startSaveConversation() {
