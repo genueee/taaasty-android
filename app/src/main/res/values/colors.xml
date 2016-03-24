@@ -69,4 +69,6 @@
     <color name="flow_brick_text_color_secondary_not_subscribed">#808080</color>
     <color name="flow_brick_text_color_secondary_subscribed">@color/text_color_semi_semi_transparent_white</color>
 
+    <color name="avatar_default">#44d068</color>
+
 </resources>

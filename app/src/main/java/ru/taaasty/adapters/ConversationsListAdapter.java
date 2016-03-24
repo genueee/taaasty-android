@@ -1,5 +1,7 @@
 package ru.taaasty.adapters;
 
+import android.content.Context;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -16,6 +18,7 @@ import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
@@ -83,6 +86,13 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             User user = conversation.getAvatarUser();
             if (user != null) {
                 mImageUtils.loadAvatar(user, holder.avatar, R.dimen.avatar_small_diameter);
+            } else {
+                Context context = holder.avatar.getContext();
+                DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(context, conversation.getTitle(),
+                        context.getResources().getColor(R.color.avatar_default), Color.WHITE);
+                int avatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+                userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
+                holder.avatar.setImageDrawable(userpicDrawable);
             }
         }
 
