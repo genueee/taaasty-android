@@ -58,6 +58,26 @@ public class UserAdapter extends RecyclerView.Adapter {
         public boolean areItemsTheSame(User item1, User item2) {
             return item2.equals(item1);
         }
+
+        @Override
+        public void onInserted(int position, int count) {
+            super.onInserted(position + 1, count);
+        }
+
+        @Override
+        public void onRemoved(int position, int count) {
+            super.onRemoved(position + 1, count);
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) {
+            super.onMoved(fromPosition + 1, toPosition + 1);
+        }
+
+        @Override
+        public void onChanged(int position, int count) {
+            super.onChanged(position + 1, count);
+        }
     });
 
     public UserAdapter(Context context, ViewGroup header, AdapterListener listener) {
