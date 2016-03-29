@@ -10,7 +10,6 @@ import android.text.TextUtils;
 
 import com.google.gson.annotations.SerializedName;
 
-import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.utils.ImageUtils;
 
@@ -151,12 +150,7 @@ public class TlogDesign implements Parcelable {
 
     @Nullable
     public String getBackgroundUrl() {
-        if (TextUtils.isEmpty(mBackgroundUrl)) return null;
-        if (!mBackgroundUrl.startsWith("http:")) {
-            return BuildConfig.API_SERVER_ADDRESS + "/" + mBackgroundUrl;
-        } else {
-            return mBackgroundUrl;
-        }
+        return TextUtils.isEmpty(mBackgroundUrl) ? null : mBackgroundUrl;
     }
 
     public int getFeedActionsTextColor(Resources r) {
