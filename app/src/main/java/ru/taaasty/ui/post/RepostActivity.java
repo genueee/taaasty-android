@@ -308,7 +308,7 @@ public class RepostActivity extends ActivityBase {
             } else {
                 Flow flow = filtered.get(position).flow;
                 flowHolder.bindFlowImage(flow.getFlowPic());
-                flowHolder.title.setText(flow.getTitle());
+                flowHolder.title.setText(flow.getName());
                 flowHolder.root.setTag(flow.getId());
             }
         }
