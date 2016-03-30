@@ -83,6 +83,7 @@ public class ImageUtils {
     private static int sMaxTextureSize = 2048;
 
     private static ImageUtils sInstance;
+    private static final CircleTransformation mCircleTransformationForStaticMethods = new CircleTransformation();
 
     private LruCache mCache;
 
@@ -452,23 +453,8 @@ public class ImageUtils {
                 .onlyScaleDown()
                 .centerCrop()
                 .noFade()
-                .into(new Target() {
-                    @Override
-                    public void onBitmapLoaded(Bitmap bitmap, LoadedFrom loadedFrom) {
-                        imageView.setImageBitmap(BitmapUtils.roundedCorners(bitmap,
-                                imageSize / 2, imageSize / 2));
-                    }
-
-                    @Override
-                    public void onBitmapFailed(Drawable drawable) {
-
-                    }
-
-                    @Override
-                    public void onPrepareLoad(Drawable drawable) {
-
-                    }
-                });
+                .transform(mCircleTransformationForStaticMethods)
+                .into(imageView);
     }
 
     public interface DrawableTarget extends Target {
