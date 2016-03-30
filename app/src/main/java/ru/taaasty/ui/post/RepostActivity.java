@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +15,7 @@ import android.support.v7.widget.SearchView.OnCloseListener;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
 import android.support.v7.widget.ViewUtils;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,12 +23,14 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
 import ru.taaasty.ActivityBase;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -42,6 +46,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiReposts;
 import ru.taaasty.ui.DividerItemDecoration;
+import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
@@ -56,6 +61,7 @@ import rx.subscriptions.Subscriptions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 /**
  * Created by arkhipov on 16.02.2016.
@@ -67,7 +73,7 @@ public class RepostActivity extends ActivityBase {
     private static final String KEY_FILTER = "ru.taaasty.ui.post.RepostActivity.KEY_FILTER";
 
     public static final int REQUEST_CODE_LOGIN = 1;
-    public static final int FLOWS_PAGE_LIMIT= 50;
+    public static final int FLOWS_PAGE_LIMIT = 50;
 
     private Entry mEntry;
 
@@ -78,6 +84,7 @@ public class RepostActivity extends ActivityBase {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgress;
     private RepostItemsAdapter mAdapter;
+    private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
     Subscription mFlowsSubscription = Subscriptions.unsubscribed();
     Subscription mRepostSubscription = Subscriptions.unsubscribed();
@@ -94,7 +101,7 @@ public class RepostActivity extends ActivityBase {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_share_repost);
-        BottomSheet bottomSheet = (BottomSheet)findViewById(R.id.bottom_sheet);
+        BottomSheet bottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
         mProgress = (ProgressBar) findViewById(R.id.progress);
         mRecyclerView = (RecyclerView) findViewById(R.id.scroll_container);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -211,7 +218,7 @@ public class RepostActivity extends ActivityBase {
         @Override
         public void onNext(FlowList flowList) {
             ArrayList<Flow> flows = new ArrayList<>();
-            for(FlowSubList subList: flowList.items) {
+            for (FlowSubList subList : flowList.items) {
                 flows.add(subList.flow);
             }
 
@@ -259,11 +266,9 @@ public class RepostActivity extends ActivityBase {
 
         private String filter;
         private Context context;
-        private Picasso picasso;
 
         public RepostItemsAdapter(Context context) {
             this.context = context;
-            picasso = Picasso.with(context);
         }
 
         public void saveInstanceState(Bundle bundle) {
@@ -283,7 +288,7 @@ public class RepostActivity extends ActivityBase {
             repostTargets.clear();
             repostTargets.add(new RepostTarget(Session.getInstance().getCachedCurrentUser().getName(), null));
 
-            for(Flow flow: flows) {
+            for (Flow flow : flows) {
                 repostTargets.add(new RepostTarget(flow.getName(), flow));
             }
             applyFilter();
@@ -316,7 +321,7 @@ public class RepostActivity extends ActivityBase {
         OnClickListener onClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                long flowId = (Long)v.getTag();
+                long flowId = (Long) v.getTag();
                 repostToFlow(flowId);
             }
         };
@@ -333,7 +338,7 @@ public class RepostActivity extends ActivityBase {
 
         private void applyFilter() {
             filtered.clear();
-            for (RepostTarget target: repostTargets) {
+            for (RepostTarget target : repostTargets) {
                 if (TextUtils.isEmpty(filter)
                         || target.title.length() >= filter.length()
                         && target.title.substring(0, filter.length()).toLowerCase().contains(filter.toLowerCase())) {
@@ -362,7 +367,7 @@ public class RepostActivity extends ActivityBase {
                 String userpicUrl = thumborUrl.resize(imageSize, imageSize)
                         .toUrlUnsafe();
 
-                picasso.with(context)
+                Picasso.with(context)
                         .load(userpicUrl)
                         .error(R.drawable.image_load_error)
                         .config(Bitmap.Config.RGB_565)
@@ -370,23 +375,8 @@ public class RepostActivity extends ActivityBase {
                         .onlyScaleDown()
                         .centerCrop()
                         .noFade()
-                        .into(new Target() {
-                            @Override
-                            public void onBitmapLoaded(Bitmap bitmap, LoadedFrom loadedFrom) {
-                                imageView.setImageBitmap(BitmapUtils.roundedCorners(bitmap,
-                                        imageSize / 2, imageSize / 2));
-                            }
-
-                            @Override
-                            public void onBitmapFailed(Drawable drawable) {
-
-                            }
-
-                            @Override
-                            public void onPrepareLoad(Drawable drawable) {
-
-                            }
-                        });
+                        .transform(mCircleTransformation)
+                        .into(imageView);
             }
         }
 
