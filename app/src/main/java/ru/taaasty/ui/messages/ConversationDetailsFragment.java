@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Conversation;
@@ -85,7 +86,7 @@ public class ConversationDetailsFragment extends Fragment {
         mDoNotDisturbButton.setOnClickListener(mOnClickListener);
 
         Conversation conversation = getConversation();
-        ImageUtils.getInstance().loadAvatar(conversation.recipient, mAvatar, R.dimen.avatar_small_diameter);
+        ImageUtils.getInstance().loadAvatarToImageView(conversation.recipient, R.dimen.avatar_small_diameter, mAvatar);
         mName.setText(conversation.recipient.getNameWithPrefix());
         setProgressState(mIsRequestInProgress);
     }

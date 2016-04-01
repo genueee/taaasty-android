@@ -2,9 +2,6 @@ package ru.taaasty.adapters.list;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
@@ -15,7 +12,6 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
 
 import junit.framework.Assert;
 
@@ -27,7 +23,6 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.widgets.EntryBottomActionBar;
-import ru.taaasty.widgets.PicassoDrawable;
 
 
 public abstract class ListEntryBase extends RecyclerView.ViewHolder {
@@ -45,7 +40,6 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
     private final boolean mShowUserAvatar;
 
     protected int mParentWidth;
-    protected final Picasso picasso;
 
     protected OnEntryClickListener mEntryClickListener;
 
@@ -58,21 +52,23 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
             @Override
             protected void onPostLikesClicked(View view, boolean canVote) {
-                if (mEntryClickListener != null) mEntryClickListener.onPostLikesClicked(ListEntryBase.this, view, canVote);
+                if (mEntryClickListener != null)
+                    mEntryClickListener.onPostLikesClicked(ListEntryBase.this, view, canVote);
             }
 
             @Override
             protected void onPostCommentsClicked(View view) {
-                if (mEntryClickListener != null) mEntryClickListener.onPostCommentsClicked(ListEntryBase.this, view);
+                if (mEntryClickListener != null)
+                    mEntryClickListener.onPostCommentsClicked(ListEntryBase.this, view);
             }
 
             @Override
             protected void onPostAdditionalMenuClicked(View view) {
-                if (mEntryClickListener != null) mEntryClickListener.onPostAdditionalMenuClicked(ListEntryBase.this, view);
+                if (mEntryClickListener != null)
+                    mEntryClickListener.onPostAdditionalMenuClicked(ListEntryBase.this, view);
             }
         };
 
-        picasso = Picasso.with(context);
 
         if (!showUserAvatar) {
             mAvatarAuthor.setVisibility(View.GONE);
@@ -103,20 +99,21 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     /**
      * Верхная часть: автор (если не отключен)
+     *
      * @param item
      */
+
     private void setAuthor(Entry item, String feedId) {
         if (!mShowUserAvatar) return;
         User author = item.getAuthor();
         mAvatarAuthor.setText(getAvatarDescription(item, feedId));
-        ImageUtils.getInstance().loadAvatar(itemView.getContext(),
-                author.getUserpic(),
-                author.getName(),
-                mAvatarTarget,
-                R.dimen.avatar_extra_small_diameter_34dp);
+        ImageUtils.getInstance()
+                .loadAvatarToLeftDrawableOfTextView(author, R.dimen.avatar_extra_small_diameter_34dp, mAvatarAuthor);
+
+
     }
 
-    private CharSequence getAvatarDescription(Entry item, @Nullable  String feedId) {
+    private CharSequence getAvatarDescription(Entry item, @Nullable String feedId) {
         String template = "";
         String author = String.valueOf(item.getAuthor().getId());
         String tlog = String.valueOf(item.getTlog().id);
@@ -148,18 +145,18 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
                     template = "$from";
                 } else {
                     // author, tlog, feedId не совпадают между собой.
-                    template =  getResources().getString(authorWroteToTlogResId);
+                    template = getResources().getString(authorWroteToTlogResId);
                 }
             }
         }
 
         return TextUtils.replace(template,
-                new String[] {"$from", "$to"}, new CharSequence[] {
-                item.getAuthor().getNameWithPrefix(), item.getTlog().author.getNameWithPrefix()
-        });
+                new String[]{"$from", "$to"}, new CharSequence[]{
+                        item.getAuthor().getNameWithPrefix(), item.getTlog().author.getNameWithPrefix()
+                });
     }
 
-    private void setFlowHeader(Entry item, @Nullable  String feedId) {
+    private void setFlowHeader(Entry item, @Nullable String feedId) {
         if (!item.getTlog().isFlow()
                 || String.valueOf(item.getTlog().id).equals(feedId) /* При просмотре потока не показываем заголовки у всех постов */) {
             if (mFlowEntryHeader != null) {
@@ -182,7 +179,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         if (mFlowEntryHeader != null)
             return;
 
-        ViewStub stub = (ViewStub)itemView.findViewById(R.id.flow_title);
+        ViewStub stub = (ViewStub) itemView.findViewById(R.id.flow_title);
         View root = stub.inflate();
         mFlowEntryHeader = new FlowEntryHeader(root) {
             @Override
@@ -194,7 +191,8 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         mFlowEntryHeader.root.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mEntryClickListener != null) mEntryClickListener.onPostFlowHeaderClicked(ListEntryBase.this, v);
+                if (mEntryClickListener != null)
+                    mEntryClickListener.onPostFlowHeaderClicked(ListEntryBase.this, v);
             }
         });
 
@@ -216,12 +214,15 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         return mEntryActionBar;
     }
 
-    public TextView getAvatarAuthorView() { return mAvatarAuthor; }
+    public TextView getAvatarAuthorView() {
+        return mAvatarAuthor;
+    }
 
     public void recycle() {
-        picasso.cancelRequest(mAvatarTarget);
         if (mFlowEntryHeader != null) mFlowEntryHeader.stopImageLoading();
-    };
+    }
+
+    ;
 
     int guessViewVisibleWidth(View view) {
         if (view.getWidth() > 0) {
@@ -239,8 +240,8 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
 
     private int guessViewVisibleWidthFromDimensions(View view) {
         if (mParentWidth == 0) return 0;
-        ViewGroup.MarginLayoutParams itemViewLayoutParams = (ViewGroup.MarginLayoutParams)itemView.getLayoutParams();
-        ViewGroup.MarginLayoutParams viewLayoutParams = (ViewGroup.MarginLayoutParams)view.getLayoutParams();
+        ViewGroup.MarginLayoutParams itemViewLayoutParams = (ViewGroup.MarginLayoutParams) itemView.getLayoutParams();
+        ViewGroup.MarginLayoutParams viewLayoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
         return mParentWidth -
                 itemViewLayoutParams.leftMargin - itemViewLayoutParams.rightMargin -
                 itemView.getPaddingLeft() - itemView.getPaddingRight() -
@@ -248,44 +249,13 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
                 view.getPaddingLeft() - view.getPaddingRight();
     }
 
-
-    private final ImageUtils.DrawableTarget mAvatarTarget = new ImageUtils.DrawableTarget() {
-
-        @Override
-        public void onDrawableReady(Drawable drawable) {
-            mAvatarAuthor.setCompoundDrawables(drawable, null, null, null);
-        }
-
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            final Drawable newDrawable;
-
-            if (Picasso.LoadedFrom.MEMORY.equals(from)) {
-                newDrawable = new BitmapDrawable(mAvatarAuthor.getResources(), bitmap);
-            } else {
-                Drawable placeholder = mAvatarAuthor.getResources().getDrawable(R.drawable.ic_user_stub);
-                newDrawable = new PicassoDrawable(mAvatarAuthor.getContext(), bitmap, placeholder, from, false, false);
-            }
-            newDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-            mAvatarAuthor.setCompoundDrawables(newDrawable, null, null, null);
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-            mAvatarAuthor.setCompoundDrawables(errorDrawable, null, null, null);
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-            mAvatarAuthor.setCompoundDrawables(placeHolderDrawable, null, null, null);
-        }
-    };
-
     public interface OnEntryClickListener {
         void onPostLikesClicked(ListEntryBase holder, View view, boolean canVote);
+
         void onPostCommentsClicked(ListEntryBase holder, View view);
+
         void onPostAdditionalMenuClicked(ListEntryBase holder, View view);
+
         void onPostFlowHeaderClicked(ListEntryBase holder, View view);
     }
 }

@@ -2,7 +2,6 @@ package ru.taaasty.ui.messages;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -24,6 +23,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -45,19 +51,12 @@ import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConversationFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -133,7 +132,7 @@ public class ConversationFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v = getActivity().getLayoutInflater().inflate(R.layout.fragment_conversation, container, false);
 
-        mSendMessageText = (EditText)v.findViewById(R.id.reply_to_comment_text);
+        mSendMessageText = (EditText) v.findViewById(R.id.reply_to_comment_text);
         mSendMessageButton = v.findViewById(R.id.reply_to_comment_button);
         mSendMessageProgress = v.findViewById(R.id.reply_to_comment_progress);
         mEmptyView = v.findViewById(R.id.empty_view);
@@ -254,22 +253,8 @@ public class ConversationFragment extends Fragment {
     public void bindHeader() {
         View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
 
-        String url = mConversation.getAvatarUrl();
         ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
-        if (url != null) {
-            ImageUtils.loadImageRounded(avatar, url, R.dimen.avatar_small_diameter);
-        } else {
-            User user = mConversation.getAvatarUser();
-            if (user != null) {
-                ImageUtils.getInstance().loadAvatar(user, avatar, R.dimen.avatar_small_diameter);
-            } else {
-                DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(getActivity(),
-                        mConversation.getTitle(), getResources().getColor(R.color.avatar_default), Color.WHITE);
-                int avatarDiameter = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-                userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
-                avatar.setImageDrawable(userpicDrawable);
-            }
-        }
+        ImageUtils.getInstance().loadAvatarToImageView(mConversation.getAvatarUser(), R.dimen.avatar_small_diameter, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
@@ -278,7 +263,7 @@ public class ConversationFragment extends Fragment {
             users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
         } else {
             users.setVisibility(View.GONE);
-            RelativeLayout.LayoutParams lp =  (RelativeLayout.LayoutParams)topic.getLayoutParams();
+            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) topic.getLayoutParams();
             lp.addRule(RelativeLayout.ALIGN_TOP, 0);
             lp.addRule(RelativeLayout.CENTER_VERTICAL);
             topic.setPadding(0, 0, 0, 0);
@@ -366,7 +351,7 @@ public class ConversationFragment extends Fragment {
             @Override
             public boolean run(View root) {
                 if (mListView == null) return true;
-                LinearLayoutManager layoutManager = (LinearLayoutManager)mListView.getLayoutManager();
+                LinearLayoutManager layoutManager = (LinearLayoutManager) mListView.getLayoutManager();
                 if (smooth) {
                     mListView.smoothScrollToPosition(newPosition);
                 } else {
@@ -393,7 +378,7 @@ public class ConversationFragment extends Fragment {
         if (oldTopId != null) {
             Integer newPosition = mAdapter.findPositionById(oldTopId);
             if (newPosition != null) {
-                LinearLayoutManager lm = (LinearLayoutManager)mListView.getLayoutManager();
+                LinearLayoutManager lm = (LinearLayoutManager) mListView.getLayoutManager();
                 lm.scrollToPositionWithOffset(newPosition, oldTopTop);
                 mListScrollController.checkScrollStateOnViewPreDraw();
             }
@@ -406,7 +391,8 @@ public class ConversationFragment extends Fragment {
         int count = mListView.getChildCount();
         for (int i = 0; i < count; ++i) {
             RecyclerView.ViewHolder holder = mListView.getChildViewHolder(mListView.getChildAt(i));
-            if (holder instanceof ConversationAdapter.ViewHolderMessage) return (ConversationAdapter.ViewHolderMessage) holder;
+            if (holder instanceof ConversationAdapter.ViewHolderMessage)
+                return (ConversationAdapter.ViewHolderMessage) holder;
         }
         return null;
     }
@@ -485,7 +471,8 @@ public class ConversationFragment extends Fragment {
                 public void onClick(View v) {
                     switch (v.getId()) {
                         case R.id.messages_load_more:
-                            if (mMessagesLoader != null) mMessagesLoader.activateCacheInBackground();
+                            if (mMessagesLoader != null)
+                                mMessagesLoader.activateCacheInBackground();
                             break;
                         case R.id.avatar:
                             int position = pHolder.getAdapterPosition();
@@ -501,7 +488,7 @@ public class ConversationFragment extends Fragment {
 
             if (pHolder instanceof LoadMoreButtonHeaderHolder) {
                 ((LoadMoreButtonHeaderHolder) pHolder).loadButton.setOnClickListener(onClickListener);
-            } else if (pHolder instanceof  ViewHolderMessage) {
+            } else if (pHolder instanceof ViewHolderMessage) {
                 ((ViewHolderMessage) pHolder).avatar.setOnClickListener(onClickListener);
             }
         }
@@ -530,7 +517,7 @@ public class ConversationFragment extends Fragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
             if (viewHolder instanceof SystemMessageHolder) {
-                bindSystemMessage((SystemMessageHolder)viewHolder, position);
+                bindSystemMessage((SystemMessageHolder) viewHolder, position);
             } else {
                 super.onBindViewHolder(viewHolder, position);
                 if (mMessagesLoader != null) {
@@ -544,8 +531,8 @@ public class ConversationFragment extends Fragment {
             super.onViewAttachedToWindow(holder);
             if (holder instanceof ViewHolderMessage
                     && !((ViewHolderMessage) holder).isMyMessage
-                    &&  mMessagesLoader != null) {
-                Conversation.Message msg = getMessage((ViewHolderMessage)holder);
+                    && mMessagesLoader != null) {
+                Conversation.Message msg = getMessage((ViewHolderMessage) holder);
                 if (msg != null && !msg.isMarkedAsRead()) {
                     markMessagesAsRead.enqueueMarkAsRead(msg.id);
                 }
@@ -570,10 +557,10 @@ public class ConversationFragment extends Fragment {
             if (mSession.isMe(userUuid)) {
                 return mSession.getCachedCurrentUser();
             } else {
-                if (mConversation!= null) {
+                if (mConversation != null) {
                     if (mConversation.isGroup()) {
                         return mConversation.findUserById(userUuid);
-                    } else  {
+                    } else {
                         return mConversation.recipient;
                     }
                 }
@@ -629,7 +616,7 @@ public class ConversationFragment extends Fragment {
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
                 Observable<Status.MarkMessagesAsRead> observablePost = mApiMessenger.markMessagesAsRead(null, mConversationId,
-                                TextUtils.join(",", postSet));
+                        TextUtils.join(",", postSet));
                 mPostMessageSubscription = observablePost
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Observer<Status.MarkMessagesAsRead>() {
@@ -692,7 +679,7 @@ public class ConversationFragment extends Fragment {
 
         private boolean mLoadingMessages;
 
-        public MessagesLoader()  {
+        public MessagesLoader() {
             mHandler = new Handler();
             mKeepOnAppending = new AtomicBoolean(true);
             mMessagesAppendSubscription = Subscriptions.unsubscribed();
@@ -798,7 +785,7 @@ public class ConversationFragment extends Fragment {
             }
 
             if (messages != null && messages.messages.length == 0) {
-                InputMethodManager inputManager = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 inputManager.showSoftInput(mSendMessageText, InputMethodManager.SHOW_IMPLICIT);
             }
 
@@ -850,7 +837,7 @@ public class ConversationFragment extends Fragment {
 
     }
 
-    public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener  {
+    public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener {
         void onSourceDetails(Conversation conversation, View fromView);
     }
 }

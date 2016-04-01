@@ -14,13 +14,14 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
-
-import java.util.ArrayList;
 
 /**
  * Created by arhis on 01.03.2016.
@@ -32,6 +33,7 @@ public class UserAdapter extends RecyclerView.Adapter {
 
     public interface AdapterListener {
         void onUserAvatarClicked(View view, User user);
+
         void onUserRemoved(User user);
     }
 
@@ -165,8 +167,8 @@ public class UserAdapter extends RecyclerView.Adapter {
             User user = users.get(position - 1);
             UserHolder userHolder = (UserHolder) holder;
             userHolder.name.setText(user.getName());
-            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                    userHolder.avatar, R.dimen.avatar_small_diameter);
+            ImageUtils.getInstance()
+                    .loadAvatarToImageView(user, R.dimen.avatar_small_diameter, userHolder.avatar);
             userHolder.avatar.setTag(user);
             userHolder.menuButton.setTag(user);
             userHolder.menuButton.setVisibility(Session.getInstance().isMe(user.getId()) || isReadOnly ? View.GONE : View.VISIBLE);

@@ -3,7 +3,6 @@ package ru.taaasty.ui.feeds;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -29,7 +28,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.fernandocejas.frodo.annotation.RxLogSubscriber;
-import com.squareup.picasso.Picasso;
 import com.trello.rxlifecycle.FragmentEvent;
 import com.trello.rxlifecycle.components.support.RxFragment;
 
@@ -47,7 +45,6 @@ import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FeedAdapter;
 import ru.taaasty.adapters.ParallaxedHeaderHolder;
 import ru.taaasty.adapters.list.ListEntryBase;
@@ -59,7 +56,6 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
-import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.TlogInfo;
@@ -101,7 +97,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({FOLLOWING_STATUS_UNKNOWN, FOLLOWING_STATUS_ME_SUBSCRIBED,
             FOLLOWING_STATUS_ME_UNSUBSCRIBED, FOLLOWING_STATUS_CHANGING})
-    public @interface FollowingStatus {}
+    public @interface FollowingStatus {
+    }
 
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TlogFragment";
@@ -160,7 +157,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
     }
 
     public static TlogFragment newInstance(long userId, int avatarThumbnailRes) {
-        TlogFragment f = new  TlogFragment();
+        TlogFragment f = new TlogFragment();
         Bundle b = new Bundle();
         b.putLong(ARG_USER_ID, userId);
         if (avatarThumbnailRes > 0) b.putInt(ARG_AVATAR_THUMBNAIL_RES, avatarThumbnailRes);
@@ -169,7 +166,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
     }
 
     public static TlogFragment newInstance(String userSlug) {
-        TlogFragment f = new  TlogFragment();
+        TlogFragment f = new TlogFragment();
         Bundle b = new Bundle();
         b.putString(ARG_USER_SLUG, userSlug);
         f.setArguments(b);
@@ -201,7 +198,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             @Override
             protected boolean isInterfaceShown() {
                 if (getActivity() == null) return false;
-                return ((ActivityBase)getActivity()).getSupportActionBar().isShowing();
+                return ((ActivityBase) getActivity()).getSupportActionBar().isShowing();
             }
 
             @Override
@@ -210,10 +207,10 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
                 boolean isAtTop = mListView == null || !mListView.canScrollVertically(-1);
 
-                if ((isShown || isAtTop)&& getActivity() != null) {
-                    ((ActivityBase)getActivity()).getSupportActionBar().show();
+                if ((isShown || isAtTop) && getActivity() != null) {
+                    ((ActivityBase) getActivity()).getSupportActionBar().show();
                 } else {
-                    ((ActivityBase)getActivity()).getSupportActionBar().hide();
+                    ((ActivityBase) getActivity()).getSupportActionBar().hide();
                 }
             }
         };
@@ -226,14 +223,14 @@ public class TlogFragment extends RxFragment implements IRereshable,
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
 
-        mEmptyView = (TextView)v.findViewById(R.id.empty_view);
-        mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
+        mEmptyView = (TextView) v.findViewById(R.id.empty_view);
+        mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
         mLoginButton = v.findViewById(R.id.login_button);
         mUnfollowView = mToolbar.findViewById(R.id.unsubscribe);
         mFollowView = mToolbar.findViewById(R.id.subscribe);
         mFollowUnfollowProgressView = mToolbar.findViewById(R.id.follow_unfollow_progress);
 
-        mFabHelper = new FabHelper(v.findViewById(R.id.fab), (FabMenuLayout)v.findViewById(R.id.fab_menu));
+        mFabHelper = new FabHelper(v.findViewById(R.id.fab), (FabMenuLayout) v.findViewById(R.id.fab_menu));
         mFabAutoHideScrollListener = new FabHelper.AutoHideScrollListener(mFabHelper);
 
         mFabHelper.setMenuListener(new FabHelper.FabMenuDefaultListener(this));
@@ -260,7 +257,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
         mListView.setLayoutManager(lm);
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
-        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mDateIndicatorView = (DateIndicatorWidget) v.findViewById(R.id.date_indicator);
         mDateIndicatorView.setAutoShow(false);
 
         mListView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
@@ -335,7 +332,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((ActivityBase)getActivity()).setSupportActionBar(mToolbar);
+        ((ActivityBase) getActivity()).setSupportActionBar(mToolbar);
         getActivity().setTitle(mAbTitle.toString());
         mToolbar.setBackgroundDrawable(mAbBackgroundDrawable);
         mToolbar.setTitle(mAbTitle);
@@ -392,10 +389,12 @@ public class TlogFragment extends RxFragment implements IRereshable,
         private boolean mLastIsAuthorized = Session.getInstance().isAuthorized();
 
         @Override
-        public void onCompleted() {}
+        public void onCompleted() {
+        }
 
         @Override
-        public void onError(Throwable e) {}
+        public void onError(Throwable e) {
+        }
 
         @Override
         public void onNext(CurrentUser currentUser) {
@@ -566,18 +565,20 @@ public class TlogFragment extends RxFragment implements IRereshable,
     void setupLoadingState() {
         if (mRefreshLayout == null) return;
 
-        if (DBG) Log.v(TAG, "setupLoadingState() ts: " + System.currentTimeMillis() + "  work fragment != null: "
-                        + (mWorkFragment != null)
-                        + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
-                        + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
-                        + " feed is empty: " + (mWorkFragment != null && mWorkFragment.isFeedEmpty())
-                        + " adapter != null: " + (mAdapter != null)
-        );
+        if (DBG)
+            Log.v(TAG, "setupLoadingState() ts: " + System.currentTimeMillis() + "  work fragment != null: "
+                            + (mWorkFragment != null)
+                            + " isRefreshing: " + (mWorkFragment != null && mWorkFragment.isRefreshing())
+                            + " isLoading: " + (mWorkFragment != null && mWorkFragment.isLoading())
+                            + " feed is empty: " + (mWorkFragment != null && mWorkFragment.isFeedEmpty())
+                            + " adapter != null: " + (mAdapter != null)
+            );
 
         // Здесь индикатор не ставим, только снимаем. Устанавливает индикатор либо сам виджет
         // при свайпе вверх, либо если адаптер пустой. В другом месте.
         if (mWorkFragment != null && !mWorkFragment.isLoading()) {
-            if (DBG) Log.v(TAG, "mRefreshLayout.setRefreshing(false) ts: " + System.currentTimeMillis());
+            if (DBG)
+                Log.v(TAG, "mRefreshLayout.setRefreshing(false) ts: " + System.currentTimeMillis());
             mRefreshLayout.setRefreshing(false);
         }
 
@@ -650,10 +651,10 @@ public class TlogFragment extends RxFragment implements IRereshable,
             abAlpha = 0;
         } else {
             if (totalCount > 5) totalCount = 5;
-            abAlpha = (firstVisibleItem + 1f - firstVisibleFract) / (float)totalCount;
+            abAlpha = (firstVisibleItem + 1f - firstVisibleFract) / (float) totalCount;
             abAlpha = UiUtils.clamp(abAlpha, 0f, 1f);
         }
-        intAlpha = (int)(255f * abAlpha);
+        intAlpha = (int) (255f * abAlpha);
 
         if (intAlpha == 0
                 || (intAlpha == 255 && mLastAlpha != 255)
@@ -677,7 +678,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
     }
 
     private void reinitAdapter() {
-        if (DBG) Log.v(TAG, "reinitAdapter() is first: " + (mDateIndicatorHelper == null ? "true" : "false"));
+        if (DBG)
+            Log.v(TAG, "reinitAdapter() is first: " + (mDateIndicatorHelper == null ? "true" : "false"));
         if (mDateIndicatorHelper != null) {
             mListView.removeOnScrollListener(mDateIndicatorHelper.onScrollListener);
             mDateIndicatorHelper.onDestroy();
@@ -733,8 +735,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
     public class Adapter extends FeedAdapter {
         private User mUser = User.DUMMY;
-        private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
-        private ImageUtils.DrawableTarget mAvatarLoadTarget;
+//        private ImageUtils.DrawableTarget mAvatarThumbnailLoadTarget;
+//        private ImageUtils.DrawableTarget mAvatarLoadTarget;
 
         public Adapter(SortedList<Entry> feed, boolean isFlow, Long feedId) {
             super(feed, isFlow);
@@ -792,7 +794,11 @@ public class TlogFragment extends RxFragment implements IRereshable,
                     } else {
                         TlogHeaderHolder holder = (TlogHeaderHolder) viewHolder;
                         holder.titleView.setText(UiUtils.capitalize(mUser.getName()));
-                        bindUser(holder);
+                        ImageUtils.getInstance().loadAvatarToImageView(
+                                mUser,
+                                R.dimen.feed_header_avatar_normal_diameter,
+                                holder.avatarView
+                        );
                     }
                 }
 
@@ -820,66 +826,6 @@ public class TlogFragment extends RxFragment implements IRereshable,
                 setFeedId(String.valueOf(mUser.getId()));
                 notifyItemChanged(0);
             }
-        }
-
-        private void bindUser(final TlogHeaderHolder holder) {
-            if (mAvatarThumbnailRes > 0) {
-                mAvatarThumbnailLoadTarget = new ImageUtils.ImageViewTarget(holder.avatarView, false);
-                ImageUtils.getInstance().loadAvatar(
-                        holder.itemView.getContext(),
-                        mUser.getUserpic(),
-                        mUser.getName(),
-                        mAvatarThumbnailLoadTarget,
-                        mAvatarThumbnailRes
-                );
-            } else {
-                mAvatarThumbnailLoadTarget = null;
-            }
-
-            mAvatarLoadTarget = new ImageUtils.ImageViewTarget(holder.avatarView, false) {
-
-                final Picasso picasso = Picasso.with(holder.itemView.getContext());
-
-                @Override
-                public void onDrawableReady(Drawable drawable) {
-                    super.onDrawableReady(drawable);
-                    cancelLoadAvatar();
-                }
-
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    super.onBitmapLoaded(bitmap, from);
-                    cancelLoadAvatar();
-                }
-
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-                    super.onBitmapFailed(errorDrawable);
-                    cancelLoadAvatar();
-                }
-
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                    // Не ставим placeholoder, если загружаем аватарку меньшего размера
-                    if (mAvatarThumbnailRes <= 0) super.onPrepareLoad(placeHolderDrawable);
-
-                }
-
-                void cancelLoadAvatar() {
-                    if (mAvatarThumbnailLoadTarget != null) {
-                        picasso.cancelRequest(mAvatarThumbnailLoadTarget);
-                        mAvatarThumbnailLoadTarget = null;
-                    }
-                }
-            };
-
-            ImageUtils.getInstance().loadAvatar(
-                    holder.itemView.getContext(),
-                    mUser.getUserpic(),
-                    mUser.getName(),
-                    mAvatarLoadTarget,
-                    R.dimen.feed_header_avatar_normal_diameter
-            );
         }
 
         private void bindHeaderFollowingStatus(FlowHeaderHolder holder) {
@@ -937,8 +883,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         public TlogHeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.avatar_user_name));
-            avatarView = (ImageView)itemView.findViewById(R.id.avatar);
-            titleView = (TextView)itemView.findViewById(R.id.user_name);
+            avatarView = (ImageView) itemView.findViewById(R.id.avatar);
+            titleView = (TextView) itemView.findViewById(R.id.user_name);
         }
     }
 
@@ -958,8 +904,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
         public FlowHeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.title_subtitle_container));
 
-            titleView = (TextView)itemView.findViewById(R.id.title);
-            subtitleView = (TextView)itemView.findViewById(R.id.subtitle);
+            titleView = (TextView) itemView.findViewById(R.id.title);
+            subtitleView = (TextView) itemView.findViewById(R.id.subtitle);
             subscribeButton = itemView.findViewById(R.id.header_flow_subscribe);
             unsubscribeButton = itemView.findViewById(R.id.header_flow_unsubscribe);
             subscribeProgressButton = itemView.findViewById(R.id.header_flow_follow_unfollow_progress);
@@ -988,7 +934,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
-            if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null)  {
+            if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null) {
                 design = mWorkFragment.getUser().getDesign();
             }
             new ShowPostActivity.Builder(getActivity())
@@ -1004,7 +950,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
             if (entry == null) return;
 
             if (mWorkFragment != null && mWorkFragment.getUserId() != null) {
-                if (mListener != null) mListener.onSharePostMenuClicked(entry, mWorkFragment.getUserId());
+                if (mListener != null)
+                    mListener.onSharePostMenuClicked(entry, mWorkFragment.getUserId());
             } else {
                 // User ID ещё неизвестен. Может быть, если тлог открыт по слагу.
                 // TODO что-нибудь делать
@@ -1144,7 +1091,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         private void sendAnalytics(boolean isFollowing) {
             String action;
-            if(isFlow()) {
+            if (isFlow()) {
                 action = isFollowing ? Constants.ANALYTICS_ACTION_UX_FOLLOW_FLOW : Constants.ANALYTICS_ACTION_UX_UNFOLLOW_FLOW;
             } else {
                 action = isFollowing ? Constants.ANALYTICS_ACTION_UX_FOLLOW_TLOG : Constants.ANALYTICS_ACTION_UX_UNFOLLOW_TLOG;
@@ -1300,7 +1247,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             public void onError(Throwable exception) {
                 if (DBG) Log.e(TAG, "refresh author error", exception);
                 if (exception instanceof ApiErrorException
-                    && ((ApiErrorException)exception).isError404NotFound()) {
+                        && ((ApiErrorException) exception).isError404NotFound()) {
                     if (mListener != null) mListener.onNoSuchUser();
                 } else {
                     if (mListener != null) mListener.notifyError(
@@ -1333,7 +1280,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
             @Override
             public void onError(Throwable e) {
-                if (mListener != null) mListener.notifyError(WorkRetainedFragment.this, e, R.string.error_follow);
+                if (mListener != null)
+                    mListener.notifyError(WorkRetainedFragment.this, e, R.string.error_follow);
             }
 
             @Override
@@ -1378,7 +1326,8 @@ public class TlogFragment extends RxFragment implements IRereshable,
             @Override
             protected void onShowPendingIndicatorChanged(boolean newValue) {
                 if (DBG) Log.v(TAG, "onShowPendingIndicatorChanged() show: " + newValue);
-                if (getMainFragment() != null) getMainFragment().onShowPendingIndicatorChanged(newValue);
+                if (getMainFragment() != null)
+                    getMainFragment().onShowPendingIndicatorChanged(newValue);
             }
 
             @Override
@@ -1391,7 +1340,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             protected void onLoadError(boolean isRefresh, int entriesRequested, Throwable exception) {
                 super.onLoadError(isRefresh, entriesRequested, exception);
                 if (exception instanceof ApiErrorException
-                        && ((ApiErrorException)exception).isError403Forbidden()) {
+                        && ((ApiErrorException) exception).isError403Forbidden()) {
                     // тлог закрыт.
                     mLastErrorForbidden = true;
                 } else {
@@ -1412,19 +1361,25 @@ public class TlogFragment extends RxFragment implements IRereshable,
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p/>
+     * <p>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener extends CustomErrorView {
         void onListScroll(int dy, int firstVisibleItem, float firstVisibleFract, int visibleCount, int totalCount);
+
         void onTlogInfoLoaded(TlogInfo info);
-        void onSharePostMenuClicked(Entry entry, long tlogId);;
+
+        void onSharePostMenuClicked(Entry entry, long tlogId);
+
+        ;
+
         void onNoSuchUser();
 
         /**
          * Юзер ткнул на аватарку в списке
+         *
          * @param view
          * @param user
          * @param design

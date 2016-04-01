@@ -505,10 +505,8 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
         private void bindUser(HeaderHolder holder) {
             User user = mWorkFragment.getCurrentUser();
             if (user == null) user = CurrentUser.DUMMY;
-            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                    holder.avatarView,
-                    R.dimen.feed_header_avatar_normal_diameter
-            );
+            ImageUtils.getInstance()
+                    .loadAvatarToImageView(user, R.dimen.feed_header_avatar_normal_diameter, holder.avatarView);
         }
     }
 

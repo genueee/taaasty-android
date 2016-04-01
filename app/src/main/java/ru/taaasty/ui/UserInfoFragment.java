@@ -335,60 +335,11 @@ public class UserInfoFragment extends Fragment {
     }
 
     private void setupAvatar() {
-        assert mUser != null;
-        if (DBG) Log.v(TAG, "load avatar: " + mUser.getUserpic());
-
-        if (mRefreshingUserpic) {
-            mAvatarRefreshProgressView.setVisibility(View.VISIBLE);
-            mAvatarView.setImageResource(R.drawable.ic_user_stub);
-            return;
-        }
-
-        mAvatarLoadTarget = new ImageUtils.ImageViewTarget(mAvatarView, false) {
-
-            final Picasso picasso = Picasso.with(getActivity());
-
-            @Override
-            public void onDrawableReady(Drawable drawable) {
-                super.onDrawableReady(drawable);
-                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
-                refreshProgressVisibility();
-            }
-
-            @Override
-            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                super.onBitmapLoaded(bitmap, from);
-                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
-                refreshProgressVisibility();
-            }
-
-            @Override
-            public void onBitmapFailed(Drawable errorDrawable) {
-                super.onBitmapFailed(errorDrawable);
-                if (mAvatarThumbnailLoadTarget != null) picasso.cancelRequest(mAvatarThumbnailLoadTarget);
-                refreshProgressVisibility();
-            }
-        };
-
-        if (mAvatarThumbnailRes > 0) {
-            ImageUtils.getInstance().loadAvatar(
-                    getActivity(),
-                    mUser.getUserpic(),
-                    mUser.getName(),
-                    mAvatarLoadTarget,
-                    mAvatarThumbnailRes
-            );
-        }
-
-        mAvatarThumbnailLoadTarget = new ImageUtils.ImageViewTarget(mAvatarView, false);
-        ImageUtils.getInstance().loadAvatar(
-                getActivity(),
-                mUser.getUserpic(),
-                mUser.getName(),
-                mAvatarThumbnailLoadTarget,
-                R.dimen.feed_header_avatar_normal_diameter
+        ImageUtils.getInstance().loadAvatarToImageView(
+                mUser,
+                R.dimen.feed_header_avatar_normal_diameter,
+                mAvatarView
         );
-
     }
 
     private void setupUserInfo() {

@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -90,7 +91,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
     @Override
     public void recycle() {
-        picasso.cancelRequest(mImageView);
+        Picasso.with(mContext).cancelRequest(mImageView);
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
     }
 
@@ -113,7 +114,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
         Link imageLink;
         final int imgViewHeight;
 
-        picasso.cancelRequest(mImageView);
+        Picasso.with(mContext).cancelRequest(mImageView);
 
         if (parentWidth == 0) {
             imageLink = item.getIframely().getImageLink();
@@ -152,7 +153,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
 
         Drawable placeholder = createImagePlaceholderDrawable(parentWidth, imgViewHeight);
         mImageView.setImageDrawable(placeholder);
-        picasso
+        Picasso.with(mContext)
                 .load(url)
                 .placeholder(placeholder)
                 .error(R.drawable.image_load_error)

@@ -1,7 +1,5 @@
 package ru.taaasty.adapters;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -12,13 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
@@ -77,30 +75,14 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
-        holder.messageAvatar.setVisibility(View.GONE);
-        holder.avatar.setImageResource(R.drawable.avatar_dummy);
-        String url = conversation.getAvatarUrl();
-        if (url != null) {
-            bindImage(holder.avatar, conversation.avatar.url, R.dimen.avatar_small_diameter);
-        } else {
-            User user = conversation.getAvatarUser();
-            if (user != null) {
-                mImageUtils.loadAvatar(user, holder.avatar, R.dimen.avatar_small_diameter);
-            } else {
-                Context context = holder.avatar.getContext();
-                DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(context, conversation.getTitle(),
-                        context.getResources().getColor(R.color.avatar_default), Color.WHITE);
-                int avatarDiameter = context.getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-                userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
-                holder.avatar.setImageDrawable(userpicDrawable);
-            }
-        }
+        ImageUtils.getInstance().loadAvatarToImageView(conversation.getAvatarUser(), R.dimen.avatar_small_diameter, holder.avatar);
 
+        holder.messageAvatar.setVisibility(View.GONE);
         if (conversation.lastMessage != null
                 && conversation.lastMessage.author != null
                 && !conversation.lastMessage.author.equals(conversation.getAvatarUser())) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
-            mImageUtils.loadAvatar(conversation.lastMessage.author, holder.messageAvatar, R.dimen.avatar_small_diameter_24dp);
+            mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
         }
     }
 
@@ -137,11 +119,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         }
     }
 
-    public void bindImage(final ImageView imageView, String picUrl, int dimension) {
-        ImageUtils.loadImageRounded(imageView, picUrl, dimension);
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder  {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public final ImageView avatar;
 
@@ -153,16 +131,16 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public final RelativeDateTextSwitcher date;
 
-        public final TextView  msgCount;
+        public final TextView msgCount;
 
         public final View unreceivedIndicator;
 
         public ViewHolder(View v) {
             super(v);
-            avatar = (ImageView)v.findViewById(R.id.avatar);
-            title = (TextView)v.findViewById(R.id.title);
-            date = (RelativeDateTextSwitcher)v.findViewById(R.id.notification_date);
-            msgCount = (TextView)v.findViewById(R.id.unread_messages_count);
+            avatar = (ImageView) v.findViewById(R.id.avatar);
+            title = (TextView) v.findViewById(R.id.title);
+            date = (RelativeDateTextSwitcher) v.findViewById(R.id.notification_date);
+            msgCount = (TextView) v.findViewById(R.id.unread_messages_count);
             unreceivedIndicator = v.findViewById(R.id.unreceived_messages_indicator);
             messageAvatar = (ImageView) v.findViewById(R.id.message_avatar);
             messageText = (TextView) v.findViewById(R.id.last_message);

@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,9 +11,7 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.SearchView.OnCloseListener;
 import android.support.v7.widget.SearchView.OnQueryTextListener;
-import android.support.v7.widget.ViewUtils;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -24,15 +20,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
-import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Picasso.LoadedFrom;
-import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.taaasty.ActivityBase;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.RestClient;
@@ -41,7 +35,6 @@ import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Flow.FlowPic;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.model.FlowList.FlowSubList;
-import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiReposts;
@@ -57,11 +50,6 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Executors;
 
 /**
  * Created by arkhipov on 16.02.2016.
@@ -306,8 +294,8 @@ public class RepostActivity extends ActivityBase {
             final FlowHolder flowHolder = (FlowHolder) holder;
             if (filtered.get(position).flow == null) {
                 User currentUser = Session.getInstance().getCachedCurrentUser();
-                ImageUtils.getInstance().loadAvatar(currentUser.getUserpic(), currentUser.getName(),
-                        flowHolder.imageView, R.dimen.avatar_small_diameter);
+                ImageUtils.getInstance()
+                        .loadAvatarToImageView(currentUser, R.dimen.avatar_small_diameter, flowHolder.imageView);
                 flowHolder.title.setText(currentUser.getName());
                 flowHolder.root.setTag(currentUser.getId());
             } else {

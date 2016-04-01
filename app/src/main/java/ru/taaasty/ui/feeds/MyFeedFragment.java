@@ -109,7 +109,7 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
         mListView.addItemDecoration(new DividerFeedListInterPost(getActivity(), false));
 
-        mDateIndicatorView = (DateIndicatorWidget)v.findViewById(R.id.date_indicator);
+        mDateIndicatorView = (DateIndicatorWidget) v.findViewById(R.id.date_indicator);
 
         mFeedBackground = new FeedBackground(mListView, null, R.dimen.feed_header_height);
 
@@ -285,7 +285,8 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
                 && mWorkFragment.isFeedEmpty();
 
         mEmptyView.setVisibility(listIsEmpty ? View.VISIBLE : View.GONE);
-        if (mWorkFragment.getEntryList().isEmpty()) mDateIndicatorView.setVisibility(View.INVISIBLE);
+        if (mWorkFragment.getEntryList().isEmpty())
+            mDateIndicatorView.setVisibility(View.INVISIBLE);
     }
 
     private final Runnable mRefreshLoadingState = new Runnable() {
@@ -360,10 +361,8 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
         private void bindUser(HeaderHolder holder) {
             User user = mWorkFragment.getCurrentUser();
             if (user == null) user = CurrentUser.DUMMY;
-            ImageUtils.getInstance().loadAvatar(user.getUserpic(), user.getName(),
-                    holder.avatarView,
-                    R.dimen.feed_header_avatar_normal_diameter
-            );
+            ImageUtils.getInstance()
+                    .loadAvatarToImageView(user, R.dimen.feed_header_avatar_normal_diameter, holder.avatarView);
         }
 
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -375,8 +374,9 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
                         break;
                     case R.id.avatar:
                         CurrentUser user = mWorkFragment.getCurrentUser();
-                        if (mListener != null) mListener.onCurrentUserAvatarClicked(v, mWorkFragment.getCurrentUser(),
-                                mWorkFragment.getTlogDesign());
+                        if (mListener != null)
+                            mListener.onCurrentUserAvatarClicked(v, mWorkFragment.getCurrentUser(),
+                                    mWorkFragment.getTlogDesign());
                         break;
                 }
             }
@@ -389,8 +389,8 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
 
         public HeaderHolder(View itemView) {
             super(itemView, itemView.findViewById(R.id.avatar_user_name));
-            avatarView = (ImageView)itemView.findViewById(R.id.avatar);
-            titleView = (TextView)itemView.findViewById(R.id.user_name);
+            avatarView = (ImageView) itemView.findViewById(R.id.avatar);
+            titleView = (TextView) itemView.findViewById(R.id.user_name);
         }
     }
 
@@ -414,7 +414,8 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
             TlogDesign design = entry.getDesign();
-            if (design == null && mWorkFragment.getTlogDesign() != null) design = mWorkFragment.getTlogDesign();
+            if (design == null && mWorkFragment.getTlogDesign() != null)
+                design = mWorkFragment.getTlogDesign();
             new ShowPostActivity.Builder(getActivity())
                     .setEntry(entry)
                     .setSrcView(view)
@@ -468,8 +469,11 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
      */
     public interface OnFragmentInteractionListener {
         void onShowAdditionalMenuClicked();
+
         void onCurrentUserAvatarClicked(View view, User user, TlogDesign design);
+
         void onSharePostMenuClicked(Entry entry);
+
         TabbarFragment getTabbar();
     }
 }
