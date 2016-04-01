@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.Conversation;
@@ -138,10 +139,10 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     public void bindImage(final ImageView imageView, String picUrl, int dimension) {
-        ImageUtils.loadImageRounded(imageView, picUrl, dimension);
+        ImageUtils.loadImageRounded(picUrl, dimension, imageView);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder  {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public final ImageView avatar;
 
@@ -153,16 +154,16 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public final RelativeDateTextSwitcher date;
 
-        public final TextView  msgCount;
+        public final TextView msgCount;
 
         public final View unreceivedIndicator;
 
         public ViewHolder(View v) {
             super(v);
-            avatar = (ImageView)v.findViewById(R.id.avatar);
-            title = (TextView)v.findViewById(R.id.title);
-            date = (RelativeDateTextSwitcher)v.findViewById(R.id.notification_date);
-            msgCount = (TextView)v.findViewById(R.id.unread_messages_count);
+            avatar = (ImageView) v.findViewById(R.id.avatar);
+            title = (TextView) v.findViewById(R.id.title);
+            date = (RelativeDateTextSwitcher) v.findViewById(R.id.notification_date);
+            msgCount = (TextView) v.findViewById(R.id.unread_messages_count);
             unreceivedIndicator = v.findViewById(R.id.unreceived_messages_indicator);
             messageAvatar = (ImageView) v.findViewById(R.id.message_avatar);
             messageText = (TextView) v.findViewById(R.id.last_message);

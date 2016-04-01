@@ -19,7 +19,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Environment;
-import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
@@ -31,32 +30,19 @@ import android.widget.ImageView;
 import com.aviary.android.feather.sdk.FeatherActivity;
 import com.aviary.android.feather.sdk.internal.Constants;
 import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
-import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
-import com.jakewharton.disklrucache.DiskLruCache;
-import com.squareup.okhttp.CacheControl;
-import com.squareup.okhttp.Call;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.LruCache;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Picasso.LoadedFrom;
 import com.squareup.picasso.Target;
 import com.squareup.pollexor.ThumborUrlBuilder;
-import com.trello.rxlifecycle.RxLifecycle;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import pl.droidsonroids.gif.GifDrawable;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.GifLoaderHelper;
@@ -125,10 +111,10 @@ public class ImageUtils {
     }
 
     static boolean isLightColor(int color) {
-        double darkness = 1-(0.299*Color.red(color) + 0.587*Color.green(color) + 0.114*Color.blue(color))/255;
-        if(darkness>=0.5){
+        double darkness = 1 - (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255;
+        if (darkness >= 0.5) {
             return false; // It's a dark color
-        }else{
+        } else {
             return true; // It's a light color
         }
     }
@@ -175,8 +161,9 @@ public class ImageUtils {
     /**
      * Загрузка ресурса backgroundResId размером на весь экран, с crop'ом с сохранением пропорций и
      * вычислением  inSampleSize под размеры текущего экрана
+     *
      * @param backgroundResId ID ресурса
-     * @param dstSize Размеры, в которые будет вставляться изображение
+     * @param dstSize         Размеры, в которые будет вставляться изображение
      * @param inSampleSizeAdd Степень двойки, прибавляется к inSampleSize.
      * @return Bitmap
      */
@@ -195,16 +182,16 @@ public class ImageUtils {
 
             Rect region = new Rect(0, 0, bre.getWidth(), bre.getHeight());
 
-            scaleY = dstSize.y / (float)bre.getHeight();
-            scaleX = dstSize.x / (float)bre.getWidth();
+            scaleY = dstSize.y / (float) bre.getHeight();
+            scaleX = dstSize.x / (float) bre.getWidth();
             scale = Math.max(scaleX, scaleY);
 
             float scaledDisplayWidth = dstSize.x / scale;
             float scaledDisplayHeight = dstSize.y / scale;
 
-            int leftTop = (int)(region.centerX() - (scaledDisplayWidth / 2));
+            int leftTop = (int) (region.centerX() - (scaledDisplayWidth / 2));
             //noinspection ResourceType
-            region.intersect(leftTop, 0, (int)Math.ceil(leftTop + scaledDisplayWidth), (int)Math.ceil(scaledDisplayHeight));
+            region.intersect(leftTop, 0, (int) Math.ceil(leftTop + scaledDisplayWidth), (int) Math.ceil(scaledDisplayHeight));
             if (DBG) Log.v(TAG, "region: " + region);
 
             final BitmapFactory.Options options;
@@ -215,13 +202,13 @@ public class ImageUtils {
             int samplesize = ImageUtils.calculateInSampleSize(
                     bre.getHeight(),
                     bre.getWidth(),
-                    (int)(bre.getHeight() * scale),
-                    (int)(bre.getWidth() * scale));
+                    (int) (bre.getHeight() * scale),
+                    (int) (bre.getWidth() * scale));
 
-            if (inSampleSizeAdd == 0 ) {
+            if (inSampleSizeAdd == 0) {
                 options.inSampleSize = samplesize;
             } else {
-                options.inSampleSize = 1 << (int)( inSampleSizeAdd + Math.log(samplesize) / Math.log(2));
+                options.inSampleSize = 1 << (int) (inSampleSizeAdd + Math.log(samplesize) / Math.log(2));
             }
 
             return bre.decodeRegion(region, options);
@@ -246,15 +233,16 @@ public class ImageUtils {
         Drawable mutable = drawable.mutate();
         mutable.setBounds(0, 0, width, height);
         if (drawable instanceof GradientDrawable) {
-            GradientDrawable gd = (GradientDrawable)mutable;
+            GradientDrawable gd = (GradientDrawable) mutable;
             gd.setSize(width, height);
         } else if (drawable instanceof ShapeDrawable) {
-            ShapeDrawable sh = (ShapeDrawable)mutable;
+            ShapeDrawable sh = (ShapeDrawable) mutable;
             sh.setIntrinsicWidth(width);
             sh.setIntrinsicHeight(height);
         } else if (drawable instanceof NinePatchDrawable) {
         } else {
-            if (BuildConfig.DEBUG) Log.e("ImageUtils", "changeDrawableIntristicSizeAndBounds() of " + drawable.getClass().toString(),  new IllegalStateException("unsupported"));
+            if (BuildConfig.DEBUG)
+                Log.e("ImageUtils", "changeDrawableIntristicSizeAndBounds() of " + drawable.getClass().toString(), new IllegalStateException("unsupported"));
         }
         return mutable;
 
@@ -262,6 +250,7 @@ public class ImageUtils {
 
     /**
      * Директория для фотографий
+     *
      * @param context
      * @return
      */
@@ -298,6 +287,7 @@ public class ImageUtils {
 
     /**
      * Имя файла для фотографии из времени timestamp, без .jpg
+     *
      * @param timestamp
      * @return
      */
@@ -332,8 +322,9 @@ public class ImageUtils {
 
     /**
      * Добавление фоторгафии в галерею после фотографии
+     *
      * @param context
-     * @param file путь к файлу (file:/media...)
+     * @param photoUri)
      */
     public static void galleryAddPic(Context context, Uri photoUri) {
         if ("file".equals(photoUri.getScheme())) {
@@ -341,7 +332,7 @@ public class ImageUtils {
             File file = new File(photoUri.getPath());
             if (file.exists()) {
                 MediaScannerConnection.scanFile(context.getApplicationContext(),
-                        new String[] {file.getAbsolutePath()}, null, null);
+                        new String[]{file.getAbsolutePath()}, null, null);
             } else {
                 ContentResolver resolver = context.getContentResolver();
                 resolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
@@ -381,7 +372,7 @@ public class ImageUtils {
         Intent featherPhotoIntent;
 
         newPhotoUri = createAviaryPictureOutputPath(context);
-        featherPhotoIntent = new Intent(context , FeatherActivity.class );
+        featherPhotoIntent = new Intent(context, FeatherActivity.class);
         featherPhotoIntent.setData(originalPhotoUri);
         featherPhotoIntent.putExtra(Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, false);
         featherPhotoIntent.putExtra(Constants.EXTRA_OUTPUT, newPhotoUri);
@@ -410,6 +401,10 @@ public class ImageUtils {
             String userName,
             DrawableTarget target,
             @DimenRes int diameterResource) {
+
+        //todo не корректный метод!!!
+        // Перед загрузкой аватарки необходимо отменить возможные предыдущее фоновые загрузки в этот ImageView!
+
         ThumborUrlBuilder thumborUrl;
         int avatarDiameter;
         Drawable defaultUserpicDrawable;
@@ -432,6 +427,7 @@ public class ImageUtils {
         String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
                 .toUrlUnsafe();
         // if (DBG) Log.d(TAG, "userpicUrl: " + userpicUrl);
+
         picasso.load(userpicUrl)
                 .placeholder(stubPlaceholder)
                 .error(defaultUserpicDrawable)
@@ -439,13 +435,53 @@ public class ImageUtils {
                 .into(target);
     }
 
-    public static void loadImageRounded(final ImageView imageView, String picUrl, int dimension) {
-        final int imageSize = imageView.getResources().getDimensionPixelSize(dimension);
+    public void loadAvatarToImageViewAsync(@Nullable User user,
+                                           @DimenRes int diameterResource,
+                                           ImageView dstImageView) {
+        Context context = dstImageView.getContext();
+
+        //cancel previous background loading
+        Picasso.with(context).cancelRequest(dstImageView);
+
+        Userpic userpic;
+        String userName;
+        if (user == null) {
+            userpic = Userpic.DUMMY;
+            userName = "";
+        } else {
+            userpic = user.getUserpic();
+            userName = user.getName();
+        }
+
+        int avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
+        Drawable defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
+        defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
+
+        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
+            dstImageView.setImageDrawable(defaultUserpicDrawable);
+        } else {
+            Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
+            stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
+
+            ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl);
+            String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
+                    .toUrlUnsafe();
+
+            Picasso.with(context).load(userpicUrl)
+                    .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+                    .placeholder(stubPlaceholder)
+                    .transform(mCircleTransformation)
+                    .into(dstImageView);
+        }
+    }
+
+    public static void loadImageRounded(String picUrl, int dimension, final ImageView dstImageView) {
+        final int imageSize = dstImageView.getResources().getDimensionPixelSize(dimension);
         ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(picUrl);
         String userpicUrl = thumborUrl.resize(imageSize, imageSize)
                 .toUrlUnsafe();
 
-        Picasso.with(imageView.getContext())
+        Picasso.with(dstImageView.getContext())
                 .load(userpicUrl)
                 .error(R.drawable.image_load_error)
                 .config(Bitmap.Config.RGB_565)
@@ -454,7 +490,7 @@ public class ImageUtils {
                 .centerCrop()
                 .noFade()
                 .transform(mCircleTransformationForStaticMethods)
-                .into(imageView);
+                .into(dstImageView);
     }
 
     public interface DrawableTarget extends Target {
@@ -516,7 +552,8 @@ public class ImageUtils {
         }
 
         private void removeTag() {
-            if (mAttachTag && mView.getTag(R.id.picasso_target) == this) mView.setTag(R.id.picasso_target, null);
+            if (mAttachTag && mView.getTag(R.id.picasso_target) == this)
+                mView.setTag(R.id.picasso_target, null);
         }
     }
 
@@ -532,7 +569,7 @@ public class ImageUtils {
         int textureSize = Math.min(hardwareAcceleratedCanvas.getMaximumBitmapHeight(),
                 hardwareAcceleratedCanvas.getMaximumBitmapWidth());
         if (DBG) Log.v(TAG, "initMaxTextureSize texture size: " + textureSize);
-        if (textureSize > 0 && textureSize != sMaxTextureSize)  {
+        if (textureSize > 0 && textureSize != sMaxTextureSize) {
             sMaxTextureSize = textureSize;
             saveMaxTextureSize(context);
         }
@@ -554,11 +591,11 @@ public class ImageUtils {
     }
 
     public static Subscription loadGifWithProgress(final ImageView imageView,
-                                           String url,
-                                           Object okHttpTag,
-                                           int progressWidth, int progressHeight,
-                                           final com.squareup.picasso.Callback callback
-                                           ) {
+                                                   String url,
+                                                   Object okHttpTag,
+                                                   int progressWidth, int progressHeight,
+                                                   final com.squareup.picasso.Callback callback
+    ) {
         LayerDrawable loadingDrawable = (LayerDrawable) imageView.getResources()
                 .getDrawable(R.drawable.image_loading_with_progress)
                 .mutate();

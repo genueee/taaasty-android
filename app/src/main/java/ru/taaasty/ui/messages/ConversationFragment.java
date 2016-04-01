@@ -24,6 +24,13 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -52,12 +59,6 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
-
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ConversationFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -257,7 +258,7 @@ public class ConversationFragment extends Fragment {
         String url = mConversation.getAvatarUrl();
         ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
         if (url != null) {
-            ImageUtils.loadImageRounded(avatar, url, R.dimen.avatar_small_diameter);
+            ImageUtils.loadImageRounded(url, R.dimen.avatar_small_diameter,avatar);
         } else {
             User user = mConversation.getAvatarUser();
             if (user != null) {
