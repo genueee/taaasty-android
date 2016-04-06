@@ -12,6 +12,7 @@ import android.graphics.drawable.Drawable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.view.View;
 import android.widget.TextView;
 
@@ -58,12 +59,12 @@ public abstract class FlowEntryHeader {
         Drawable entriesCountDrawable = DrawableCompat.wrap(
                 ResourcesCompat.getDrawable(root.getResources(), R.drawable.ic_posts_count_20dp, null).mutate());
         DrawableCompat.setTintList(entriesCountDrawable, subscribersCount.getTextColors());
-        entriesCount.setCompoundDrawablesRelativeWithIntrinsicBounds(entriesCountDrawable, null, null, null);
+        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(entriesCount, entriesCountDrawable, null, null, null);
 
         Drawable subsribersDrawable = DrawableCompat.wrap(
                 ResourcesCompat.getDrawable(root.getResources(), R.drawable.ic_subscribers_count_20dp, null).mutate());
         DrawableCompat.setTintList(subsribersDrawable, subscribersCount.getTextColors());
-        subscribersCount.setCompoundDrawablesRelativeWithIntrinsicBounds(subsribersDrawable, null, null, null);
+        TextViewCompat.setCompoundDrawablesRelativeWithIntrinsicBounds(subscribersCount,subsribersDrawable, null, null, null);
 
         mFlowHeaderTransfrom.setAvatarMetrics(62, 16, 16, root.getResources());
 

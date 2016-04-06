@@ -290,6 +290,11 @@ public class ShowPhotoFragment extends Fragment {
         public void onPhotoTap(View view, float x, float y) {
             if (mListener != null) mListener.onPhotoTap();
         }
+
+        @Override
+        public void onOutsidePhotoTap() {
+
+        }
     };
 
     public interface OnFragmentInteractionListener {

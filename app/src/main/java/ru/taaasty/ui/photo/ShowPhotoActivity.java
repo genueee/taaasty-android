@@ -105,6 +105,12 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         setTitle(UiUtils.safeFromHtml(title).toString());
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mHideActionBarHandler.removeCallbacksAndMessages(null);
+    }
+
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
@@ -119,6 +125,7 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
         mHideActionBarHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                if (isFinishing() || getSupportActionBar() == null) return;
                 if (!userForcedToChangeOverlayMode && !isNavigationHidden) {
                     toggleShowOrHideHideyBarMode();
                 }

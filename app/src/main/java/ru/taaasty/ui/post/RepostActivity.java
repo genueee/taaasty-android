@@ -25,6 +25,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
@@ -329,7 +330,8 @@ public class RepostActivity extends ActivityBase {
             for (RepostTarget target : repostTargets) {
                 if (TextUtils.isEmpty(filter)
                         || target.title.length() >= filter.length()
-                        && target.title.substring(0, filter.length()).toLowerCase().contains(filter.toLowerCase())) {
+                        && target.title.substring(0, filter.length())
+                            .toLowerCase(Locale.getDefault()).contains(filter.toLowerCase(Locale.getDefault()))) {
                     filtered.add(target);
                 }
             }

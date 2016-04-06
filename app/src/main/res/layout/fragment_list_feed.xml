@@ -20,7 +20,7 @@
             android:overScrollMode="never"
             android:scrollbars="none"
             android:paddingBottom="8dp"
-            tools:listheader="@layout/header_live_feed"/>
+            tools:listheader="@layout/header_user_feed"/>
 
     </ru.taaasty.widgets.SwipeRefreshLayout>
 
