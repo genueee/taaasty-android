@@ -19,12 +19,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -35,12 +35,15 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.MyFeedFragment;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observable;
+import rx.functions.Action1;
 
 
 public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener,
@@ -269,7 +272,19 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openSupport() {
-        Intercom.client().displayConversationsList();
+        Observable<Conversation> conversationObservable = RestClient.getAPiMessenger().createConversation(null, 3);
+        conversationObservable.doOnNext(new Action1<Conversation>() {
+            @Override
+            public void call(Conversation conversation) {
+                ConversationActivity.startConversationActivity(MyFeedActivity.this, conversation, null);
+            }
+        }).doOnError(new Action1<Throwable>() {
+            @Override
+            public void call(Throwable throwable) {
+                MessageHelper.showError(MyFeedActivity.this, R.id.activityRoot, 1, new IllegalArgumentException("!!!!!!"), R.string.error_create_conversation);
+                // TODO здесь неавторизованным по хорошему надо возвращать ошибку
+            }
+        });
     }
 
     void logout() {
