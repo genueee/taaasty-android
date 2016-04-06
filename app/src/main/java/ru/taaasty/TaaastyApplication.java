@@ -5,7 +5,6 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.Nullable;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
@@ -13,28 +12,19 @@ import com.aviary.android.feather.sdk.IAviaryClientCredentials;
 import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.FacebookSdk;
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Logger;
-import com.google.android.gms.analytics.Tracker;
 import com.vk.sdk.VKSdk;
 
-import io.fabric.sdk.android.Fabric;
 import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
 import frenchtoast.FrenchToast;
-import io.intercom.android.sdk.Intercom;
-import io.intercom.android.sdk.identity.Registration;
-import io.intercom.android.sdk.preview.IntercomPreviewPosition;
+import io.fabric.sdk.android.Fabric;
 import ru.taaasty.events.UiVisibleStatusChanged;
-import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.FontManager;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
-import rx.functions.Action1;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class TaaastyApplication extends MultiDexApplication implements IAviaryClientCredentials {
@@ -88,7 +78,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         ImageUtils.getInstance().onAppInit(this);
         AnalyticsHelper.initInstance(this);
         resetLanguage();
-        Intercom.initialize(this, BuildConfig.INTERCOM_API_KEY, BuildConfig.INTERCOM_APP_ID);
 
         if (BuildConfig.DEBUG) {
             try {
@@ -127,20 +116,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
             config.locale = locale;
             getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
         }
-    }
-
-    public synchronized void startIntercomSession() {
-        if (mInterSessionStarted) return;
-        long userId = Session.getInstance().getCurrentUserId();
-        if (userId == CurrentUser.USER_UNAUTHORIZED_ID) return;
-        mInterSessionStarted = true;
-        Intercom.client().setPreviewPosition(IntercomPreviewPosition.BOTTOM_RIGHT);
-        Intercom.client().registerIdentifiedUser(new Registration().withUserId(String.valueOf(userId)));
-    }
-
-    public synchronized void endIntercomSession() {
-        Intercom.client().reset();
-        mInterSessionStarted = false;
     }
 
     @Override
