@@ -125,7 +125,7 @@ public class ConversationDetailsFragment extends Fragment {
                 removeChat();
             }
         });
-        builder.setNegativeButton(R.string.cancel, null);
+        builder.setNegativeButton(android.R.string.cancel, null);
         builder.show();
     }
 

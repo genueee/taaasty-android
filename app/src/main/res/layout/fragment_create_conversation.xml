@@ -114,8 +114,10 @@
         android:textSize="16sp"
         android:textColor="@android:color/white"
         android:background="@drawable/btn_green_background"
-        android:text="@string/crate_group_chat"
+        android:text="@string/create_group_chat"
         android:layout_alignParentBottom="true"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        tools:visibility="visible"
+        />
 
 </RelativeLayout>

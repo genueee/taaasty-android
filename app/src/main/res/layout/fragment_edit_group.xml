@@ -117,7 +117,10 @@
                 android:layout_weight="1"
                 android:textColor="#303030"
                 android:textSize="18sp"
-                tools:text="@string/user_list"/>
+                tools:text="Участников: 10"
+                android:singleLine="true"
+                android:layout_marginRight="8dp"
+                />
 
             <TextView
                 android:id="@+id/edit_users"

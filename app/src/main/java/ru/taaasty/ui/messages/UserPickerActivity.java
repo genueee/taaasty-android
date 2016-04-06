@@ -17,7 +17,7 @@ public class UserPickerActivity extends ActivityBase implements
 
     private static final String TAG_INITIATE_CONVERSATION_DIALOG = "TAG_INITIATE_CONVERSATION_DIALOG";
 
-    public static final String RESULT_USER = UserPickerActivity.class.getName() + ".RESULT_USER";
+    public static final String RESULT_USER = "UserPickerActivity.RESULT_USER";
 
     public static void startPicker(Activity caller, int requestCode) {
         Intent intent = new Intent(caller, UserPickerActivity.class);

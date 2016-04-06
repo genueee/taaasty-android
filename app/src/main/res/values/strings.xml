@@ -358,8 +358,7 @@
     <string name="app_version_not_supported">Данная версия приложения больше не поддерживается, её необходимо обновить</string>
     <string name="update_app">Обновить</string>
     <string name="group_chat">Групповой чат</string>
-    <string name="crate_group_chat">Создать групповой чат</string>
-    <string name="user_list">User list</string>
+    <string name="create_group_chat">Создать группу</string>
     <string name="group_topic_should_not_be_empty">Заголовок группы не должен быть пустым</string>
     <string name="chat">Переписка</string>
     <string name="do_not_disturb">Не беспокоить</string>
@@ -367,7 +366,6 @@
     <string name="leave_group">Покинуть группу</string>
     <string name="delete_chat_desc">Переписка будет удалена и вы не сможете получать сообщения</string>
     <string name="leave_chat">Выйти</string>
-    <string name="cancel">Отмена</string>
     <string name="fail_to_remove_chat">Не удалось удалить переписку</string>
     <string name="public_conversation_default_title">Обсуждение записи</string>
 

@@ -346,7 +346,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                 leaveChat();
             }
         });
-        builder.setNegativeButton(R.string.cancel, null);
+        builder.setNegativeButton(android.R.string.cancel, null);
         builder.show();
     }
 
