@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.StrictMode;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
@@ -37,21 +38,27 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
 
     @Override
     public void onCreate() {
-        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                    .detectAll()
-                    .permitDiskReads()
-                    .penaltyFlashScreen()
-                    .penaltyLog()
-                    .detectCustomSlowCalls()
-                    .build());
-            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                    .detectAll()
-                    .penaltyLog()
-                    // .penaltyDeath()
-                    .build());
-        }
         super.onCreate();
+        if ("debug".equals(BuildConfig.BUILD_TYPE)) {
+            // https://code.google.com/p/android/issues/detail?id=35298#c2
+            (new Handler()).postAtFrontOfQueue(new Runnable() {
+                @Override
+                public void run() {
+                    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                            .detectAll()
+                            .permitDiskReads()
+                            .penaltyFlashScreen()
+                            .penaltyLog()
+                            .detectCustomSlowCalls()
+                            .build());
+                    StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                            .detectAll()
+                            .penaltyLog()
+                            // .penaltyDeath()
+                            .build());
+                }
+            });
+        }
         if ("beta".equals(BuildConfig.BUILD_TYPE)) {
             Fabric.with(this, new Crashlytics());
         }
