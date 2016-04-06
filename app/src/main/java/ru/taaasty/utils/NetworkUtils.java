@@ -38,7 +38,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
 import ru.taaasty.Session;
 import ru.taaasty.StatusBarNotifications;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.DateTypeAdapter;
 
 public final class NetworkUtils {
@@ -219,7 +218,6 @@ public final class NetworkUtils {
     public void factoryReset(Context context) {
         GcmUtils.getInstance(context).onLogout();
         StatusBarNotifications.getInstance().onLogout();
-        ((TaaastyApplication) context.getApplicationContext()).endIntercomSession();
         Session.getInstance().logout();
         LoginManager.getInstance().logOut();
         VKSdk.logout();
