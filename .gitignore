@@ -3,10 +3,12 @@
 .idea
 .gradle
 *.iml
+*.log
 bin
 gen
 /build
 scripts/__pycache__
 /local.properties
 /private.properties
-
+/private.properties1
+/captures

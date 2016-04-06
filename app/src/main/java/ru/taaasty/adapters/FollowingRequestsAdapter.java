@@ -38,7 +38,8 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
 
             @Override
             public void onInserted(int position, int count) {
-                if (BuildConfig.DEBUG) Log.v("FollowingsRqAdapt", "onInserted pos: " + position + " count: " + count);
+                if (BuildConfig.DEBUG)
+                    Log.v("FollowingsRqAdapt", "onInserted pos: " + position + " count: " + count);
                 notifyDataSetChanged();
             }
 
@@ -82,7 +83,7 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
     }
 
     public void deleteRelationship(long id) {
-        for (int i=mRelationships.size() - 1; i >= 0; --i) {
+        for (int i = mRelationships.size() - 1; i >= 0; --i) {
             Long l = mRelationships.get(i).getId();
             if (l != null && l == id) {
                 mRelationships.removeItemAt(i);
@@ -93,7 +94,7 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
 
     @Override
     public void deleteRelationship(long fromId, long toId) {
-        for (int i=mRelationships.size() - 1; i >= 0; --i) {
+        for (int i = mRelationships.size() - 1; i >= 0; --i) {
             Relationship relationship = mRelationships.get(i);
             if (relationship.getFromId() == fromId && relationship.getToId() == toId) {
                 mRelationships.removeItemAt(i);
@@ -133,11 +134,11 @@ public class FollowingRequestsAdapter extends BaseAdapter implements Relationshi
 
         Relationship rel = getItem(position);
         User author = rel.getReader();
-        mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
+        mImageUtils.loadAvatarToImageView(author, R.dimen.avatar_small_diameter, vh.avatar);
 
         vh.userName.setText(author.getName());
 
-        int posts = (int)(author.getPublicEntriesCount() % 1000000);
+        int posts = (int) (author.getPublicEntriesCount() % 1000000);
         vh.entriesCount.setText(vh.entriesCount.getResources().getQuantityString(
                 R.plurals.records_title, posts, posts));
 

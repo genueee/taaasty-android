@@ -205,7 +205,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public void markMessagesAsRead(List<UpdateMessages.UpdateMessageInfo> messageInfos) {
         if (messageInfos == null) return;
         LongSparseArray<UpdateMessages.UpdateMessageInfo> infosHash = new LongSparseArray<>(messageInfos.size());
-        for (UpdateMessages.UpdateMessageInfo info: messageInfos) infosHash.append(info.id, info);
+        for (UpdateMessages.UpdateMessageInfo info : messageInfos) infosHash.append(info.id, info);
 
         int size = mMessages.size();
         for (int i = 0; i < size; ++i) {
@@ -347,7 +347,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     private void bindAvatar(ViewHolderMessage holder, Conversation.Message message) {
         User user = getMember(message.userId);
-        mImageUtils.loadAvatar(user, holder.avatar, R.dimen.avatar_small_diameter);
+        mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
     }
 
     private void bindMessageDate(ViewHolderMessage holder, Conversation.Message message) {
@@ -454,10 +454,10 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         private ViewHolderMessage(View v, boolean isMyMessage) {
             super(v);
             this.isMyMessage = isMyMessage;
-            avatar = (ImageView)v.findViewById(R.id.avatar);
-            text = (TextView)v.findViewById(R.id.message);
+            avatar = (ImageView) v.findViewById(R.id.avatar);
+            text = (TextView) v.findViewById(R.id.message);
             text.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
-            relativeDate = (RelativeDateTextSwitcher)v.findViewById(R.id.relative_date);
+            relativeDate = (RelativeDateTextSwitcher) v.findViewById(R.id.relative_date);
             textImgLoader = new TextViewImgLoader(v.getContext(), SHOW_PHOTO_ON_CLICK_LISTENER);
         }
     }

@@ -96,7 +96,7 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
 
     @Override
     public void deleteRelationship(long fromId, long toId) {
-        for (int i=mRelationships.size() - 1; i >= 0; --i) {
+        for (int i = mRelationships.size() - 1; i >= 0; --i) {
             Relationship relationship = mRelationships.get(i);
             if (relationship.getFromId() == fromId && relationship.getToId() == toId) {
                 mRelationships.removeItemAt(i);
@@ -136,13 +136,13 @@ public class RelationshipsAdapter extends BaseAdapter implements RelationshipLis
 
         Relationship rel = getItem(position);
         User author = mUseReader ? rel.getReader() : rel.getUser();
-        mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
+        mImageUtils.loadAvatarToImageView(author, R.dimen.avatar_small_diameter, vh.avatar);
 
         vh.userName.setText(author.getName());
 
-        int posts = (int)(author.getPublicEntriesCount() % 1000000);
+        int posts = (int) (author.getPublicEntriesCount() % 1000000);
         vh.entriesCount.setText(vh.entriesCount.getResources().getQuantityString(
-                        R.plurals.records_title, posts, posts));
+                R.plurals.records_title, posts, posts));
 
         // XXX: add button
 

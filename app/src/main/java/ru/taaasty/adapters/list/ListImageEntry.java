@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
@@ -113,7 +114,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
 
     @Override
     public void recycle() {
-        picasso.cancelRequest(mImageView);
+        Picasso.with(mContext).cancelRequest(mImageView);
         mLoadGifSubscription.unsubscribe();
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
         if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag);
@@ -234,11 +235,11 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
 
         if (url.toLowerCase(Locale.US).endsWith(".gif")) {
             ImageUtils.loadGifWithProgress(mImageView, mImageViewUrl, mGitLoadTag, width, height, this);
-            picasso.cancelRequest(mImageView);
+            Picasso.with(mContext).cancelRequest(mImageView);
         } else {
             Drawable placeholder = createImageLoadingDrawable(width, height);
             mImageView.setImageDrawable(placeholder);
-            RequestCreator rq = picasso
+            RequestCreator rq = Picasso.with(mContext)
                     .load(mImageViewUrl)
                     .placeholder(placeholder)
                     .error(R.drawable.image_load_error)

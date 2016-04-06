@@ -28,7 +28,14 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.ContentTypedOutput;
@@ -51,11 +58,6 @@ import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.subscriptions.Subscriptions;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
 
 /**
  * Created by arhis on 25.02.2016.
@@ -248,6 +250,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     private void bindGroupAvatar() {
+        // todo Не работает!!! Пофиксить!
         final Uri imageUri = mModel.getAvatarUri();
         if (imageUri != null) {
             mGroupAvatarThumbnailSubscription.unsubscribe();
@@ -256,7 +259,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                 public void call(Subscriber<? super Bitmap> subscriber) {
                     if (imageUri != null) {
                         if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
-                            ImageUtils.loadImageRounded(mAvatar, imageUri.toString(), R.dimen.avatar_small_diameter);
+//                            ImageUtils.loadImageRounded(imageUri.toString(), R.dimen.avatar_small_diameter,mAvatar);
+                            ImageUtils.getInstance().loadAvatarToImageView(getConversation().getAvatarUser(), R.dimen.avatar_small_diameter, mAvatar);
                         } else {
                             InputStream is = null;
                             try {

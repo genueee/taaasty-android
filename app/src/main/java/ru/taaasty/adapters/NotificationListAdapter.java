@@ -83,10 +83,10 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         if (isPendingIndicatorPosition(position)) {
             return;
         } else {
-            ViewHolderItem holderItem = (ViewHolderItem)viewHolder;
+            ViewHolderItem holderItem = (ViewHolderItem) viewHolder;
             Notification notification = mNotifications.get(position);
             bindReadStatus(holderItem, notification);
-            bindAvatar(holderItem, notification);
+            mImageUtils.loadAvatarToImageView(notification.sender, R.dimen.avatar_small_diameter, holderItem.avatar);
             bindNotificationText(holderItem, notification);
             bindNotificationDate(holderItem, notification);
 
@@ -118,7 +118,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     public void onNotificationFollowUnfollowStarted(long notificationId) {
         if (mFollowProcess.add(notificationId)) {
             int size = mNotifications.size();
-            for (int i=0; i<size; ++i) {
+            for (int i = 0; i < size; ++i) {
                 if (notificationId == mNotifications.get(i).id) notifyItemChanged(i);
             }
         }
@@ -127,7 +127,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
     public void onNotificationFollowUnfollowStopped(long notificationId) {
         if (mFollowProcess.remove(notificationId)) {
             int size = mNotifications.size();
-            for (int i=0; i<size; ++i) {
+            for (int i = 0; i < size; ++i) {
                 if (notificationId == mNotifications.get(i).id) notifyItemChanged(i);
             }
         }
@@ -156,9 +156,6 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         holder.unreadIndicator.setVisibility(notification.isMarkedAsRead() ? View.INVISIBLE : View.VISIBLE);
     }
 
-    private void bindAvatar(ViewHolderItem holder, Notification notification) {
-        mImageUtils.loadAvatar(notification.sender, holder.avatar, R.dimen.avatar_small_diameter);
-    }
 
     private void bindNotificationText(ViewHolderItem holder, Notification notification) {
         User author = notification.sender;
@@ -236,7 +233,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
         }
     }
 
-    public final class ViewHolderItem extends ViewHolder implements  View.OnClickListener {
+    public final class ViewHolderItem extends ViewHolder implements View.OnClickListener {
         public final View unreadIndicator;
         public final ImageView avatar;
         public final ru.taaasty.widgets.LinkifiedTextView notification;
@@ -257,7 +254,7 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
             addedButton = v.findViewById(R.id.relationship_added);
             progressButton = v.findViewById(R.id.change_relationship_progress);
             rightContainer = v.findViewById(R.id.add_remove_relationship_container);
-            entryImage = (ImageView)v.findViewById(R.id.entry_image);
+            entryImage = (ImageView) v.findViewById(R.id.entry_image);
 
             notification.setMaxLines(3);
 
@@ -299,8 +296,11 @@ public class NotificationListAdapter extends RecyclerView.Adapter<NotificationLi
 
     public interface InteractionListener {
         void onNotificationClicked(View v, Notification notification);
+
         void onAvatarClicked(View v, Notification notification);
+
         void onAddButtonClicked(View v, Notification notification);
+
         void onAddedButtonClicked(View v, Notification notification);
     }
 

@@ -64,7 +64,7 @@ public class CommentViewBinder {
         bindAuthor(vh, comment);
         vh.avatar.setVisibility(View.VISIBLE);
 
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) vh.comment.getLayoutParams();
         lp.rightMargin = 0;
         vh.comment.setLayoutParams(lp);
         bindCommentText(vh, comment, design);
@@ -89,7 +89,7 @@ public class CommentViewBinder {
         // Сдвигаем влево аватарку и комментарий. View с датой растягиваем до размера кнопок
         int textLeft = vh.comment.getLeft() - vh.avatar.getLeft();
         PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", 0, -textLeft);
-        PropertyValuesHolder dAlphaButtons = PropertyValuesHolder.ofFloat("dAlphaButtons",0f, 1f);
+        PropertyValuesHolder dAlphaButtons = PropertyValuesHolder.ofFloat("dAlphaButtons", 0f, 1f);
 
         ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxTextLeft, dAlphaButtons);
         va.setDuration(vh.itemView.getResources().getInteger(R.integer.shortAnimTime));
@@ -140,7 +140,7 @@ public class CommentViewBinder {
 
         final int textLeft = vh.comment.getLeft();
         final PropertyValuesHolder dxTextLeft = PropertyValuesHolder.ofFloat("dxTextLeft", -textLeft, 0);
-        PropertyValuesHolder dalphaButtons = PropertyValuesHolder.ofFloat("dalpha",1f, 0f);
+        PropertyValuesHolder dalphaButtons = PropertyValuesHolder.ofFloat("dalpha", 1f, 0f);
 
         ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(dxTextLeft, dalphaButtons);
         va.setDuration(vh.itemView.getResources().getInteger(R.integer.shortAnimTime));
@@ -161,7 +161,7 @@ public class CommentViewBinder {
                 vh.avatarCommentRoot.setTranslationX(-textLeft);
                 vh.avatar.setVisibility(View.VISIBLE);
 
-                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+                ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) vh.comment.getLayoutParams();
                 lp.rightMargin = 0;
                 vh.comment.setLayoutParams(lp);
             }
@@ -206,7 +206,7 @@ public class CommentViewBinder {
     }
 
     private boolean updateCommentRightPaddingMeasured(CommentsAdapter.ViewHolder vh, int newRightPadding) {
-        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams)vh.comment.getLayoutParams();
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) vh.comment.getLayoutParams();
         if (lp.rightMargin != newRightPadding) {
             lp.rightMargin = newRightPadding;
             vh.comment.setLayoutParams(lp);
@@ -223,7 +223,7 @@ public class CommentViewBinder {
 
     private void bindAuthor(CommentsAdapter.ViewHolder vh, Comment item) {
         User author = item.getAuthor();
-        mImageUtils.loadAvatar(author.getUserpic(), author.getName(), vh.avatar, R.dimen.avatar_small_diameter);
+        mImageUtils.loadAvatarToImageView(author, R.dimen.avatar_small_diameter, vh.avatar);
     }
 
     private void bindCommentText(CommentsAdapter.ViewHolder vh, Comment item, TlogDesign design) {
@@ -246,7 +246,7 @@ public class CommentViewBinder {
         ssb.setSpan(span, start, ssb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         vh.comment.setText(ssb);
-        vh.comment.setTextColor( design.getFeedTextColor(context.getResources()) );
+        vh.comment.setTextColor(design.getFeedTextColor(context.getResources()));
     }
 
     public String getRelativeDate(Context context, long updatedAt) {
