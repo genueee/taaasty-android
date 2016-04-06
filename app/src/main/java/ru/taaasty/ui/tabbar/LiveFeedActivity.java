@@ -17,8 +17,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 
 import com.fernandocejas.frodo.annotation.RxLogSubscriber;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.nirhart.parallaxscroll.views.ParallaxedView;
 import com.trello.rxlifecycle.ActivityEvent;
 import com.viewpagerindicator.CirclePageIndicator;
@@ -28,12 +26,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import de.greenrobot.event.EventBus;
-import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
@@ -171,8 +166,6 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
     private void doOnCreateTask() {
         if (mOnCreateTaskDone) return;
         if (Session.getInstance().isAuthorized()) {
-            ((TaaastyApplication) getApplicationContext()).startIntercomSession();
-            Intercom.client().openGCMMessage(getIntent());
             mOnCreateTaskDone = true;
         }
     }

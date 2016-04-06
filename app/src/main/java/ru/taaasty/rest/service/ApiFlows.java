@@ -1,7 +1,6 @@
 package ru.taaasty.rest.service;
 
 
-import io.intercom.retrofit.http.Path;
 import retrofit.http.DELETE;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
@@ -10,14 +9,13 @@ import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.PUT;
 import retrofit.http.Part;
+import retrofit.http.Path;
 import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.model.FlowStaff;
 import rx.Observable;
-
-import java.util.ArrayList;
 
 /**
  * Created by alexey on 29.08.15.

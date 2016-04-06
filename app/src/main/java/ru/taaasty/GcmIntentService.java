@@ -26,7 +26,6 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import java.io.IOException;
 import java.util.Random;
 
-import io.intercom.android.sdk.Intercom;
 import retrofit.RetrofitError;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
@@ -110,7 +109,6 @@ public class GcmIntentService extends IntentService {
     }
 
     private void sendRegistrationIdToBackend(String regId) throws IOException {
-        Intercom.client().setupGCM(regId, R.mipmap.ic_launcher);
         String userToken = Session.getInstance().getCurrentUserToken();
         try {
             if (userToken != null) {

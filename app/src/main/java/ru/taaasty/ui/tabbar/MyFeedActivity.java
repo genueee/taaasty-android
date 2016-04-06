@@ -19,12 +19,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 
-import io.intercom.android.sdk.Intercom;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
+import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
@@ -35,12 +35,18 @@ import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.AdditionalFeedActivity;
 import ru.taaasty.ui.feeds.IRereshable;
 import ru.taaasty.ui.feeds.MyFeedFragment;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
 import ru.taaasty.ui.post.SharePostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 
 public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment.OnFragmentInteractionListener,
@@ -51,6 +57,8 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     private static final int REQUEST_CODE_SHARE_DIALOG = 3;
 
     private DrawerLayout mDrawerLayout;
+    private Subscription mSupportConversationSubscription = Subscriptions.unsubscribed();
+    ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -184,7 +192,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     void refreshData() {
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
-        if (current != null) ((IRereshable)current).refreshData(true);
+        if (current != null) ((IRereshable) current).refreshData(true);
     }
 
     public void onAdditionMenuItemClicked(int viewId) {
@@ -224,7 +232,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
             }
         };
 
-        for (int vid: new int[] {
+        for (int vid : new int[]{
                 R.id.settings,
                 R.id.friends,
                 R.id.hidden,
@@ -269,7 +277,26 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void openSupport() {
-        Intercom.client().displayConversationsList();
+        mSupportConversationSubscription.unsubscribe();
+        Observable<Conversation> conversationObservable = RestClient.getAPiMessenger().createConversation(null, 3);
+        mSupportConversationSubscription = conversationObservable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Conversation>() {
+                    @Override
+                    public void onCompleted() {
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        MessageHelper.showError(MyFeedActivity.this, R.id.activityRoot, 1, e, R.string.error_create_conversation);
+                        // TODO здесь неавторизованным по хорошему надо возвращать ошибку
+                    }
+
+                    @Override
+                    public void onNext(Conversation conversation) {
+                        ConversationActivity.startConversationActivity(MyFeedActivity.this, conversation, null);
+                    }
+                });
     }
 
     void logout() {
@@ -279,7 +306,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        new AsyncTask<Void, Void, Void>(){
+        new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 NetworkUtils.getInstance().factoryReset(MyFeedActivity.this);
@@ -294,8 +321,8 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
                 Intent mStartActivity = new Intent(MyFeedActivity.this, LiveFeedActivity.class);
                 int mPendingIntentId = 123456;
-                PendingIntent mPendingIntent = PendingIntent.getActivity(MyFeedActivity.this, mPendingIntentId,    mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
-                AlarmManager mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+                PendingIntent mPendingIntent = PendingIntent.getActivity(MyFeedActivity.this, mPendingIntentId, mStartActivity, PendingIntent.FLAG_CANCEL_CURRENT);
+                AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                 mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent);
                 finish();
                 System.exit(0);
