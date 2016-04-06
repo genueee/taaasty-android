@@ -52,7 +52,9 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
                     .build());
         }
         super.onCreate();
-        Fabric.with(this, new Crashlytics());
+        if ("beta".equals(BuildConfig.BUILD_TYPE)) {
+            Fabric.with(this, new Crashlytics());
+        }
 
         if (!BuildConfig.DEBUG) {
             try {
