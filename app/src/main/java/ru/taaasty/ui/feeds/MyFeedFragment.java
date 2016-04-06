@@ -340,7 +340,12 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
 
                 @Override
                 public void onEntryChanged(EntryChanged event) {
-                    addEntry(event.postEntry);
+                    // Анонимки не показываем в своем тлоге
+                    // TODO: более приличное определение, какие посты можно добавлять в фид, а какие - нет
+                    if (!event.postEntry.isAnonymousPost()) {
+                        addEntry(event.postEntry);
+                    }
+
                 }
 
                 @Override
