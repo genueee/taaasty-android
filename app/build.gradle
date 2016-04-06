@@ -125,23 +125,6 @@ android {
         }
     }
 
-    productFlavors {
-
-        api21 {
-            minSdkVersion 21
-        }
-
-        prod {
-            minSdkVersion 15
-        }
-
-        stage {
-            minSdkVersion 15
-            buildConfigField 'String', 'API_SERVER_ADDRESS', '\"http://api.brandydev.ru\"'
-        }
-
-    }
-
     lintOptions {
         warning 'RtlHardcoded'
         warning 'AppCompatResource'
