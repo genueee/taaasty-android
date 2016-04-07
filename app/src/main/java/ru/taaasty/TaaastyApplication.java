@@ -9,8 +9,9 @@ import android.os.StrictMode;
 import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
-import com.aviary.android.feather.sdk.IAviaryClientCredentials;
-import com.aviary.android.feather.sdk.utils.AviaryIntentConfigurationValidator;
+import com.adobe.creativesdk.aviary.IAviaryClientCredentials;
+import com.adobe.creativesdk.aviary.utils.AdobeImageEditorIntentConfigurationValidator;
+import com.adobe.creativesdk.foundation.AdobeCSDKFoundation;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.FacebookSdk;
 import com.vk.sdk.VKSdk;
@@ -88,9 +89,11 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         AnalyticsHelper.initInstance(this);
         resetLanguage();
 
+        // Aviary
+        AdobeCSDKFoundation.initializeCSDKFoundation(getApplicationContext());
         if (BuildConfig.DEBUG) {
             try {
-                AviaryIntentConfigurationValidator.validateConfiguration(this);
+                AdobeImageEditorIntentConfigurationValidator.validateConfiguration(this);
             } catch (PackageManager.NameNotFoundException e) {
                 throw new IllegalStateException("aviary validation error", e);
             }

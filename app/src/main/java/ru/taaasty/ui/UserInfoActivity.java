@@ -21,7 +21,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Toast;
 
-import com.aviary.android.feather.sdk.internal.Constants;
+import com.adobe.creativesdk.aviary.AdobeImageIntent;
 
 import java.io.File;
 
@@ -31,7 +31,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.model.Conversation;
@@ -461,7 +460,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         try {
             featherPhotoIntent = ImageUtils.createFeatherPhotoIntent(this, photoUri);
             mMakePhotoDstUri = featherPhotoIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            featherPhotoIntent.putExtra(Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, true);
+            featherPhotoIntent.putExtra(AdobeImageIntent.EXTRA_IN_SAVE_ON_NO_CHANGES, true);
             startActivityForResult(featherPhotoIntent, requestCode);
         } catch (ImageUtils.MakePhotoException e) {
             Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();

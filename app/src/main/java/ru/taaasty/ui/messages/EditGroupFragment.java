@@ -28,8 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.aviary.android.feather.sdk.internal.utils.BitmapUtils;
+import com.adobe.creativesdk.aviary.internal.utils.BitmapUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

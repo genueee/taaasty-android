@@ -16,7 +16,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.aviary.android.feather.sdk.internal.Constants;
+import com.adobe.creativesdk.aviary.AdobeImageIntent;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -270,7 +270,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
                     Bundle extra = data.getExtras();
                     if (null != extra) {
                         // image has been changed by the user?
-                        changed = extra.getBoolean(Constants.EXTRA_OUT_BITMAP_CHANGED);
+                        changed = extra.getBoolean(AdobeImageIntent.EXTRA_OUT_BITMAP_CHANGED);
                         /* Пока не удаляем файлы
                         if (changed && !ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
                             deleteFileNoThrow(mOriginalImageUri);

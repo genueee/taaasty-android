@@ -307,11 +307,11 @@
          android:authorities="{your.packagename}.AviaryCdsProvider"
         -->
         <provider
-            android:name="com.aviary.android.feather.sdk.internal.cds.AviaryCdsProvider"
-            android:authorities="${applicationId}.AviaryCdsProvider"
-            android:exported="false"
-            android:process=":aviary_cds" />
+            android:name="com.adobe.creativesdk.aviary.internal.cds.CdsProvider"
+            android:authorities="${applicationId}.CdsProvider"
+            android:exported="false" />
         <!--
+
         ======================================================================
                                                         END AVIARY ENTRIES
         ======================================================================

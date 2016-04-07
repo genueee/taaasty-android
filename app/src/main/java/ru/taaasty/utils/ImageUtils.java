@@ -29,9 +29,8 @@ import android.util.TimingLogger;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.aviary.android.feather.sdk.FeatherActivity;
-import com.aviary.android.feather.sdk.internal.Constants;
-import com.aviary.android.feather.sdk.internal.headless.utils.MegaPixels;
+import com.adobe.creativesdk.aviary.AdobeImageIntent;
+import com.adobe.creativesdk.aviary.internal.headless.utils.MegaPixels;
 import com.squareup.picasso.LruCache;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -372,14 +371,15 @@ public class ImageUtils {
         Intent featherPhotoIntent;
 
         newPhotoUri = createAviaryPictureOutputPath(context);
-        featherPhotoIntent = new Intent(context, FeatherActivity.class);
-        featherPhotoIntent.setData(originalPhotoUri);
-        featherPhotoIntent.putExtra(Constants.EXTRA_IN_SAVE_ON_NO_CHANGES, false);
-        featherPhotoIntent.putExtra(Constants.EXTRA_OUTPUT, newPhotoUri);
-        featherPhotoIntent.putExtra(Constants.EXTRA_IN_HIRES_MEGAPIXELS, MegaPixels.Mp7.ordinal());
+        featherPhotoIntent = new AdobeImageIntent.Builder(context)
+                .setData(originalPhotoUri)
+                .saveWithNoChanges(false)
+                .withOutput(newPhotoUri)
+                .withOutputSize(MegaPixels.Mp7)
+                .withOutputQuality(90)
+                .build();
         return featherPhotoIntent;
     }
-
 
     public void loadAvatarToLeftDrawableOfTextView(
             User user,

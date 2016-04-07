@@ -20,7 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.aviary.android.feather.sdk.internal.Constants;
+import com.adobe.creativesdk.aviary.AdobeImageIntent;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -242,7 +242,7 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
                     Bundle extra = data.getExtras();
                     if (null != extra) {
                         // image has been changed by the user?
-                        changed = extra.getBoolean(Constants.EXTRA_OUT_BITMAP_CHANGED);
+                        changed = extra.getBoolean(AdobeImageIntent.EXTRA_OUT_BITMAP_CHANGED);
                     }
                     if (DBG) Log.v(TAG, "REQUEST_FEATHER_PHOTO. imageuri: " + mOriginalImageUri +
                             " new image uri: " + mImageUri + " bitmap changed: " + changed);
