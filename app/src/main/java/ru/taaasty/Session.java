@@ -12,9 +12,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
-import rx.Observer;
 import rx.functions.Action1;
-import rx.functions.Func0;
 import rx.subjects.BehaviorSubject;
 
 public class Session {

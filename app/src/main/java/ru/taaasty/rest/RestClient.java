@@ -282,7 +282,7 @@ public final class RestClient {
                 request.addHeader("Authorization", mBasicAuth);
             }
         }
-    };
+    }
 
     private static class ResponseErrorExceptionErrorHandler implements ErrorHandler {
         @Override
@@ -296,5 +296,5 @@ public final class RestClient {
 
             return new ApiErrorException(cause, responseError);
         }
-    };
+    }
 }

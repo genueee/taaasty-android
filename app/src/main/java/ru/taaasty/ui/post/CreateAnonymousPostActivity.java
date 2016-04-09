@@ -22,7 +22,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.ui.login.LoginActivity;

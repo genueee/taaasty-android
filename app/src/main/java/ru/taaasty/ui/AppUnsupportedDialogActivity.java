@@ -12,9 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.CheckAppHelper;
 

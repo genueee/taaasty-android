@@ -16,7 +16,6 @@ import android.view.animation.Interpolator;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.ui.CreateFlowActivity;
 import ru.taaasty.ui.post.CreateAnonymousPostActivity;
 import ru.taaasty.ui.post.CreatePostActivity;

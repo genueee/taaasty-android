@@ -40,7 +40,6 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;

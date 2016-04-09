@@ -4,8 +4,6 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.support.annotation.Nullable;
 
-import ru.taaasty.utils.UiUtils;
-
 public class PostFlowForm extends PostForm {
 
     public CharSequence title;

@@ -20,7 +20,7 @@ public class MyRecyclerView extends android.support.v7.widget.RecyclerView {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "MyRecyclerView";
 
-    private Set<ScrollEventConsumerVh> mScrollListeners = Collections.newSetFromMap(new WeakHashMap<ScrollEventConsumerVh, Boolean>());
+    private Set<ScrollEventConsumerVh> mScrollListeners = Collections.newSetFromMap(new WeakHashMap<>());
 
     public interface ScrollEventConsumerVh {
 

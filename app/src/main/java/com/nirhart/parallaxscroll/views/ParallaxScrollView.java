@@ -20,7 +20,7 @@ public class ParallaxScrollView extends ScrollView {
 	private int numOfParallaxViews = DEFAULT_PARALLAX_VIEWS;
 	private float innerParallaxFactor = DEFAULT_PARALLAX_FACTOR;
 	private float parallaxFactor = DEFAULT_PARALLAX_FACTOR;
-	private ArrayList<ParallaxedView> parallaxedViews = new ArrayList<ParallaxedView>();
+	private ArrayList<ParallaxedView> parallaxedViews = new ArrayList<>();
 
 	public ParallaxScrollView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);

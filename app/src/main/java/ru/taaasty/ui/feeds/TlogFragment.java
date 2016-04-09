@@ -1373,8 +1373,6 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         void onSharePostMenuClicked(Entry entry, long tlogId);
 
-        ;
-
         void onNoSuchUser();
 
         /**

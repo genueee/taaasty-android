@@ -246,7 +246,7 @@ public class ShowPostFragment extends Fragment {
             ArrayList<Comment> comments = new ArrayList<>(mCommentsAdapter.getComments());
             outState.putParcelableArrayList(KEY_COMMENTS, comments);
         } else {
-            outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
+            outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<>(0));
         }
     }
 

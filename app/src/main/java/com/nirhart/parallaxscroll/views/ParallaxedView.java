@@ -19,7 +19,7 @@ public class ParallaxedView {
 	
 	public ParallaxedView(View view) {
 		this.lastOffset = 0;
-		this.view = new WeakReference<View>(view);
+		this.view = new WeakReference<>(view);
 	}
 
 	public boolean is(View v) {
@@ -54,6 +54,6 @@ public class ParallaxedView {
     }
 
 	public void setView(View view) {
-		this.view = new WeakReference<View>(view);
+		this.view = new WeakReference<>(view);
 	}
 }

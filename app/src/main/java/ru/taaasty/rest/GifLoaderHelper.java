@@ -80,8 +80,6 @@ public class GifLoaderHelper {
                         if (DBG) Log.d(TAG, "finallyDo() url: " + url
                                 + "thread: " + Thread.currentThread().getName());
                     }
-
-                    ;
                 })
                 .replay(1)
                 .refCount();

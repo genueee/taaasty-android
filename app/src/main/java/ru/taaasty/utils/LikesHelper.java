@@ -12,7 +12,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.rest.ApiErrorException;

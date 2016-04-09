@@ -20,7 +20,6 @@ import android.widget.ListView;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
 import ru.taaasty.Session;

@@ -299,7 +299,7 @@ public class SignViaEmailFragment extends Fragment {
         public void addEmailsToAutoComplete(List<String> emailAddressCollection) {
             //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
             ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>(getActivity(),
+                    new ArrayAdapter<>(getActivity(),
                             android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
             mEmailView.setAdapter(adapter);

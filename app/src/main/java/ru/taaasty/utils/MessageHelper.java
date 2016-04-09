@@ -11,17 +11,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-
 import java.util.concurrent.TimeUnit;
 
 import frenchtoast.FrenchToast;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.ui.login.LoginActivity;
 

@@ -17,7 +17,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKSdk;
@@ -31,7 +30,6 @@ import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;

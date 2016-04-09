@@ -58,7 +58,6 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
 
     private DrawerLayout mDrawerLayout;
     private Subscription mSupportConversationSubscription = Subscriptions.unsubscribed();
-    ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

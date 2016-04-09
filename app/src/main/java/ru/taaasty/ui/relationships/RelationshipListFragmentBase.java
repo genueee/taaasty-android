@@ -124,7 +124,7 @@ public abstract class RelationshipListFragmentBase extends RxFragment {
         if (mRelationshipsAdapter != null) {
             outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<Parcelable>(mRelationshipsAdapter.getRelationships()));
         } else {
-            outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<Parcelable>(0));
+            outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<>(0));
         }
     }
 

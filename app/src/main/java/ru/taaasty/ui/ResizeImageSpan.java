@@ -80,7 +80,7 @@ public class ResizeImageSpan extends ImageSpan {
 
         if (d == null) {
             d = getDrawable();
-            mDrawableRef = new WeakReference<Drawable>(d);
+            mDrawableRef = new WeakReference<>(d);
         }
 
         return d;

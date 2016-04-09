@@ -36,7 +36,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.CommentsAdapter;
 import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
@@ -251,7 +250,7 @@ public class ShowCommentsFragment extends Fragment {
             ArrayList<Comment> comments = new ArrayList<>(mCommentsAdapter.getComments());
             outState.putParcelableArrayList(KEY_COMMENTS, comments);
         } else {
-            outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<Parcelable>(0));
+            outState.putParcelableArrayList(KEY_COMMENTS, new ArrayList<>(0));
         }
     }
 

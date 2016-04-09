@@ -31,7 +31,7 @@ public final class CheckAppHelper {
     public static boolean isNewVersionAvailableShown = false;
 
     private CheckAppHelper() {
-    };
+    }
 
 
     public static void openUpdateAppLink(Activity activity) {
@@ -94,7 +94,7 @@ public final class CheckAppHelper {
             saveLastResponse(context, response);
             return new CheckVersionResult(action, response.message);
         }
-    };
+    }
 
     @WorkerThread
     private static void clearLastResponse(Context context) {

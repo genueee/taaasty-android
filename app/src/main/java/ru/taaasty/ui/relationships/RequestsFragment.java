@@ -111,7 +111,7 @@ public class RequestsFragment extends Fragment {
         if (mAdapter != null) {
             outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<Parcelable>(mAdapter.getRelationships()));
         } else {
-            outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<Parcelable>(0));
+            outState.putParcelableArrayList(KEY_RELATIONSHIPS, new ArrayList<>(0));
         }
     }
 

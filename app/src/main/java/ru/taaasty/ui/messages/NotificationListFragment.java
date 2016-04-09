@@ -541,7 +541,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
             super.onSaveInstanceState(outState);
             if (!mNotificationList.isEmpty()) {
                 outState.putParcelableArrayList(BUNDLE_KEY_NOTIFICATION_LIST,
-                        new ArrayList<Notification>(mNotificationList.getItems()));
+                        new ArrayList<>(mNotificationList.getItems()));
             }
         }
 
@@ -661,7 +661,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                     @Override
                     public List<Notification> call(Object... args) {
                         if (args.length == 0) return Collections.emptyList();
-                        List<Notification> notifications = new ArrayList<Notification>(args.length);
+                        List<Notification> notifications = new ArrayList<>(args.length);
                         for (Object o: args) notifications.add((Notification)o);
                         return notifications;
                     }

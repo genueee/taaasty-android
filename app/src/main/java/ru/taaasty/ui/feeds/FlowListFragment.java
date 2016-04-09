@@ -18,10 +18,8 @@ import android.widget.TextView;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.adapters.FlowListAdapter;
 import ru.taaasty.adapters.HeaderTitleSubtitleViewHolder;
 import ru.taaasty.adapters.IParallaxedHeaderHolder;

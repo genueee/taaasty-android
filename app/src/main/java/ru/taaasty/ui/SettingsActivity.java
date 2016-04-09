@@ -9,10 +9,8 @@ import android.widget.Toast;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.PreferenceHelper;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;

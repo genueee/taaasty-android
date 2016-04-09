@@ -222,8 +222,6 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         if (mFlowEntryHeader != null) mFlowEntryHeader.stopImageLoading();
     }
 
-    ;
-
     int guessViewVisibleWidth(View view) {
         if (view.getWidth() > 0) {
             int width = view.getWidth() - view.getPaddingLeft() - view.getPaddingRight();

@@ -236,7 +236,7 @@ public class TlogDesign implements Parcelable {
 
     private TlogDesign(Parcel in) {
         this.mBackgroundUrl = in.readString();
-        this.mCoverAlign = in.readString();;
+        this.mCoverAlign = in.readString();
         this.mFontColor = in.readString();
         this.mHeaderColor = in.readString();
         this.mFontTypeface = in.readString();

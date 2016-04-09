@@ -28,10 +28,8 @@ import java.util.Arrays;
 import java.util.Random;
 
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
