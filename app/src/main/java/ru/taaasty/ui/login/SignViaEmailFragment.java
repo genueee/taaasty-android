@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +36,6 @@ import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 
 public class SignViaEmailFragment extends Fragment {
 
@@ -80,15 +78,12 @@ public class SignViaEmailFragment extends Fragment {
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) root.findViewById(R.id.email);
         mPasswordView = (EditText) root.findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
+        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == R.id.login || id == EditorInfo.IME_NULL) {
+                attemptLogin();
+                return true;
             }
+            return false;
         });
 
         mSignInButtonView = root.findViewById(R.id.email_sign_in_button);
@@ -131,14 +126,11 @@ public class SignViaEmailFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(0, null, mEmailLoader);
 
-        mEmailView.post(new Runnable() {
-            @Override
-            public void run() {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-                if (imm != null)
-                    imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
-            }
+        mEmailView.post(() -> {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            if (imm != null)
+                imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
         });
 
     }
@@ -226,13 +218,10 @@ public class SignViaEmailFragment extends Fragment {
             mAuthTask = service.signIn(email, password);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
-                    .finallyDo(new Action0() {
-                        @Override
-                        public void call() {
-                            if (DBG) Log.v(TAG, "finallyDo()");
-                            mAuthTask = null;
-                            showProgress(false);
-                        }
+                    .finallyDo(() -> {
+                        if (DBG) Log.v(TAG, "finallyDo()");
+                        mAuthTask = null;
+                        showProgress(false);
                     })
                     .subscribe(new Observer<CurrentUser>() {
                         @Override

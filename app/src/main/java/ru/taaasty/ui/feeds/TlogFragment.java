@@ -82,7 +82,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 public class TlogFragment extends RxFragment implements IRereshable,
@@ -235,12 +234,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         mFabHelper.setMenuListener(new FabHelper.FabMenuDefaultListener(this));
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData(false);
-            }
-        });
+        mRefreshLayout.setOnRefreshListener(() -> refreshData(false));
         mListView.addOnScrollListener(new FeedsHelper.WatchHeaderScrollListener() {
 
             @Override
@@ -289,20 +283,17 @@ public class TlogFragment extends RxFragment implements IRereshable,
             mAbBackgroundDrawable.setAlpha(0);
         }
 
-        View.OnClickListener clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.subscribe:
-                        startFollow();
-                        break;
-                    case R.id.unsubscribe:
-                        startUnfollow();
-                        break;
-                    case R.id.login_button:
-                        LoginActivity.startActivityFromFragment(getActivity(), TlogFragment.this, REQUEST_CODE_LOGIN, v);
-                        break;
-                }
+        View.OnClickListener clickListener = v1 -> {
+            switch (v1.getId()) {
+                case R.id.subscribe:
+                    startFollow();
+                    break;
+                case R.id.unsubscribe:
+                    startUnfollow();
+                    break;
+                case R.id.login_button:
+                    LoginActivity.startActivityFromFragment(getActivity(), TlogFragment.this, REQUEST_CODE_LOGIN, v1);
+                    break;
             }
         };
 
@@ -754,13 +745,10 @@ public class TlogFragment extends RxFragment implements IRereshable,
                         ((ListEntryBase) pHolder).setEntryClickListener(mOnFeedItemClickListener);
                         FeedsHelper.setupListEntryClickListener(Adapter.this, (ListEntryBase) pHolder);
                         if (mShowUserAvatar) {
-                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
-                                    if (mListener != null && entry != null)
-                                        mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                                }
+                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(v -> {
+                                Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
+                                if (mListener != null && entry != null)
+                                    mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                             });
                         }
                     }
@@ -1011,13 +999,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
                 mUserId = null;
                 mUserSlug = args.getString(ARG_USER_SLUG);
             }
-            mEntryList = new FeedSortedList(new FeedSortedList.IAdapterProvider() {
-                @Nullable
-                @Override
-                public RecyclerView.Adapter getTargetAdapter() {
-                    return getMainFragment() == null ? null : getMainFragment().getAdapter();
-                }
-            });
+            mEntryList = new FeedSortedList(() -> getMainFragment() == null ? null : getMainFragment().getAdapter());
             mFeedLoader = new FeedLoader(mEntryList);
             mUser = null;
             if (savedInstanceState != null) {
@@ -1154,12 +1136,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
             mCurrentUserSubscription = observableCurrentUser
                     .observeOn(AndroidSchedulers.mainThread())
-                    .doOnUnsubscribe(new Action0() {
-                        @Override
-                        public void call() {
-                            callLoadingStateChanged("refreshUser() doOnUnsubscribe");
-                        }
-                    })
+                    .doOnUnsubscribe(() -> callLoadingStateChanged("refreshUser() doOnUnsubscribe"))
                     .subscribe(mCurrentUserObserver);
             callLoadingStateChanged("refreshUser start");
         }
@@ -1195,12 +1172,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             Observable<Relationship> observable = relApi.follow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
-                    .finallyDo(new Action0() {
-                        @Override
-                        public void call() {
-                            callFollowingStatusChanged();
-                        }
-                    })
+                    .finallyDo(this::callFollowingStatusChanged)
                     .subscribe(new RelationChangedObserver());
             callFollowingStatusChanged();
         }
@@ -1212,12 +1184,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             Observable<Relationship> observable = relApi.unfollow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
-                    .finallyDo(new Action0() {
-                        @Override
-                        public void call() {
-                            callFollowingStatusChanged();
-                        }
-                    })
+                    .finallyDo(this::callFollowingStatusChanged)
                     .subscribe(new RelationChangedObserver());
             callFollowingStatusChanged();
         }

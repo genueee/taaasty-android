@@ -25,7 +25,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
@@ -198,12 +197,7 @@ public abstract class FeedWorkFragment extends Fragment {
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnUnsubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        callLoadingStateChanged("refreshUser() doOnUnsubscribe");
-                    }
-                })
+                .doOnUnsubscribe(() -> callLoadingStateChanged("refreshUser() doOnUnsubscribe"))
                 .subscribe(mCurrentUserObserver);
         callLoadingStateChanged("refreshUser start");
     }

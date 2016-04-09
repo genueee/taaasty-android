@@ -12,10 +12,8 @@ import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -55,7 +53,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 public class ConversationFragment extends Fragment {
@@ -269,32 +266,19 @@ public class ConversationFragment extends Fragment {
             topic.setPadding(0, 0, 0, 0);
         }
 
-        headerGroupChat.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mListener.onSourceDetails(mConversation, v);
-            }
-        });
+        headerGroupChat.setOnClickListener(v -> mListener.onSourceDetails(mConversation, v));
     }
 
     private void initSendMessageForm() {
-        mSendMessageText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == R.id.send_reply_to_comment) {
-                    sendMessage();
-                    return true;
-                }
-                return false;
+        mSendMessageText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == R.id.send_reply_to_comment) {
+                sendMessage();
+                return true;
             }
+            return false;
         });
         mSendMessageText.setHint(R.string.your_message);
-        mSendMessageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendMessage();
-            }
-        });
+        mSendMessageButton.setOnClickListener(v -> sendMessage());
     }
 
     private void sendMessage() {
@@ -319,13 +303,10 @@ public class ConversationFragment extends Fragment {
         mSendMessageButton.setVisibility(View.INVISIBLE);
         mPostMessageSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        mSendMessageText.setEnabled(true);
-                        mSendMessageProgress.setVisibility(View.INVISIBLE);
-                        mSendMessageButton.setVisibility(View.VISIBLE);
-                    }
+                .finallyDo(() -> {
+                    mSendMessageText.setEnabled(true);
+                    mSendMessageProgress.setVisibility(View.INVISIBLE);
+                    mSendMessageButton.setVisibility(View.VISIBLE);
                 })
                 .subscribe(mPostMessageObserver);
     }

@@ -206,12 +206,7 @@ public class EditPostActivity extends ActivityBase implements
         }
 
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
-        mCreatePostButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onEditPostClicked();
-            }
-        });
+        mCreatePostButton.setOnClickListener(v -> onEditPostClicked());
         mCreatePostButton.setEnabled(true);
     }
 

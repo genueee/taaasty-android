@@ -25,7 +25,6 @@ import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.schedulers.Schedulers;
 
 
@@ -73,13 +72,10 @@ public class GifLoaderHelper {
         Observable<ProgressStatus> observable = Observable.create(process)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        mLoadingMap.remove(url);
-                        if (DBG) Log.d(TAG, "finallyDo() url: " + url
-                                + "thread: " + Thread.currentThread().getName());
-                    }
+                .finallyDo(() -> {
+                    mLoadingMap.remove(url);
+                    if (DBG) Log.d(TAG, "finallyDo() url: " + url
+                            + "thread: " + Thread.currentThread().getName());
                 })
                 .replay(1)
                 .refCount();

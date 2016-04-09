@@ -96,14 +96,11 @@ public class EmbeddMenuDialogFragment extends DialogFragment {
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
-                .setAdapter(adapter, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        int id = menuItems.get(which).id;
-                        if (mListener != null)
-                            mListener.onEmbeddMenuDialogItemSelected(dialog, id);
-                        dismissAllowingStateLoss();
-                    }
+                .setAdapter(adapter, (dialog, which) -> {
+                    int id = menuItems.get(which).id;
+                    if (mListener != null)
+                        mListener.onEmbeddMenuDialogItemSelected(dialog, id);
+                    dismissAllowingStateLoss();
                 });
 
         return builder.create();

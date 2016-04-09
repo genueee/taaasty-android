@@ -58,12 +58,7 @@ public class FabHelper {
     public FabHelper(View fab, FabMenuLayout fabMenu, @DimenRes int marginBottom) {
         mFabView = fab;
         mFabMenu = fabMenu;
-        mFabView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleMenu();
-            }
-        });
+        mFabView.setOnClickListener(v -> toggleMenu());
 
         mFabMenu.setOnItemClickListener(new FabMenuLayout.OnItemClickListener() {
             @Override

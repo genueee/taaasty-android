@@ -24,7 +24,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 
 public class LikesHelper {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -124,11 +123,7 @@ public class LikesHelper {
         }
 
         Subscription s = observable.observeOn(AndroidSchedulers.mainThread())
-                .doOnUnsubscribe(new Action0() {
-                    @Override
-                    public void call() {
-                        mSubscriptions.delete(entryId);
-                    }})
+                .doOnUnsubscribe(() -> mSubscriptions.delete(entryId))
                 .subscribe(new UpdateRatingObserver(entry));
         mSubscriptions.append(entryId, s);
         EventBus.getDefault().post(EntryRatingStatusChanged.updateStarted(entry.getId()));

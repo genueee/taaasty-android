@@ -35,7 +35,6 @@ import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 import static ru.taaasty.PreferenceHelper.PREF_KEY_ENABLE_STATUS_BAR_NOTIFICATIONS;
@@ -187,12 +186,9 @@ public class StatusBarNotificationNotification {
                 .getNotifications(null, (fromMsgId == 0 ? null : fromMsgId),
                         null, 2, "desc")
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        // XXX: должно быть в PusherService
-                        GcmBroadcastReceiver.completeWakefulIntent(intent);
-                    }
+                .finallyDo(() -> {
+                    // XXX: должно быть в PusherService
+                    GcmBroadcastReceiver.completeWakefulIntent(intent);
                 });
 
         mLoadNotificationsSubscription = observable.subscribe(new Observer<NotificationList>() {

@@ -196,12 +196,9 @@ public class CommentViewBinder {
             return;
         }
 
-        SafeOnPreDrawListener.runWhenLaidOut(vh.actionView, new SafeOnPreDrawListener.RunOnLaidOut() {
-            @Override
-            public boolean run(View root) {
-                if (vh.actionView == null) return true;
-                return !updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
-            }
+        SafeOnPreDrawListener.runWhenLaidOut(vh.actionView, root -> {
+            if (vh.actionView == null) return true;
+            return !updateCommentRightPaddingMeasured(vh, vh.actionView.getWidth());
         });
     }
 

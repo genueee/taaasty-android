@@ -31,18 +31,10 @@ public class AppUpdateAvailableDialogFragment extends DialogFragment {
 
         AlertDialog.Builder builder =  new AlertDialog.Builder(getActivity())
                 .setMessage(message)
-                .setNegativeButton(android.R.string.cancel,
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                            }
-                        }
-                );
+                .setNegativeButton(android.R.string.cancel, (dialog, whichButton) -> {});
         if (doShowUpdate) {
-            builder.setPositiveButton(R.string.update_app, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    ((OnFragmentInteractionListener)getActivity()).onUpdateAppClicked();
-                }
+            builder.setPositiveButton(R.string.update_app, (dialog, which) -> {
+                ((OnFragmentInteractionListener)getActivity()).onUpdateAppClicked();
             });
         }
 

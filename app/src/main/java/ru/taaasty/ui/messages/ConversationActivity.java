@@ -230,12 +230,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private void bindDesign(final TlogDesign design) {
         final View root = getWindow().getDecorView();
-        SafeOnPreDrawListener.runWhenLaidOut(root, new SafeOnPreDrawListener.RunOnLaidOut() {
-            @Override
-            public boolean run(View root) {
-                bindDesignMeasured(design);
-                return true;
-            }
+        SafeOnPreDrawListener.runWhenLaidOut(root, root1 -> {
+            bindDesignMeasured(design);
+            return true;
         });
     }
 

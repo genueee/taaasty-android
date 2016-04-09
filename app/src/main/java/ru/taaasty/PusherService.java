@@ -305,12 +305,9 @@ public class PusherService extends Service {
         mHandler.postDelayed(mReconnectPusherRunnable, PUSHER_RECONNECT_TIMEOUT);
     }
 
-    private final Runnable mReconnectPusherRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (DBG) Log.v(TAG, "reconnect pusher");
-            pusherConnect();
-        }
+    private final Runnable mReconnectPusherRunnable = () -> {
+        if (DBG) Log.v(TAG, "reconnect pusher");
+        pusherConnect();
     };
 
     private String getMessagingChannelName() {
@@ -397,13 +394,10 @@ public class PusherService extends Service {
         if (mHandler != null) mHandler.removeCallbacks(mCheckStopRunnable);
     }
 
-    private final Runnable mCheckStopRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (!((TaaastyApplication)getApplication()).isUiActive()) {
-                if (DBG) Log.d(TAG, "stop self on timeout");
-                stopSelf();
-            }
+    private final Runnable mCheckStopRunnable = () -> {
+        if (!((TaaastyApplication)getApplication()).isUiActive()) {
+            if (DBG) Log.d(TAG, "stop self on timeout");
+            stopSelf();
         }
     };
 

@@ -433,13 +433,10 @@ public class UserInfoFragment extends Fragment {
 
         final View target = getActivity().findViewById(android.R.id.content);
         if (target == null) return;
-        mSafeOnPreDrawListener = SafeOnPreDrawListener.runWhenLaidOut(target, new SafeOnPreDrawListener.RunOnLaidOut() {
-            @Override
-            public boolean run(View root) {
-                mSafeOnPreDrawListener = null;
-                setupDesignAfterPreDraw();
-                return true;
-            }
+        mSafeOnPreDrawListener = SafeOnPreDrawListener.runWhenLaidOut(target, root -> {
+            mSafeOnPreDrawListener = null;
+            setupDesignAfterPreDraw();
+            return true;
         });
     }
 

@@ -96,11 +96,8 @@ public class SharePostActivity extends ActivityBase {
                         if (DBG) Log.v(TAG, "package name: " + info.activityInfo.packageName + " my name: " + BuildConfig.APPLICATION_ID);
                         intent.setClassName(info.activityInfo.applicationInfo.packageName,
                                 info.activityInfo.name);
-                        snackbar.setAction(R.string.open_in_browser, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                v.getContext().startActivity(intent);
-                            }
+                        snackbar.setAction(R.string.open_in_browser, v -> {
+                            v.getContext().startActivity(intent);
                         });
                         break;
                     }

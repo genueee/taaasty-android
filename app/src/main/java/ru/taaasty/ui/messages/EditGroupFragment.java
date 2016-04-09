@@ -28,6 +28,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import com.adobe.creativesdk.aviary.internal.utils.BitmapUtils;
 
 import java.io.FileNotFoundException;
@@ -55,7 +56,6 @@ import rx.Observer;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -296,12 +296,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
             mGroupAvatarThumbnailSubscription = bitmapObservable
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Action1<Bitmap>() {
-                        @Override
-                        public void call(Bitmap bitmap) {
-                            mAvatar.setImageBitmap(bitmap);
-                        }
-                    });
+                    .subscribe(bitmap -> mAvatar.setImageBitmap(bitmap));
         } else if (getConversation() != null) {
             DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(getActivity(),
                     getConversation().getTitle(), getResources().getColor(R.color.avatar_default), Color.WHITE);

@@ -12,7 +12,6 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.utils.NetworkUtils;
 import rx.Observable;
-import rx.functions.Action1;
 import rx.subjects.BehaviorSubject;
 
 public class Session {
@@ -87,14 +86,11 @@ public class Session {
     public Observable<CurrentUser> reloadCurrentUser() {
         return RestClient.getAPiUsers()
                 .getMyInfo()
-                .doOnNext(new Action1<CurrentUser>() {
-                    @Override
-                    public void call(CurrentUser currentUser) {
-                        boolean changed = !currentUser.equals(mCurrentUser.getValue());
-                        if (changed) {
-                            mCurrentUser.onNext(currentUser);
-                            EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
-                        }
+                .doOnNext(currentUser -> {
+                    boolean changed = !currentUser.equals(mCurrentUser.getValue());
+                    if (changed) {
+                        mCurrentUser.onNext(currentUser);
+                        EventBus.getDefault().post(new OnCurrentUserChanged(currentUser));
                     }
                 });
         // return Observable.from(mCurrentUser);

@@ -147,12 +147,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData(false);
-            }
-        });
+        mRefreshLayout.setOnRefreshListener(() -> refreshData(false));
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         //mListView.setHasFixedSize(true);
@@ -547,13 +542,10 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
 
                     // Клик по аватарке в заголовке
                     if (mShowUserAvatar) {
-                        pHolder.getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Entry entry = getAnyEntryAtHolderPosition(pHolder);
-                                if (mListener != null && entry != null)
-                                    mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                            }
+                        pHolder.getAvatarAuthorView().setOnClickListener(v -> {
+                            Entry entry = getAnyEntryAtHolderPosition(pHolder);
+                            if (mListener != null && entry != null)
+                                mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                         });
                     }
 

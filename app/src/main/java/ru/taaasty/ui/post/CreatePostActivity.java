@@ -170,17 +170,14 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
         mLoginButton = findViewById(R.id.login_button);
 
-        View.OnClickListener clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.create_post_button:
-                        onCreatePostClicked();
-                        break;
-                    case R.id.login_button:
-                        LoginActivity.startActivity(CreatePostActivity.this, REQUEST_CODE_LOGIN, v);
-                        break;
-                }
+        View.OnClickListener clickListener = v -> {
+            switch (v.getId()) {
+                case R.id.create_post_button:
+                    onCreatePostClicked();
+                    break;
+                case R.id.login_button:
+                    LoginActivity.startActivity(CreatePostActivity.this, REQUEST_CODE_LOGIN, v);
+                    break;
             }
         };
 

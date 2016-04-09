@@ -67,17 +67,14 @@ public class CreateAnonymousPostActivity extends ActivityBase implements OnCreat
         mCreatePostButton = (ImageView) findViewById(R.id.create_post_button);
         mLoginButton = findViewById(R.id.login_button);
 
-        View.OnClickListener clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch (v.getId()) {
-                    case R.id.create_post_button:
-                        onCreatePostClicked();
-                        break;
-                    case R.id.login_button:
-                        LoginActivity.startActivity(CreateAnonymousPostActivity.this, REQUEST_CODE_LOGIN, v);
-                        break;
-                }
+        View.OnClickListener clickListener = v -> {
+            switch (v.getId()) {
+                case R.id.create_post_button:
+                    onCreatePostClicked();
+                    break;
+                case R.id.login_button:
+                    LoginActivity.startActivity(CreateAnonymousPostActivity.this, REQUEST_CODE_LOGIN, v);
+                    break;
             }
         };
 

@@ -15,7 +15,6 @@ import android.text.InputFilter;
 import android.text.LoginFilter;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +39,6 @@ import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 
 public class SignUpFragment extends Fragment {
 
@@ -88,15 +86,12 @@ public class SignUpFragment extends Fragment {
         mSignUpButtonView = root.findViewById(R.id.sign_up_button);
         mProgressView = root.findViewById(R.id.login_progress);
 
-        mSlugView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.slug || id == EditorInfo.IME_NULL) {
-                    attemptSignUp();
-                    return true;
-                }
-                return false;
+        mSlugView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == R.id.slug || id == EditorInfo.IME_NULL) {
+                attemptSignUp();
+                return true;
             }
+            return false;
         });
         mPasswordView.setFilters(new InputFilter[] {
                 new LoginFilter.PasswordFilterGMail()
@@ -139,14 +134,11 @@ public class SignUpFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(0, null, mEmailLoader);
 
-        mEmailView.post(new Runnable() {
-            @Override
-            public void run() {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-                if (imm != null)
-                    imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
-            }
+        mEmailView.post(() -> {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            if (imm != null)
+                imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
         });
 
     }
@@ -243,13 +235,10 @@ public class SignUpFragment extends Fragment {
             mAuthTask = service.registerUser(email, password, slug);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
-                    .finallyDo(new Action0() {
-                        @Override
-                        public void call() {
-                            if (DBG) Log.v(TAG, "finallyDo()");
-                            mAuthTask = null;
-                            showProgress(false);
-                        }
+                    .finallyDo(() -> {
+                        if (DBG) Log.v(TAG, "finallyDo()");
+                        mAuthTask = null;
+                        showProgress(false);
                     })
                     .subscribe(new Observer<CurrentUser>() {
                         @Override

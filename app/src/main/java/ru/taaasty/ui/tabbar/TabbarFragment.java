@@ -104,11 +104,8 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
                 (FabMenuLayout)view.findViewById(R.id.tabbar_fab_menu),
                  R.dimen.tabbar_size);
 
-        View.OnClickListener clickListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) mListener.onTabbarButtonClicked(v);
-            }
+        View.OnClickListener clickListener = v -> {
+            if (mListener != null) mListener.onTabbarButtonClicked(v);
         };
 
         for (int id: sItemIds) {
@@ -116,15 +113,12 @@ public class TabbarFragment extends Fragment implements OnBackPressedListener {
             v.setOnClickListener(clickListener);
         }
 
-        mFabHelper.setMenuListener(new FabMenuLayout.OnItemClickListener() {
-            @Override
-            public boolean onItemClick(View view) {
-                if (mListener != null) {
-                    if (mListener.onFabMenuItemClicked(view)) return true;
-                    if (mMenuClickListener != null) return mMenuClickListener.onItemClick(view);
-                }
-                return false;
+        mFabHelper.setMenuListener(view1 -> {
+            if (mListener != null) {
+                if (mListener.onFabMenuItemClicked(view1)) return true;
+                if (mMenuClickListener != null) return mMenuClickListener.onItemClick(view1);
             }
+            return false;
         });
 
 

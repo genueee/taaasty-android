@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,7 +16,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +56,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -160,15 +157,12 @@ public class ShowCommentsFragment extends Fragment {
         mPostButton = replyToCommentContainer.findViewById(R.id.reply_to_comment_button);
         mPostProgress = replyToCommentContainer.findViewById(R.id.reply_to_comment_progress);
 
-        mReplyToCommentText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == R.id.send_reply_to_comment) {
-                    sendRepyToComment();
-                    return true;
-                }
-                return false;
+        mReplyToCommentText.setOnEditorActionListener((v1, actionId, event) -> {
+            if (actionId == R.id.send_reply_to_comment) {
+                sendRepyToComment();
+                return true;
             }
+            return false;
         });
         mPostButton.setOnClickListener(mOnClickListener);
 
@@ -485,13 +479,10 @@ public class ShowCommentsFragment extends Fragment {
         mPostButton.setVisibility(View.INVISIBLE);
         mPostCommentSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        mReplyToCommentText.setEnabled(true);
-                        mPostProgress.setVisibility(View.INVISIBLE);
-                        mPostButton.setVisibility(View.VISIBLE);
-                    }
+                .finallyDo(() -> {
+                    mReplyToCommentText.setEnabled(true);
+                    mPostProgress.setVisibility(View.INVISIBLE);
+                    mPostButton.setVisibility(View.VISIBLE);
                 })
                 .subscribe(mPostCommentObserver);
 
@@ -571,12 +562,7 @@ public class ShowCommentsFragment extends Fragment {
         public void initClickListeners(final RecyclerView.ViewHolder holder, int viewType) {
             switch (viewType) {
                 case CommentsAdapter.VIEW_TYPE_LOAD_MORE_HEADER:
-                    ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onCommentsLoadMoreButtonClicked();
-                        }
-                    });
+                    ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(v -> onCommentsLoadMoreButtonClicked());
                     break;
                 case CommentsAdapter.VIEW_TYPE_COMMENT:
                     holder.itemView.setOnClickListener(mOnCommentClickListener);

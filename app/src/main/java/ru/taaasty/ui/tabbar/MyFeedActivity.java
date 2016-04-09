@@ -158,12 +158,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
                 break;
         }
         // говно
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                refreshData();
-            }
-        }, 200);
+        new Handler().postDelayed(this::refreshData, 200);
     }
 
     @Override
@@ -223,12 +218,9 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
     }
 
     void initDrawerMenu() {
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onAdditionMenuItemClicked(v.getId());
-                mDrawerLayout.closeDrawer(Gravity.RIGHT);
-            }
+        View.OnClickListener listener = v -> {
+            onAdditionMenuItemClicked(v.getId());
+            mDrawerLayout.closeDrawer(Gravity.RIGHT);
         };
 
         for (int vid : new int[]{

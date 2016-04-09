@@ -12,8 +12,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.rest.model.CurrentUser;
-import rx.functions.Action1;
 
 /**
  * Created by arkhipov on 15.02.2016.
@@ -53,14 +51,11 @@ public class AnalyticsHelper {
             mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
             mAnalyticsTracker.enableAdvertisingIdCollection(true);
 
-            Session.getInstance().getUserObservable().subscribe(new Action1<CurrentUser>() {
-                @Override
-                public void call(CurrentUser currentUser) {
-                    if (currentUser.isAuthorized()) {
-                        mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));
-                    } else {
-                        mAnalyticsTracker.set("&uid", null);
-                    }
+            Session.getInstance().getUserObservable().subscribe(currentUser -> {
+                if (currentUser.isAuthorized()) {
+                    mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));
+                } else {
+                    mAnalyticsTracker.set("&uid", null);
                 }
             });
 

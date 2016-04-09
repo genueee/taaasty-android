@@ -188,12 +188,9 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
             }
         };
 
-        mFlowEntryHeader.root.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mEntryClickListener != null)
-                    mEntryClickListener.onPostFlowHeaderClicked(ListEntryBase.this, v);
-            }
+        mFlowEntryHeader.root.setOnClickListener(v -> {
+            if (mEntryClickListener != null)
+                mEntryClickListener.onPostFlowHeaderClicked(ListEntryBase.this, v);
         });
 
     }

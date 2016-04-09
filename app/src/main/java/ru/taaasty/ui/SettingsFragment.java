@@ -208,12 +208,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         mAvailableNotificationsPref.setOnPreferenceChangeListener(listener);
     }
 
-    private Action0 mStopRefreshingAction = new Action0() {
-        @Override
-        public void call() {
-            setupRefreshingIndicator();
-        }
-    };
+    private Action0 mStopRefreshingAction = this::setupRefreshingIndicator;
 
     boolean isLoading() {
         return !mUserSubscription.isUnsubscribed() || !mPutSubscription.isUnsubscribed();
@@ -251,12 +246,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         mAvailableNotificationsPref.setChecked(mCurrentUser.areNotificationsAvailable());
         // Handler - для android 4.1 и даже там этот способ избежать циклического вызова mOnPreferenceChangeListener
         // вроде не работает
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                if (mUsernamePref != null)
-                    setOnPreferenceChangeListeners(mOnPreferenceChangeListener);
-            }
+        new Handler().post(() -> {
+            if (mUsernamePref != null)
+                setOnPreferenceChangeListeners(mOnPreferenceChangeListener);
         });
     }
 
@@ -425,22 +417,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             switch (key) {
                 case "pref_key_conversation_notifications":
                     addPreferencesFromResource(R.xml.preferences_conversation_notifications);
-                    findPreference("reset_conversations_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                        @Override
-                        public boolean onPreferenceClick(Preference preference) {
-                            resetToDefaults(getPreferenceScreen());
-                            return true;
-                        }
+                    findPreference("reset_conversations_notifications_preferences").setOnPreferenceClickListener(preference -> {
+                        resetToDefaults(getPreferenceScreen());
+                        return true;
                     });
                     break;
                 case "pref_key_notification_notifications":
                     addPreferencesFromResource(R.xml.preferences_notification_notifications);
-                    findPreference("reset_notifications_notifications_preferences").setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                        @Override
-                        public boolean onPreferenceClick(Preference preference) {
-                            resetToDefaults(getPreferenceScreen());
-                            return true;
-                        }
+                    findPreference("reset_notifications_notifications_preferences").setOnPreferenceClickListener(preference -> {
+                        resetToDefaults(getPreferenceScreen());
+                        return true;
                     });
                     break;
                 default:

@@ -186,12 +186,7 @@ public class DateIndicatorWidget extends ViewSwitcher {
                 .setDuration(getResources().getInteger(R.integer.longAnimTime))
                 .setInterpolator(sLinearOutSlowInInterpolator)
                 .withLayer()
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        setVisibility(View.INVISIBLE);
-                    }
-                })
+                .withEndAction(() -> setVisibility(View.INVISIBLE))
                 .start();
     }
 

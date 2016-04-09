@@ -63,11 +63,8 @@ public class AppUnsupportedDialogActivity extends AppCompatActivity {
 
             AlertDialog.Builder builder =  new AlertDialog.Builder(getActivity())
                     .setMessage(message)
-                    .setPositiveButton(R.string.update_app, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            CheckAppHelper.openUpdateAppLink(getActivity());
-                        }
+                    .setPositiveButton(R.string.update_app, (dialog, which) -> {
+                        CheckAppHelper.openUpdateAppLink(getActivity());
                     });
 
 

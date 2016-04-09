@@ -30,7 +30,6 @@ import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 
 public class RecoverPasswordFragment extends Fragment {
 
@@ -104,14 +103,11 @@ public class RecoverPasswordFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(0, null, mEmailLoader);
 
-        mEmailView.post(new Runnable() {
-            @Override
-            public void run() {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-                if (imm != null)
-                    imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
-            }
+        mEmailView.post(() -> {
+            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            if (imm != null)
+                imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
         });
 
     }
@@ -157,13 +153,10 @@ public class RecoverPasswordFragment extends Fragment {
             mAuthTask = service.recoveryPassword(email);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
-                    .finallyDo(new Action0() {
-                        @Override
-                        public void call() {
-                            if (DBG) Log.v(TAG, "finallyDo()");
-                            mAuthTask = null;
-                            showProgress(false);
-                        }
+                    .finallyDo(() -> {
+                        if (DBG) Log.v(TAG, "finallyDo()");
+                        mAuthTask = null;
+                        showProgress(false);
                     })
                     .subscribe(new Observer<RecoveryPasswordResponse>() {
                         @Override

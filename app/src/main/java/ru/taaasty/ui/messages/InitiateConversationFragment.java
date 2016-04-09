@@ -15,10 +15,13 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+
+import java.util.Collections;
+import java.util.List;
+
 import ru.taaasty.R;
 import ru.taaasty.adapters.UsernameAdapter;
 import ru.taaasty.rest.RestClient;
@@ -33,9 +36,6 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -98,22 +98,11 @@ public class InitiateConversationFragment extends Fragment {
             root.findViewById(R.id.action_bar).setVisibility(View.GONE);
         } else {
             mCreateGroupButton.setVisibility(View.VISIBLE);
-            mCreateGroupButton.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    EditCreateGroupActivity.newGroupConversation(getActivity(),
-                            InitiateConversationFragment.this, REQUEST_CREATE_GROUP);
-                }
-            });
+            mCreateGroupButton.setOnClickListener(v -> EditCreateGroupActivity.newGroupConversation(
+                    getActivity(), InitiateConversationFragment.this, REQUEST_CREATE_GROUP));
         }
 
-
-        root.findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
+        root.findViewById(R.id.back_button).setOnClickListener(v -> getActivity().getSupportFragmentManager().popBackStack());
         LayoutTransition transition = ((ViewGroup) root).getLayoutTransition();
         if (transition != null) transition.setDuration(getResources().getInteger(R.integer.shortAnimTime));
 
@@ -298,13 +287,8 @@ public class InitiateConversationFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == REQUEST_CREATE_GROUP && mListener != null) {
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mListener.onConversationCreated(
-                                (Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
-                    }
-                });
+                new Handler().post(() -> mListener.onConversationCreated(
+                        data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION)));
             }
         }
     }

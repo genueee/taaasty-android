@@ -289,12 +289,9 @@ public class FlowListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if (ViewCompat.isLaidOut(holder.image)) {
             bindImageAfterSizeKnown(holder, flow, relationship);
         } else {
-            holder.image.getViewTreeObserver().addOnPreDrawListener(new SafeOnPreDrawListener(holder.image, new SafeOnPreDrawListener.RunOnLaidOut() {
-                @Override
-                public boolean run(View root) {
-                    bindImageAfterSizeKnown(holder, flow, relationship);
-                    return false;
-                }
+            holder.image.getViewTreeObserver().addOnPreDrawListener(new SafeOnPreDrawListener(holder.image, root -> {
+                bindImageAfterSizeKnown(holder, flow, relationship);
+                return false;
             }));
         }
     }

@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -78,12 +77,9 @@ public class RequestsFragment extends Fragment {
         mListView = (ListView)root.findViewById(R.id.list);
         mProgressBar = root.findViewById(R.id.progress);
 
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (null != mListener) {
-                    mListener.onRelationshipClicked(view, (Relationship) parent.getItemAtPosition(position));
-                }
+        mListView.setOnItemClickListener((parent, view, position, id) -> {
+            if (null != mListener) {
+                mListener.onRelationshipClicked(view, (Relationship) parent.getItemAtPosition(position));
             }
         });
         ((TextView)root.findViewById(R.id.empty_text)).setText(R.string.no_requests);

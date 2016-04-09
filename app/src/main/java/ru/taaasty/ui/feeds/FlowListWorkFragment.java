@@ -287,14 +287,11 @@ public class FlowListWorkFragment extends Fragment {
             if (position >= feedSize - ENTRIES_TO_TRIGGER_APPEND) startLoadNextPage();
         }
 
-        private Action0 mFinallySetupLoadingState = new Action0() {
-            @Override
-            public void call() {
-                FlowListFragment target = (FlowListFragment)getTargetFragment();
-                if (target != null) {
-                    // TODO заменить на observable?
-                    target.setupLoadingState();
-                }
+        private Action0 mFinallySetupLoadingState = () -> {
+            FlowListFragment target = (FlowListFragment)getTargetFragment();
+            if (target != null) {
+                // TODO заменить на observable?
+                target.setupLoadingState();
             }
         };
 

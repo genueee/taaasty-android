@@ -47,19 +47,16 @@ public class Comment implements Parcelable {
     /**
      * Сортировка по возрастанию даты создания (самые старые - в начало списка)
      */
-    public static transient Comparator<Comment> ORDER_BY_DATE_ID_COMARATOR = new Comparator<Comment>() {
-        @Override
-        public int compare(Comment lhs, Comment rhs) {
-            if (lhs == null && rhs == null) {
-                return 0;
-            } else if (lhs == null) {
-                return 1;
-            } else if (rhs == null) {
-                return -1;
-            } else {
-                int compareDates = lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
-                return compareDates != 0 ? compareDates : Objects.compare(lhs.getId(), rhs.getId());
-            }
+    public static transient Comparator<Comment> ORDER_BY_DATE_ID_COMARATOR = (lhs, rhs) -> {
+        if (lhs == null && rhs == null) {
+            return 0;
+        } else if (lhs == null) {
+            return 1;
+        } else if (rhs == null) {
+            return -1;
+        } else {
+            int compareDates = lhs.getUpdatedAt().compareTo(rhs.getUpdatedAt());
+            return compareDates != 0 ? compareDates : Objects.compare(lhs.getId(), rhs.getId());
         }
     };
 

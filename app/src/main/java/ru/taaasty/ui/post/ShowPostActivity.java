@@ -347,12 +347,9 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         DeleteOrReportDialogActivity.startReportComment(this, REQUEST_CODE_SHARE, commentId);
     }
 
-    private Runnable mHideActionBarRunnable = new Runnable() {
-        @Override
-        public void run() {
-            ActionBar ab = getSupportActionBar();
-            if (ab != null) ab.hide();
-        }
+    private Runnable mHideActionBarRunnable = () -> {
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) ab.hide();
     };
 
     private Entry getCurrentEntry() {

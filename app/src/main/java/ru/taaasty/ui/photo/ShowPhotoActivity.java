@@ -122,13 +122,10 @@ public class ShowPhotoActivity extends ActivityBase implements ShowPhotoFragment
     }
 
     private void runHideActionBarTimer() {
-        mHideActionBarHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isFinishing() || getSupportActionBar() == null) return;
-                if (!userForcedToChangeOverlayMode && !isNavigationHidden) {
-                    toggleShowOrHideHideyBarMode();
-                }
+        mHideActionBarHandler.postDelayed(() -> {
+            if (isFinishing() || getSupportActionBar() == null) return;
+            if (!userForcedToChangeOverlayMode && !isNavigationHidden) {
+                toggleShowOrHideHideyBarMode();
             }
         }, HIDE_ACTION_BAR_DELAY);
     }

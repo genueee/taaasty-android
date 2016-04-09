@@ -522,16 +522,13 @@ public class IntentService extends android.app.IntentService {
                 throw new IOException("no files");
             } else {
                 if (mHandler != null) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            MediaScannerConnection.scanFile(getApplicationContext(),
-                                    dstFiles.toArray(new String[dstFiles.size()]),
-                                    null, null);
-                            Toast.makeText(getApplicationContext(),
-                                    getString(R.string.pictures_saved_into, picturesDirectory.toString()),
-                                    Toast.LENGTH_LONG).show();
-                        }
+                    mHandler.post(() -> {
+                        MediaScannerConnection.scanFile(getApplicationContext(),
+                                dstFiles.toArray(new String[dstFiles.size()]),
+                                null, null);
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.pictures_saved_into, picturesDirectory.toString()),
+                                Toast.LENGTH_LONG).show();
                     });
                 }
             }

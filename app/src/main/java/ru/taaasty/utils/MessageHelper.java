@@ -78,12 +78,9 @@ public class MessageHelper {
                 && (((ApiErrorException) exception)).isErrorAuthorizationRequired()
                 && !Session.getInstance().isAuthorized()) {
             Snackbar.make(fragment.getView(), R.string.allowed_only_to_registered_users, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.action_sign_up, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
-                            LoginActivity.startActivityFromFragment(activity, fragment, loginRequestCode, null);
-                        }
+                    .setAction(R.string.action_sign_up, v -> {
+                        AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
+                        LoginActivity.startActivityFromFragment(activity, fragment, loginRequestCode, null);
                     })
                     .show();
         } else {
@@ -123,12 +120,9 @@ public class MessageHelper {
                 && (((ApiErrorException) exception)).isErrorAuthorizationRequired()
                 && !Session.getInstance().isAuthorized()) {
             Snackbar.make(rootView, R.string.allowed_only_to_registered_users, Snackbar.LENGTH_LONG)
-                    .setAction(R.string.action_sign_up, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
-                            LoginActivity.startActivity(activity, loginRequestCode, null);
-                        }
+                    .setAction(R.string.action_sign_up, v -> {
+                        AnalyticsHelper.getInstance().sendFeedsEvent("Открытие логина из сообщения ошибки");
+                        LoginActivity.startActivity(activity, loginRequestCode, null);
                     })
                     .show();
         } else {

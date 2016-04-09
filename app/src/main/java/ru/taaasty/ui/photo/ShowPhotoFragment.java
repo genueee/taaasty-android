@@ -175,11 +175,8 @@ public class ShowPhotoFragment extends Fragment {
         if (changeAttacher) {
             mPhotoViewAttacher.setScale(lastScale);
         }
-        mPhotoViewAttacher.setOnMatrixChangeListener(new PhotoViewAttacher.OnMatrixChangedListener() {
-            @Override
-            public void onMatrixChanged(RectF rect) {
-                if (mListener != null) mListener.onMatrixChanged(mPhotoView.getWidth(), rect);
-            }
+        mPhotoViewAttacher.setOnMatrixChangeListener(rect -> {
+            if (mListener != null) mListener.onMatrixChanged(mPhotoView.getWidth(), rect);
         });
     }
 

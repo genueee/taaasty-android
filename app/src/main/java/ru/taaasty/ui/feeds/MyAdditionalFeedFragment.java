@@ -145,12 +145,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
 
         mFeedBackground = new FeedBackground(mListView, null, R.dimen.feed_header_height);
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData(false);
-            }
-        });
+        mRefreshLayout.setOnRefreshListener(() -> refreshData(false));
 
         //mListView.setHasFixedSize(true);
         mListView.setLayoutManager(new LinearLayoutManagerNonFocusable(getActivity()));
@@ -425,13 +420,10 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                     if (pHolder instanceof ListEntryBase) {
                         ((ListEntryBase) pHolder).setEntryClickListener(mOnFeedItemClickListener);
                         if (mShowUserAvatar) {
-                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
-                                    if (mListener != null && entry != null)
-                                        mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
-                                }
+                            ((ListEntryBase) pHolder).getAvatarAuthorView().setOnClickListener(v -> {
+                                Entry entry = mAdapter.getAnyEntryAtHolderPosition(pHolder);
+                                if (mListener != null && entry != null)
+                                    mListener.onAvatarClicked(v, entry.getAuthor(), entry.getAuthor().getDesign());
                             });
                         }
                         // Клики на картинках
@@ -470,16 +462,13 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
                             errResId, error);
                 }
 
-                private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        switch (v.getId()) {
-                            case R.id.avatar:
-                                if (mWorkFragment.getCurrentUser() == null) return;
-                                if (mListener != null) mListener.onCurrentUserAvatarClicked(v,
-                                        mWorkFragment.getCurrentUser(), mWorkFragment.getTlogDesign());
-                                break;
-                        }
+                private final View.OnClickListener mOnClickListener = v -> {
+                    switch (v.getId()) {
+                        case R.id.avatar:
+                            if (mWorkFragment.getCurrentUser() == null) return;
+                            if (mListener != null) mListener.onCurrentUserAvatarClicked(v,
+                                    mWorkFragment.getCurrentUser(), mWorkFragment.getTlogDesign());
+                            break;
                     }
                 };
             });

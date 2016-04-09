@@ -102,12 +102,9 @@ public class RepostActivity extends ActivityBase {
         mSearchView.setOnCloseListener(onCloseListener);
         mSearchView.setIconified(false);
         mSearchView.clearFocus();
-        mSearchView.setOnCloseListener(new OnCloseListener() {
-            @Override
-            public boolean onClose() {
-                finish();
-                return false;
-            }
+        mSearchView.setOnCloseListener(() -> {
+            finish();
+            return false;
         });
 
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
@@ -307,12 +304,9 @@ public class RepostActivity extends ActivityBase {
             }
         }
 
-        OnClickListener onClickListener = new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                long flowId = (Long) v.getTag();
-                repostToFlow(flowId);
-            }
+        OnClickListener onClickListener = v -> {
+            long flowId = (Long) v.getTag();
+            repostToFlow(flowId);
         };
 
         @Override

@@ -31,12 +31,7 @@ public class ConversationsActivity extends TabbarActivityBase implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversations);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-        getSupportFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                refreshAb();
-            }
-        });
+        getSupportFragmentManager().addOnBackStackChangedListener(this::refreshAb);
 
         // Используем background у фрагмента. Там стоит тот же background, что и у activity - так и должно быть,
         // иначе на nexus 5 в landscape справа граница неправильная из-за того, что там правее

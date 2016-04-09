@@ -42,22 +42,19 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         super.onCreate();
         if ("debug".equals(BuildConfig.BUILD_TYPE)) {
             // https://code.google.com/p/android/issues/detail?id=35298#c2
-            (new Handler()).postAtFrontOfQueue(new Runnable() {
-                @Override
-                public void run() {
-                    StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                            .detectAll()
-                            .permitDiskReads()
-                            .penaltyFlashScreen()
-                            .penaltyLog()
-                            .detectCustomSlowCalls()
-                            .build());
-                    StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                            .detectAll()
-                            .penaltyLog()
-                            // .penaltyDeath()
-                            .build());
-                }
+            (new Handler()).postAtFrontOfQueue(() -> {
+                StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                        .detectAll()
+                        .permitDiskReads()
+                        .penaltyFlashScreen()
+                        .penaltyLog()
+                        .detectCustomSlowCalls()
+                        .build());
+                StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                        .detectAll()
+                        .penaltyLog()
+                        // .penaltyDeath()
+                        .build());
             });
         }
         if ("beta".equals(BuildConfig.BUILD_TYPE)) {

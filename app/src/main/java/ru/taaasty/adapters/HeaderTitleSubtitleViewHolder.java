@@ -101,12 +101,9 @@ public class HeaderTitleSubtitleViewHolder extends RecyclerView.ViewHolder imple
             if (mSafeOnPreDrawListener != null) {
                 mSafeOnPreDrawListener.cancelAndRemoveListener();
             }
-            mSafeOnPreDrawListener = new SafeOnPreDrawListener(itemView, new SafeOnPreDrawListener.RunOnLaidOut() {
-                @Override
-                public boolean run(View root) {
-                    loadDesignAfterSizeKnown(backgroudUrl, itemView.getWidth(), itemView.getHeight());
-                    return false;
-                }
+            mSafeOnPreDrawListener = new SafeOnPreDrawListener(itemView, root -> {
+                loadDesignAfterSizeKnown(backgroudUrl, itemView.getWidth(), itemView.getHeight());
+                return false;
             });
             itemView.getViewTreeObserver().addOnPreDrawListener(mSafeOnPreDrawListener);
         }

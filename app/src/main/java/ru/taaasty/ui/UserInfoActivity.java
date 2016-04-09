@@ -171,12 +171,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         String backgroundThumbnailKey;
 
         setContentView(R.layout.activity_user_info);
-        findViewById(R.id.back_button).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        findViewById(R.id.back_button).setOnClickListener(v -> finish());
 
         mUserId = getIntent().getLongExtra(ARG_USER_ID, -1);
         user = getIntent().getParcelableExtra(ARG_USER);

@@ -17,7 +17,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.functions.Func1;
 import rx.subscriptions.Subscriptions;
 
@@ -77,12 +76,9 @@ public abstract class FeedLoader {
         mFeedRefreshSubscription = observable
                 .map(mInitFeedSpannedText)
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        if (DBG) Log.v(TAG, "refreshFeed() finallyDo");
-                        onFeedIsUnsubscribed(true);
-                    }
+                .finallyDo(() -> {
+                    if (DBG) Log.v(TAG, "refreshFeed() finallyDo");
+                    onFeedIsUnsubscribed(true);
                 })
                 .subscribe(new FeedLoadObserver(true, entriesRequested));
     }
@@ -139,12 +135,9 @@ public abstract class FeedLoader {
         }
 
         mFeedAppendSubscription = observable.observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        onShowPendingIndicatorChanged(false);
-                        onFeedIsUnsubscribed(false);
-                    }
+                .finallyDo(() -> {
+                    onShowPendingIndicatorChanged(false);
+                    onFeedIsUnsubscribed(false);
                 })
                 .subscribe(new FeedLoadObserver(false, requestEntries));
         onShowPendingIndicatorChanged(true);

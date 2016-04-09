@@ -111,12 +111,9 @@ public class LoginActivity extends ActivityBase implements
                     .commit();
         }
 
-        getFragmentManager().addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                if (getFragmentManager().getBackStackEntryCount() == 0) {
-                    mBackground.setBackgroundPrimary();
-                }
+        getFragmentManager().addOnBackStackChangedListener(() -> {
+            if (getFragmentManager().getBackStackEntryCount() == 0) {
+                mBackground.setBackgroundPrimary();
             }
         });
     }
@@ -425,14 +422,11 @@ public class LoginActivity extends ActivityBase implements
 
             ValueAnimator va = ValueAnimator.ofPropertyValuesHolder(pvhScale, pvhX, pvhY);
             va.setDuration(mSwapMs);
-            va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mCurrentScale = (Float)animation.getAnimatedValue("scale");
-                    mTranslationX = (Float)animation.getAnimatedValue("x");
-                    mTranslationY = (Float)animation.getAnimatedValue("y");
-                    refreshPrimaryBackground();
-                }
+            va.addUpdateListener(animation -> {
+                mCurrentScale = (Float)animation.getAnimatedValue("scale");
+                mTranslationX = (Float)animation.getAnimatedValue("x");
+                mTranslationY = (Float)animation.getAnimatedValue("y");
+                refreshPrimaryBackground();
             });
             mKenBurnsAnimator = va;
             va.start();

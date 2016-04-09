@@ -95,19 +95,16 @@ public class ConversationDetailsFragment extends Fragment {
         return (Conversation) getArguments().getParcelable(ARG_CONVERSATION);
     }
 
-    OnClickListener mOnClickListener = new OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.avatar:
-                    TlogActivity.startTlogActivity(getActivity(), getConversation().recipientId, v);
-                    break;
-                case R.id.do_not_disturb_layout:
-                    break;
-                case R.id.delete_chat_layout:
-                    requestRemoveChat();
-                    break;
-            }
+    OnClickListener mOnClickListener = v -> {
+        switch (v.getId()) {
+            case R.id.avatar:
+                TlogActivity.startTlogActivity(getActivity(), getConversation().recipientId, v);
+                break;
+            case R.id.do_not_disturb_layout:
+                break;
+            case R.id.delete_chat_layout:
+                requestRemoveChat();
+                break;
         }
     };
 

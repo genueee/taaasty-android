@@ -63,19 +63,16 @@ public class Entry implements Parcelable, Cloneable {
     /**
      * Сортировка по убыванию даты создания (более новые - в начале списка)
      */
-    public static transient Comparator<Entry> ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR = new Comparator<Entry>() {
-        @Override
-        public int compare(Entry lhs, Entry rhs) {
-            if (lhs == null && rhs == null) {
-                return 0;
-            } else if (lhs == null) {
-                return -1;
-            } else if (rhs == null) {
-                return 1;
-            } else {
-                int compareDates = rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
-                return compareDates != 0 ? compareDates : Objects.compare(rhs.getId(), lhs.getId());
-            }
+    public static transient Comparator<Entry> ORDER_BY_CREATE_DATE_DESC_ID_COMARATOR = (lhs, rhs) -> {
+        if (lhs == null && rhs == null) {
+            return 0;
+        } else if (lhs == null) {
+            return -1;
+        } else if (rhs == null) {
+            return 1;
+        } else {
+            int compareDates = rhs.getCreatedAt().compareTo(lhs.getCreatedAt());
+            return compareDates != 0 ? compareDates : Objects.compare(rhs.getId(), lhs.getId());
         }
     };
 

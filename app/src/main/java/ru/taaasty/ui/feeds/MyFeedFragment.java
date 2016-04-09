@@ -97,12 +97,7 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
         mRefreshLayout = (SwipeRefreshLayout) v.findViewById(R.id.swipe_refresh_widget);
         mEmptyView = v.findViewById(R.id.empty_view);
 
-        mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshData(false);
-            }
-        });
+        mRefreshLayout.setOnRefreshListener(() -> refreshData(false));
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         //mListView.setHasFixedSize(true);

@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -113,19 +112,11 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
         mButton = (TextView)findViewById(R.id.delete_comment_button);
         mProgress = findViewById(R.id.delete_comment_progress);
 
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                doAction();
-            }
-        });
+        mButton.setOnClickListener(v -> doAction());
 
-        findViewById(R.id.root).setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                ActivityCompat.finishAfterTransition(DeleteOrReportDialogActivity.this);
-                return true;
-            }
+        findViewById(R.id.root).setOnTouchListener((v, event) -> {
+            ActivityCompat.finishAfterTransition(DeleteOrReportDialogActivity.this);
+            return true;
         });
 
         switch (actionId) {

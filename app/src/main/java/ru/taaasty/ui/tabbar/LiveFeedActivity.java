@@ -150,12 +150,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
             protected void translatePreICS(View view, float offset) { throw new IllegalStateException("Not implemented"); }
         };
 
-        mLoginButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v);
-            }
-        });
+        mLoginButton.setOnClickListener(v -> LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v));
 
         doOnCreateTask();
         if (savedInstanceState == null) {
@@ -281,13 +276,10 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         if (!Session.getInstance().isAuthorized()) {
             if (v.getId() == R.id.create_flow) {
                 Snackbar.make(findViewById(R.id.main_container), R.string.create_flows_can_only_registered_user, Snackbar.LENGTH_LONG)
-                        .setAction(R.string.action_sign_up, new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                AnalyticsHelper.getInstance().sendFabEvent("Открытие логина из сообщения ошибки",
-                                        "Создавать потоки могут только зарегистрированные пользователи");
-                                LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v);
-                            }
+                        .setAction(R.string.action_sign_up, v1 -> {
+                            AnalyticsHelper.getInstance().sendFabEvent("Открытие логина из сообщения ошибки",
+                                    "Создавать потоки могут только зарегистрированные пользователи");
+                            LoginActivity.startActivity(LiveFeedActivity.this, REQUEST_CODE_LOGIN, v1);
                         })
                         .show();
                 return true;
@@ -437,11 +429,8 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         if (message.length() < 115 /* 115 */ /* примерно 2 строки текста */) {
             Snackbar snackbar = Snackbar.make(findViewById(R.id.main_container), message, Snackbar.LENGTH_INDEFINITE);
             if (showUpdateLink) {
-                snackbar.setAction(R.string.update_app, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        CheckAppHelper.openUpdateAppLink(LiveFeedActivity.this);
-                    }
+                snackbar.setAction(R.string.update_app, v -> {
+                    CheckAppHelper.openUpdateAppLink(LiveFeedActivity.this);
                 });
             } else {
                 snackbar.setAction(android.R.string.ok, null);

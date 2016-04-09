@@ -14,6 +14,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
@@ -34,9 +38,6 @@ import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.subscriptions.Subscriptions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class ConversationsListFragment extends FragmentWithWorkFragment<ConversationsListFragment.WorkRetainedFragment> implements RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -136,13 +137,10 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
     public void onWorkFragmentActivityCreatedSafe() {
         mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList()) {
             public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        int position = holder.getAdapterPosition();
-                        Conversation conversation = getConversation(position);
-                        ConversationActivity.startConversationActivity(v.getContext(), conversation, v);
-                    }
+                holder.itemView.setOnClickListener(v -> {
+                    int position = holder.getAdapterPosition();
+                    Conversation conversation = getConversation(position);
+                    ConversationActivity.startConversationActivity(v.getContext(), conversation, v);
                 });
                 holder.avatar.setOnClickListener(new View.OnClickListener() {
                     @Override

@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -61,7 +60,6 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -453,13 +451,10 @@ public class ShowPostFragment extends Fragment {
         mPostButton.setVisibility(View.INVISIBLE);
         mPostCommentSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
-                .finallyDo(new Action0() {
-                    @Override
-                    public void call() {
-                        mReplyToCommentText.setEnabled(true);
-                        mPostProgress.setVisibility(View.INVISIBLE);
-                        mPostButton.setVisibility(View.VISIBLE);
-                    }
+                .finallyDo(() -> {
+                    mReplyToCommentText.setEnabled(true);
+                    mPostProgress.setVisibility(View.INVISIBLE);
+                    mPostButton.setVisibility(View.VISIBLE);
                 })
                 .subscribe(mPostCommentObserver);
 
@@ -514,12 +509,9 @@ public class ShowPostFragment extends Fragment {
         DateIndicatorWidget dateView = (DateIndicatorWidget)fragmentView.findViewById(R.id.date_indicator);
         dateView.setDate(mCurrentEntry.getCreatedAt());
         if (dateView.getVisibility() != View.VISIBLE) {
-            SafeOnPreDrawListener.runWhenLaidOut(fragmentView, new SafeOnPreDrawListener.RunOnLaidOut() {
-                @Override
-                public boolean run(View root) {
-                    setupDateViewTopMargin();
-                    return false;
-                }
+            SafeOnPreDrawListener.runWhenLaidOut(fragmentView, root -> {
+                setupDateViewTopMargin();
+                return false;
             });
         }
         dateView.setVisibility(View.VISIBLE);
@@ -594,23 +586,15 @@ public class ShowPostFragment extends Fragment {
                     }, (ListEntryBase)holder);
                     break;
                 case CommentsAdapter.VIEW_TYPE_LOAD_MORE_HEADER:
-                    ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            onCommentsLoadMoreButtonClicked();
-                        }
-                    });
+                    ((CommentsLoadMoreViewHolder)holder).button.setOnClickListener(v -> onCommentsLoadMoreButtonClicked());
                     break;
                 case CommentsAdapter.VIEW_TYPE_COMMENT:
                     holder.itemView.setOnClickListener(mOnCommentClickListener);
                     ((ViewHolder)holder).setOnCommentButtonClickListener(mOnCommentActionListener);
-                    ((ViewHolder)holder).avatar.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Comment comment = getComment(((ViewHolder)holder));
-                            if (comment == null) return;
-                            TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
-                        }
+                    ((ViewHolder)holder).avatar.setOnClickListener(view -> {
+                        Comment comment = getComment(((ViewHolder)holder));
+                        if (comment == null) return;
+                        TlogActivity.startTlogActivity(getActivity(), comment.getAuthor().getId(), view);
                     });
                     break;
                 default:
