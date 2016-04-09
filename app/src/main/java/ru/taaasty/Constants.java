@@ -107,11 +107,13 @@ public interface Constants {
 
     String ANALYTICS_CATEGORY_APP_UPDATE = "Есть новая версия";
 
+    String ANALYTICS_CATEGORY_PERMISSIONS = "Разрешения";
+
     public static final String ANALYTICS_CATEGORY_UX = "UX";
     public static final String ANALYTICS_CATEGORY_ACCOUNT = "Account";
 
     public static final int ANALYTICS_DIMENSION_GENDER = 2;
-    public static final int ANALYTICS_DIMENSION_DIARY_OPEN_STATUS = 3;
+    public static final int ANALYTICS_DIMENSION_TLOG_OPEN_STATUS = 3;
 
     public static final String ANALYTICS_GENDER_MALE = "male";
     public static final String ANALYTICS_GENDER_FEMALE = "female";

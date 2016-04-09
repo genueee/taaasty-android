@@ -8,11 +8,7 @@ import android.net.Uri;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
-import com.fernandocejas.frodo.annotation.RxLogObservable;
-
 import ru.taaasty.BuildConfig;
-import ru.taaasty.Constants;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.AppVersionResponse;
 import rx.Observable;
@@ -44,8 +40,6 @@ public final class CheckAppHelper {
         AnalyticsHelper.getInstance().sendAppUpdateEvent("нажато 'обновить'", BuildConfig.VERSION_NAME);
     }
 
-
-    @RxLogObservable
     public static Observable<CheckVersionResult> createCheckVersionObservable(Context context) {
         final Context appContext = context.getApplicationContext();
         return RestClient.getAPiApp().checkVersion("android_offical", BuildConfig.VERSION_NAME)

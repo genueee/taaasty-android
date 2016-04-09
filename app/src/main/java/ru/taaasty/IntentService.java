@@ -457,7 +457,6 @@ public class IntentService extends android.app.IntentService {
             status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
             if (DBG) Log.v(TAG, "userpic response: " + response);
         } catch (Exception ex) {
-            if (DBG) throw ex;
             status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri,
                     R.string.error_upload_userpic, ex);
         }
@@ -486,8 +485,10 @@ public class IntentService extends android.app.IntentService {
         notificationManager = NotificationManagerCompat.from(this);
         notificationManager.cancel(Constants.NOTIFICATION_ID_DOWNLOAD_IMAGES);
 
-        final File picturesDirectory = ImageUtils.getPicturesDirectory(this);
-        if (picturesDirectory == null) {
+        final File picturesDirectory;
+        try {
+            picturesDirectory = ImageUtils.createPicturesDirectory(this);
+        } catch (IOException | SecurityException e) {
             showToastOnUiThread(getText(R.string.error_no_place_to_save));
             return;
         }

@@ -3,20 +3,18 @@ package ru.taaasty.ui.messages;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
+
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Conversation;
-import ru.taaasty.rest.model.User;
+import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener;
-import ru.taaasty.utils.ImageUtils;
 
 /**
  * Created by arhis on 25.02.2016.
@@ -28,12 +26,11 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
     public static final String ACTION_LEAVE_CONVERSATION = EditCreateGroupActivity.class.getName() + ".ACTION_LEAVE_CONVERSATION";
     public static final String ACTION_SAVE_CONVERSATION = EditCreateGroupActivity.class.getName() + ".ACTION_SAVE_CONVERSATION";
 
-    private static final int REQUEST_PICK_PHOTO = 1;
-    private static final int REQUEST_MAKE_PHOTO = 2;
     public static final int REQUEST_PICK_USER = 3;
 
-    private Uri mMakePhotoDstUri;
-    private Fragment mCurrentFragment;
+    private static final int REQUEST_PICK_PHOTO_BASE = 5;
+
+    private PhotoSourceManager mPhotoManager;
 
     public static void newGroupConversation(Activity caller, Fragment receiver, int requestCode) {
         Intent intent = new Intent(caller, EditCreateGroupActivity.class);
@@ -57,25 +54,43 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
 
         if (savedInstanceState == null) {
             Conversation conversation = getConversation();
-            mCurrentFragment = EditGroupFragment.newInstance(conversation);
-            getSupportFragmentManager().beginTransaction().replace(R.id.container, mCurrentFragment, EditGroupFragment.class.getName()).commit();
-        } else {
-            mCurrentFragment = getSupportFragmentManager().findFragmentByTag(EditGroupFragment.class.getName());
+            Fragment fragment = EditGroupFragment.newInstance(conversation);
+            getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment, EditGroupFragment.class.getName()).commit();
         }
 
+        mPhotoManager = new PhotoSourceManager(this, "GroupPhoto", REQUEST_PICK_PHOTO_BASE, 3345,
+                findViewById(R.id.coordinator_layout_container),
+                (uri) -> getEditFragment().onImagePicked(uri));
+        mPhotoManager.onCreate(savedInstanceState);
     }
 
     private Conversation getConversation() {
         return getIntent().getParcelableExtra(EXTRA_CONVERSATION);
     }
 
+    private EditGroupFragment getEditFragment() {
+        return (EditGroupFragment)getSupportFragmentManager().findFragmentByTag(EditGroupFragment.class.getName());
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mPhotoManager.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mPhotoManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                if (!((EditGroupFragment)mCurrentFragment).isInProgress()) {
+                if (!getEditFragment().isInProgress()) {
                     InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputMethodManager.hideSoftInputFromWindow(mCurrentFragment.getView().getWindowToken(), 0);
+                    inputMethodManager.hideSoftInputFromWindow(getEditFragment().getView().getWindowToken(), 0);
                     finish();
                 }
                 break;
@@ -87,47 +102,32 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
 
     @Override
     public void onPickPhotoSelected(Fragment fragment) {
-        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
-        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
+        mPhotoManager.startPickPhoto();
     }
 
     @Override
     public void onMakePhotoSelected(Fragment fragment) {
-        Intent takePictureIntent;
-        try {
-            takePictureIntent = ImageUtils.createMakePhotoIntent(this, true);
-            mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
+        mPhotoManager.startMakePhoto();
     }
 
     @Override
     public void onDeletePhotoSelected(Fragment fragment) {
-
+        // UNUSED
     }
 
     @Override
     public void onFeatherPhotoSelected(Fragment fragment) {
-
+        // UNSUED
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mPhotoManager.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
-                case REQUEST_PICK_PHOTO:
-                    Uri selectedImageUri = data.getData();
-                    ((EditGroupFragment) mCurrentFragment).onImagePicked(selectedImageUri);
-                    break;
-                case REQUEST_MAKE_PHOTO:
-                    ((EditGroupFragment) mCurrentFragment).onImagePicked(mMakePhotoDstUri);
-                    break;
                 case REQUEST_PICK_USER:
-                    ((EditGroupFragment) mCurrentFragment).onUserPicked((User) data.getParcelableExtra(UserPickerActivity.RESULT_USER));
+                    getEditFragment().onUserPicked(data.getParcelableExtra(UserPickerActivity.RESULT_USER));
                     break;
-
             }
         }
     }

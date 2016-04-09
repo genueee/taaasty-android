@@ -290,7 +290,7 @@ public final class RestClient {
             ResponseError responseError = null;
             try {
                 responseError = (ResponseError) cause.getBodyAs(ResponseError.class);
-            } catch (Exception ignore) {
+            } catch (Throwable ignore) {
                 if (DBG) Log.v(TAG, "ignore exception", ignore);
             }
 

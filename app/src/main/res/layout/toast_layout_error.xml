@@ -4,4 +4,4 @@
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/ErrorTextView"
     android:visibility="visible"
-    tools:text="Неправильный логин или пароль" />
+    tools:text="Неправильный логин или пароль. Попробуйте ввести его ещё раз, или войти через вконтакт, или… Да хуй его знает, придумайте там что-нибудь. Мы болеем за вас!" />

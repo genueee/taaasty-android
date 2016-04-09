@@ -1,18 +1,21 @@
 package ru.taaasty.utils;
 
+import android.Manifest;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
+// Requires Manifest.permission.READ_CONTACTS permission
 public abstract class UserEmailLoader implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Fragment mFragment;
@@ -23,6 +26,11 @@ public abstract class UserEmailLoader implements LoaderManager.LoaderCallbacks<C
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+
+        if (ActivityCompat.checkSelfPermission(mFragment.getActivity(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            return new Loader<>(mFragment.getActivity());
+        }
+
         return new CursorLoader(mFragment.getActivity(),
                 // Retrieve data rows for the device author's 'profile' contact.
                 Uri.withAppendedPath(ContactsContract.Profile.CONTENT_URI,

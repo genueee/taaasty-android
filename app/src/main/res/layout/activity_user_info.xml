@@ -1,32 +1,36 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/snackbar_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.ActivityShowPost"
-    tools:ignore="MergeRootFrame">
+    tools:context=".ui.UserInfoActivity">
 
-    <FrameLayout
-        android:id="@+id/container"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:layout="@layout/fragment_user_info"
-        />
+        tools:ignore="MergeRootFrame">
 
-    <ImageView
-        android:id="@+id/back_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="20dp"
-        android:layout_alignParentTop="true"
-        android:minHeight="42dp"
-        android:minWidth="42dp"
-        android:scaleType="center"
-        android:contentDescription="@string/action_back_content_description"
-        android:background="?selectableItemBackground"
-        android:src="@drawable/ic_back_white" />
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_user_info" />
 
-</RelativeLayout>
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="20dp"
+            android:background="?selectableItemBackground"
+            android:contentDescription="@string/action_back_content_description"
+            android:minHeight="42dp"
+            android:minWidth="42dp"
+            android:scaleType="center"
+            android:src="@drawable/ic_back_white" />
+
+    </RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -19,11 +18,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
-import android.widget.Toast;
-
-import com.adobe.creativesdk.aviary.AdobeImageIntent;
-
-import java.io.File;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
@@ -39,9 +33,9 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.ConversationActivity;
+import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.utils.AnalyticsHelper;
-import ru.taaasty.utils.ImageUtils;
 
 public class UserInfoActivity extends ActivityBase implements UserInfoFragment.OnFragmentInteractionListener,
         SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
@@ -53,12 +47,11 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     private static final String DIALOG_TAG_SELECT_BACKGROUND = "DIALOG_SELECT_BACKGROUND";
     private static final String DIALOG_TAG_SELECT_AVATAR = "DIALOG_SELECT_AVATAR";
 
-    private static final int REQUEST_PICK_BACKGROUND_PHOTO = Activity.RESULT_FIRST_USER + 2;
-    private static final int REQUEST_MAKE_BACKGROUND_PHOTO = Activity.RESULT_FIRST_USER + 3;
-    private static final int REQUEST_FEATHER_BACKGROUND_PHOTO = Activity.RESULT_FIRST_USER + 4;
-    private static final int REQUEST_PICK_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 5;
-    private static final int REQUEST_MAKE_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 6;
-    private static final int REQUEST_FEATHER_AVATAR_PHOTO = Activity.RESULT_FIRST_USER + 7;
+    private static final int REQUEST_BACKGROUND_PHOTO = Activity.RESULT_FIRST_USER + 2;
+    private static final int REQUEST_AVATAR_PHOTO = REQUEST_BACKGROUND_PHOTO + PhotoSourceManager.START_ACTIVITY_FOR_RESULT_REQUIRED_IDS;
+
+    private static final int PERMISSION_REQUEST_BACKGROUND_PHOTO = 37;
+    private static final int PERMISSION_REQUEST_AVATAR_PHOTO = PERMISSION_REQUEST_BACKGROUND_PHOTO + PhotoSourceManager.PERMISSION_REQUEST_REQUIRED_IDS;
 
     private static final String ARG_USER = "ru.taaasty.ui.UserInfoActivity.author";
     private static final String ARG_USER_ID = "ru.taaasty.ui.UserInfoActivity.author_id";
@@ -69,7 +62,9 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     private long mUserId;
 
-    private Uri mMakePhotoDstUri;
+    private PhotoSourceManager mBackgroundPhotoManager;
+
+    private PhotoSourceManager mAvatarManager;
 
     public static class Builder {
         private final Context mContext;
@@ -200,9 +195,22 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, userInfoFragment, FRAGMENT_TAG_USER_INFO_FRAGMENT)
                     .commit();
-        } else {
-            mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_CURRENT_PHOTO_URI);
         }
+        mBackgroundPhotoManager = new PhotoSourceManager(this,
+                "BackgroundPhoto",
+                REQUEST_BACKGROUND_PHOTO,
+                PERMISSION_REQUEST_BACKGROUND_PHOTO,
+                findViewById(R.id.snackbar_container),
+                this::updateBackground);
+        mAvatarManager = new PhotoSourceManager(this,
+                "AvatarPhoto",
+                REQUEST_AVATAR_PHOTO,
+                PERMISSION_REQUEST_AVATAR_PHOTO,
+                findViewById(R.id.snackbar_container),
+                this::updateAvatar);
+
+        mBackgroundPhotoManager.onCreate(savedInstanceState);
+        mAvatarManager.onCreate(savedInstanceState);
     }
 
     @Override
@@ -235,61 +243,8 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Uri imageUri;
-        boolean imageUriIsBackground = false;
-
-        if ((requestCode == REQUEST_PICK_BACKGROUND_PHOTO)
-                || (requestCode == REQUEST_MAKE_BACKGROUND_PHOTO)
-                || (requestCode == REQUEST_FEATHER_BACKGROUND_PHOTO))
-            imageUriIsBackground = true;
-
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_PICK_BACKGROUND_PHOTO:
-                case REQUEST_PICK_AVATAR_PHOTO:
-                    Uri selectedImageUri = data.getData();
-                    if (DBG) Log.v(TAG,"image uri: " + selectedImageUri);
-                    imageUri = selectedImageUri;
-                    if (imageUri != null) startFeatherPhoto(imageUriIsBackground, imageUri);
-                    break;
-                case REQUEST_MAKE_BACKGROUND_PHOTO:
-                case REQUEST_MAKE_AVATAR_PHOTO:
-                    if (DBG) Log.v(TAG,"image uri: " + mMakePhotoDstUri);
-                    ImageUtils.galleryAddPic(this, mMakePhotoDstUri);
-                    imageUri = mMakePhotoDstUri;
-                    if (imageUri != null) startFeatherPhoto(imageUriIsBackground, mMakePhotoDstUri);
-                    break;
-                case REQUEST_FEATHER_AVATAR_PHOTO:
-                case REQUEST_FEATHER_BACKGROUND_PHOTO:
-                    imageUri = data.getData();
-                    if (imageUri.toString().startsWith("/")) {
-                        imageUri = Uri.fromFile(new File(imageUri.toString())); // Мозгоблядство от aviary
-                    }
-                    ImageUtils.galleryAddPic(this, imageUri);
-                    // XXX: удалять старый файл, если он aviary ?
-                    // Редактирование завершено. Сохраняемся.
-                    if (imageUriIsBackground) {
-                        updateBackground(imageUri);
-                    } else {
-                        updateAvatar(imageUri);
-                    }
-                    break;
-            }
-        } else if (resultCode == RESULT_CANCELED) {
-            switch (requestCode) {
-                case REQUEST_MAKE_BACKGROUND_PHOTO:
-                case REQUEST_MAKE_AVATAR_PHOTO:
-                    mMakePhotoDstUri = null;
-                    break;
-                case REQUEST_FEATHER_AVATAR_PHOTO:
-                case REQUEST_FEATHER_BACKGROUND_PHOTO:
-                    // Редактирование отменено, удаляем файл, если фотографировали
-                    if (mMakePhotoDstUri != null) {
-                        //noinspection ResultOfMethodCallIgnored
-                        new File(mMakePhotoDstUri.getPath()).delete();
-                        mMakePhotoDstUri = null;
-                    }
-            }
+        if (!mBackgroundPhotoManager.onActivityResult(requestCode, resultCode, data)) {
+            mAvatarManager.onActivityResult(requestCode, resultCode, data);
         }
     }
 
@@ -326,8 +281,15 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mMakePhotoDstUri != null) {
-            outState.putParcelable(KEY_CURRENT_PHOTO_URI, mMakePhotoDstUri);
+        mBackgroundPhotoManager.onSaveInstanceState(outState);
+        mAvatarManager.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (!mBackgroundPhotoManager.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            mAvatarManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -359,37 +321,29 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     @Override
     public void onPickPhotoSelected(Fragment fragment) {
         int requestCode;
-        if (DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag())) {
-            requestCode = REQUEST_PICK_BACKGROUND_PHOTO;
+        boolean isBackgroundTarget = DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag());
+        if (isBackgroundTarget) {
+            mBackgroundPhotoManager.startPickPhoto();
         } else {
-            requestCode = REQUEST_PICK_AVATAR_PHOTO;
+            mAvatarManager.startPickPhoto();
         }
 
-        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
-        startActivityForResult(photoPickerIntent, requestCode);
         AnalyticsHelper.getInstance().sendUsersEvent("Открыт выбор изображения",
-                requestCode == REQUEST_PICK_BACKGROUND_PHOTO ? "фона" : "аватара");
+                isBackgroundTarget ? "фона" : "аватара");
     }
 
     @Override
     public void onMakePhotoSelected(Fragment fragment) {
         Intent takePictureIntent;
-        int requestCode;
-        if (DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag())) {
-            requestCode = REQUEST_MAKE_BACKGROUND_PHOTO;
+        boolean isBackgroundTarget = DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag());
+        if (isBackgroundTarget) {
+            mBackgroundPhotoManager.startMakePhoto();
         } else {
-            requestCode = REQUEST_MAKE_AVATAR_PHOTO;
+            mAvatarManager.startMakePhoto();
         }
 
-        try {
-            takePictureIntent = ImageUtils.createMakePhotoIntent(this, requestCode == REQUEST_MAKE_AVATAR_PHOTO);
-            mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            startActivityForResult(takePictureIntent, requestCode);
-            AnalyticsHelper.getInstance().sendUsersEvent("Открыто фотографирование",
-                    requestCode == REQUEST_MAKE_BACKGROUND_PHOTO ? "фона" : "аватара");
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыто фотографирование",
+                isBackgroundTarget ? "фона" : "аватара");
     }
 
     @Override
@@ -401,18 +355,18 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
     public void onFeatherPhotoSelected(Fragment fragment) {
         boolean isBackground;
         Uri photoUri;
-        if (DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag())) {
-            isBackground = true;
+        boolean isBackgroundTarget = DIALOG_TAG_SELECT_BACKGROUND.equals(fragment.getTag());
+        if (isBackgroundTarget) {
             // XXX: background может быть null
             photoUri = Uri.parse(getDesign().getBackgroundUrl());
+            mBackgroundPhotoManager.startFeatherPhoto(photoUri);
         } else {
-            isBackground = false;
             // XXX: userpic может быть null
             photoUri = Uri.parse(getUser().getUserpic().originalUrl);
+            mAvatarManager.startFeatherPhoto(photoUri);
         }
 
-        startFeatherPhoto(isBackground, photoUri);
-        AnalyticsHelper.getInstance().sendUsersEvent("Открыто редактирование фото в aviary");
+        AnalyticsHelper.getInstance().sendUsersEvent("Открыто редактирование фото в aviary", isBackgroundTarget ? "фона" : "аватара");
     }
 
     private @Nullable TlogDesign getDesign() {
@@ -451,20 +405,6 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
         }
         DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
         dialog.show(getSupportFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
-    }
-
-    private void startFeatherPhoto(boolean isBackground, Uri photoUri) {
-        Intent featherPhotoIntent;
-        int requestCode = isBackground ? REQUEST_FEATHER_BACKGROUND_PHOTO : REQUEST_FEATHER_AVATAR_PHOTO;
-
-        try {
-            featherPhotoIntent = ImageUtils.createFeatherPhotoIntent(this, photoUri);
-            mMakePhotoDstUri = featherPhotoIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            featherPhotoIntent.putExtra(AdobeImageIntent.EXTRA_IN_SAVE_ON_NO_CHANGES, true);
-            startActivityForResult(featherPhotoIntent, requestCode);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(this, e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
     }
 
     void updateBackground(Uri imageUri) {

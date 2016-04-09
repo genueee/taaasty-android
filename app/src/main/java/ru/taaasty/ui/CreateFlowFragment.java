@@ -1,11 +1,10 @@
 package ru.taaasty.ui;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -20,11 +19,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.adobe.creativesdk.aviary.AdobeImageIntent;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-
-import java.io.File;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -32,8 +28,8 @@ import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.rest.model.PostForm;
+import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
-import ru.taaasty.utils.ImageUtils;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -47,12 +43,7 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "CreateFlowFragment";
 
-    private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 100;
-    private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 101;
-    private static final int REQUEST_FEATHER_PHOTO = Activity.RESULT_FIRST_USER + 102;
-
     private static final String KEY_IMAGE_URI = "ru.taaasty.ui.CreateFlowFragment.KEY_IMAGE_URI";
-    private static final String KEY_MAKE_PHOTO_DST_URI = "ru.taaasty.ui.CreateFlowFragment.KEY_MAKE_PHOTO_DST_URI";
 
     private OnFragmentInteractionListener mListener;
 
@@ -63,12 +54,11 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
     private View mProgressView;
 
     @Nullable
-    private Uri mMakePhotoDstUri;
-
-    @Nullable
     private Uri mImageUri;
 
     boolean mFormValid = false;
+
+    private PhotoSourceManager mPhotoSourceManager;
 
     public static CreateFlowFragment newInstance() {
         return new CreateFlowFragment();
@@ -81,17 +71,19 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mPhotoSourceManager = new PhotoSourceManager(this, "CreateFlowFragment", uri -> mImageUri = uri);
+        mPhotoSourceManager.onCreate(savedInstanceState);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View root =  inflater.inflate(R.layout.fragment_create_flow, container, false);
+        View root = inflater.inflate(R.layout.fragment_create_flow, container, false);
 
-        mTitleView = (EditText)root.findViewById(R.id.title);
-        mDescriptionView = (EditText)root.findViewById(R.id.description);
+        mTitleView = (EditText) root.findViewById(R.id.title);
+        mDescriptionView = (EditText) root.findViewById(R.id.description);
         mMakeImageButtonLayout = root.findViewById(R.id.make_photo_layout);
-        mImageView = (ImageView)root.findViewById(R.id.image);
+        mImageView = (ImageView) root.findViewById(R.id.image);
         mProgressView = root.findViewById(R.id.progress);
         mImageView.setAdjustViewBounds(true);
         mImageView.setVisibility(View.GONE);
@@ -147,7 +139,7 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mMakePhotoDstUri != null) outState.putParcelable(KEY_MAKE_PHOTO_DST_URI, mMakePhotoDstUri);
+        mPhotoSourceManager.onSaveInstanceState(outState);
         if (mImageUri != null) outState.putParcelable(KEY_IMAGE_URI, mImageUri);
     }
 
@@ -184,25 +176,17 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
 
     @Override
     public void onPickPhotoSelected(Fragment fragment) {
-        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
-        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
+        mPhotoSourceManager.startPickPhoto();
     }
 
     @Override
     public void onMakePhotoSelected(Fragment fragment) {
-        Intent takePictureIntent;
-        try {
-            takePictureIntent = ImageUtils.createMakePhotoIntent(getActivity(),false);
-            mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
+        mPhotoSourceManager.startMakePhoto();
     }
 
     @Override
     public void onFeatherPhotoSelected(Fragment fragment) {
-        startFeatherPhoto();
+        mPhotoSourceManager.startFeatherPhoto(mImageUri);
     }
 
     public PostForm getForm() {
@@ -217,42 +201,12 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (DBG) Log.v(TAG, "onActivityResult()");
-        Uri mOriginalImageUri = mImageUri;
+        mPhotoSourceManager.onActivityResult(requestCode, resultCode, data);
+    }
 
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_PICK_PHOTO:
-                    mImageUri = data.getData();
-                    if (DBG) Log.v(TAG, "image uri: " + mImageUri);
-                    startFeatherPhoto();
-                    break;
-                case REQUEST_MAKE_PHOTO:
-                    if (DBG) Log.v(TAG, "image uri: " + mMakePhotoDstUri);
-                    ImageUtils.galleryAddPic(getActivity(), mMakePhotoDstUri);
-                    mImageUri = mMakePhotoDstUri;
-                    mMakePhotoDstUri = null;
-                    startFeatherPhoto();
-                    break;
-                case REQUEST_FEATHER_PHOTO:
-                    mImageUri = data.getData();
-                    if (mImageUri.toString().startsWith("/")) {
-                        mImageUri = Uri.fromFile(new File(mImageUri.toString())); // Мозгоблядство от aviary
-                    }
-                    boolean changed = false;
-                    Bundle extra = data.getExtras();
-                    if (null != extra) {
-                        // image has been changed by the user?
-                        changed = extra.getBoolean(AdobeImageIntent.EXTRA_OUT_BITMAP_CHANGED);
-                    }
-                    if (DBG) Log.v(TAG, "REQUEST_FEATHER_PHOTO. imageuri: " + mOriginalImageUri +
-                            " new image uri: " + mImageUri + " bitmap changed: " + changed);
-                    break;
-            }
-        }
-
-        if (!ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
-            if (mImageUri != null) ImageUtils.galleryAddPic(getActivity(), mImageUri);
-        }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        mPhotoSourceManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     public boolean isFormValid() {
@@ -277,15 +231,6 @@ public class CreateFlowFragment extends Fragment implements SelectPhotoSourceDia
                     .skipMemoryCache()
                     .fit().centerInside()
                     .into(mImageView, mPicassoCallback);
-        }
-    }
-
-    private void startFeatherPhoto() {
-        try {
-            Intent newIntent = ImageUtils.createFeatherPhotoIntent(getActivity(), mImageUri);
-            startActivityForResult( newIntent, REQUEST_FEATHER_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
         }
     }
 

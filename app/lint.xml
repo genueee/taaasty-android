@@ -2,4 +2,7 @@
     <issue id="InvalidPackage">
         <ignore regexp=".*okio.*" />
     </issue>
+    <issue id="NewApi">
+        <ignore regexp="Try-with-resources requires API level 19"/>
+    </issue>
 </lint>

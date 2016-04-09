@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -19,10 +20,12 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresPermission;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TimingLogger;
@@ -248,30 +251,38 @@ public class ImageUtils {
     }
 
     /**
-     * Директория для фотографий
+     * Возвращает каталог для фотографий.
+     * Для записи в этот каталог требует разрешения WRITE_EXTERNAL_STORAGE.
      *
      * @param context
-     * @return
      */
     @Nullable
     public static File getPicturesDirectory(Context context) {
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+        return new File(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES), context.getString(R.string.images_directory));
+    }
 
+    /**
+     * Создание каталога для фотографий, если его не существует
+     * @param context
+     * @return каталог
+     */
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static File createPicturesDirectory(Context context) throws IOException, SecurityException {
+        File mediaStorageDir = getPicturesDirectory(context);
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
-                Log.d("ImageUtils", "failed to create directory");
-                return null;
+                throw new IOException("failed to create directory");
             }
         }
         return mediaStorageDir;
     }
 
+    @SuppressLint("MissingPermission")
     public static boolean isUriInPicturesDirectory(Context context, Uri uri) {
         File picturesDir = getPicturesDirectory(context);
         File uriPath;
         if (uri == null) return false;
-        if (picturesDir == null) return false;
 
         if (uri.toString().startsWith("/")) {
             uriPath = new File(uri.toString());
@@ -295,24 +306,24 @@ public class ImageUtils {
         return prefix + ts;
     }
 
-    public static Uri createAviaryPictureOutputPath(Context context) throws MakePhotoException {
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static Uri createAviaryPictureOutputPath(Context context) throws IOException, SecurityException {
         return createPictureOutputPath(context, true);
     }
 
-    public static Uri createPictureOutputPath(Context context) throws MakePhotoException {
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static Uri createPictureOutputPath(Context context) throws IOException, SecurityException {
         return createPictureOutputPath(context, false);
     }
 
-    public static Uri createPictureOutputPath(Context context, boolean isAviary) throws MakePhotoException {
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private static Uri createPictureOutputPath(Context context, boolean isAviary) throws IOException, SecurityException {
         Date currentDate;
         File storageDir;
         File image;
         String imageFileName;
 
-        storageDir = ImageUtils.getPicturesDirectory(context);
-        if (storageDir == null) {
-            throw new MakePhotoException(R.string.error_no_place_to_save);
-        }
+        storageDir = ImageUtils.createPicturesDirectory(context);
         currentDate = new Date();
         imageFileName = ImageUtils.getOutputMediaFileName(currentDate, isAviary ? "aviary_" : "IMG_");
         image = new File(storageDir, imageFileName + ".jpg");
@@ -325,7 +336,7 @@ public class ImageUtils {
      * @param context
      * @param photoUri)
      */
-    public static void galleryAddPic(Context context, Uri photoUri) {
+    public static void galleryUpdatePic(Context context, Uri photoUri) {
         if ("file".equals(photoUri.getScheme())) {
             // С файлами всё плохо http://droidyue.com/blog/2014/01/19/scan-media-files-in-android/
             File file = new File(photoUri.getPath());
@@ -350,8 +361,8 @@ public class ImageUtils {
         return photoPickerIntent;
     }
 
-
-    public static Intent createMakePhotoIntent(Context context, boolean usefrontCamera) throws MakePhotoException {
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static Intent createMakePhotoIntent(Context context, boolean usefrontCamera) throws MakePhotoException, SecurityException {
         Intent takePictureIntent;
         Uri currentPhotoUri;
 
@@ -360,25 +371,44 @@ public class ImageUtils {
             throw new MakePhotoException(R.string.error_camera_not_available);
         }
 
-        currentPhotoUri = createPictureOutputPath(context);
+        try {
+            currentPhotoUri = createPictureOutputPath(context);
+        } catch (MakePhotoException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new MakePhotoException(R.string.error_no_place_to_save, e);
+        }
         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, currentPhotoUri);
         if (usefrontCamera) takePictureIntent.putExtra("android.intent.extras.CAMERA_FACING", 1);
         return takePictureIntent;
     }
 
-    public static Intent createFeatherPhotoIntent(Context context, Uri originalPhotoUri) throws MakePhotoException {
+    @RequiresPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public static Intent createFeatherPhotoIntent(Context context,
+                                                  Uri originalPhotoUri,
+                                                  @Nullable Bundle extras) throws MakePhotoException, SecurityException {
         Uri newPhotoUri;
-        Intent featherPhotoIntent;
+        AdobeImageIntent.Builder featherPhotoIntent;
 
-        newPhotoUri = createAviaryPictureOutputPath(context);
+        try {
+            newPhotoUri = createAviaryPictureOutputPath(context);
+        } catch (MakePhotoException e) {
+            throw e;
+        } catch (IOException e) {
+            throw new MakePhotoException(R.string.error_no_place_to_save, e);
+        }
         featherPhotoIntent = new AdobeImageIntent.Builder(context)
                 .setData(originalPhotoUri)
-                .saveWithNoChanges(false)
+                .saveWithNoChanges(true)
                 .withOutput(newPhotoUri)
                 .withOutputSize(MegaPixels.Mp7)
-                .withOutputQuality(90)
-                .build();
-        return featherPhotoIntent;
+                .withOutputQuality(90);
+
+        if (extras != null) {
+            featherPhotoIntent.withOptions(extras);
+        }
+
+        return featherPhotoIntent.build();
     }
 
     public void loadAvatarToLeftDrawableOfTextView(
@@ -477,7 +507,7 @@ public class ImageUtils {
         public void onDrawableReady(Drawable drawable);
     }
 
-    public static class MakePhotoException extends Exception {
+    public static class MakePhotoException extends IOException {
         public int errorResourceId;
 
         public MakePhotoException(int resourceId) {

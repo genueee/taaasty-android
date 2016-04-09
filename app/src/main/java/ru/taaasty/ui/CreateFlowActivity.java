@@ -20,7 +20,6 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.IntentService;
 import ru.taaasty.R;
-import ru.taaasty.TaaastyApplication;
 import ru.taaasty.events.FlowUploadStatus;
 import ru.taaasty.rest.model.PostFlowForm;
 import ru.taaasty.ui.feeds.TlogActivity;
@@ -39,7 +38,7 @@ public class CreateFlowActivity extends ActivityBase implements CreateFlowFragme
     private ImageView mCreateFlowButton;
 
     public static void startActivity(Context context, View animateFrom) {
-        Intent intent = new Intent(context , CreateFlowActivity.class);
+        Intent intent = new Intent(context, CreateFlowActivity.class);
         if (animateFrom != null && context instanceof Activity) {
             ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                     animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());

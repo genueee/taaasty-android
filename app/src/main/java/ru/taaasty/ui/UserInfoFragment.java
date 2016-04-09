@@ -270,20 +270,20 @@ public class UserInfoFragment extends Fragment {
     public void onEventMainThread(UserpicUploadStatus status) {
         if (!status.isFinished()) {
             mRefreshingUserpic = true;
-            refreshProgressVisibility();
         } else {
             mRefreshingUserpic = false;
             if (!status.successfully) {
                 MessageHelper.showError(UserInfoFragment.this, status.exception, status.errorResId, REQUEST_CODE_LOGIN);
-                return;
-            }
-            if (mUserId == status.userId) {
-                if (mUser != null) {
-                    mUser.setUserpic(status.newUserpic);
-                    setupAvatar();
+            } else {
+                if (mUserId == status.userId) {
+                    if (mUser != null) {
+                        mUser.setUserpic(status.newUserpic);
+                        setupAvatar();
+                    }
                 }
             }
         }
+        refreshProgressVisibility();
     }
 
     private void refreshProgressVisibility() {

@@ -1,11 +1,10 @@
 package ru.taaasty.ui.post;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
@@ -16,11 +15,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.adobe.creativesdk.aviary.AdobeImageIntent;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
-
-import java.io.File;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -29,7 +25,6 @@ import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.PostImageForm;
-import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
 
 public class CreateImagePostFragment extends CreatePostFragmentBase {
@@ -45,12 +40,7 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private static final String SHARED_PREFS_KEY_TITLE = "title";
     private static final String SHARED_PREFS_KEY_IMAGE_URI = "image_uri";
 
-    private static final int REQUEST_PICK_PHOTO = Activity.RESULT_FIRST_USER + 100;
-    private static final int REQUEST_MAKE_PHOTO = Activity.RESULT_FIRST_USER + 101;
-    private static final int REQUEST_FEATHER_PHOTO = Activity.RESULT_FIRST_USER + 102;
-
     private static final String KEY_IMAGE_URI = "ru.taaasty.ui.post.CreateImagePostFragment.KEY_IMAGE_URI";
-    private static final String KEY_MAKE_PHOTO_DST_URI = "ru.taaasty.ui.post.CreateImagePostFragment.KEY_MAKE_PHOTO_DST_URI";
 
     private EditText mTitleView;
     private View mMakeImageButtonLayout;
@@ -58,14 +48,13 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     private View mProgressView;
 
     @Nullable
-    private Uri mMakePhotoDstUri;
-
-    @Nullable
     private Uri mImageUri;
 
     private Uri mSharedImageUri;
 
     private boolean mEditPost;
+
+    private PhotoSourceManager mPhotoSourceManager;
 
     @Nullable
     private Long mTlogId;
@@ -98,7 +87,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         if (DBG) Log.v(TAG, "onCreate()");
         if (savedInstanceState != null) {
             mImageUri = savedInstanceState.getParcelable(KEY_IMAGE_URI);
-            mMakePhotoDstUri = savedInstanceState.getParcelable(KEY_MAKE_PHOTO_DST_URI);
         }
 
         if (getArguments() != null) {
@@ -114,6 +102,9 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
             mSharedImageUri = null;
             mTlogId = null;
         }
+
+        mPhotoSourceManager = new PhotoSourceManager(this, "CreateImagePost", (uri) -> mImageUri = uri);
+        mPhotoSourceManager.onCreate(savedInstanceState);
 
         EventBus.getDefault().register(this);
     }
@@ -174,6 +165,12 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        mPhotoSourceManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+
+    @Override
     public void onPause() {
         super.onPause();
         if (!mEditPost) saveInputValues();
@@ -188,8 +185,8 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mMakePhotoDstUri != null) outState.putParcelable(KEY_MAKE_PHOTO_DST_URI, mMakePhotoDstUri);
         if (mImageUri != null) outState.putParcelable(KEY_IMAGE_URI, mImageUri);
+        mPhotoSourceManager.onSaveInstanceState(outState);
     }
 
     public void onEventMainThread(EntryUploadStatus status) {
@@ -212,23 +209,15 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
     }
 
     public void onPickPhotoSelected() {
-        Intent photoPickerIntent = ImageUtils.createPickImageActivityIntent();
-        startActivityForResult(photoPickerIntent, REQUEST_PICK_PHOTO);
+        mPhotoSourceManager.startPickPhoto();
     }
 
     public void onMakePhotoSelected() {
-        Intent takePictureIntent;
-        try {
-            takePictureIntent = ImageUtils.createMakePhotoIntent(getActivity(),false);
-            mMakePhotoDstUri = takePictureIntent.getParcelableExtra(MediaStore.EXTRA_OUTPUT);
-            startActivityForResult(takePictureIntent, REQUEST_MAKE_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
-        }
+        mPhotoSourceManager.startMakePhoto();
     }
 
     public void onFeatherPhotoClicked() {
-        startFeatherPhoto();
+        mPhotoSourceManager.startFeatherPhoto(mImageUri);
     }
 
     @Override
@@ -245,47 +234,13 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
         super.onActivityResult(requestCode, resultCode, data);
         if (DBG) Log.v(TAG, "onActivityResult()");
         Uri mOriginalImageUri = mImageUri;
-        Uri imageUri = null;
 
-        if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_PICK_PHOTO:
-                    mImageUri = data.getData();
-                    if (DBG) Log.v(TAG, "image uri: " + mImageUri);
-                    startFeatherPhoto();
-                    break;
-                case REQUEST_MAKE_PHOTO:
-                    if (DBG) Log.v(TAG, "image uri: " + mMakePhotoDstUri);
-                    ImageUtils.galleryAddPic(getActivity(), mMakePhotoDstUri);
-                    mImageUri = mMakePhotoDstUri;
-                    mMakePhotoDstUri = null;
-                    startFeatherPhoto();
-                    break;
-                case REQUEST_FEATHER_PHOTO:
-                    mImageUri = data.getData();
-                    if (mImageUri.toString().startsWith("/")) {
-                        mImageUri = Uri.fromFile(new File(mImageUri.toString())); // Мозгоблядство от aviary
-                    }
-                    boolean changed = false;
-                    Bundle extra = data.getExtras();
-                    if (null != extra) {
-                        // image has been changed by the user?
-                        changed = extra.getBoolean(AdobeImageIntent.EXTRA_OUT_BITMAP_CHANGED);
-                        /* Пока не удаляем файлы
-                        if (changed && !ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
-                            deleteFileNoThrow(mOriginalImageUri);
-                        }
-                        */
-                    }
-                    if (DBG) Log.v(TAG, "REQUEST_FEATHER_PHOTO. imageuri: " + mOriginalImageUri +
-                            " new image uri: " + mImageUri + " bitmap changed: " + changed);
-                    break;
-            }
-        }
+        mPhotoSourceManager.onActivityResult(requestCode, resultCode, data);
 
         if (!ru.taaasty.utils.Objects.equals(mImageUri, mOriginalImageUri)) {
-            if (mImageUri != null) ImageUtils.galleryAddPic(getActivity(), mImageUri);
             if (!mEditPost) {
+                // onActivityResult() может быть вызван после onPause() и перед onResume()
+                // В этом случае mImageUri у нас сохранен в preferences и его надо обновить
                 getActivity().getSharedPreferences(SHARED_PREFS_NAME, 0)
                         .edit()
                         .putString(SHARED_PREFS_KEY_IMAGE_URI, mImageUri == null ? "" : mImageUri.toString())
@@ -317,15 +272,6 @@ public class CreateImagePostFragment extends CreatePostFragmentBase {
                     .skipMemoryCache()
                     .fit().centerInside()
                     .into(mImageView, mPicassoCallback);
-        }
-    }
-
-    private void startFeatherPhoto() {
-        try {
-            Intent newIntent = ImageUtils.createFeatherPhotoIntent(getActivity(), mImageUri);
-            startActivityForResult( newIntent, REQUEST_FEATHER_PHOTO);
-        } catch (ImageUtils.MakePhotoException e) {
-            Toast.makeText(getActivity(), e.errorResourceId, Toast.LENGTH_LONG).show();
         }
     }
 

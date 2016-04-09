@@ -35,7 +35,14 @@ public class ContentTypedOutput  implements TypedOutput {
 
     @Override
     public String fileName() {
-        return mUri.getLastPathSegment();
+        String filename = mUri.getLastPathSegment();
+        if (!filename.matches(".+\\..{2,6}$")) {
+            String ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType());
+            if (ext == null) ext = "jpg";
+            filename = filename + "." + ext;
+        }
+
+        return filename;
     }
 
     @Override
