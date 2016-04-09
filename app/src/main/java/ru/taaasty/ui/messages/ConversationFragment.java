@@ -15,7 +15,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -46,6 +45,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
@@ -766,8 +766,7 @@ public class ConversationFragment extends Fragment {
             }
 
             if (messages != null && messages.messages.length == 0) {
-                InputMethodManager inputManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputManager.showSoftInput(mSendMessageText, InputMethodManager.SHOW_IMPLICIT);
+                ImeUtils.showIme(mSendMessageText);
             }
 
             setKeepOnAppending(keepOnAppending);

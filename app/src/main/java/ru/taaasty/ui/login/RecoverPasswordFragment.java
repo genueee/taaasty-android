@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,7 +13,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
@@ -26,6 +24,7 @@ import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
 import rx.Observer;
@@ -102,14 +101,7 @@ public class RecoverPasswordFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(0, null, mEmailLoader);
-
-        mEmailView.post(() -> {
-            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                    Context.INPUT_METHOD_SERVICE);
-            if (imm != null)
-                imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
-        });
-
+        mEmailView.post(() -> ImeUtils.showIme(mEmailView));
     }
 
     @Override

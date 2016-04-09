@@ -2,7 +2,6 @@ package ru.taaasty.ui.messages;
 
 import android.animation.LayoutTransition;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +15,6 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import java.util.Collections;
@@ -31,6 +29,7 @@ import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
+import ru.taaasty.utils.ImeUtils;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -131,22 +130,13 @@ public class InitiateConversationFragment extends Fragment {
     public void onResume() {
         super.onResume();
         setupCurrentState(mNameView.getText());
-
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        if (imm != null)
-            imm.showSoftInput(mNameView, InputMethodManager.SHOW_IMPLICIT);
-
+        ImeUtils.showIme(mNameView);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        if (imm != null && mNameView != null) {
-            imm.hideSoftInputFromWindow(mNameView.getWindowToken(), 0);
-        }
+        ImeUtils.hideIme(mNameView);
     }
 
     @Override

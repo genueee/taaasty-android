@@ -1,20 +1,19 @@
 package ru.taaasty.ui.messages;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.inputmethod.InputMethodManager;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener;
+import ru.taaasty.utils.ImeUtils;
 
 /**
  * Created by arhis on 25.02.2016.
@@ -89,8 +88,7 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         switch (item.getItemId()) {
             case android.R.id.home:
                 if (!getEditFragment().isInProgress()) {
-                    InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    inputMethodManager.hideSoftInputFromWindow(getEditFragment().getView().getWindowToken(), 0);
+                    ImeUtils.hideIme(getEditFragment().getView());
                     finish();
                 }
                 break;

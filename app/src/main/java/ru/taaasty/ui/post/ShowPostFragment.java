@@ -18,7 +18,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +49,7 @@ import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.feeds.FeedsHelper;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.LikesHelper;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
@@ -393,10 +393,7 @@ public class ShowPostFragment extends Fragment {
     void replyToComment(Comment comment) {
         unselectCurrentComment();
         appendUserSlugToReplyComment(comment.getAuthor().getName());
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT);
-        }
+        ImeUtils.showIme(mReplyToCommentText);
     }
 
     @Nullable

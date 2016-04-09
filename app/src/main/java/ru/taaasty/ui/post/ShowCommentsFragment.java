@@ -20,7 +20,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +49,7 @@ import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.login.LoginActivity;
 import ru.taaasty.utils.AnalyticsHelper;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import rx.Observable;
@@ -453,10 +453,7 @@ public class ShowCommentsFragment extends Fragment {
 
     private void showSoftInput() {
         if (mReplyToCommentText == null || getActivity() == null) return;
-        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            imm.showSoftInput(mReplyToCommentText, InputMethodManager.SHOW_IMPLICIT);
-        }
+        ImeUtils.showIme(mReplyToCommentText);
         mReplyToCommentText.requestFocus();
     }
 

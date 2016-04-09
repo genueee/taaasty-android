@@ -29,7 +29,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.facebook.FacebookSdk;
@@ -42,6 +41,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru0xdc.NdkStackBlur;
 
@@ -211,18 +211,6 @@ public class LoginActivity extends ActivityBase implements
                 .commit();
     }
 
-    private void hideIme() {
-        InputMethodManager imm = (InputMethodManager)getSystemService(
-                Context.INPUT_METHOD_SERVICE);
-        View v=this.getCurrentFocus();
-        if(v==null)
-            return;
-
-        if (imm != null) {
-            imm.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-        }
-    }
-
     public Animator createBlurOutAnimator() {
         return mBackground.createBlurOutAnimator();
     }
@@ -232,7 +220,7 @@ public class LoginActivity extends ActivityBase implements
     }
 
     private void closeAllFragments() {
-        hideIme();
+        ImeUtils.hideIme(getCurrentFocus());
         getFragmentManager().popBackStack(FRAGMENT_BACK_STACK_TAG1, FragmentManager.POP_BACK_STACK_INCLUSIVE);
     }
 

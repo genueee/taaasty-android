@@ -7,7 +7,6 @@ import android.animation.AnimatorSet;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -34,6 +32,7 @@ import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.SlugTextInputFilter;
 import ru.taaasty.utils.UserEmailLoader;
 import rx.Observable;
@@ -133,14 +132,7 @@ public class SignUpFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         getLoaderManager().initLoader(0, null, mEmailLoader);
-
-        mEmailView.post(() -> {
-            InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(
-                    Context.INPUT_METHOD_SERVICE);
-            if (imm != null)
-                imm.showSoftInput(mEmailView, InputMethodManager.SHOW_IMPLICIT);
-        });
-
+        mEmailView.post(() -> ImeUtils.showIme(mEmailView));
     }
 
     @Override
