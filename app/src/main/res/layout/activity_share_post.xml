@@ -1,29 +1,27 @@
-<ru.taaasty.widgets.BottomSheet
-    android:id="@+id/bottom_sheet"
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:scrollingChild="@+id/scroll_container"
-    tools:context="io.plaidapp.ui.PostNewDesignerNewsStory">
+    tools:context=".ui.post.SharePostActivity"
+    >
 
-    <android.support.v4.widget.NestedScrollView
-        android:id="@+id/scroll_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:clipToPadding="false"
-        android:scrollbars="none"
-        android:overScrollMode="never"
-        android:fadingEdge="none"
-        >
+        <View
+            android:id="@+id/touch_outside"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:soundEffectsEnabled="false"/>
 
         <android.support.v7.widget.GridLayout
             app:alignmentMode="alignBounds"
             android:id="@+id/bottom_bar_content"
             app:columnCount="@integer/share_post_column_count"
             app:columnOrderPreserved="true"
+            android:clickable="true"
+            android:layout_gravity="top|center_vertical"
+            app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
             style="@style/ShareBottomSheetStyle">
 
             <TextView
@@ -59,7 +57,7 @@
 
             <View
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="20dp"
                 android:background="@drawable/select_share_method_horiz_divider"
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="4dp"
@@ -117,9 +115,8 @@
                 android:onClick="savePost"
                 android:text="@string/save_post"/>
         </android.support.v7.widget.GridLayout>
-    </android.support.v4.widget.NestedScrollView>
 
 
-</ru.taaasty.widgets.BottomSheet>
+</android.support.design.widget.CoordinatorLayout>
 
 

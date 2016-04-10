@@ -41,6 +41,7 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
     </style>
 
     <style name="ShowPhotoTheme" parent="AppThemeOverlayingActionBar"/>
@@ -139,12 +140,18 @@
         <item name="android:backgroundDimAmount">0.90</item>
     </style>
 
-    <style name="SharePostTheme" parent="AppThemeDark">
+    <style name="SharePostTheme" parent="AppTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowFullscreen">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:backgroundDimEnabled">true</item>
-        <item name="android:backgroundDimAmount">0.90</item>
+        <item name="android:backgroundDimAmount">0.60</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Design.BottomSheetDialog</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 
     <style name="LoginButtonContainer">
@@ -560,7 +567,7 @@
         <item name="android:textScaleX">0.8</item>
     </style>
 
-    <style name="ShareBottomSheetStyle.Base" parent="">
+    <style name="ShareBottomSheetStyle.Base" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_gravity">bottom|center_horizontal</item>
@@ -569,6 +576,7 @@
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">8dp</item>
         <item name="android:paddingTop">16dp</item>
+        <item name="behavior_peekHeight">600dp</item>
     </style>
 
     <style name="ShareBottomSheetStyle" parent="ShareBottomSheetStyle.Base" />

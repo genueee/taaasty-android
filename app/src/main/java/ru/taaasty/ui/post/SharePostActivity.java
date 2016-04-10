@@ -10,6 +10,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -33,7 +35,6 @@ import ru.taaasty.Session;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
-import ru.taaasty.widgets.BottomSheet;
 
 public class SharePostActivity extends ActivityBase {
 
@@ -113,10 +114,9 @@ public class SharePostActivity extends ActivityBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_share_post);
-        BottomSheet bottomSheet = (BottomSheet)findViewById(R.id.bottom_sheet);
+
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
-
         if (getIntent().hasExtra(ARG_TLOG_ID)) {
             mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, -1);
         } else {
@@ -127,21 +127,28 @@ public class SharePostActivity extends ActivityBase {
             mDoShareVkontakte = savedInstanceState.getBoolean(KEY_DO_SHARE_VKONTAKTE);
         }
 
-        bottomSheet.addListener(new BottomSheet.Listener() {
+        findViewById(R.id.touch_outside).setOnClickListener(v -> finish());
+
+        GridLayout container = (GridLayout)findViewById(R.id.bottom_bar_content);
+        BottomSheetBehavior behavior = BottomSheetBehavior.from(container);
+        //behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        behavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
-            public void onDragDismissed() {
-                if (DBG) Log.v(TAG, "onDragDismissed");
-                finish();
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                //if (DBG) Log.d(TAG, "nStateChanged() newState: " + newState);
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    finish();
+                }
             }
 
             @Override
-            public void onDrag(int top) {
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                //if (DBG) Log.d(TAG, "onSlide() called slideOffset: " + slideOffset);
             }
         });
 
         boolean isMyEntry = mEntry.isMyEntry();
 
-        GridLayout container = (GridLayout)findViewById(R.id.bottom_bar_content);
         if (isMyEntry || !Session.getInstance().isAuthorized()) {
             container.removeView(findViewById(R.id.ic_add_post_to_favorites));
         } else {

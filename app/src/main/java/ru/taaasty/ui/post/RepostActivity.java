@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
@@ -44,7 +46,6 @@ import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
-import ru.taaasty.widgets.BottomSheet;
 import ru.taaasty.widgets.ExtendedImageView;
 import rx.Observable;
 import rx.Observer;
@@ -90,7 +91,6 @@ public class RepostActivity extends ActivityBase {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_share_repost);
-        BottomSheet bottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
         mProgress = (ProgressBar) findViewById(R.id.progress);
         mRecyclerView = (RecyclerView) findViewById(R.id.scroll_container);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
@@ -107,22 +107,31 @@ public class RepostActivity extends ActivityBase {
             return false;
         });
 
+        findViewById(R.id.touch_outside).setOnClickListener(v -> finish());
+
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        BottomSheetBehavior behavior = BottomSheetBehavior.from(bottomSheet);
+        //behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        behavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                //if (DBG) Log.d(TAG, "nStateChanged() newState: " + newState);
+                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                    finish();
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                //if (DBG) Log.d(TAG, "onSlide() called slideOffset: " + slideOffset);
+            }
+        });
+
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
         if (mEntry == null) throw new IllegalArgumentException("ARG_ENTRY not defined");
 
         mApiFlows = RestClient.getAPiFlows();
         mApiReposts = RestClient.getApiReposts();
-
-        bottomSheet.addListener(new BottomSheet.Listener() {
-            @Override
-            public void onDragDismissed() {
-                finish();
-            }
-
-            @Override
-            public void onDrag(int top) {
-            }
-        });
 
         if (savedInstanceState != null) {
             mAdapter.restoreInstanceState(savedInstanceState);
