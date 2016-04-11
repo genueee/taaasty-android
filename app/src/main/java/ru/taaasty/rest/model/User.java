@@ -102,7 +102,7 @@ public class User implements Parcelable {
     long publicEntriesCount;
 
     @SerializedName("userpic")
-    Userpic mUserpic = Userpic.DUMMY;
+    Userpic mUserpic;
 
     @SerializedName("relationships_summary")
     RelationshipsSummary mRelationshipsSummary;
@@ -132,8 +132,9 @@ public class User implements Parcelable {
         return mSlug != null ? mSlug : (mName != null ? mName : "");
     }
 
+    @Nullable
     public Userpic getUserpic() {
-        return mUserpic == null ? Userpic.DUMMY : mUserpic;
+        return mUserpic;
     }
 
     public String getTlogUrl() {

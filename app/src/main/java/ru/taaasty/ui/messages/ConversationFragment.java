@@ -44,7 +44,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.AnalyticsHelper;
-import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
@@ -122,6 +122,7 @@ public class ConversationFragment extends Fragment {
         } else {
             mConversationId = getArguments().getLong(ARG_CONVERSATION_ID);
         }
+        mMessagesLoader = new MessagesLoader();
     }
 
     @Override
@@ -146,7 +147,6 @@ public class ConversationFragment extends Fragment {
             }
         });
 
-        mMessagesLoader = new MessagesLoader();
         markMessagesAsRead = new MarkMessagesAsRead();
         mAdapter = new Adapter(getActivity());
         mListView.setAdapter(mAdapter);
@@ -244,18 +244,20 @@ public class ConversationFragment extends Fragment {
         mConversation = conversation;
         if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
         bindHeader();
-        mMessagesLoader.refreshMessages();
+        // todo onConversationLoaded() иногда вызываем из Activity.onCreate, когда ещё лоадера (а точнее уже) не существует.
+        // разобраться.
+        if (mMessagesLoader != null) mMessagesLoader.refreshMessages();
     }
 
     public void bindHeader() {
         View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
 
         ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
-        ImageUtils.getInstance().loadAvatarToImageView(mConversation.getAvatarUser(), R.dimen.avatar_small_diameter, avatar);
+        ConversationHelper.getInstance().bindAvatarToImageView(mConversation, R.dimen.avatar_small_diameter, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
-        topic.setText(mConversation.getTitle(getContext()));
+        topic.setText(ConversationHelper.getInstance().getTitle(mConversation, getContext()));
         if (mConversation.isGroup()) {
             users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
         } else {

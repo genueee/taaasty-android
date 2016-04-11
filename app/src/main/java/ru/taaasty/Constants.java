@@ -2,8 +2,6 @@ package ru.taaasty;
 
 import com.vk.sdk.VKScope;
 
-import retrofit.RestAdapter;
-
 public interface Constants {
     public static final String LOG_TAG = "Taaasty";
     public static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -17,8 +15,6 @@ public interface Constants {
 
     String ACTIVITY_RESULT_ARG_ERROR_MESSAGE = "ACTIVITY_RESULT_ARG_ERROR_MESSAGE";
 
-    public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.BASIC : RestAdapter.LogLevel.NONE;
-    //public static final RestAdapter.LogLevel RETROFIT_LOG_LEVEL = BuildConfig.DEBUG ? RestAdapter.LogLevel.FULL : RestAdapter.LogLevel.NONE;
     public static final int CONNECT_TIMEOUT_S = 35;
     public static final int READ_TIMEOUT_S = 120;
     public static final int LRU_MEMORY_CACHE_PCT = 15;

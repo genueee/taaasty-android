@@ -8,8 +8,14 @@ import android.graphics.Paint;
 import com.squareup.picasso.Transformation;
 
 public class CircleTransformation implements Transformation {
-    public CircleTransformation() {
 
+    private static CircleTransformation sInstance = new CircleTransformation();
+
+    public static CircleTransformation getInstance() {
+        return sInstance;
+    }
+
+    public CircleTransformation() {
     }
 
     @Override

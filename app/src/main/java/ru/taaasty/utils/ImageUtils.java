@@ -424,7 +424,7 @@ public class ImageUtils {
         Userpic userpic;
         String userName;
         if (user == null) {
-            userpic = Userpic.DUMMY;
+            userpic = null;
             userName = "";
         } else {
             userpic = user.getUserpic();
@@ -438,7 +438,7 @@ public class ImageUtils {
         if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
             dstTextView.setCompoundDrawables(defaultUserpicDrawable, null, null, null);
         } else {
-            Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
+            Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub).mutate();
             stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
             ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl);
@@ -474,7 +474,7 @@ public class ImageUtils {
         Userpic userpic;
         String userName;
         if (user == null) {
-            userpic = Userpic.DUMMY;
+            userpic = null;
             userName = "";
         } else {
             userpic = user.getUserpic();

@@ -140,7 +140,7 @@
         <item name="android:backgroundDimAmount">0.90</item>
     </style>
 
-    <style name="SharePostTheme" parent="AppTheme">
+    <style name="SharePostThemeBase" parent="AppTheme">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="colorPrimaryDark">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
@@ -153,6 +153,13 @@
         <item name="android:windowFrame">@null</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
+
+    <style name="SharePostTheme" parent="SharePostThemeBase"/>
+
+    <style name="RepostDialogTheme" parent="SharePostTheme">
+        <item name="android:backgroundDimAmount">0.90</item>
+    </style>
+
 
     <style name="LoginButtonContainer">
         <item name="android:gravity">center_vertical</item>

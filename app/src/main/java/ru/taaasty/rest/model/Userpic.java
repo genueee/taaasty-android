@@ -11,8 +11,11 @@ import android.util.Log;
 * Created by alexey on 10.07.14.
 */
 public class Userpic implements Parcelable {
-    public static Userpic DUMMY = new Userpic();
 
+    /**
+     * URL картинки. Может быть null, если картинка на сервере внезапно пропала
+     * (да, такое реально бывает)
+     */
     @Nullable
     public String originalUrl;
 
@@ -22,8 +25,8 @@ public class Userpic implements Parcelable {
 
         public static final DefaultColors DUMMY = new DefaultColors();
 
-        String background = "";
-        String name = "";
+        String background = "#44d068";
+        String name = "#ffffffff";
 
         public int getBackgroundColor() {
             if (TextUtils.isEmpty(background)) return Color.TRANSPARENT;

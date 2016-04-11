@@ -63,9 +63,14 @@ public class DefaultUserpicDrawable extends Drawable {
     }
 
     public void setUser(Userpic userpic, String name) {
-        mUsername = name;
-        mTextColor = userpic.defaultColors.getTextColor();
-        mBackgroundColor = userpic.defaultColors.getBackgroundColor();
+        mUsername = name == null ? "" : name;
+        if (userpic != null && userpic.defaultColors != null) {
+            mTextColor = userpic.defaultColors.getTextColor();
+            mBackgroundColor = userpic.defaultColors.getBackgroundColor();
+        } else {
+            mTextColor = Color.WHITE;
+            mBackgroundColor = Color.parseColor("#44d068");
+        }
     }
 
     @Override

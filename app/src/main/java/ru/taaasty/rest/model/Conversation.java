@@ -1,28 +1,36 @@
 package ru.taaasty.rest.model;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import ru.taaasty.R;
-import ru.taaasty.Session;
-import ru.taaasty.utils.Objects;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+
+import ru.taaasty.Session;
+import ru.taaasty.utils.Objects;
 
 /**
  * Created by alexey on 22.10.14.
  */
 public class Conversation implements Parcelable {
 
-    public static final String TYPE_CHAT = "PrivateConversation";
-    public static final String TYPE_GROUP = "GroupConversation";
-    public static final String TYPE_PUBLIC_GROUP = "PublicConversation";
+    /**
+     * Чат между двумя пользователями
+     */
+    public static final String TYPE_PRIVATE_CONVERSATION = "PrivateConversation";
 
-    public static final String MESSAGE_TYPE_SYSTEM = "SystemMessage";
+    /**
+     * Чат - групповой, между несколькими пользователями, приватный
+     */
+    public static final String TYPE_GROUP_CONVERSATION = "GroupConversation";
+
+    /**
+     * Обсуждения записи в форме чата.
+     */
+    public static final String TYPE_PUBLIC_CONVERSATION = "PublicConversation";
 
     public long id = -1;
 
@@ -40,13 +48,20 @@ public class Conversation implements Parcelable {
 
     public User recipient = User.DUMMY;
 
-    public User admin;
+    private User admin;
 
+    @Nullable
     public ArrayList<User> users;
 
-    public long[] users_left;
+    @Nullable
+    public long[] usersLeft;
 
+    /**
+     * Обсуждаемая запись. Только для типа {@link #TYPE_PUBLIC_CONVERSATION}
+     */
+    @Nullable
     public Entry entry;
+
 
     public int unreadMessagesCount;
 
@@ -54,6 +69,11 @@ public class Conversation implements Parcelable {
 
     public int messagesCount;
 
+    /**
+     * Аватарка чата, только для типа {@link #TYPE_GROUP_CONVERSATION} и только если она установлена.
+     * null в остальных случаях
+     */
+    @Nullable
     public Avatar avatar;
 
     public Message lastMessage = Message.DUMMY;
@@ -79,22 +99,31 @@ public class Conversation implements Parcelable {
         }
     };
 
+    /**
+     * @return Чат - групповой (с несколькими пользователями, а не с одним)
+     */
     public boolean isGroup() {
         return isPrivateGroup() || isPublicGroup();
     }
 
+    /**
+     * Чат - обсуждение записи
+     */
     public boolean isPublicGroup() {
-        return type.equals(TYPE_PUBLIC_GROUP);
+        return type.equals(TYPE_PUBLIC_CONVERSATION);
     }
 
+    /**
+     * @return Чат - приватный, между нескольими пользователями
+     */
     public boolean isPrivateGroup() {
-        return type.equals(TYPE_GROUP);
+        return type.equals(TYPE_GROUP_CONVERSATION);
     }
 
     public ArrayList<User> getActualUsers() {
         ArrayList<User> actualUsers = new ArrayList<>(users);
-        if (users_left != null) {
-            for (long userId : users_left) {
+        if (usersLeft != null) {
+            for (long userId : usersLeft) {
                 User userLeft;
                 if ((userLeft = findUserById(userId)) != null) {
                     actualUsers.remove(userLeft);
@@ -108,20 +137,6 @@ public class Conversation implements Parcelable {
         return admin;
     }
 
-    public String getTitle(Context context) {
-        if (isPrivateGroup()) {
-            return topic;
-        } else if (isPublicGroup()) {
-            if (TextUtils.isEmpty(entry.getTitle().trim())) {
-                return context.getString(R.string.public_conversation_default_title);
-            } else {
-                return entry.getTitle().trim();
-            }
-        } else {
-            return recipient.getNameWithPrefix();
-        }
-    }
-
     public String getTitle() {
         if (isPrivateGroup()) {
             return topic;
@@ -130,26 +145,6 @@ public class Conversation implements Parcelable {
         } else {
             return recipient.getNameWithPrefix();
         }
-    }
-
-    public String getAvatarUrl() {
-        if (isPrivateGroup() && avatar != null) {
-            return avatar.url;
-        }
-        if (isPublicGroup() && entry.getImageUrl() != null) {
-            return entry.getImageUrl();
-        }
-        return null;
-    }
-
-    public User getAvatarUser() {
-        if (!isGroup()) {
-            return recipient;
-        }
-        if (isPublicGroup()) {
-            return entry.getAuthor();
-        }
-        return null;
     }
 
     public User findUserById(long userId) {
@@ -166,6 +161,8 @@ public class Conversation implements Parcelable {
     }
 
     public static class Message implements Parcelable {
+
+        private static final String MESSAGE_TYPE_SYSTEM = "SystemMessage";
 
         public static Comparator<Message> SORT_BY_ID_COMPARATOR = new Comparator<Message>() {
             @Override
@@ -305,6 +302,9 @@ public class Conversation implements Parcelable {
         };
     }
 
+    /**
+     * Иконка чата
+     */
     public static class Avatar implements Parcelable {
 
         public String url;
@@ -373,7 +373,7 @@ public class Conversation implements Parcelable {
         dest.writeLong(this.recipientId);
         dest.writeParcelable(this.admin, 0);
         dest.writeTypedList(users);
-        dest.writeLongArray(users_left);
+        dest.writeLongArray(usersLeft);
         dest.writeParcelable(entry, 0);
         dest.writeParcelable(this.recipient, 0);
         dest.writeInt(this.unreadMessagesCount);
@@ -399,7 +399,7 @@ public class Conversation implements Parcelable {
         this.admin = in.readParcelable(User.class.getClassLoader());
         this.users = new ArrayList<>();
         in.readTypedList(users, User.CREATOR);
-        this.users_left = in.createLongArray();
+        this.usersLeft = in.createLongArray();
         this.entry = in.readParcelable(Entry.class.getClassLoader());
         this.recipient = in.readParcelable(User.class.getClassLoader());
         this.unreadMessagesCount = in.readInt();

@@ -67,11 +67,14 @@ android {
                 project.ext.private.getProperty("default.AdobeClientId", "\"a28b7e7fa93c49c98c0caf1438ec3d53\"")
         buildConfigField "String", "ADOBE_CLIENT_SECRET",
                 project.ext.private.getProperty("default.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
+        buildConfigField "retrofit.RestAdapter.LogLevel", "RETROFIT_LOG_LEVEL",
+                project.ext.private.getProperty("default.RetrofitLogLevel", "retrofit.RestAdapter.LogLevel.BASIC")
 
         buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DummyStethoHelper()'
 
         resValue "string", "facebook_app_id", "\"731919696901929\""
         resValue "integer", "com_vk_sdk_AppId", project.ext.private.getProperty("default.VkontakteAppId", "4553661")
+
 
         resConfigs "en", "ru" // Выносим неиспользуемые языки
 
@@ -113,6 +116,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            buildConfigField 'retrofit.RestAdapter.LogLevel', 'RETROFIT_LOG_LEVEL', 'retrofit.RestAdapter.LogLevel.NONE'
         }
         beta {
             applicationIdSuffix ".beta";
@@ -190,6 +194,7 @@ dependencies {
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'info.piwai.frenchtoast:frenchtoast:1.0'
+    compile 'nl.littlerobots.rxlint:rxlint:1.0'
     compile 'pl.droidsonroids.gif:android-gif-drawable:1.1.15'
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
 

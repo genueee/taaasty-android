@@ -31,7 +31,7 @@
                 android:layout_marginRight="16dp"
                 android:layout_gravity="top"
                 android:foreground="@drawable/clickable_item_circle_background"
-                android:contentDescription="@string/open_user_tlog"
+                android:contentDescription="@string/change_conversation_avatar"
                 android:clickable="true"
                 android:src="@drawable/avatar_dummy"/>
 

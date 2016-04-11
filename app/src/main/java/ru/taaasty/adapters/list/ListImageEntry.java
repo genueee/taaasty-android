@@ -117,7 +117,7 @@ public class ListImageEntry extends ListEntryBase implements Callback, MyRecycle
         Picasso.with(mContext).cancelRequest(mImageView);
         mLoadGifSubscription.unsubscribe();
         if (mTitleImgLoader != null) mTitleImgLoader.reset();
-        if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag);
+        if (mOkHttpClient != null) mOkHttpClient.cancel(mGitLoadTag );
         recycleGifDrawable();
     }
 

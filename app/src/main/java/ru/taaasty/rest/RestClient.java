@@ -9,6 +9,7 @@ import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.OkClient;
+import retrofit.converter.Converter;
 import retrofit.converter.GsonConverter;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -56,22 +57,27 @@ public final class RestClient {
     private volatile ApiReposts mApiReposts;
 
     private RestClient() {
+        Converter gsonConverter = new GsonConverter(NetworkUtils.getGson());
+        AddHeadersRequestInterceptor requestInterceptor = new AddHeadersRequestInterceptor();
+        ErrorHandler errorHandler = new ResponseErrorExceptionErrorHandler();
+        OkClient okClient = new OkClient(NetworkUtils.getInstance().getOkHttpClient());
+
         mRestAdapter = new RestAdapter.Builder()
-                .setLogLevel(Constants.RETROFIT_LOG_LEVEL)
+                .setLogLevel(BuildConfig.RETROFIT_LOG_LEVEL)
                 .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
-                .setConverter(new GsonConverter(NetworkUtils.getGson()))
-                .setRequestInterceptor(new AddHeadersRequestInterceptor())
-                .setErrorHandler(new ResponseErrorExceptionErrorHandler())
-                .setClient(new OkClient(NetworkUtils.getInstance().getOkHttpClient()))
+                .setConverter(gsonConverter)
+                .setRequestInterceptor(requestInterceptor)
+                .setErrorHandler(errorHandler)
+                .setClient(okClient)
                 .build();
 
         mRestAdapterV2 = new RestAdapter.Builder()
-                .setLogLevel(Constants.RETROFIT_LOG_LEVEL)
+                .setLogLevel(BuildConfig.RETROFIT_LOG_LEVEL)
                 .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION_V2)
-                .setConverter(new GsonConverter(NetworkUtils.getGson()))
-                .setRequestInterceptor(new AddHeadersRequestInterceptor())
-                .setErrorHandler(new ResponseErrorExceptionErrorHandler())
-                .setClient(new OkClient(NetworkUtils.getInstance().getOkHttpClient()))
+                .setConverter(gsonConverter)
+                .setRequestInterceptor(requestInterceptor)
+                .setErrorHandler(errorHandler)
+                .setClient(okClient)
                 .build();
     }
 

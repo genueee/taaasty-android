@@ -11,10 +11,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
@@ -56,6 +59,17 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         bindUnreadMessages(viewHolder, conversation);
     }
 
+
+    private static boolean isLastSenderShouldBeShown(Conversation conversation) {
+        //  в групповых чатах отправитель отображается всегда, в личных - только для исходящих.
+        // Получатель и так отображается, поэтому не дублируют для исходящих.
+        // В чате с самим собой отправитель не отображается
+        if (conversation.lastMessage == null || conversation.lastMessage.author == null) return false;
+        if (conversation.isGroup()) return true;
+        if (conversation.userId == conversation.recipientId) return false;
+        return conversation.lastMessage.userId == conversation.userId;
+    }
+
     @Override
     public int getItemCount() {
         return mConversations.size();
@@ -75,14 +89,15 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
-        ImageUtils.getInstance().loadAvatarToImageView(conversation.getAvatarUser(), R.dimen.avatar_small_diameter, holder.avatar);
+        ConversationHelper helper = ConversationHelper.getInstance();
+        helper.bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
 
-        holder.messageAvatar.setVisibility(View.GONE);
-        if (conversation.lastMessage != null
-                && conversation.lastMessage.author != null
-                && !conversation.lastMessage.author.equals(conversation.getAvatarUser())) {
+        if (isLastSenderShouldBeShown(conversation)) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
             mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
+        } else {
+            Picasso.with(holder.messageAvatar.getContext()).cancelRequest(holder.messageAvatar);
+            holder.messageAvatar.setVisibility(View.GONE);
         }
     }
 
@@ -92,7 +107,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindText(ViewHolder holder, Conversation conversation) {
         User author = conversation.recipient;
-        String title = conversation.getTitle(holder.title.getContext());
+        String title = ConversationHelper.getInstance().getTitleWithoutUserPrefix(conversation, holder.title.getContext());
         SpannableStringBuilder ssb = new SpannableStringBuilder(title);
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), conversation.isGroup() ? -1 : author.getId(),
                 holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);

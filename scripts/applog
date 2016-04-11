@@ -1,0 +1,9 @@
+#!/bin/sh
+PKG="ru.taaasty.debug"
+
+APPIDS=`adb $@ shell ps | awk -v PKG="$PKG" '
+    (NR == 1){appcolumn=1; for (i=1; i<=NF; i++) if ($i=="PID") {appcolumn=i}}
+    index($0,PKG){print $(appcolumn)}' | paste -d \| -s`
+
+echo "PID's: $APPIDS"
+adb $@ logcat -v color | awk  "(\$3 ~ /$APPIDS/){print \$0}"

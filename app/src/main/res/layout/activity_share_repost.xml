@@ -6,8 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.post.RepostActivity"
-    >
+    tools:context=".ui.post.RepostActivity">
 
     <View
         android:id="@+id/touch_outside"
@@ -18,11 +17,13 @@
     <LinearLayout
         android:id="@+id/bottom_sheet"
         style="@style/ShareBottomSheetStyle"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="top|center_vertical"
         android:background="@null"
         android:orientation="vertical"
         android:padding="0dp"
+        android:fitsSystemWindows="true"
+        android:clipToPadding="true"
         app:behavior_peekHeight="320dp"
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
@@ -37,13 +38,13 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@drawable/select_share_method_background">
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/scroll_container"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:minHeight="290dp"
                 tools:listitem="@layout/list_item_flow"
                  />

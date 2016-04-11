@@ -46,6 +46,7 @@ import ru.taaasty.utils.CircleTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
+import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.widgets.ExtendedImageView;
 import rx.Observable;
 import rx.Observer;
@@ -76,6 +77,8 @@ public class RepostActivity extends ActivityBase {
     private RepostItemsAdapter mAdapter;
     private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
+    private BottomSheetBehavior mBottomSheetBehavior;
+
     Subscription mFlowsSubscription = Subscriptions.unsubscribed();
     Subscription mRepostSubscription = Subscriptions.unsubscribed();
 
@@ -103,28 +106,34 @@ public class RepostActivity extends ActivityBase {
         mSearchView.setIconified(false);
         mSearchView.clearFocus();
         mSearchView.setOnCloseListener(() -> {
-            finish();
+            finishSwipingDown();
             return false;
         });
 
         findViewById(R.id.touch_outside).setOnClickListener(v -> finish());
 
         View bottomSheet = findViewById(R.id.bottom_sheet);
-        BottomSheetBehavior behavior = BottomSheetBehavior.from(bottomSheet);
-        //behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        behavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
                 //if (DBG) Log.d(TAG, "nStateChanged() newState: " + newState);
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
+                if (newState == BottomSheetBehavior.STATE_HIDDEN && !isFinishing()) {
                     finish();
                 }
             }
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                //if (DBG) Log.d(TAG, "onSlide() called slideOffset: " + slideOffset);
             }
+        });
+        //mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        SafeOnPreDrawListener.runWhenLaidOut(bottomSheet, root -> {
+            if (isFinishing()) return false;
+            mBottomSheetBehavior.setPeekHeight(root.getHeight() + (int)(2 * getResources().getDisplayMetrics().density + 0.5));
+            return false;
         });
 
         mEntry = getIntent().getParcelableExtra(ARG_ENTRY);
@@ -165,9 +174,17 @@ public class RepostActivity extends ActivityBase {
     }
 
     @Override
-    public void finish() {
-        super.finish();
-        overridePendingTransition(0, R.anim.scroll_down_out);
+    public void onBackPressed() {
+        finishSwipingDown();
+    }
+
+    void finishSwipingDown() {
+        if (isFinishing()) return;
+        if (mBottomSheetBehavior != null && mBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_HIDDEN) {
+            //mBottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            finish();
+            //overridePendingTransition(0, R.anim.scroll_down_out);
+        }
     }
 
     @Override
@@ -207,7 +224,7 @@ public class RepostActivity extends ActivityBase {
         @Override
         public void onError(Throwable e) {
             MessageHelper.showError(RepostActivity.this, getString(R.string.error_loading_flows), e);
-            finish();
+            finishSwipingDown();
         }
 
         @Override
@@ -238,7 +255,7 @@ public class RepostActivity extends ActivityBase {
             setProgressVisible(false);
             Toast.makeText(RepostActivity.this, R.string.repost_successful, Toast.LENGTH_SHORT).show();
             setResult(RESULT_OK);
-            finish();
+            finishSwipingDown();
         }
     };
 

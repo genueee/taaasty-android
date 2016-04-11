@@ -1,11 +1,11 @@
 package ru.taaasty.ui.messages;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -30,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.adobe.creativesdk.aviary.internal.utils.BitmapUtils;
+import com.squareup.picasso.Picasso;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -48,14 +49,16 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.ui.post.ShowPostActivity;
-import ru.taaasty.utils.ImageUtils;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
+import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.ConversationHelper;
+import ru.taaasty.utils.Objects;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Observer;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -73,7 +76,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private EditText mTopic;
     private TextView mUserCount;
     private View mEditUsersButton;
-    private View mSaveButton;
+    private TextView mSaveButton;
     private RecyclerView mRecyclerView;
     private UserAdapter mAdapter;
     private View mProgressOverlay;
@@ -119,7 +122,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mTopic = (EditText) root.findViewById(R.id.topic);
         mUserCount = (TextView) root.findViewById(R.id.user_count);
         mEditUsersButton = root.findViewById(R.id.edit_users);
-        mSaveButton = root.findViewById(R.id.save_button);
+        mSaveButton = (TextView)root.findViewById(R.id.save_button);
         mRecyclerView = (RecyclerView) root.findViewById(R.id.user_list);
         mProgressOverlay = root.findViewById(R.id.progress_overlay);
         mLeaveButton = root.findViewById(R.id.delete_chat_layout);
@@ -138,7 +141,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
         mApiMessenger = RestClient.getAPiMessenger();
 
-        if (getConversation() != null) {
+        if (!isNewConversation()) {
             mLeaveButton.setOnClickListener(onClickListener);
         } else {
             mLeaveButton.setVisibility(View.GONE);
@@ -159,6 +162,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             mEditUsersButton.setVisibility(View.GONE);
             mTopic.setKeyListener(null);
             mAdapter.setIsReadonly();
+            mSaveButton.setText(isNewConversation() ? R.string.create_conversation_short_button : R.string.save_conversation);
         }
         mAvatar.setOnClickListener(onClickListener);
 
@@ -211,7 +215,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     private boolean isReadOnly() {
-        return getConversation() != null && getConversation().isPublicGroup();
+        return !isNewConversation() && getConversation().isPublicGroup();
     }
 
     @Override
@@ -249,44 +253,76 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     private void bindGroupAvatar() {
-        // todo Не работает!!! Пофиксить!
+        if (isReadOnly()) {
+            bindReadOnlyGroupAvatar();
+        } else {
+            bindReadWriteGroupAvatar();
+        }
+    }
+
+    private void bindReadOnlyGroupAvatar() {
+        // URL аватарки не меняется. Показываем аватарку примерно как в списке сообщений.
+        // Не показываем кнопку для изменения.
+        ConversationHelper.getInstance().bindAvatarToImageView(getConversation(),
+                R.dimen.avatar_small_diameter, mAvatar);
+    }
+
+    private void bindReadWriteGroupAvatar() {
         final Uri imageUri = mModel.getAvatarUri();
+        final Picasso picasso = Picasso.with(getActivity());
+        final int imageSize = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
+        final ContentResolver contentResolver = getActivity().getContentResolver();
+
+        // URL аватарки меняется. После фотографирования/выбора из галереи url может быть
+        // file:// или content://. Грузим только аватарку по полю .avatar. Если она не установлена,
+        // то показываем кнопку для установки.
+
+        mGroupAvatarThumbnailSubscription.unsubscribe();
         if (imageUri != null) {
-            mGroupAvatarThumbnailSubscription.unsubscribe();
             Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
+
                 @Override
                 public void call(Subscriber<? super Bitmap> subscriber) {
-                    if (imageUri != null) {
-                        if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
-//                            ImageUtils.loadImageRounded(imageUri.toString(), R.dimen.avatar_small_diameter,mAvatar);
-                            ImageUtils.getInstance().loadAvatarToImageView(getConversation().getAvatarUser(), R.dimen.avatar_small_diameter, mAvatar);
-                        } else {
-                            InputStream is = null;
-                            try {
-                                is = getActivity().getContentResolver().openInputStream(imageUri);
-                                final int imageSize = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-                                Bitmap bitmap = BitmapFactory.decodeStream(is);
-                                if (bitmap.getWidth() >= bitmap.getHeight()) {
-                                    final float aspect = (float) bitmap.getHeight() / bitmap.getWidth();
-                                    bitmap = BitmapUtils.createThumbnail(bitmap, (int) (imageSize / aspect), imageSize, 0, 0);
-                                } else {
-                                    final float aspect = (float) bitmap.getWidth() / bitmap.getHeight();
-                                    bitmap = BitmapUtils.createThumbnail(bitmap, imageSize, (int) (imageSize / aspect), 0, 0);
-                                }
-                                bitmap = BitmapUtils.cropCenter(bitmap, imageSize, imageSize, Config.ARGB_8888);
-                                bitmap = BitmapUtils.roundedCorners(bitmap, imageSize / 2, imageSize / 2);
-                                subscriber.onNext(bitmap);
-                            } catch (FileNotFoundException e) {
-                                subscriber.onError(e);
-                                e.printStackTrace();
-                            } finally {
-                                if (is != null) {
-                                    try {
-                                        is.close();
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                        subscriber.onError(e);
-                                    }
+                    if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
+                        try {
+                            Bitmap bitmap = picasso
+                                    .load(imageUri)
+                                    .resize(imageSize, imageSize)
+                                    .onlyScaleDown()
+                                    .centerCrop()
+                                    .noFade()
+                                    .transform(CircleTransformation.getInstance())
+                                    .get();
+                            subscriber.onNext(bitmap);
+                            subscriber.onCompleted();
+                        } catch (IOException ioe) {
+                            subscriber.onError(ioe);
+                        }
+                    } else {
+                        InputStream is = null;
+                        try {
+                            is = contentResolver.openInputStream(imageUri);
+                            Bitmap bitmap = BitmapFactory.decodeStream(is);
+                            if (bitmap.getWidth() >= bitmap.getHeight()) {
+                                final float aspect = (float) bitmap.getHeight() / bitmap.getWidth();
+                                bitmap = BitmapUtils.createThumbnail(bitmap, (int) (imageSize / aspect), imageSize, 0, 0);
+                            } else {
+                                final float aspect = (float) bitmap.getWidth() / bitmap.getHeight();
+                                bitmap = BitmapUtils.createThumbnail(bitmap, imageSize, (int) (imageSize / aspect), 0, 0);
+                            }
+                            bitmap = BitmapUtils.cropCenter(bitmap, imageSize, imageSize, Config.ARGB_8888);
+                            bitmap = BitmapUtils.roundedCorners(bitmap, imageSize / 2, imageSize / 2);
+                            subscriber.onNext(bitmap);
+                        } catch (FileNotFoundException e) {
+                            subscriber.onError(e);
+                            e.printStackTrace();
+                        } finally {
+                            if (is != null) {
+                                try {
+                                    is.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    subscriber.onError(e);
                                 }
                             }
                         }
@@ -295,14 +331,24 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             });
 
             mGroupAvatarThumbnailSubscription = bitmapObservable
+                    .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(bitmap -> mAvatar.setImageBitmap(bitmap));
-        } else if (getConversation() != null) {
-            DefaultUserpicDrawable userpicDrawable = new DefaultUserpicDrawable(getActivity(),
-                    getConversation().getTitle(), getResources().getColor(R.color.avatar_default), Color.WHITE);
-            int avatarDiameter = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
-            userpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter);
-            mAvatar.setImageDrawable(userpicDrawable);
+                    .subscribe(new Observer<Bitmap>() {
+                                @Override
+                                public void onCompleted() {}
+
+                                @Override
+                                public void onError(Throwable e) {
+                                    mAvatar.setImageResource(R.drawable.ic_avatar_not_set_48dp);
+                                }
+
+                                @Override
+                                public void onNext(Bitmap bitmap) {
+                                    mAvatar.setImageBitmap(bitmap);
+                                }
+                            });
+        } else {
+            mAvatar.setImageResource(R.drawable.ic_avatar_not_set_48dp);
         }
     }
 
@@ -426,7 +472,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     };
 
     public void showLoadAvatar() {
-        if (!getConversation().isPublicGroup()) {
+        if (!isReadOnly()) {
             DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
             dialog.show(getFragmentManager(), DIALOG_TAG_SELECT_AVATAR);
         }
@@ -497,9 +543,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public void setAvatarUri(Uri uri) {
-            boolean changed = TextUtils.isEmpty(current.avatarUri) && uri != null || !current.avatarUri.equals(uri.toString());
+            boolean changed = TextUtils.isEmpty(current.avatarUri) && uri != null || !Objects.equals(current.avatarUri, uri == null ? null : uri.toString());
             if (changed) {
-                current.avatarUri = uri.toString();
+                current.avatarUri = uri == null ? "" : uri.toString();
                 if (onChangeListener != null) {
                     onChangeListener.onModelChanged();
                 }
@@ -587,7 +633,10 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
     static class State implements Parcelable{
         String topic;
+
+        @Nullable
         String avatarUri;
+
         ArrayList<User> users;
 
         public State() {
@@ -597,14 +646,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public State(Context context, Conversation conversation) {
-            topic = conversation.getTitle(context);
-            avatarUri = conversation.getAvatarUrl();
-            if (avatarUri == null) {
-                User user = conversation.getAvatarUser();
-                if (user != null) {
-                    avatarUri = user.getUserpic().originalUrl;
-                }
-            }
+            topic = ConversationHelper.getInstance().getTitle(conversation, context);
+            avatarUri = conversation.avatar != null ? conversation.avatar.url : "";
             users = new ArrayList<>(conversation.getActualUsers());
         }
 

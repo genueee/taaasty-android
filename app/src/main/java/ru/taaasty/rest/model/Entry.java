@@ -153,6 +153,9 @@ public class Entry implements Parcelable, Cloneable {
     @SerializedName("image_url")
     private String mImageUrl;
 
+    @SerializedName("preview_image")
+    private ImageInfo.Image2 mPreviewImage;
+
     private transient volatile SpannedString mTextSpanned = null;
 
     private transient volatile SpannedString mSourceSpanned = null;
@@ -387,6 +390,15 @@ public class Entry implements Parcelable, Cloneable {
     }
 
     /**
+     * @return Изображение для аватарки в списе сообщений. Возвращается только
+     * в списке сообщений, в других местах - null.
+     */
+    @Nullable
+    public ImageInfo.Image2 getPreviewImage() {
+        return mPreviewImage;
+    }
+
+    /**
      * @return true если пост открытый
      */
     public boolean isPublic() {
@@ -527,7 +539,7 @@ public class Entry implements Parcelable, Cloneable {
         if (mImages != null ? !mImages.equals(entry.mImages) : entry.mImages != null) return false;
         if (mImageUrl != null ? !mImageUrl.equals(entry.mImageUrl) : entry.mImageUrl != null)
             return false;
-        return true;
+        return mPreviewImage != null ? mPreviewImage.equals(entry.mPreviewImage) : entry.mPreviewImage == null;
 
     }
 
@@ -558,9 +570,7 @@ public class Entry implements Parcelable, Cloneable {
         result = 31 * result + (mCanEdit ? 1 : 0);
         result = 31 * result + (mCanDelete ? 1 : 0);
         result = 31 * result + (mImageUrl != null ? mImageUrl.hashCode() : 0);
-        result = 31 * result + (mTextSpanned != null ? mTextSpanned.hashCode() : 0);
-        result = 31 * result + (mSourceSpanned != null ? mSourceSpanned.hashCode() : 0);
-        result = 31 * result + (mTitleSpanned != null ? mTitleSpanned.hashCode() : 0);
+        result = 31 * result + (mPreviewImage != null ? mPreviewImage.hashCode() : 0);
         return result;
     }
 
@@ -596,6 +606,7 @@ public class Entry implements Parcelable, Cloneable {
         dest.writeByte(mCanEdit ? (byte) 1 : (byte) 0);
         dest.writeByte(mCanDelete ? (byte) 1 : (byte) 0);
         dest.writeString(this.mImageUrl);
+        dest.writeParcelable(mPreviewImage, 0);
     }
 
     protected Entry(Parcel in) {
@@ -627,6 +638,7 @@ public class Entry implements Parcelable, Cloneable {
         this.mCanEdit = in.readByte() != 0;
         this.mCanDelete = in.readByte() != 0;
         this.mImageUrl = in.readString();
+        this.mPreviewImage = in.readParcelable(ImageInfo.Image2.class.getClassLoader());
     }
 
     public static final Creator<Entry> CREATOR = new Creator<Entry>() {

@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.net.Uri;
 import android.os.StatFs;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -257,7 +258,7 @@ public final class NetworkUtils {
 
     // TODO придумать, почему мы этого не делаем интерцептором к picasso
     @Nullable
-    public static ThumborUrlBuilder createThumborUrl(String url) {
+    public static ThumborUrlBuilder createThumborUrl(@NonNull String url) {
         return sThumbor.buildImage(url)
                 .filter(ThumborUrlBuilder.stripicc());
     }

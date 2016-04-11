@@ -196,6 +196,8 @@
     <string name="edit_post">Изменить</string>
     <string name="delete_post">Удалить</string>
     <string name="save_post">Сохранить</string>
+    <string name="save_conversation">Сохранить</string>
+    <string name="create_conversation_short_button">Создать</string>
     <string name="repost">Репост</string>
     <string name="link_have_been_added_to_clipboard">Ссылка добавлена в буфер обмена</string>
     <string name="title_notifications">Уведомления</string>
@@ -253,6 +255,7 @@
     <string name="error_loading_conversations">Ошибка загрузки переписок</string>
     <string name="no_comments_hint">Здесь будут комментарии</string>
     <string name="open_user_tlog">Открыть тлог автора</string>
+    <string name="change_conversation_avatar">Сменить иконку чата</string>
     <string name="open_comments_content_description">Перейти к комментариям</string>
     <string name="messages_will_be_displayed_here">Здесь будут отображаться сообщения</string>
     <string name="partner">Собеседник</string>

@@ -1,5 +1,6 @@
 package ru.taaasty.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
@@ -38,6 +39,7 @@ public class AnalyticsHelper {
         return sInstance;
     }
 
+    @SuppressLint("RxSubscribeOnError")
     public synchronized Tracker getTracker() {
         if (mAnalyticsTracker == null) {
             GoogleAnalytics analytics = GoogleAnalytics.getInstance(mContext);
@@ -50,7 +52,7 @@ public class AnalyticsHelper {
             analytics.setLocalDispatchPeriod(1000);
             mAnalyticsTracker = analytics.newTracker(R.xml.app_tracker);
             mAnalyticsTracker.enableAdvertisingIdCollection(true);
-
+            
             Session.getInstance().getUserObservable().subscribe(currentUser -> {
                 if (currentUser.isAuthorized()) {
                     mAnalyticsTracker.set("&uid", Long.toString(currentUser.getId()));

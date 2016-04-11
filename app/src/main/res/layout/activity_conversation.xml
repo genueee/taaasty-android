@@ -5,7 +5,7 @@
     android:id="@+id/activityRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.TlogActivity"
+    tools:context=".ui.messages.ConversationActivity"
     tools:ignore="MergeRootFrame">
 
     <FrameLayout
@@ -23,16 +23,13 @@
             android:id="@+id/header_group_info"
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
-            android:gravity="center_vertical"
-            android:paddingRight="16dp"
-            android:paddingLeft="16dp">
+            android:gravity="center_vertical">
 
             <ru.taaasty.widgets.HintedExtendedImageView
                 android:id="@+id/avatar"
                 android:layout_width="@dimen/avatar_small_diameter_42dp"
                 android:layout_height="@dimen/avatar_small_diameter_42dp"
                 android:layout_marginRight="8dp"
-                android:foreground="@drawable/clickable_item_circle_background"
                 android:clickable="false"
                 android:contentDescription="@string/open_user_tlog"
                 android:src="@drawable/avatar_dummy"
@@ -47,6 +44,8 @@
                 android:ellipsize="end"
                 android:paddingTop="2dp"
                 android:textSize="15sp"
+                android:paddingLeft="4dp"
+                android:paddingRight="8dp"
                 android:includeFontPadding="false"
                 tools:text="genue sf"
                 android:layout_toRightOf="@+id/avatar"
@@ -59,6 +58,8 @@
                 android:maxLines="7"
                 android:ellipsize="end"
                 android:textSize="13sp"
+                android:paddingLeft="4dp"
+                android:paddingRight="8dp"
                 android:includeFontPadding="false"
                 android:textColor="@color/feed_white_text"
                 tools:text="genue sf"

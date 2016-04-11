@@ -13,6 +13,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.TextViewCompat;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -99,17 +100,21 @@ public abstract class FlowEntryHeader {
 
     private void setupImageAfterSizeKnown(Entry entry, int viewWidth, int viewHeight) {
         Userpic userpic = entry.getTlog().author.getUserpic();
-        String url = NetworkUtils.createThumborUrl(userpic.originalUrl)
-                .resize(viewWidth, viewHeight)
-                .filter(ThumborUrlBuilder.noUpscale())
-                .toUrlUnsafe();
+        if (userpic == null || TextUtils.isEmpty(userpic.originalUrl)) {
+            mPicasso.load(R.color.embedd_play_gray_background).into(this.image);
+        } else {
+            String url = NetworkUtils.createThumborUrl(userpic.originalUrl)
+                    .resize(viewWidth, viewHeight)
+                    .filter(ThumborUrlBuilder.noUpscale())
+                    .toUrlUnsafe();
 
-        mPicasso.load(url)
-                .placeholder(R.color.embedd_play_gray_background)
-                .error(R.color.embedd_play_gray_background)
-                .transform(mFlowHeaderTransfrom)
-                .resize(viewWidth, viewHeight)
-                .into(this.image);
+            mPicasso.load(url)
+                    .placeholder(R.color.embedd_play_gray_background)
+                    .error(R.color.embedd_play_gray_background)
+                    .transform(mFlowHeaderTransfrom)
+                    .resize(viewWidth, viewHeight)
+                    .into(this.image);
+        }
     }
 
 
