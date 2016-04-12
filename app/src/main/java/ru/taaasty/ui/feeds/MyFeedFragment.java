@@ -31,7 +31,7 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.FragmentWithWorkFragment;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.FeedBackground;
@@ -413,14 +413,7 @@ public class MyFeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> i
             Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            TlogDesign design = entry.getDesign();
-            if (design == null && mWorkFragment.getTlogDesign() != null)
-                design = mWorkFragment.getTlogDesign();
-            new ShowPostActivity.Builder(getActivity())
-                    .setEntry(entry)
-                    .setSrcView(view)
-                    .setDesign(design)
-                    .startActivity();
+            ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
         }
 
         @Override

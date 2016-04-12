@@ -8,7 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.post.ShowPostActivity2;
 
 /**
  * Span для замены всех URLSpan'ов с внутренними ссылками
@@ -85,8 +85,7 @@ public class TaaastyUrlSpan extends ClickableSpan {
                 mather = sPostUrlPattern.matcher(mUrl);
                 if (mather.matches()) {
                     long postId = Long.parseLong(mather.group(1));
-                    new ShowPostActivity.Builder(widget.getContext())
-                            .setShowFullPost(true)
+                    new ShowPostActivity2.Builder(widget.getContext())
                             .setEntryId(postId)
                             .startActivity();
                 }

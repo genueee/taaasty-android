@@ -35,7 +35,7 @@ import ru.taaasty.rest.model.Feed;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.DividerFeedListInterPost;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.utils.FeedBackground;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LikesHelper;
@@ -531,13 +531,7 @@ public class MyAdditionalFeedFragment extends Fragment implements IRereshable,
             Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            TlogDesign design = entry.getDesign();
-            if (design == null && mWorkFragment.getTlogDesign() != null) design = mWorkFragment.getTlogDesign();
-            new ShowPostActivity.Builder(getActivity())
-                    .setEntry(entry)
-                    .setSrcView(view)
-                    .setDesign(design)
-                    .startActivity();
+            ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
         }
 
         @Override

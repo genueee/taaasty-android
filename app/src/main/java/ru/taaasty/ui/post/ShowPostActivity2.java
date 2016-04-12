@@ -3,13 +3,11 @@ package ru.taaasty.ui.post;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -38,28 +36,25 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.utils.UiUtils;
 
-public class ShowPostActivity extends ActivityBase implements ShowCommentsFragment.OnFragmentInteractionListener, ShowPostFragment.OnFragmentInteractionListener {
+/**
+ * Created by alexey on 12.04.16.
+ */
+public class ShowPostActivity2 extends ActivityBase implements ShowPostFragment2.OnFragmentInteractionListener{
     private static final boolean DBG = BuildConfig.DEBUG;
-    private static final String TAG = "ShowPostActivity";
+    private static final String TAG = "ShowPostActivity2";
 
-    private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity.post_id";
-    private static final String ARG_TLOG_ID = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_id";
-    private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivity.entry";
-    private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity.tlog_design";
-    private static final String ARG_SHOW_FULL_POST = "ru.taaasty.ui.feeds.ShowPostActivity.show_full_post";
-    private static final String ARG_COMMENT_ID = "ru.taaasty.ui.feeds.ShowPostActivity.comment_id";
-    private static final String ARG_THUMBNAIL_BITMAP_CACHE_KEY = "ru.taaasty.ui.feeds.ShowPostActivity.thumbnail_bitmap_cache_key";
+    private static final String ARG_POST_ID = "ru.taaasty.ui.feeds.ShowPostActivity2.post_id";
+    private static final String ARG_TLOG_ID = "ru.taaasty.ui.feeds.ShowPostActivity2.tlog_id";
+    private static final String ARG_TLOG_DESIGN = "ru.taaasty.ui.feeds.ShowPostActivity2.ARG_TLOG_DESIGN";
+    private static final String ARG_ENTRY = "ru.taaasty.ui.feeds.ShowPostActivit2.entry";
+    private static final String ARG_RETURN_TO_CHAT_ON_COMMENTS_CLICK = "ru.taaasty.ui.feeds.ShowPostActivit2.ARG_RETURN_TO_CHAT_ON_COMMENTS_CLICK";
 
     private static final int HIDE_ACTION_BAR_DELAY = 500;
 
     public static final int REQUEST_CODE_SHARE = 3;
-
-    private Handler mHideActionBarHandler;
-
-    private boolean mShowFullPost;
 
     private long mPostId;
 
@@ -78,17 +73,11 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         private Entry mEntry;
 
-        private TlogDesign mTlogDesign;
-
-        private Long mCommentId;
-
         private Long mTlogId;
 
-        private Bitmap mThumbnailBitmap;
+        private TlogDesign mTlogDesign;
 
-        private String mThumbnailBitmapCacheKey;
-
-        private boolean mShowFullPost;
+        private boolean mReturnToChatOnCommentsClicked = false;
 
         public Builder(Context context) {
             mContext = context;
@@ -101,11 +90,6 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
 
         public Builder setTlogId(long tlogId) {
             mTlogId = tlogId;
-            return this;
-        }
-
-        public Builder setCommentId(Long commentId) {
-            mCommentId = commentId;
             return this;
         }
 
@@ -124,14 +108,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             return this;
         }
 
-        public Builder setThumbnailBitmap(Bitmap bitmap, @Nullable String cacheKey) {
-            mThumbnailBitmap = bitmap;
-            mThumbnailBitmapCacheKey = cacheKey;
-            return this;
-        }
-
-        public Builder setShowFullPost(boolean enable) {
-            mShowFullPost = enable;
+        public Builder setReturnOnCommentsClick(boolean doReturn) {
+            mReturnToChatOnCommentsClicked = doReturn;
             return this;
         }
 
@@ -140,20 +118,12 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
                 throw new IllegalStateException("post not defined");
             }
 
-            Intent intent = new Intent(mContext, ShowPostActivity.class);
-            intent.putExtra(ShowPostActivity.ARG_POST_ID, mEntry == null ? (long)mPostId : mEntry.getId());
-            if (mEntry != null) intent.putExtra(ShowPostActivity.ARG_ENTRY, mEntry);
-            if (mTlogId != null) intent.putExtra(ShowPostActivity.ARG_TLOG_ID, mTlogId.longValue());
-            if (mTlogDesign != null) intent.putExtra(ShowPostActivity.ARG_TLOG_DESIGN, mTlogDesign);
-            if (mCommentId != null) intent.putExtra(ShowPostActivity.ARG_COMMENT_ID, mCommentId);
-
-            if (mShowFullPost) intent.putExtra(ShowPostActivity.ARG_SHOW_FULL_POST, mShowFullPost);
-
-            if (mThumbnailBitmap != null) {
-                String key = mThumbnailBitmapCacheKey != null ? mThumbnailBitmapCacheKey : "thumbnail";
-                ImageUtils.getInstance().putBitmapToCache(key, mThumbnailBitmap);
-                intent.putExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY, key);
-            }
+            Intent intent = new Intent(mContext, ShowPostActivity2.class);
+            intent.putExtra(ShowPostActivity2.ARG_POST_ID, mEntry == null ? (long)mPostId : mEntry.getId());
+            if (mEntry != null) intent.putExtra(ShowPostActivity2.ARG_ENTRY, mEntry);
+            if (mTlogId != null) intent.putExtra(ShowPostActivity2.ARG_TLOG_ID, mTlogId.longValue());
+            if (mReturnToChatOnCommentsClicked) intent.putExtra(ARG_RETURN_TO_CHAT_ON_COMMENTS_CLICK, true);
+            if (mTlogDesign != null) intent.putExtra(ShowPostActivity2.ARG_TLOG_DESIGN, mTlogDesign);
 
             return intent;
         }
@@ -163,7 +133,7 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             if (mSrcView != null) {
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                         mSrcView, 0, 0, mSrcView.getWidth(), mSrcView.getHeight());
-                if (mContext instanceof  Activity) {
+                if (mContext instanceof Activity) {
                     ActivityCompat.startActivity((Activity) mContext, intent, options.toBundle());
                 } else {
                     mContext.startActivity(intent);
@@ -189,38 +159,25 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         }
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_show_post);
-
-        mShowFullPost = getIntent().getBooleanExtra(ARG_SHOW_FULL_POST, false);
+        setContentView(R.layout.activity_show_post_new);
 
         //noinspection ConstantConditions
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
-        mHideActionBarHandler = new Handler();
-
         mPostId = getIntent().getLongExtra(ARG_POST_ID, -1);
-        if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
         mTlogId = getIntent().getLongExtra(ARG_TLOG_ID, -1);
 
-        if (savedInstanceState == null) {
-            // TODO: скролл к комментарию
+        if (mPostId < 0) throw new IllegalArgumentException("no ARG_USER_ID");
 
-            String thumbnailKey = getIntent().getStringExtra(ARG_THUMBNAIL_BITMAP_CACHE_KEY);
+        if (savedInstanceState == null) {
             setupActionbar(null, null, design);
 
-            Fragment fragment;
-            if (mShowFullPost) {
-                fragment = ShowPostFragment.newInstance(mPostId, entry, design);
-            } else {
-                fragment = ShowCommentsFragment.newInstance(mPostId, entry, design);
-            }
+            Fragment fragment = ShowPostFragment2.newInstance(mPostId, entry, design);
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, fragment)
                     .commit();
         }
-
-        EventBus.getDefault().register(this);
     }
 
     @Override
@@ -232,8 +189,14 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    protected void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
         EventBus.getDefault().unregister(this);
     }
 
@@ -266,7 +229,8 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
             setupActionbar(null, null, null);
         } else {
             if( entry.getAuthor() != User.DUMMY )
-                setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getName(), entry.getAuthor().getDesign());
+                setupActionbar(entry.getAuthor().getUserpic(), entry.getAuthor().getName(),
+                        entry.getDesign());
         }
     }
 
@@ -297,25 +261,22 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     @Override
+    public void onPostCommentsClicked(Entry entry, View view) {
+        if (getIntent().getBooleanExtra(ARG_RETURN_TO_CHAT_ON_COMMENTS_CLICK, false)) {
+            finish();
+        } else {
+            ConversationActivity.startEntryConversationActivity(this, entry.getId(), view);
+        }
+    }
+
+    @Override
+    public void onFlowHeaderClicked(Entry entry, View view) {
+        TlogActivity.startTlogActivity(this, entry.getTlog().id, view);
+    }
+
+    @Override
     public void onSharePostMenuClicked(Entry entry) {
         showShareMenu();
-    }
-
-    @Override
-    public void onEdgeReached(boolean atTop) {
-        if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
-        if (!atTop) return;
-        mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) ab.show();
-    }
-
-    @Override
-    public void onEdgeUnreached() {
-        if (DBG) Log.v(TAG, "onEdgeUnreached");
-        mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
-
     }
 
     @Override
@@ -338,30 +299,17 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
     }
 
     @Override
-    public void onDeleteCommentClicked(long postId, long commentId) {
-        DeleteOrReportDialogActivity.startDeleteComment(this, REQUEST_CODE_SHARE, mPostId, commentId);
+    public void onEdgeReached(boolean atTop) {
     }
 
     @Override
-    public void onReportCommentClicked(long postId, long commentId) {
-        DeleteOrReportDialogActivity.startReportComment(this, REQUEST_CODE_SHARE, commentId);
+    public void onEdgeUnreached() {
     }
 
-    private Runnable mHideActionBarRunnable = () -> {
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) ab.hide();
-    };
-
-    private Entry getCurrentEntry() {
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
-
-        if (fragment == null) return null;
-        if (fragment instanceof  ShowCommentsFragment) {
-            return ((ShowCommentsFragment) fragment).getCurrentEntry();
-        } else if (fragment instanceof ShowPostFragment) {
-            return ((ShowPostFragment) fragment).getCurrentEntry();
+    public void onEventMainThread(EntryRemoved event) {
+        if( event.postId == mPostId) {
+            finish();
         }
-        return null;
     }
 
     void showShareMenu() {
@@ -379,12 +327,13 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         ActionBar ab = getSupportActionBar();
         if (ab == null) return;
 
-        SpannableString title = new SpannableString(getText(
-                mShowFullPost ? R.string.title_activity_show_post : R.string.title_activity_comments));
+        SpannableString title = new SpannableString(getText(R.string.title_activity_show_post));
 
         if (design != null) {
             if (design.isDarkTheme()) {
                 ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_dark)));
+                ForegroundColorSpan textColor = new ForegroundColorSpan(Color.WHITE);
+                title.setSpan(textColor, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 if (DBG) Log.v(TAG, "setupActionbar dark theme");
             } else {
                 ab.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.semi_transparent_action_bar_light)));
@@ -397,9 +346,14 @@ public class ShowPostActivity extends ActivityBase implements ShowCommentsFragme
         setTitle(title);
     }
 
-    public void onEventMainThread(EntryRemoved event) {
-        if( event.postId == mPostId) {
-            finish();
+    private Entry getCurrentEntry() {
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.container);
+
+        if (fragment == null) return null;
+        if (fragment instanceof ShowPostFragment2) {
+            return ((ShowPostFragment2) fragment).getCurrentEntry();
         }
+        return null;
     }
+
 }

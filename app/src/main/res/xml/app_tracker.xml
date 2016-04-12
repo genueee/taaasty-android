@@ -20,7 +20,7 @@
     <screenName name="ru.taaasty.ui.login.LoginActivity">
         Вход
     </screenName>
-    <screenName name="ru.taaasty.ui.post.ShowPostActivity">
+    <screenName name="ru.taaasty.ui.post.old.ShowPostActivity">
         Просмотр записи
     </screenName>
     <screenName name="ru.taaasty.ui.UserInfoActivity">

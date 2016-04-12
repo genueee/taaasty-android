@@ -110,7 +110,7 @@
             android:launchMode="singleTop">
         </activity>
         <activity
-            android:name=".ui.post.ShowPostActivity"
+            android:name=".ui.post.old.ShowPostActivity"
             android:label="@string/title_activity_show_post"
             android:parentActivityName=".ui.tabbar.MyFeedActivity"
             android:windowSoftInputMode="adjustResize|stateHidden"
@@ -120,12 +120,22 @@
                 android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
         </activity>
         <activity
+            android:name=".ui.post.ShowPostActivity2"
+            android:label="@string/title_activity_show_post"
+            android:parentActivityName=".ui.tabbar.MyFeedActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden"
+            android:theme="@style/ShowPostTheme" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ru.taaasty.ui.tabbar.MyFeedActivity" />
+        </activity>
+        <activity
             android:name=".ui.UserInfoActivity"
-            android:parentActivityName=".ui.post.ShowPostActivity"
+            android:parentActivityName=".ui.post.old.ShowPostActivity"
             android:theme="@style/AppThemeDark" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.post.ShowPostActivity" />
+                android:value=".ui.post.old.ShowPostActivity" />
         </activity>
         <activity
             android:name=".ui.relationships.FollowingFollowersActivity"
@@ -199,11 +209,11 @@
         </activity>
         <activity
             android:name=".ui.post.EditPostActivity"
-            android:parentActivityName=".ui.post.ShowPostActivity"
+            android:parentActivityName=".ui.post.old.ShowPostActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="ru.taaasty.ui.post.ShowPostActivity" />
+                android:value=".ui.post.old.ShowPostActivity" />
         </activity>
         <activity
             android:name=".ui.post.CreateAnonymousPostActivity"

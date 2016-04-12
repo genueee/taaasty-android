@@ -32,7 +32,6 @@
                 android:layout_marginRight="8dp"
                 android:clickable="false"
                 android:contentDescription="@string/open_user_tlog"
-                android:src="@drawable/avatar_dummy"
                 android:layout_centerVertical="true"/>
 
             <ru.taaasty.widgets.LinkifiedTextView
@@ -47,6 +46,7 @@
                 android:paddingLeft="4dp"
                 android:paddingRight="8dp"
                 android:includeFontPadding="false"
+                android:singleLine="true"
                 tools:text="genue sf"
                 android:layout_toRightOf="@+id/avatar"
                 android:layout_alignTop="@+id/avatar"/>
@@ -55,7 +55,7 @@
                 android:id="@+id/users"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:maxLines="7"
+                android:singleLine="true"
                 android:ellipsize="end"
                 android:textSize="13sp"
                 android:paddingLeft="4dp"

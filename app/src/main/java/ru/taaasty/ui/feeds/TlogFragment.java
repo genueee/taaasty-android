@@ -66,8 +66,8 @@ import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.login.LoginActivity;
+import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.post.CreatePostActivity;
-import ru.taaasty.ui.post.ShowPostActivity;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.ImageUtils;
@@ -921,15 +921,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            TlogDesign design = entry.getDesign();
-            if (design == null && mWorkFragment != null && mWorkFragment.getUser() != null) {
-                design = mWorkFragment.getUser().getDesign();
-            }
-            new ShowPostActivity.Builder(getActivity())
-                    .setEntry(entry)
-                    .setDesign(design)
-                    .setSrcView(view)
-                    .startActivity();
+            ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
         }
 
         @Override

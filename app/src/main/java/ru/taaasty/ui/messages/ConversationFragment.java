@@ -53,6 +53,7 @@ import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subjects.BehaviorSubject;
 import rx.subscriptions.Subscriptions;
 
 public class ConversationFragment extends Fragment {
@@ -61,16 +62,11 @@ public class ConversationFragment extends Fragment {
 
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.messages.ConversationFragment.conversation";
 
-    private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.messages.ConversationFragment.conversation_id";
-
     private static final int REQUEST_CODE_LOGIN = 1;
 
     private OnFragmentInteractionListener mListener;
 
-    private long mConversationId;
-
-    @Nullable
-    private Conversation mConversation;
+    private BehaviorSubject<Conversation> mConversationSubject;
 
     private RecyclerView mListView;
 
@@ -101,11 +97,8 @@ public class ConversationFragment extends Fragment {
         return fragment;
     }
 
-    public static ConversationFragment newInstance(long conversationId) {
+    public static ConversationFragment newInstance() {
         ConversationFragment fragment = new ConversationFragment();
-        Bundle args = new Bundle();
-        args.putLong(ARG_CONVERSATION_ID, conversationId);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -116,12 +109,19 @@ public class ConversationFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mConversation = getArguments().getParcelable(ARG_CONVERSATION);
-        if (mConversation != null) {
-            mConversationId = mConversation.id;
+        Conversation conversation;
+        if (getArguments() != null) {
+            conversation = getArguments().getParcelable(ARG_CONVERSATION);
         } else {
-            mConversationId = getArguments().getLong(ARG_CONVERSATION_ID);
+            conversation = null;
         }
+
+        if (conversation == null) {
+            mConversationSubject = BehaviorSubject.create();
+        } else {
+            mConversationSubject = BehaviorSubject.create(conversation);
+        }
+
         mMessagesLoader = new MessagesLoader();
     }
 
@@ -140,7 +140,7 @@ public class ConversationFragment extends Fragment {
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
         mListView.setLayoutManager(lm);
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView view, int dx, int dy) {
                 if (mListScrollController != null) mListScrollController.checkScroll();
@@ -151,7 +151,6 @@ public class ConversationFragment extends Fragment {
         mAdapter = new Adapter(getActivity());
         mListView.setAdapter(mAdapter);
 
-        bindHeader();
         initSendMessageForm();
 
         EventBus.getDefault().register(this);
@@ -162,7 +161,21 @@ public class ConversationFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (mConversation != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
+        mConversationSubject
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Conversation>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {}
+
+                    @Override
+                    public void onNext(Conversation conversation) {
+                        if (mAdapter != null) mAdapter.setFeedDesign(conversation.recipient.getDesign());
+                        bindHeader();
+                    }
+                });
     }
 
     @Override
@@ -217,19 +230,31 @@ public class ConversationFragment extends Fragment {
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mConversationSubject.onCompleted();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
     }
 
     public void onEventMainThread(MessageChanged event) {
-        if ((mAdapter != null) && (event.message.conversationId == mConversationId)) {
+        Conversation conversation = mConversationSubject.getValue();
+        if ((mAdapter != null)
+                && (conversation != null)
+                && (event.message.conversationId == conversation.id)) {
             addMessageScrollToEnd(event.message);
         }
     }
 
     public void onEventMainThread(UpdateMessagesReceived event) {
-        if (mAdapter != null && event.updateMessages.conversationId == mConversationId) {
+        Conversation conversation = mConversationSubject.getValue();
+        if (mAdapter != null
+                && (conversation != null)
+                && (event.updateMessages.conversationId == conversation.id)) {
             mAdapter.markMessagesAsRead(event.updateMessages.messages);
         }
     }
@@ -240,26 +265,23 @@ public class ConversationFragment extends Fragment {
     }
 
     public void onConversationLoaded(Conversation conversation) {
-        if (conversation.id != mConversationId) throw new IllegalArgumentException();
-        mConversation = conversation;
-        if (mAdapter != null) mAdapter.setFeedDesign(mConversation.recipient.getDesign());
-        bindHeader();
-        // todo onConversationLoaded() иногда вызываем из Activity.onCreate, когда ещё лоадера (а точнее уже) не существует.
-        // разобраться.
-        if (mMessagesLoader != null) mMessagesLoader.refreshMessages();
+        mConversationSubject.onNext(conversation);
+        mMessagesLoader.refreshMessages();
     }
 
     public void bindHeader() {
+        Conversation conversation = mConversationSubject.getValue();
+        if (conversation == null || getActivity() == null || mListView == null) return;
         View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
 
         ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
-        ConversationHelper.getInstance().bindAvatarToImageView(mConversation, R.dimen.avatar_small_diameter, avatar);
+        ConversationHelper.getInstance().bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
-        topic.setText(ConversationHelper.getInstance().getTitle(mConversation, getContext()));
-        if (mConversation.isGroup()) {
-            users.setText(getString(R.string.user_count, mConversation.getActualUsers().size()));
+        topic.setText(ConversationHelper.getInstance().getTitle(conversation, getContext()));
+        if (conversation.isGroup()) {
+            users.setText(getString(R.string.user_count, conversation.getActualUsers().size()));
         } else {
             users.setVisibility(View.GONE);
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) topic.getLayoutParams();
@@ -268,7 +290,7 @@ public class ConversationFragment extends Fragment {
             topic.setPadding(0, 0, 0, 0);
         }
 
-        headerGroupChat.setOnClickListener(v -> mListener.onSourceDetails(mConversation, v));
+        headerGroupChat.setOnClickListener(v -> mListener.onSourceDetails(v));
     }
 
     private void initSendMessageForm() {
@@ -295,22 +317,36 @@ public class ConversationFragment extends Fragment {
 
         mPostMessageSubscription.unsubscribe();
 
-        ApiMessenger apiMessenger = RestClient.getAPiMessenger();
-
-        Observable<Conversation.Message> observablePost = apiMessenger.postMessage(null,
-                mConversationId, comment, UUID.randomUUID().toString(), null);
-
         //mSendMessageText.setEnabled(false);
         mSendMessageProgress.setVisibility(View.VISIBLE);
         mSendMessageButton.setVisibility(View.INVISIBLE);
-        mPostMessageSubscription = observablePost
+        mPostMessageSubscription = mConversationSubject
+                .take(1)
+                .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
+                        conversation.id, comment, UUID.randomUUID().toString(), null))
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(() -> {
                     mSendMessageText.setEnabled(true);
                     mSendMessageProgress.setVisibility(View.INVISIBLE);
                     mSendMessageButton.setVisibility(View.VISIBLE);
                 })
-                .subscribe(mPostMessageObserver);
+                .subscribe(new Observer<Message>() {
+                    @Override
+                    public void onCompleted() {
+                        if (mSendMessageText != null) mSendMessageText.setText("");
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        MessageHelper.showError(ConversationFragment.this, e, R.string.error_post_comment, REQUEST_CODE_LOGIN);
+                    }
+
+                    @Override
+                    public void onNext(Message message) {
+                        sendAnalytics();
+                        addMessageScrollToEnd(message);
+                    }
+                });
     }
 
     private void addMessageScrollToEnd(Conversation.Message message) {
@@ -328,7 +364,6 @@ public class ConversationFragment extends Fragment {
         if (DBG) Log.v(TAG, "scrollListToPosition pos: " + newPosition + " smooth: " + smooth);
         if (mListView == null) return;
         if (mAdapter == null || newPosition < 0) return;
-
 
         mListView.getViewTreeObserver().addOnPreDrawListener(new SafeOnPreDrawListener(mListView, new SafeOnPreDrawListener.RunOnLaidOut() {
             @Override
@@ -383,24 +418,6 @@ public class ConversationFragment extends Fragment {
     private void sendAnalytics() {
         AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_SEND_MESSAGE);
     }
-
-    private final Observer<Conversation.Message> mPostMessageObserver = new Observer<Conversation.Message>() {
-        @Override
-        public void onCompleted() {
-            if (mSendMessageText != null) mSendMessageText.setText("");
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            MessageHelper.showError(ConversationFragment.this, e, R.string.error_post_comment, REQUEST_CODE_LOGIN);
-        }
-
-        @Override
-        public void onNext(Conversation.Message message) {
-            sendAnalytics();
-            addMessageScrollToEnd(message);
-        }
-    };
 
     static class SystemMessageHolder extends RecyclerView.ViewHolder {
 
@@ -540,11 +557,12 @@ public class ConversationFragment extends Fragment {
             if (mSession.isMe(userUuid)) {
                 return mSession.getCachedCurrentUser();
             } else {
-                if (mConversation != null) {
-                    if (mConversation.isGroup()) {
-                        return mConversation.findUserById(userUuid);
+                Conversation conversation = mConversationSubject.getValue();
+                if (conversation != null) {
+                    if (conversation.isGroup()) {
+                        return conversation.findUserById(userUuid);
                     } else {
-                        return mConversation.recipient;
+                        return conversation.recipient;
                     }
                 }
                 return null;
@@ -561,8 +579,6 @@ public class ConversationFragment extends Fragment {
 
         private final Set<Long> mPostIds;
 
-        private final ApiMessenger mApiMessenger;
-
         private Subscription mPostMessageSubscription = Subscriptions.unsubscribed();
 
         /**
@@ -575,7 +591,6 @@ public class ConversationFragment extends Fragment {
         public MarkMessagesAsRead() {
             mHandler = new Handler();
             mPostIds = new HashSet<>(3);
-            mApiMessenger = RestClient.getAPiMessenger();
         }
 
         public void enqueueMarkAsRead(long messageId) {
@@ -598,8 +613,13 @@ public class ConversationFragment extends Fragment {
 
                 if (DBG) Log.v(TAG, "markMessagesAsRead " + TextUtils.join(",", postSet));
 
-                Observable<Status.MarkMessagesAsRead> observablePost = mApiMessenger.markMessagesAsRead(null, mConversationId,
-                        TextUtils.join(",", postSet));
+                Observable<Status.MarkMessagesAsRead> observablePost =
+                        mConversationSubject
+                                .take(1)
+                                .flatMap(conversation -> RestClient.getAPiMessenger()
+                                    .markMessagesAsRead(null, conversation.id,
+                                            TextUtils.join(",", postSet)));
+
                 mPostMessageSubscription = observablePost
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(new Observer<Status.MarkMessagesAsRead>() {
@@ -671,7 +691,9 @@ public class ConversationFragment extends Fragment {
         }
 
         protected Observable<ConversationMessages> createObservable(Long sinceEntryId, Integer limit) {
-            return mApiMessenger.getMessages(null, mConversationId, null, sinceEntryId, limit, null);
+            return mConversationSubject
+                    .take(1)
+                    .flatMap(conversation -> mApiMessenger.getMessages(null, conversation.id, null, sinceEntryId, limit, null));
         }
 
         public void refreshMessages() {
@@ -820,6 +842,6 @@ public class ConversationFragment extends Fragment {
     }
 
     public interface OnFragmentInteractionListener extends ListScrollController.OnListScrollPositionListener {
-        void onSourceDetails(Conversation conversation, View fromView);
+        void onSourceDetails(View fromView);
     }
 }

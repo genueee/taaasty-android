@@ -48,10 +48,10 @@ import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
-import ru.taaasty.ui.post.ShowPostActivity;
-import ru.taaasty.utils.RoundedCornersTransformation;
+import ru.taaasty.ui.post.ShowPostActivity2;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.Objects;
+import ru.taaasty.utils.RoundedCornersTransformation;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Observer;
@@ -435,9 +435,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                         showLoadAvatar();
                     } else {
                         if (getConversation().isPublicGroup()) {
-                            new ShowPostActivity.Builder(getContext())
+                            new ShowPostActivity2.Builder(getContext())
                                     .setEntryId(getConversation().entry.getId())
-                                    .setShowFullPost(true)
+                                    .setReturnOnCommentsClick(true)
                                     .startActivity();
                         }
                     }

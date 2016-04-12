@@ -21,6 +21,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
+import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.rest.RestClient;
@@ -47,6 +48,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private static final String ARG_RECIPIENT_ID = "ru.taaasty.ui.feeds.ConversationActivity.recipient_id";
 
+    private static final String ARG_ENTRY_ID = "ru.taaasty.ui.feeds.ConversationActivity.entry_id";
+
     private static final String BUNDLE_ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.BUNDLE_ARG_CONVERSATION";
 
     private static final int REQUEST_CODE_EDIT_CONVERSATION = 1;
@@ -65,12 +68,26 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private long mRecipientId;
 
+    private long mEntryId;
+
     @Nullable
     private Conversation mConversation;
 
     public static void startConversationActivity(Context source, Conversation conversation, View animateFrom) {
         Intent intent = new Intent(source, ConversationActivity.class);
         intent.putExtra(ARG_CONVERSATION, conversation);
+        if (animateFrom != null && source instanceof Activity) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
+                    animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
+            ActivityCompat.startActivity((Activity) source, intent, options.toBundle());
+        } else {
+            source.startActivity(intent);
+        }
+    }
+
+    public static void startEntryConversationActivity(Context source, long entryId, View animateFrom) {
+        Intent intent = new Intent(source, ConversationActivity.class);
+        intent.putExtra(ARG_ENTRY_ID, entryId);
         if (animateFrom != null && source instanceof Activity) {
             ActivityOptionsCompat options = ActivityOptionsCompat.makeScaleUpAnimation(
                     animateFrom, 0, 0, animateFrom.getWidth(), animateFrom.getHeight());
@@ -92,20 +109,18 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        long conversationId;
-
         setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
 
-        if (getIntent().hasExtra(ARG_CONVERSATION)) {
-            mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
+        mRecipientId = getIntent().getLongExtra(ARG_RECIPIENT_ID, -1);
+        mEntryId = getIntent().getLongExtra(ARG_ENTRY_ID, -1);
+        mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
+
+        if (savedInstanceState != null) {
+            mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
+        }
+
+        if (mConversation != null) {
             mRecipientId = mConversation.recipientId;
-            conversationId = mConversation.id;
-        } else {
-            conversationId = getIntent().getLongExtra(ARG_CONVERSATION_ID, -1);
-            mRecipientId = getIntent().getLongExtra(ARG_RECIPIENT_ID, -1);
-            if (savedInstanceState != null) {
-                mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
-            }
         }
 
         if (savedInstanceState == null) {
@@ -113,7 +128,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             if (mConversation != null) {
                 conversationFragment = ConversationFragment.newInstance(mConversation);
             } else {
-                conversationFragment = ConversationFragment.newInstance(conversationId);
+                conversationFragment = ConversationFragment.newInstance();
             }
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, conversationFragment)
@@ -122,36 +137,40 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
         mHideActionBarHandler = new Handler();
 
-        if (mConversation != null) {
-            onConversationLoaded(mConversation);
-        } else {
-            loadConversation(mRecipientId);
-        }
-
-        final View activityRootView = findViewById(R.id.activityRoot);
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
-                    if (!imeKeyboardShown) {
-                        imeKeyboardShown = true;
-                        onImeKeyboardShown();
-                    }
-                } else {
-                    if (imeKeyboardShown) {
-                        imeKeyboardShown = false;
-                        onImeKeyboardHidden();
-                    }
-                }
-            }
-        });
+        setupImeWatcher();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        if (mConversation != null) {
+            onConversationLoaded(mConversation);
+        } else {
+            loadConversation();
+        }
+
         EventBus.getDefault().post(new ConversationVisibilityChanged(mRecipientId, true));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case REQUEST_CODE_EDIT_CONVERSATION:
+                    if (EditCreateGroupActivity.ACTION_SAVE_CONVERSATION.equals(data.getAction())) {
+                        onConversationLoaded((Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
+                    }
+                    if (EditCreateGroupActivity.ACTION_LEAVE_CONVERSATION.equals(data.getAction())) {
+                        finish();
+                    }
+                    break;
+                case REQUEST_CODE_CONVERSATION_DETAILS:
+                    if (data.getAction().equals(ConversationDetailsActivity.ACTION_CONVERSATION_REMOVED)) {
+                        finish();
+                    }
+                    break;
+            }
+        }
     }
 
     @Override
@@ -217,15 +236,62 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     }
 
-    private void loadConversation(long recipientId) {
+    private void setupImeWatcher() {
+        final View activityRootView = findViewById(R.id.activityRoot);
+        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
+                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
+                    if (!imeKeyboardShown) {
+                        imeKeyboardShown = true;
+                        onImeKeyboardShown();
+                    }
+                } else {
+                    if (imeKeyboardShown) {
+                        imeKeyboardShown = false;
+                        onImeKeyboardHidden();
+                    }
+                }
+            }
+        });
+    }
+
+    private void loadConversation() {
         mConversationSubscription.unsubscribe();
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
-        Observable<Conversation> observable = apiMessenger.createConversation(null, recipientId);
+        Observable<Conversation> observable;
+        if (mRecipientId > 0) {
+            observable = apiMessenger.createConversation(null, mRecipientId);
+        } else if (mEntryId > 0) {
+            observable = apiMessenger.createGroupConversationByEntry(null, mEntryId);
+        } else {
+            // оп-па
+            if (DBG) throw new IllegalStateException();
+            return;
+        }
 
         mConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(mLoadConversationObservable);
+                .subscribe(new Observer<Conversation>() {
+
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (DBG) Log.v(TAG, getString(R.string.error_create_conversation), e);
+                        setResult(Constants.ACTIVITY_RESULT_CODE_SHOW_ERROR);
+                        MessageHelper.createErrorToast(ConversationActivity.this, getText(R.string.error_create_conversation)).show();
+                        finish();
+                    }
+
+                    @Override
+                    public void onNext(Conversation conversation) {
+                        onConversationLoaded(conversation);
+                    }
+                });
     }
 
     private void bindDesign(final TlogDesign design) {
@@ -258,53 +324,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         rq.into(mBackgroundTarget);
     }
 
-    private Runnable mHideActionBarRunnable = new Runnable() {
-        @Override
-        public void run() {
-            ActionBar ab = getSupportActionBar();
-            if (ab != null) ab.hide();
-        }
-    };
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case REQUEST_CODE_EDIT_CONVERSATION:
-                    if (EditCreateGroupActivity.ACTION_SAVE_CONVERSATION.equals(data.getAction())) {
-                        onConversationLoaded((Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
-                    }
-                    if (EditCreateGroupActivity.ACTION_LEAVE_CONVERSATION.equals(data.getAction())) {
-                        finish();
-                    }
-                    break;
-                case REQUEST_CODE_CONVERSATION_DETAILS:
-                    if (data.getAction().equals(ConversationDetailsActivity.ACTION_CONVERSATION_REMOVED)) {
-                        finish();
-                    }
-                    break;
-            }
-        }
-    }
-
-    private final Observer<Conversation> mLoadConversationObservable = new Observer<Conversation>() {
-
-        @Override
-        public void onCompleted() {
-        }
-
-        @Override
-        public void onError(Throwable e) {
-            if (DBG) Log.v(TAG, getString(R.string.error_create_conversation), e);
-            MessageHelper.showError(ConversationActivity.this, R.id.activityRoot, 1, e, R.string.error_create_conversation);
-            // TODO здесь неавторизованным по хорошему надо возвращать ошибку
-            finish();
-        }
-
-        @Override
-        public void onNext(Conversation conversation) {
-            onConversationLoaded(conversation);
-        }
+    private Runnable mHideActionBarRunnable = () -> {
+        ActionBar ab = getSupportActionBar();
+        if (ab != null) ab.hide();
     };
 
     public void onEditGroupConversation(Conversation conversation) {
@@ -316,11 +338,15 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     }
 
     @Override
-    public void onSourceDetails(Conversation conversation, View fromView) {
-        if (!conversation.isGroup()) {
-            onViewChatDetails(conversation);
+    public void onSourceDetails(View fromView) {
+        if (mConversation == null) {
+            if (DBG) throw new IllegalStateException();
+            return;
+        }
+        if (!mConversation.isGroup()) {
+            onViewChatDetails(mConversation);
         } else {
-            onEditGroupConversation(conversation);
+            onEditGroupConversation(mConversation);
         }
     }
 }

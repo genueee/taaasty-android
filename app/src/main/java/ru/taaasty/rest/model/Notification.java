@@ -17,7 +17,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.ui.UserInfoActivity;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.post.old.ShowPostActivity;
 import ru.taaasty.ui.relationships.FollowingFollowersActivity;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
 import ru.taaasty.utils.Objects;

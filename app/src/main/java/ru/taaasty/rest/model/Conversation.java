@@ -42,14 +42,28 @@ public class Conversation implements Parcelable {
 
     public String type;
 
+    /**
+     * Тема. Только для {@linkplain #TYPE_GROUP_CONVERSATION} чатов. null - для остальных
+     */
+    @Nullable
     public String topic;
 
+    /**
+     * Собеседник. Только для {@linkplain #TYPE_PRIVATE_CONVERSATION} чатов. null - для остальных
+     */
     public long recipientId;
 
     public User recipient = User.DUMMY;
 
+    /**
+     * Админ чата. Только для групповых чатов. Часто не приходит
+     */
+    @Nullable
     private User admin;
 
+    /**
+     * Список пользователей. Только для групповых чатов.
+     */
     @Nullable
     public ArrayList<User> users;
 

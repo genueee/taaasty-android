@@ -1,5 +1,7 @@
 package ru.taaasty.rest.service;
 
+import java.util.List;
+
 import retrofit.client.Response;
 import retrofit.http.DELETE;
 import retrofit.http.Field;
@@ -19,8 +21,6 @@ import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.Status;
 import rx.Observable;
-
-import java.util.List;
 
 /**
  * Created by alexey on 21.10.14.
@@ -145,6 +145,17 @@ public interface ApiMessenger {
                                                              @Path("id") long conversationId,
                                                              @Field("ids") String messageIds
     );
+
+
+    /**
+     * Создание группового чата - обсуждения записи
+     * @param entryId ID записи
+     * @return
+     */
+    @FormUrlEncoded
+    @POST("/messenger/conversations/by_entry_id.json")
+    Observable<Conversation> createGroupConversationByEntry(@Field("socket_id") String socketId,
+                                                       @Field("id") long entryId);
 
     /**
      * Создание группового чата с указанными пользователями

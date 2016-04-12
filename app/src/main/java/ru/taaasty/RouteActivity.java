@@ -13,7 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.post.ShowPostActivity2;
 
 public class RouteActivity extends Activity {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -39,9 +39,8 @@ public class RouteActivity extends Activity {
         Matcher postIdMather = Pattern.compile("^(\\d+)(?:-.+)?").matcher(seg2);
         if (postIdMather.matches()) {
             long postId = Long.parseLong(postIdMather.group(1));
-            new ShowPostActivity.Builder(this)
+            new ShowPostActivity2.Builder(this)
                     .setEntryId(postId)
-                    .setShowFullPost(true)
                     .startActivity();
             finish();
             return;

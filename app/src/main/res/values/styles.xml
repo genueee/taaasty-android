@@ -35,6 +35,13 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
+    <style name="ShowPostTheme" parent="AppThemeLightOverlayingActionBar">
+        <item name="toolbarNavigationButtonStyle">@style/ToolbarNavigationButton</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@drawable/feed_white_background</item>
+    </style>
+
+
     <style name="TranslucentTheme" parent="AppTheme">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>

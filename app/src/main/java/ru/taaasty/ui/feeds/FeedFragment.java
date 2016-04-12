@@ -39,7 +39,8 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.FragmentStateConsumer;
 import ru.taaasty.ui.FragmentWithWorkFragment;
-import ru.taaasty.ui.post.ShowPostActivity;
+import ru.taaasty.ui.messages.ConversationActivity;
+import ru.taaasty.ui.post.old.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.LikesHelper;
@@ -593,21 +594,21 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
             Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            TlogDesign design;
-            if (entry.getDesign() != null) {
-                design = entry.getDesign();
+            if (!entry.isAnonymousPost()) {
+                ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
             } else {
-                design = getDesign();
-                if (mFeedType == FEED_ANONYMOUS) {
-                    // Анонимки обычно светлые
-                    design = TlogDesign.createLightTheme(design != null ? design : TlogDesign.DUMMY);
+                TlogDesign design = null;
+                if (entry.getDesign() != null) {
+                    design = entry.getDesign();
                 }
+                // Анонимки обычно светлые
+                design = TlogDesign.createLightTheme(design != null ? design : TlogDesign.DUMMY);
+                new ShowPostActivity.Builder(getActivity())
+                        .setEntry(entry)
+                        .setSrcView(view)
+                        .setDesign(design)
+                        .startActivity();
             }
-            new ShowPostActivity.Builder(getActivity())
-                    .setEntry(entry)
-                    .setSrcView(view)
-                    .setDesign(design)
-                    .startActivity();
         }
 
         @Override

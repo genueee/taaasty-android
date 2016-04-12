@@ -1,4 +1,4 @@
-package ru.taaasty.ui.post;
+package ru.taaasty.ui.post.old;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
@@ -61,6 +61,7 @@ import rx.subscriptions.Subscriptions;
 /**
  * Пост с комментариями
  */
+@Deprecated
 public class ShowCommentsFragment extends Fragment {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ShowCommentsFragment";

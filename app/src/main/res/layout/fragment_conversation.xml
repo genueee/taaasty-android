@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="ru.taaasty.ui.feeds.GridFeedFragment">
+    tools:context="ru.taaasty.ui.messages.ConversationActivity">
 
     <ru.taaasty.widgets.MyRecyclerView
         android:id="@+id/recycler_list_view"
@@ -19,7 +19,7 @@
         android:scrollbars="none"
         android:overScrollMode="never"
         tools:listheader="@layout/header_user_feed"
-        tools:listitem="@layout/feed_item" />
+        tools:listitem="@layout/conversation_my_message" />
 
     <ProgressBar
         android:id="@+id/progress"
