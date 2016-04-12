@@ -12,7 +12,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import java.io.IOException;
 
-import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.RoundedCornersTransformation;
 import ru.taaasty.utils.NetworkUtils;
 
 /**
@@ -165,7 +165,7 @@ public class StatusBarNotifications {
 
                 bigIcon = Bitmap.createScaledBitmap(bitmap, mBigIconWidth, mBigIconWidth, true);
                 if (mRoundCorners) {
-                    bigIcon = new CircleTransformation().transform(bigIcon);
+                    bigIcon = RoundedCornersTransformation.createCircle().transform(bigIcon);
                 }
 
                 wearableBackground = Bitmap.createScaledBitmap(bitmap, mWearableBackgroundWidth, mWearableBackgroundWidth, true);

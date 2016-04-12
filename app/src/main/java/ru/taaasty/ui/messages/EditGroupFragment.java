@@ -49,7 +49,7 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.ui.post.ShowPostActivity;
-import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.RoundedCornersTransformation;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.Objects;
 import rx.Observable;
@@ -291,7 +291,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                                     .onlyScaleDown()
                                     .centerCrop()
                                     .noFade()
-                                    .transform(CircleTransformation.getInstance())
+                                    .transform(RoundedCornersTransformation.createCircle())
                                     .get();
                             subscriber.onNext(bitmap);
                             subscriber.onCompleted();

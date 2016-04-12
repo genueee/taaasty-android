@@ -2,19 +2,23 @@ package ru.taaasty.utils;
 
 
 import android.content.Context;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.res.ResourcesCompat;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
+import java.util.Arrays;
 
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Conversation;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
 
 public final class ConversationHelper {
 
@@ -82,12 +86,9 @@ public final class ConversationHelper {
 
             // Чат - групповой из нескольких участников и либо аватарка не установлена, либо одно из двух
             Picasso.with(context).cancelRequest(dst);
-            Drawable defaultDrawable = new DefaultUserpicDrawable(context,
+            Drawable defaultDrawable = createGroupPostDefaultDrawable(context,
                     getTitleWithoutUserPrefix(conversation, context),
-                    ContextCompat.getColor(context, R.color.avatar_default),
-                    Color.WHITE
-            );
-            defaultDrawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
+                    dstSizeRes);
             dst.setImageDrawable(defaultDrawable);
         }
     }
@@ -102,13 +103,6 @@ public final class ConversationHelper {
         Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub).mutate();
         stubPlaceholder.setBounds(0, 0, imageSize, imageSize);
 
-        Drawable defaultDrawable = new DefaultUserpicDrawable(context,
-                chatTitle,
-                ContextCompat.getColor(context, R.color.avatar_default),
-                Color.WHITE
-        );
-        defaultDrawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
-
         String userpicUrl = thumborUrl.resize(imageSize, imageSize)
                 .filter(ThumborUrlBuilder.noUpscale())
                 .toUrlUnsafe();
@@ -121,13 +115,56 @@ public final class ConversationHelper {
         Picasso.with(context)
                 .load(userpicUrl)
                 .placeholder(stubPlaceholder)
-                .error(defaultDrawable)
+                .error(createGroupPostDefaultDrawable(context, chatTitle, dstSizeRes))
                 .resize(imageSize, imageSize)
                 .onlyScaleDown()
                 .centerCrop()
                 .noFade()
-                .transform(CircleTransformation.getInstance())
+                .transform(Arrays.asList(
+                        RoundedCornersTransformation.create(dst.getResources().getDimensionPixelSize(R.dimen.group_avatar_corner_radius)),
+                        new DrawBackgroundTransformation(context, R.drawable.group_post_default_avatar)))
                 .into(dst);
         return;
+    }
+
+    private Drawable createGroupPostDefaultDrawable(Context context, String chatTitle, int dstSizeRes) {
+        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.group_post_default_avatar).mutate();
+        drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
+        return drawable;
+    }
+
+    // Рисование Drawable на Bitmap
+    private static class DrawBackgroundTransformation implements Transformation {
+
+        private final int mDrawableResId;
+
+        private final Drawable mDrawable;
+
+        public DrawBackgroundTransformation(Context context, int drawableResId) {
+            mDrawableResId = drawableResId;
+            mDrawable = ResourcesCompat.getDrawable(context.getResources(), drawableResId, null).mutate();
+        }
+
+        @Override
+        public Bitmap transform(Bitmap source) {
+            Bitmap bitmap;
+            if (source.isMutable() && source.getConfig() == Bitmap.Config.ARGB_8888) {
+                bitmap = source;
+            } else {
+                bitmap = source.copy(Bitmap.Config.ARGB_8888, true);
+                source.recycle();
+            }
+
+            Canvas canvas = new Canvas(bitmap);
+            mDrawable.setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+            mDrawable.draw(canvas);
+
+            return bitmap;
+        }
+
+        @Override
+        public String key() {
+            return "DrawBackgroundTransformation(drawable=" + mDrawableResId + ")";
+        }
     }
 }

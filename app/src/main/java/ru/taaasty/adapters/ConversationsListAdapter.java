@@ -20,6 +20,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.HintedExtendedImageView;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
@@ -92,6 +93,12 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         ConversationHelper helper = ConversationHelper.getInstance();
         helper.bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
 
+        if (conversation.isGroup()) {
+            holder.avatar.setForegroundDrawable(null); // TODO
+        } else {
+            holder.avatar.setForegroundResource(R.drawable.clickable_item_circle_background);
+        }
+
         if (isLastSenderShouldBeShown(conversation)) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
             mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
@@ -136,7 +143,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final ImageView avatar;
+        public final HintedExtendedImageView avatar;
 
         public final TextView title;
 
@@ -152,7 +159,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public ViewHolder(View v) {
             super(v);
-            avatar = (ImageView) v.findViewById(R.id.avatar);
+            avatar = (HintedExtendedImageView) v.findViewById(R.id.avatar);
             title = (TextView) v.findViewById(R.id.title);
             date = (RelativeDateTextSwitcher) v.findViewById(R.id.notification_date);
             msgCount = (TextView) v.findViewById(R.id.unread_messages_count);

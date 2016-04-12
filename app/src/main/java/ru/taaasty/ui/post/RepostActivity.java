@@ -42,7 +42,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiReposts;
 import ru.taaasty.ui.DividerItemDecoration;
-import ru.taaasty.utils.CircleTransformation;
+import ru.taaasty.utils.RoundedCornersTransformation;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
@@ -75,7 +75,6 @@ public class RepostActivity extends ActivityBase {
     private RecyclerView mRecyclerView;
     private ProgressBar mProgress;
     private RepostItemsAdapter mAdapter;
-    private final CircleTransformation mCircleTransformation = new CircleTransformation();
 
     private BottomSheetBehavior mBottomSheetBehavior;
 
@@ -385,7 +384,7 @@ public class RepostActivity extends ActivityBase {
                         .onlyScaleDown()
                         .centerCrop()
                         .noFade()
-                        .transform(mCircleTransformation)
+                        .transform(RoundedCornersTransformation.createCircle())
                         .into(imageView);
             }
         }

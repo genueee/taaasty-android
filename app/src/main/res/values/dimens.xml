@@ -84,4 +84,6 @@
 
     <dimen name="fab_menu_padding_bottom">80dp</dimen> <!-- ACHTUNG! Используется в коде -->
 
+    <dimen name="group_avatar_corner_radius">5dp</dimen>
+
 </resources>

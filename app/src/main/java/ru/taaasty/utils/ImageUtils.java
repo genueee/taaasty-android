@@ -67,8 +67,6 @@ public class ImageUtils {
     private static final String MAX_TEXTURE_SIZE_SHARED_FILE = "max_texture_size";
     private static final String MAX_TEXTURE_SIZE_SHARED_KEY = "max_texture_size";
 
-    private final CircleTransformation mCircleTransformation;
-
     private static int sMaxTextureSize = 2048;
 
     private static ImageUtils sInstance;
@@ -76,7 +74,6 @@ public class ImageUtils {
     private LruCache mCache;
 
     private ImageUtils() {
-        mCircleTransformation = new CircleTransformation();
         mCache = NetworkUtils.getInstance().getImageCache();
     }
 
@@ -457,7 +454,7 @@ public class ImageUtils {
                     .tag(dstTextView)
                     .placeholder(stubPlaceholder)
                     .error(defaultUserpicDrawable)
-                    .transform(mCircleTransformation)
+                    .transform(RoundedCornersTransformation.createCircle())
                     .into(textViewPicassoTarget);
         }
     }
@@ -498,7 +495,7 @@ public class ImageUtils {
             Picasso.with(context).load(userpicUrl)
                     .placeholder(stubPlaceholder)
                     .error(defaultUserpicDrawable)
-                    .transform(mCircleTransformation)
+                    .transform(RoundedCornersTransformation.createCircle())
                     .into(dstImageView);
         }
     }
