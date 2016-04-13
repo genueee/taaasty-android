@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import java.lang.reflect.Method;
 
@@ -14,6 +15,7 @@ public final class ImeUtils {
 
     public static void showIme(View view) {
         if (view == null) return;
+        if (view instanceof EditText) view.requestFocus();
         InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService
                 (Context.INPUT_METHOD_SERVICE);
         if (imm == null) return;
