@@ -27,8 +27,8 @@
 
             <ru.taaasty.widgets.HintedExtendedImageView
                 android:id="@+id/avatar"
-                android:layout_width="@dimen/avatar_small_diameter_42dp"
-                android:layout_height="@dimen/avatar_small_diameter_42dp"
+                android:layout_width="@dimen/avatar_in_actiobar_diameter"
+                android:layout_height="@dimen/avatar_in_actiobar_diameter"
                 android:layout_marginRight="8dp"
                 android:clickable="false"
                 android:contentDescription="@string/open_user_tlog"

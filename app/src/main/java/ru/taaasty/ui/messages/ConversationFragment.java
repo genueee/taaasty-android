@@ -3,6 +3,8 @@ package ru.taaasty.ui.messages;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -17,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,6 +51,8 @@ import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
+import ru.taaasty.widgets.ExtendedImageView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -174,7 +177,7 @@ public class ConversationFragment extends Fragment {
                     @Override
                     public void onNext(Conversation conversation) {
                         if (mAdapter != null) mAdapter.setFeedDesign(conversation.recipient.getDesign());
-                        bindHeader();
+                        bindToolbar();
                     }
                 });
     }
@@ -201,7 +204,7 @@ public class ConversationFragment extends Fragment {
 
     public void refresh() {
         mMessagesLoader.refreshMessages();
-        bindHeader();
+        bindToolbar();
     }
 
     @Override
@@ -270,13 +273,21 @@ public class ConversationFragment extends Fragment {
         mMessagesLoader.refreshMessages();
     }
 
-    public void bindHeader() {
+    public void bindToolbar() {
         Conversation conversation = mConversationSubject.getValue();
         if (conversation == null || getActivity() == null || mListView == null) return;
         View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
 
-        ImageView avatar = (ImageView) headerGroupChat.findViewById(R.id.avatar);
-        ConversationHelper.getInstance().bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, avatar);
+        Context context = getActivity();
+
+        // У групп без аватарки пустая рамка на зеленом экшнбаре выглядит хреново
+        Drawable defaultGroupDrawable = new DefaultUserpicDrawable(context,
+                ConversationHelper.getInstance().getTitleWithoutUserPrefix(conversation, context),
+                0xfff37420, Color.WHITE);
+
+        ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
+        ConversationHelper.getInstance().bindAvatarToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
+        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));

@@ -8,6 +8,8 @@
     <dimen name="header_title_subtitle_subtitle_text_size">10sp</dimen>
     <dimen name="live_feed_pager_indicator_top">85dp</dimen>
 
+    <!-- Аватарка в экшнбаре. Чуть меньше taaasty_action_bar_size  -->
+    <dimen name="avatar_in_actiobar_diameter">34dp</dimen>
 
     <dimen name="tabbar_size">34dp</dimen>
     <dimen name="tabbar_notifications_text_size">6sp</dimen>

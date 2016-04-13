@@ -60,12 +60,19 @@ public final class ConversationHelper {
     }
 
     public void bindAvatarToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst) {
+        Context context = dst.getContext();
+        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.group_post_default_avatar).mutate();
+        drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
+        bindAvatarToImageView(conversation, dstSizeRes, dst, drawable);
+    }
+
+    public void bindAvatarToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst, Drawable defaultGroupDrawable) {
         // Для аватарок тут немного ахтунг
         Context context = dst.getContext();
 
         if (conversation.avatar != null) {
             // У чата установлена аватарка. В первую очередь, показываем её
-            bindAvatarToImageView(conversation.avatar.url, getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst);
+            bindAvatarToImageView(conversation.avatar.url, getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst, defaultGroupDrawable);
             return;
         }
 
@@ -80,17 +87,14 @@ public final class ConversationHelper {
                 // Чат - обсуждение записи. Попробуем показать какую-нибудь картинку из поста.
                 if (conversation.entry != null && conversation.entry.getPreviewImage() != null) {
                     bindAvatarToImageView(conversation.entry.getPreviewImage().url,
-                            getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst);
+                            getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst, defaultGroupDrawable);
                     return;
                 }
             }
 
             // Чат - групповой из нескольких участников и либо аватарка не установлена, либо одно из двух
             Picasso.with(context).cancelRequest(dst);
-            Drawable defaultDrawable = createGroupPostDefaultDrawable(context,
-                    getTitleWithoutUserPrefix(conversation, context),
-                    dstSizeRes);
-            dst.setImageDrawable(defaultDrawable);
+            dst.setImageDrawable(defaultGroupDrawable);
         }
     }
 
@@ -103,7 +107,7 @@ public final class ConversationHelper {
         }
     }
 
-    private void bindAvatarToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst) {
+    private void bindAvatarToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst, Drawable errorDrawable) {
         Context context = dst.getContext();
         int imageSize = dst.getResources().getDimensionPixelSize(dstSizeRes);
 
@@ -125,7 +129,7 @@ public final class ConversationHelper {
         Picasso.with(context)
                 .load(userpicUrl)
                 .placeholder(stubPlaceholder)
-                .error(createGroupPostDefaultDrawable(context, chatTitle, dstSizeRes))
+                .error(errorDrawable)
                 .resize(imageSize, imageSize)
                 .onlyScaleDown()
                 .centerCrop()
@@ -135,12 +139,6 @@ public final class ConversationHelper {
                         new DrawBackgroundTransformation(context, R.drawable.group_post_default_avatar)))
                 .into(dst);
         return;
-    }
-
-    private Drawable createGroupPostDefaultDrawable(Context context, String chatTitle, int dstSizeRes) {
-        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.group_post_default_avatar).mutate();
-        drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
-        return drawable;
     }
 
     // Рисование Drawable на Bitmap
