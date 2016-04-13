@@ -115,8 +115,8 @@ public class ConversationDetailsFragment extends Fragment {
     public void requestRemoveChat() {
         AlertDialog.Builder builder = new Builder(getContext());
         builder.setTitle(R.string.delete_chat);
-        builder.setMessage(R.string.delete_chat_desc);
-        builder.setPositiveButton(R.string.leave_chat, new DialogInterface.OnClickListener() {
+        builder.setMessage(R.string.delete_chat_dialog_message);
+        builder.setPositiveButton(R.string.leave_chat_dialog_title, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 removeChat();

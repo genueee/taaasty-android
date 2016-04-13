@@ -150,7 +150,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (isAuthorMe()) {
             mDeleteChatText.setText(R.string.delete_chat);
         } else {
-            mDeleteChatText.setText(R.string.leave_chat);
+            mDeleteChatText.setText(R.string.leave_chat_dialog_title);
         }
 
         if (!isReadOnly()) {
@@ -378,14 +378,26 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     public void requestLeaveChat() {
         final boolean remove = isAuthorMe();
         AlertDialog.Builder builder = new Builder(getContext());
-        builder.setTitle(remove ? R.string.delete_chat : R.string.leave_chat);
-        builder.setMessage(R.string.delete_chat_desc);
-        builder.setPositiveButton(R.string.leave_chat, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                leaveChat();
-            }
-        });
+        if (remove) {
+            builder.setTitle(R.string.delete_chat_dialog_title);
+            builder.setMessage(R.string.delete_chat_dialog_message);
+            builder.setPositiveButton(R.string.delete_chat_dialog_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    leaveChat();
+                }
+            });
+        } else {
+            builder.setTitle(R.string.leave_chat_dialog_title);
+            builder.setMessage(R.string.leave_chat_dialog_message);
+            builder.setPositiveButton(R.string.leave_chat_dialog_button, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    leaveChat();
+                }
+            });
+        }
+
         builder.setNegativeButton(android.R.string.cancel, null);
         builder.show();
     }

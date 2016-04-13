@@ -334,10 +334,12 @@
   <string name="chat">Chat</string>
   <string name="do_not_disturb">Don\'t disturb</string>
   <string name="delete_chat">Delete chat</string>
-  <string name="leave_group">Leave the group</string>
-  <string name="delete_chat_desc">Chat will be deleted and you will be unable to receive messages</string>
-  <string name="leave_chat">Log out</string>
-  <string name="cancel">Cancel</string>
+  <string name="delete_chat_dialog_title">Delete chat</string>
+  <string name="delete_chat_dialog_button">Delete</string>
+  <string name="delete_chat_dialog_message">Chat will be deleted and you will be unable to receive messages</string>
+  <string name="leave_chat_dialog_title">Leave the group</string>
+  <string name="leave_chat_dialog_message">You will be unable to receive new messages</string>
+  <string name="leave_chat_dialog_button">Leave</string>
   <string name="fail_to_remove_chat">Unable to delete chat</string>
   <string name="public_conversation_default_title">Post discussion</string>
   <string name="change_conversation_avatar">Change avatar</string>
