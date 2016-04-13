@@ -280,7 +280,6 @@ public class ShowPostFragment2 extends Fragment {
     private void onBindPostHolder(ListEntryBase pHolder, Entry entry) {
         if (DBG) Log.v(TAG, "onBindPostHolder()");
         pHolder.getEntryActionBar().setOnItemListenerEntry(entry);
-        pHolder.getEntryActionBar().setCommentsClickable(true);
 
         TlogDesign design;
         if (mDesign != null) {

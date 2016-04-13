@@ -25,7 +25,7 @@
             android:layout_height="?actionBarSize"
             android:gravity="center_vertical">
 
-            <ru.taaasty.widgets.HintedExtendedImageView
+            <ru.taaasty.widgets.ExtendedImageView
                 android:id="@+id/avatar"
                 android:layout_width="@dimen/avatar_in_actiobar_diameter"
                 android:layout_height="@dimen/avatar_in_actiobar_diameter"
