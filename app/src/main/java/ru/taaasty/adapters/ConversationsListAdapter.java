@@ -93,12 +93,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         ConversationHelper helper = ConversationHelper.getInstance();
         helper.bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
 
-        if (conversation.isGroup()) {
-            holder.avatar.setForegroundDrawable(null); // TODO
-        } else {
-            holder.avatar.setForegroundResource(R.drawable.clickable_item_circle_background);
-        }
-
+        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, holder.avatar);
         if (isLastSenderShouldBeShown(conversation)) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
             mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);

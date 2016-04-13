@@ -4,8 +4,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -25,17 +23,16 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.adobe.creativesdk.aviary.internal.utils.BitmapUtils;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Transformation;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import ru.taaasty.R;
 import ru.taaasty.Session;
@@ -52,6 +49,7 @@ import ru.taaasty.ui.post.ShowPostActivity2;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.RoundedCornersTransformation;
+import ru.taaasty.widgets.HintedExtendedImageView;
 import rx.Observable;
 import rx.Observable.OnSubscribe;
 import rx.Observer;
@@ -72,7 +70,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
     private static final String DIALOG_TAG_SELECT_AVATAR = "DIALOG_SELECT_AVATAR";
 
-    private ImageView mAvatar;
+    private HintedExtendedImageView mAvatar;
     private EditText mTopic;
     private TextView mUserCount;
     private View mEditUsersButton;
@@ -118,7 +116,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_edit_group, container, false);
 
-        mAvatar = (ImageView) root.findViewById(R.id.avatar);
+        mAvatar = (HintedExtendedImageView) root.findViewById(R.id.avatar);
         mTopic = (EditText) root.findViewById(R.id.topic);
         mUserCount = (TextView) root.findViewById(R.id.user_count);
         mEditUsersButton = root.findViewById(R.id.edit_users);
@@ -258,6 +256,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         } else {
             bindReadWriteGroupAvatar();
         }
+        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(getConversation(), mAvatar);
     }
 
     private void bindReadOnlyGroupAvatar() {
@@ -279,53 +278,26 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
         mGroupAvatarThumbnailSubscription.unsubscribe();
         if (imageUri != null) {
-            Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
+            final List<Transformation> avatarTransformation = Arrays.asList(
+                    RoundedCornersTransformation.create(getResources().getDimensionPixelSize(R.dimen.group_avatar_corner_radius)),
+                    new ConversationHelper.DrawBackgroundTransformation(getContext(), R.drawable.group_post_default_avatar));
 
+            Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
                 @Override
                 public void call(Subscriber<? super Bitmap> subscriber) {
-                    if ("http".equals(imageUri.getScheme()) || "https".equals(imageUri.getScheme())) {
-                        try {
-                            Bitmap bitmap = picasso
-                                    .load(imageUri)
-                                    .resize(imageSize, imageSize)
-                                    .onlyScaleDown()
-                                    .centerCrop()
-                                    .noFade()
-                                    .transform(RoundedCornersTransformation.createCircle())
-                                    .get();
-                            subscriber.onNext(bitmap);
-                            subscriber.onCompleted();
-                        } catch (IOException ioe) {
-                            subscriber.onError(ioe);
-                        }
-                    } else {
-                        InputStream is = null;
-                        try {
-                            is = contentResolver.openInputStream(imageUri);
-                            Bitmap bitmap = BitmapFactory.decodeStream(is);
-                            if (bitmap.getWidth() >= bitmap.getHeight()) {
-                                final float aspect = (float) bitmap.getHeight() / bitmap.getWidth();
-                                bitmap = BitmapUtils.createThumbnail(bitmap, (int) (imageSize / aspect), imageSize, 0, 0);
-                            } else {
-                                final float aspect = (float) bitmap.getWidth() / bitmap.getHeight();
-                                bitmap = BitmapUtils.createThumbnail(bitmap, imageSize, (int) (imageSize / aspect), 0, 0);
-                            }
-                            bitmap = BitmapUtils.cropCenter(bitmap, imageSize, imageSize, Config.ARGB_8888);
-                            bitmap = BitmapUtils.roundedCorners(bitmap, imageSize / 2, imageSize / 2);
-                            subscriber.onNext(bitmap);
-                        } catch (FileNotFoundException e) {
-                            subscriber.onError(e);
-                            e.printStackTrace();
-                        } finally {
-                            if (is != null) {
-                                try {
-                                    is.close();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    subscriber.onError(e);
-                                }
-                            }
-                        }
+                    try {
+                        Bitmap bitmap = picasso
+                                .load(imageUri)
+                                .resize(imageSize, imageSize)
+                                .onlyScaleDown()
+                                .centerCrop()
+                                .noFade()
+                                .transform(avatarTransformation)
+                                .get();
+                        subscriber.onNext(bitmap);
+                        subscriber.onCompleted();
+                    } catch (IOException ioe) {
+                        subscriber.onError(ioe);
                     }
                 }
             });

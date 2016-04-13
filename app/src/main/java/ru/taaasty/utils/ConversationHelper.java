@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.widgets.ExtendedImageView;
 
 public final class ConversationHelper {
 
@@ -93,7 +94,16 @@ public final class ConversationHelper {
         }
     }
 
-    public void bindAvatarToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst) {
+    public void setupAvatarImageViewClickableForeground(Conversation conversation, ExtendedImageView imageView) {
+        // кликабельное состояние
+        if (conversation.isGroup()) {
+            imageView.setForegroundDrawable(null); // TODO
+        } else {
+            imageView.setForegroundResource(R.drawable.clickable_item_circle_background);
+        }
+    }
+
+    private void bindAvatarToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst) {
         Context context = dst.getContext();
         int imageSize = dst.getResources().getDimensionPixelSize(dstSizeRes);
 
@@ -134,7 +144,7 @@ public final class ConversationHelper {
     }
 
     // Рисование Drawable на Bitmap
-    private static class DrawBackgroundTransformation implements Transformation {
+    public static class DrawBackgroundTransformation implements Transformation {
 
         private final int mDrawableResId;
 
