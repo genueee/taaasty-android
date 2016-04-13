@@ -1,5 +1,6 @@
 package ru.taaasty.ui.messages;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
@@ -305,6 +306,7 @@ public class ConversationFragment extends Fragment {
         mSendMessageButton.setOnClickListener(v -> sendMessage());
     }
 
+    @SuppressLint("RxSubscribeOnError")
     private void sendMessage() {
         String comment = mSendMessageText.getText().toString();
 
@@ -320,6 +322,7 @@ public class ConversationFragment extends Fragment {
         //mSendMessageText.setEnabled(false);
         mSendMessageProgress.setVisibility(View.VISIBLE);
         mSendMessageButton.setVisibility(View.INVISIBLE);
+
         mPostMessageSubscription = mConversationSubject
                 .take(1)
                 .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,

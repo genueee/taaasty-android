@@ -2,7 +2,6 @@ package ru.taaasty;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
@@ -15,8 +14,6 @@ import com.adobe.creativesdk.foundation.AdobeCSDKFoundation;
 import com.crashlytics.android.Crashlytics;
 import com.facebook.FacebookSdk;
 import com.vk.sdk.VKSdk;
-
-import java.util.Locale;
 
 import de.greenrobot.event.EventBus;
 import frenchtoast.FrenchToast;
@@ -84,7 +81,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         Session.getInstance().onAppInit(this);
         ImageUtils.getInstance().onAppInit(this);
         AnalyticsHelper.initInstance(this);
-        resetLanguage();
 
         // Aviary
         AdobeCSDKFoundation.initializeCSDKFoundation(getApplicationContext());
@@ -110,21 +106,6 @@ public class TaaastyApplication extends MultiDexApplication implements IAviaryCl
         super.onTrimMemory(level);
         if (DBG) Log.v(TAG, "onTrimMemory() " + level);
         NetworkUtils.getInstance().onTrimMemory();
-    }
-
-    private void resetLanguage() {
-        Configuration config = getBaseContext().getResources().getConfiguration();
-
-        // Locale.US - это обычно юзеры, не меняющие язык. Подстраиваемся под них
-        if (config.locale == null
-                || (config.locale.equals(Locale.US))
-                || (config.locale.equals(Locale.ROOT))) {
-            Locale locale = new Locale("ru_RU");
-            Log.i(TAG, "Reset locale " + config.locale + " to " + locale);
-            Locale.setDefault(locale);
-            config.locale = locale;
-            getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
-        }
     }
 
     @Override

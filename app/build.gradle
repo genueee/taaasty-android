@@ -107,7 +107,6 @@ android {
         debug {
             applicationIdSuffix ".debug"
             versionNameSuffix "+d" + gitSha
-            resValue "string", "app_name", "Тейсти dbg" + gitSha
             manifestPlaceholders = [ facebook_app_id_forprovider:"debug7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
             multiDexEnabled true
             buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DebugStethoHelper()'
@@ -121,7 +120,6 @@ android {
         beta {
             applicationIdSuffix ".beta";
             versionNameSuffix "+b" + gitSha
-            resValue "string", "app_name", "Тейсти beta"
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.beta

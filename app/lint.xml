@@ -5,4 +5,9 @@
     <issue id="NewApi">
         <ignore regexp="Try-with-resources requires API level 19"/>
     </issue>
+    <issue id="MissingTranslation">
+        <ignore regexp="ga_trackingId"/>
+        <ignore regexp="gcm_defaultSenderId"/>
+        <ignore regexp="facebook_app_id"/>
+    </issue>
 </lint>
