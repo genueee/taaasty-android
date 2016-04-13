@@ -291,7 +291,8 @@ public class ShowPostFragment2 extends Fragment {
             design = TlogDesign.createLightTheme(TlogDesign.DUMMY);
         }
 
-        pHolder.setupEntry(entry, design, String.valueOf(entry.getId()));
+        // TODO последним параметром у нас должен быть ID просматриваемой в данный момент ленты
+        pHolder.setupEntry(entry, design, null);
     }
 
     private void initClickListeners(ListEntryBase holder, Entry entry) {

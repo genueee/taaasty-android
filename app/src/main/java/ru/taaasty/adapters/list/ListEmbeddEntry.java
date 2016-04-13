@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.util.TimingLogger;
 import android.view.View;
 import android.widget.ImageView;
@@ -64,7 +65,7 @@ public class ListEmbeddEntry extends ListEntryBase implements Callback {
     }
 
     @Override
-    public void setupEntry(Entry entry, TlogDesign design, String feedId) {
+    public void setupEntry(Entry entry, TlogDesign design, @Nullable String feedId) {
         TimingLogger timings = null;
         if (BuildConfig.DEBUG) timings = new TimingLogger(Constants.LOG_TAG, "setup EmbeddEntry");
 

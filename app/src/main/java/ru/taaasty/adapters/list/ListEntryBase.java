@@ -75,7 +75,13 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setupEntry(Entry entry, TlogDesign design, String feedId) {
+    /**
+     *
+     * @param entry  Запись
+     * @param design Применяемый дизан
+     * @param feedId ID просматриваемой в данный момент ленты. Нужен для верного формирования надписи "репост из XXX"
+     */
+    public void setupEntry(Entry entry, TlogDesign design, @Nullable String feedId) {
         mEntryActionBar.setupEntry(entry);
         setAuthor(entry, feedId);
         setFlowHeader(entry, feedId);
@@ -103,7 +109,7 @@ public abstract class ListEntryBase extends RecyclerView.ViewHolder {
      * @param item
      */
 
-    private void setAuthor(Entry item, String feedId) {
+    private void setAuthor(Entry item, @Nullable String feedId) {
         if (!mShowUserAvatar) return;
         User author = item.getAuthor();
         mAvatarAuthor.setText(getAvatarDescription(item, feedId));
