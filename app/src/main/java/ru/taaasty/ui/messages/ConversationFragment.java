@@ -38,9 +38,9 @@ import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
-import ru.taaasty.rest.model.Conversation.Message;
-import ru.taaasty.rest.model.ConversationMessages;
+import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
@@ -363,7 +363,7 @@ public class ConversationFragment extends Fragment {
                 });
     }
 
-    private void addMessageScrollToEnd(Conversation.Message message) {
+    private void addMessageScrollToEnd(Message message) {
         if (mAdapter == null) return;
 
         mAdapter.addMessage(message);
@@ -395,7 +395,7 @@ public class ConversationFragment extends Fragment {
         }));
     }
 
-    private void addMessagesDoNotScrollList(Conversation.Message[] messages) {
+    private void addMessagesDoNotScrollList(Message[] messages) {
         Long oldTopId = null;
         int oldTopTop = 0;
 
@@ -468,7 +468,7 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public int getItemViewType(int position) {
-            Conversation.Message message = getMessage(position);
+            Message message = getMessage(position);
             if (message != null && message.isSystemMessage()) {
                 return VIEW_TYPE_SYSTEM_MESSAGE;
             }
@@ -490,7 +490,7 @@ public class ConversationFragment extends Fragment {
                             break;
                         case R.id.avatar:
                             int position = pHolder.getAdapterPosition();
-                            Conversation.Message message = getMessage(position);
+                            Message message = getMessage(position);
                             if (message != null) {
                                 TlogActivity.startTlogActivity(getActivity(), message.userId, v,
                                         R.dimen.avatar_small_diameter);
@@ -546,7 +546,7 @@ public class ConversationFragment extends Fragment {
             if (holder instanceof ViewHolderMessage
                     && !((ViewHolderMessage) holder).isMyMessage
                     && mMessagesLoader != null) {
-                Conversation.Message msg = getMessage((ViewHolderMessage) holder);
+                Message msg = getMessage((ViewHolderMessage) holder);
                 if (msg != null && !msg.isMarkedAsRead()) {
                     markMessagesAsRead.enqueueMarkAsRead(msg.id);
                 }
@@ -704,7 +704,7 @@ public class ConversationFragment extends Fragment {
             mApiMessenger = RestClient.getAPiMessenger();
         }
 
-        protected Observable<ConversationMessages> createObservable(Long sinceEntryId, Integer limit) {
+        protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
             return mConversationSubject
                     .take(1)
                     .flatMap(conversation -> mApiMessenger.getMessages(null, conversation.id, null, sinceEntryId, limit, null));
@@ -712,13 +712,13 @@ public class ConversationFragment extends Fragment {
 
         public void refreshMessages() {
             int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-            Observable<ConversationMessages> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
+            Observable<MessageList> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
                     .observeOn(AndroidSchedulers.mainThread());
 
             refreshFeed(observableFeed, requestEntries);
         }
 
-        private void refreshFeed(Observable<ConversationMessages> observable, int entriesRequested) {
+        private void refreshFeed(Observable<MessageList> observable, int entriesRequested) {
             if (!mMessagesRefreshSubscription.isUnsubscribed()) {
                 onFeedIsUnsubscribed(true);
                 mMessagesRefreshSubscription.unsubscribe();
@@ -789,7 +789,7 @@ public class ConversationFragment extends Fragment {
             MessageHelper.showError(ConversationFragment.this, e, R.string.error_append_feed, REQUEST_CODE_LOGIN);
         }
 
-        protected void onLoadNext(boolean isRefresh, int entriesRequested, ConversationMessages messages) {
+        protected void onLoadNext(boolean isRefresh, int entriesRequested, MessageList messages) {
             if (DBG) Log.e(TAG, "onNext " + messages.toString());
             boolean keepOnAppending = (messages != null) && (messages.messages.length == entriesRequested);
             if (messages != null && messages.messages.length > 0) {
@@ -827,7 +827,7 @@ public class ConversationFragment extends Fragment {
             holder.progress.setVisibility(mLoadingMessages ? View.VISIBLE : View.INVISIBLE);
         }
 
-        public class MessagesLoadObserver implements Observer<ConversationMessages> {
+        public class MessagesLoadObserver implements Observer<MessageList> {
 
             private final boolean mIsRefresh;
             private final int mEntriesRequested;
@@ -848,7 +848,7 @@ public class ConversationFragment extends Fragment {
             }
 
             @Override
-            public void onNext(ConversationMessages messages) {
+            public void onNext(MessageList messages) {
                 MessagesLoader.this.onLoadNext(mIsRefresh, mEntriesRequested, messages);
             }
         }

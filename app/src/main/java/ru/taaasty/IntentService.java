@@ -52,7 +52,6 @@ import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
@@ -66,6 +65,7 @@ import ru.taaasty.rest.model.PostQuoteForm;
 import ru.taaasty.rest.model.PostTextForm;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.rest.service.ApiMessenger;
@@ -440,7 +440,7 @@ public class IntentService extends android.app.IntentService {
                     if (DBG) Log.v(TAG, "markMessagesAsReadSync() error");
                 }
             }
-            Conversation.Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
+            Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
                     UUID.randomUUID().toString(), null);
             EventBus.getDefault().post(new MessageChanged(message));
         } catch (ApiErrorException ree) {

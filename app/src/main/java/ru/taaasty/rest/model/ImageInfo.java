@@ -5,8 +5,6 @@ import android.os.Parcelable;
 
 import java.util.Date;
 
-import ru.taaasty.utils.Size;
-
 /**
 * Created by alexey on 12.08.14.
 */
@@ -121,7 +119,7 @@ public class ImageInfo implements Parcelable {
 
         public String url = "";
 
-        public ImageGeometry geometry = new ImageGeometry();
+        public Geometry geometry = new Geometry();
 
         @Override
         public int describeContents() {
@@ -139,7 +137,7 @@ public class ImageInfo implements Parcelable {
 
         private Image2(Parcel in) {
             this.url = in.readString();
-            this.geometry = in.readParcelable(ImageGeometry.class.getClassLoader());
+            this.geometry = in.readParcelable(Geometry.class.getClassLoader());
         }
 
         public static final Parcelable.Creator<Image2> CREATOR = new Parcelable.Creator<Image2>() {
@@ -176,72 +174,6 @@ public class ImageInfo implements Parcelable {
         public int hashCode() {
             int result = url != null ? url.hashCode() : 0;
             result = 31 * result + (geometry != null ? geometry.hashCode() : 0);
-            return result;
-        }
-    }
-
-    public static class ImageGeometry implements Parcelable {
-        public int width;
-        public int height;
-
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        public Size toImageSize() {
-            return new Size(width, height);
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(this.width);
-            dest.writeInt(this.height);
-        }
-
-        public ImageGeometry() {
-        }
-
-        private ImageGeometry(Parcel in) {
-            this.width = in.readInt();
-            this.height = in.readInt();
-        }
-
-        public static final Parcelable.Creator<ImageGeometry> CREATOR = new Parcelable.Creator<ImageGeometry>() {
-            public ImageGeometry createFromParcel(Parcel source) {
-                return new ImageGeometry(source);
-            }
-
-            public ImageGeometry[] newArray(int size) {
-                return new ImageGeometry[size];
-            }
-        };
-
-        @Override
-        public String toString() {
-            return "ImageGeometry{" +
-                    "height=" + height +
-                    ", width=" + width +
-                    '}';
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ImageGeometry that = (ImageGeometry) o;
-
-            if (width != that.width) return false;
-            return height == that.height;
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = width;
-            result = 31 * result + height;
             return result;
         }
     }

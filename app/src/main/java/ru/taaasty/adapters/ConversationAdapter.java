@@ -26,10 +26,10 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
-import ru.taaasty.rest.model.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -174,7 +174,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             return VIEW_TYPE_HEADER_MORE_BUTTON;
         }
 
-        Conversation.Message message = mMessages.get(getFeedLocation(position));
+        Message message = mMessages.get(getFeedLocation(position));
         if (mSession.isMe(message.userId)) {
             return VIEW_TYPE_MY_MESSAGE;
         } else {
@@ -184,21 +184,21 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     @Override
     public long getItemId(int position) {
-        Conversation.Message message = getMessage(position);
+        Message message = getMessage(position);
         return message != null ? message.id : RecyclerView.NO_ID;
     }
 
     @Nullable
-    public Conversation.Message getMessage(int adapterPosition) {
+    public Message getMessage(int adapterPosition) {
         if (!isPositionInFeed(adapterPosition)) return null;
         return mMessages.get(getFeedLocation(adapterPosition));
     }
 
-    public void addMessages(Conversation.Message[] messages) {
+    public void addMessages(Message[] messages) {
         mMessages.addOrUpdateItems(messages);
     }
 
-    public void addMessage(Conversation.Message message) {
+    public void addMessage(Message message) {
         mMessages.addOrUpdate(message);
     }
 
@@ -249,7 +249,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     @Nullable
-    public Conversation.Message getMessage(ViewHolderMessage holder) {
+    public Message getMessage(ViewHolderMessage holder) {
         if (holder.getPosition() == RecyclerView.NO_POSITION) return null;
         return mMessages.get(getFeedLocation(holder.getPosition()));
     }
@@ -313,13 +313,13 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     @Nullable
     protected abstract User getMember(long userUuid);
 
-    private void bindMessage(ViewHolderMessage holder, Conversation.Message message) {
+    private void bindMessage(ViewHolderMessage holder, Message message) {
         bindMessageText(holder, message);
         bindMessageDate(holder, message);
         bindAvatar(holder, message);
     }
 
-    private void bindMessageText(ViewHolderMessage holder, Conversation.Message message) {
+    private void bindMessageText(ViewHolderMessage holder, Message message) {
         User author = getMember(message.userId);
         CharSequence text;
 
@@ -345,12 +345,12 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         holder.textImgLoader.loadImages(holder.text);
     }
 
-    private void bindAvatar(ViewHolderMessage holder, Conversation.Message message) {
+    private void bindAvatar(ViewHolderMessage holder, Message message) {
         User user = getMember(message.userId);
         mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
     }
 
-    private void bindMessageDate(ViewHolderMessage holder, Conversation.Message message) {
+    private void bindMessageDate(ViewHolderMessage holder, Message message) {
         holder.relativeDate.setRelativeDate(message.createdAt.getTime());
         if (holder.isMyMessage) {
             holder.relativeDate.setCompoundDrawablesWithIntrinsicBounds(0, 0,
@@ -374,13 +374,13 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         return parentWidth - parent.getPaddingLeft() - parent.getPaddingRight();
     }
 
-    private final class MessageFeed extends SortedList<Conversation.Message> {
+    private final class MessageFeed extends SortedList<Message> {
 
         public MessageFeed() {
-            super(Conversation.Message.class, new Callback<Conversation.Message>() {
+            super(Message.class, new Callback<Message>() {
                 @Override
-                public int compare(Conversation.Message o1, Conversation.Message o2) {
-                    return Conversation.Message.SORT_BY_ID_COMPARATOR.compare(o1, o2);
+                public int compare(Message o1, Message o2) {
+                    return Message.SORT_BY_ID_COMPARATOR.compare(o1, o2);
                 }
 
                 @Override
@@ -404,7 +404,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 }
 
                 @Override
-                public boolean areContentsTheSame(Conversation.Message oldItem, Conversation.Message newItem) {
+                public boolean areContentsTheSame(Message oldItem, Message newItem) {
                     // Тут огромное количество левых полей, которые не нужно сравнивать, поэтому сравниваем вручную
                     // Пропускаем: uuid, recipient, userId
                     //if (oldItem.id != newItem.id) return false;
@@ -421,7 +421,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 }
 
                 @Override
-                public boolean areItemsTheSame(Conversation.Message item1, Conversation.Message item2) {
+                public boolean areItemsTheSame(Message item1, Message item2) {
                     if (item1.id == item2.id) return true;
                     if (item1.uuid != null && !item1.uuid.isEmpty() && item1.uuid.equals(item2.uuid))
                         return true;

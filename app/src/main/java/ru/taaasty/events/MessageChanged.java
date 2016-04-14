@@ -1,15 +1,15 @@
 package ru.taaasty.events;
 
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Message;
 
 /**
  * Добавлено или обновлено сообщение в чате
  */
 public class MessageChanged {
 
-    public final Conversation.Message message;
+    public final Message message;
 
-    public MessageChanged(Conversation.Message message) {
+    public MessageChanged(Message message) {
         this.message = message;
     }
 }

@@ -9,7 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
 
 public class UserPickerActivity extends ActivityBase implements

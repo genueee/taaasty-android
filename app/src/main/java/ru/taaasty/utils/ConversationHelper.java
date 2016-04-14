@@ -18,7 +18,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 import java.util.Arrays;
 
 import ru.taaasty.R;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.widgets.ExtendedImageView;
 
 public final class ConversationHelper {

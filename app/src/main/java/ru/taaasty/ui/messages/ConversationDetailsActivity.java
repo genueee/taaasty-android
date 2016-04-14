@@ -8,7 +8,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 
 /**
  * Created by arhis on 25.02.2016.

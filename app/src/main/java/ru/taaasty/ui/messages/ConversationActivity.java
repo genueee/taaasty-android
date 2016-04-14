@@ -25,7 +25,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.MessageHelper;

@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ImageUtils;

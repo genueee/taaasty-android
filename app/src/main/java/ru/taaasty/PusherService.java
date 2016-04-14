@@ -31,11 +31,13 @@ import ru.taaasty.events.NotificationReceived;
 import ru.taaasty.events.UiVisibleStatusChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.MessagingStatus;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.PusherEventUpdateNotifications;
 import ru.taaasty.rest.model.UpdateMessages;
+import ru.taaasty.rest.model.conversations.ConversationList;
+import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
@@ -59,7 +61,7 @@ public class PusherService extends Service {
 
     /**
      * Событие - активные переписки
-     * Тип: {@linkplain ru.taaasty.rest.model.Conversations}
+     * Тип: {@linkplain ConversationList}
      */
     public static final String EVENT_ACTIVE_CONVERSATIONS = "active_conversations";
 
@@ -71,7 +73,7 @@ public class PusherService extends Service {
 
     /**
      * Новое сообщение
-     * Тип: {@linkplain ru.taaasty.rest.model.Conversation.Message}
+     * Тип: {@linkplain Message}
      */
     public static final String EVENT_PUSH_MESSAGE = "push_message";
 
@@ -205,7 +207,7 @@ public class PusherService extends Service {
                 case EVENT_ACTIVE_CONVERSATIONS:
                     break;
                 case EVENT_PUSH_MESSAGE:
-                    Conversation.Message message =  mGson.fromJson(data, Conversation.Message.class);
+                    Message message =  mGson.fromJson(data, Message.class);
                     EventBus.getDefault().post(new MessageChanged(message));
                     break;
                 case EVENT_UPDATE_CONVERSATION:

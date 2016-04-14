@@ -23,9 +23,10 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.ConversationsActivity;
 import ru.taaasty.utils.AnalyticsHelper;
@@ -60,7 +61,7 @@ public class StatusBarConversationNotification {
     private boolean mSeveralConversations;
 
     @Nullable
-    private Conversation.Message mLastMessage;
+    private Message mLastMessage;
 
     private int mConversationMessagesCount;
 
@@ -178,7 +179,7 @@ public class StatusBarConversationNotification {
 
             @Override
             public void onNext(List<Conversation> conversations) {
-                Conversation.Message lastMessage = null;
+                Message lastMessage = null;
                 int activeConversationCount = 0;
                 // Самое последнее непрочитанное сообщение - наше (на самом деле нет)
                 for (Conversation conversation: conversations) {
@@ -200,7 +201,7 @@ public class StatusBarConversationNotification {
     }
 
 
-    public synchronized void append(Conversation.Message message) {
+    public synchronized void append(Message message) {
         if (mIsPaused) return;
         if (mConversationVisibility.get(message.recipientId, 0) != 0
                 || mConversationVisibility.get(message.userId, 0) != 0) return;
@@ -316,7 +317,7 @@ public class StatusBarConversationNotification {
         AnalyticsHelper.getInstance().sendNotificationsEvent("Показано уведомление о новом сообщении");
     }
 
-    private PendingIntent createContentPendingIntent(Conversation.Message message, boolean showConversation) {
+    private PendingIntent createContentPendingIntent(Message message, boolean showConversation) {
         // ConversationsActivity intent
         Intent firstIntent = new Intent(mContext, ConversationsActivity.class);
 
@@ -345,7 +346,7 @@ public class StatusBarConversationNotification {
                 deleteIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 
-    private NotificationCompat.Action createVoiceReplyAction(Conversation.Message message) {
+    private NotificationCompat.Action createVoiceReplyAction(Message message) {
         RemoteInput remoteInput = new RemoteInput.Builder(IntentService.EXTRA_CONVERSATION_VOICE_REPLY_CONTENT)
                 .setLabel(mContext.getText(R.string.notification_action_reply_label))
                 .build();
@@ -361,7 +362,7 @@ public class StatusBarConversationNotification {
                 .build();
     }
 
-    private CharSequence getMessageText(Conversation.Message message) {
+    private CharSequence getMessageText(Message message) {
         SpannableStringBuilder ssb = new SpannableStringBuilder();
 
         if (message.conversation != null

@@ -27,7 +27,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;

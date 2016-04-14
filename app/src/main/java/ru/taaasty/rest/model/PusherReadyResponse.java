@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import java.util.Collections;
 import java.util.List;
 
+import ru.taaasty.rest.model.conversations.Conversation;
+
 /**
  * Created by alexey on 22.10.14.
  */

@@ -24,7 +24,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;

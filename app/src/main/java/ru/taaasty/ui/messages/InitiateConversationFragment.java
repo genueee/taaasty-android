@@ -23,7 +23,7 @@ import java.util.List;
 import ru.taaasty.R;
 import ru.taaasty.adapters.UsernameAdapter;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiUsers;

@@ -10,7 +10,7 @@ import android.view.MenuItem;
 
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener;
 import ru.taaasty.utils.ImeUtils;

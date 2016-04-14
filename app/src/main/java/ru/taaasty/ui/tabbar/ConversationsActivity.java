@@ -11,7 +11,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.R;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.events.ConversationChanged;
-import ru.taaasty.rest.model.Conversation;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.messages.ConversationsListFragment;

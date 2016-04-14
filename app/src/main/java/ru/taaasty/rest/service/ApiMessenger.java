@@ -14,8 +14,9 @@ import retrofit.http.Part;
 import retrofit.http.Path;
 import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
-import ru.taaasty.rest.model.Conversation;
-import ru.taaasty.rest.model.ConversationMessages;
+import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
@@ -76,12 +77,12 @@ public interface ApiMessenger {
                                                            @Path("user_id") long slug);
 
     @GET("/messenger/conversations/by_id/{id}/messages.json")
-    Observable<ConversationMessages> getMessages(@Query("socket_id") String socketId,
-                                                           @Path("id") long conversationId,
-                                                           @Query("from_message_id") Long fromMessageId,
-                                                           @Query("to_message_id") Long toMessageId,
-                                                           @Query("limit") Integer limit,
-                                                           @Query("order") String order);
+    Observable<MessageList> getMessages(@Query("socket_id") String socketId,
+                                        @Path("id") long conversationId,
+                                        @Query("from_message_id") Long fromMessageId,
+                                        @Query("to_message_id") Long toMessageId,
+                                        @Query("limit") Integer limit,
+                                        @Query("order") String order);
 
     /**
      * Отправка сообщения в переписку
@@ -94,11 +95,11 @@ public interface ApiMessenger {
      */
     @FormUrlEncoded
     @POST("/messenger/conversations/by_id/{id}/messages.json")
-    Observable<Conversation.Message> postMessage(@Field("socket_id") String socketId,
-                                                        @Path("id") long conversationId,
-                                                        @Query("content") String content,
-                                                        @Query("uuid") String uuid,
-                                                        @Query("recipient_id") Long recipientId);
+    Observable<Message> postMessage(@Field("socket_id") String socketId,
+                                    @Path("id") long conversationId,
+                                    @Query("content") String content,
+                                    @Query("uuid") String uuid,
+                                    @Query("recipient_id") Long recipientId);
 
     /**
      * Отправка сообщения в переписку
@@ -111,11 +112,11 @@ public interface ApiMessenger {
      */
     @FormUrlEncoded
     @POST("/messenger/conversations/by_id/{id}/messages.json")
-    Conversation.Message postMessageSync(@Field("socket_id") String socketId,
-                                                 @Path("id") long conversationId,
-                                                 @Query("content") String content,
-                                                 @Query("uuid") String uuid,
-                                                 @Query("recipient_id") Long recipientId);
+    Message postMessageSync(@Field("socket_id") String socketId,
+                            @Path("id") long conversationId,
+                            @Query("content") String content,
+                            @Query("uuid") String uuid,
+                            @Query("recipient_id") Long recipientId);
 
 
     /**
