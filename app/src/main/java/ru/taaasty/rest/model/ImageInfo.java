@@ -3,21 +3,19 @@ package ru.taaasty.rest.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import java.util.Date;
-
 /**
 * Created by alexey on 12.08.14.
 */
 public class ImageInfo implements Parcelable {
     public long id;
 
-    public Date createAt;
-
     public static final String CONTENT_TYPE_GIF = "image/gif";
 
-    String title;
+    //Date createdAt;
 
-    String source;
+    //String title;
+
+    //String source;
 
     public Image2 image = Image2.DUMMY;
 
@@ -37,9 +35,6 @@ public class ImageInfo implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.id);
-        dest.writeLong(createAt != null ? createAt.getTime() : -1);
-        dest.writeString(this.title);
-        dest.writeString(this.source);
         dest.writeString(this.contentType);
         dest.writeInt(framesCount);
         dest.writeParcelable(this.image, flags);
@@ -50,10 +45,6 @@ public class ImageInfo implements Parcelable {
 
     ImageInfo(Parcel in) {
         this.id = in.readLong();
-        long tmpCreateAt = in.readLong();
-        this.createAt = tmpCreateAt == -1 ? null : new Date(tmpCreateAt);
-        this.title = in.readString();
-        this.source = in.readString();
         this.contentType = in.readString();
         this.framesCount = in.readInt();
         this.image = in.readParcelable(Image2.class.getClassLoader());
@@ -74,9 +65,6 @@ public class ImageInfo implements Parcelable {
         return "ImageInfo{" +
                 "contentType='" + contentType + '\'' +
                 ", id=" + id +
-                ", createAt=" + createAt +
-                ", title='" + title + '\'' +
-                ", source='" + source + '\'' +
                 ", image=" + image +
                 ", framesCount=" + framesCount +
                 '}';
@@ -91,11 +79,6 @@ public class ImageInfo implements Parcelable {
 
         if (id != imageInfo.id) return false;
         if (framesCount != imageInfo.framesCount) return false;
-        if (createAt != null ? !createAt.equals(imageInfo.createAt) : imageInfo.createAt != null)
-            return false;
-        if (title != null ? !title.equals(imageInfo.title) : imageInfo.title != null) return false;
-        if (source != null ? !source.equals(imageInfo.source) : imageInfo.source != null)
-            return false;
         if (image != null ? !image.equals(imageInfo.image) : imageInfo.image != null) return false;
         return !(contentType != null ? !contentType.equals(imageInfo.contentType) : imageInfo.contentType != null);
 
@@ -104,9 +87,6 @@ public class ImageInfo implements Parcelable {
     @Override
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (createAt != null ? createAt.hashCode() : 0);
-        result = 31 * result + (title != null ? title.hashCode() : 0);
-        result = 31 * result + (source != null ? source.hashCode() : 0);
         result = 31 * result + (image != null ? image.hashCode() : 0);
         result = 31 * result + (contentType != null ? contentType.hashCode() : 0);
         result = 31 * result + framesCount;

@@ -348,4 +348,7 @@
   <string name="save_conversation">Save</string>
   <string name="error_no_photo_dir_permission">No access to directory with the photos</string>
   <string name="error_external_photo_dir_permission_required">Application needs access to the folder with the photos</string>
+  <string name="menu_button_attach">Attach</string>
+  <string name="conversation_list_image_attachment_photo">Photo</string>
+  <string name="conversation_list_image_attachment">Attachment</string>
 </resources>

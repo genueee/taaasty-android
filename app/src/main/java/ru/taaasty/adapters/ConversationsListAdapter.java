@@ -1,10 +1,10 @@
 package ru.taaasty.adapters;
 
+import android.content.res.Resources;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
@@ -92,8 +92,9 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
         ConversationHelper helper = ConversationHelper.getInstance();
         helper.bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
-
         ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, holder.avatar);
+
+        // Last message sender
         if (isLastSenderShouldBeShown(conversation)) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
             mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
@@ -114,10 +115,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         UiUtils.setNicknameSpans(ssb, 0, ssb.length(), conversation.isGroup() ? -1 : author.getId(),
                 holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
         holder.title.setText(ssb);
-
-        if (conversation.lastMessage != null && !TextUtils.isEmpty(conversation.lastMessage.contentHtml)) {
-            holder.messageText.setText(Html.fromHtml(conversation.lastMessage.contentHtml));
-        }
+        holder.messageText.setText(formatLastMessageText(conversation, holder.messageText.getResources()));
     }
 
     private void bindDate(ViewHolder holder, Conversation conversation) {
@@ -134,6 +132,23 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             holder.msgCount.setVisibility(View.INVISIBLE);
             holder.unreceivedIndicator.setVisibility(conversation.unreceivedMessagesCount > 0 ? View.VISIBLE : View.INVISIBLE);
         }
+    }
+
+    private CharSequence formatLastMessageText(Conversation conversation, Resources resources) {
+        if (conversation.lastMessage != null) {
+            if(!UiUtils.isBlank(conversation.lastMessage.contentHtml)) {
+                return Html.fromHtml(conversation.lastMessage.contentHtml);
+            } else {
+                SpannableStringBuilder ssb;
+                if (conversation.lastMessage.getFirstImageAttachment() != null) {
+                    ssb = new SpannableStringBuilder(resources.getText(R.string.conversation_list_image_attachment_photo));
+                } else {
+                    ssb = new SpannableStringBuilder(resources.getText(R.string.conversation_list_image_attachment));
+                }
+                return ssb;
+            }
+        }
+        return "";
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

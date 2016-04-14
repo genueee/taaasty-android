@@ -2,12 +2,14 @@ package ru.taaasty.adapters;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
-import android.text.TextUtils;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -29,6 +31,7 @@ import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
@@ -47,6 +50,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public static final int VIEW_TYPE_HEADER_MORE_BUTTON = R.id.conversation_view_more_button;
     public static final int VIEW_TYPE_MY_MESSAGE = R.id.conversation_view_my_message;
     public static final int VIEW_TYPE_THEIR_MESSAGE = R.id.conversation_view_their_message;
+    public static final int VIEW_TYPE_SYSTEM_MESSAGE = R.id.conversation_view_system_message;
 
     private Session mSession;
 
@@ -138,6 +142,10 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                 }
                 holder = theirHolder;
                 break;
+            case VIEW_TYPE_SYSTEM_MESSAGE:
+                View child = mInflater.inflate(R.layout.conversation_system_message, parent, false);
+                holder = new SystemMessageHolder(child);
+                break;
             default:
                 throw new IllegalArgumentException();
         }
@@ -151,7 +159,12 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         if (isLoadMoreIndicatorPosition(position)) {
             bindHeader(viewHolder, position);
         } else {
-            bindMessage((ViewHolderMessage) viewHolder, mMessages.get(getFeedLocation(position)));
+            Message message = mMessages.get(getFeedLocation(position));
+            if (message.isSystemMessage()) {
+                bindSystemMessage((SystemMessageHolder) viewHolder, position);
+            } else {
+                bindMessage((ViewHolderMessage) viewHolder, message);
+            }
         }
     }
 
@@ -175,10 +188,14 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         }
 
         Message message = mMessages.get(getFeedLocation(position));
-        if (mSession.isMe(message.userId)) {
-            return VIEW_TYPE_MY_MESSAGE;
+        if (message.isSystemMessage()) {
+            return VIEW_TYPE_SYSTEM_MESSAGE;
         } else {
-            return VIEW_TYPE_THEIR_MESSAGE;
+            if (mSession.isMe(message.userId)) {
+                return VIEW_TYPE_MY_MESSAGE;
+            } else {
+                return VIEW_TYPE_THEIR_MESSAGE;
+            }
         }
     }
 
@@ -186,6 +203,11 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public long getItemId(int position) {
         Message message = getMessage(position);
         return message != null ? message.id : RecyclerView.NO_ID;
+    }
+
+    public void bindSystemMessage(SystemMessageHolder holder, int position) {
+        Message message = getMessage(position);
+        holder.messageText.setText(message.contentHtml);
     }
 
     @Nullable
@@ -321,25 +343,34 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     private void bindMessageText(ViewHolderMessage holder, Message message) {
         User author = getMember(message.userId);
-        CharSequence text;
+        SpannableStringBuilder text;
 
         Html.ImageGetter imageGetter = holder.isMyMessage ? mImageGetterMyMessage : mImageGetterTheirMessage;
 
+        text = new SpannableStringBuilder();
+        // Автор. Может быть неизвестен, если переписка ещё не загружена
+        if (author != null && !holder.isMyMessage) {
+            text.append(author.getNameWithPrefix());
+            UiUtils.setNicknameSpans(text, 0, text.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
+            text.append(' ');
+        }
+
+        // Аттачи.
+        // TODO более вменяемый вариант
+        List<Attachment> attachmentList = message.getImageAttachments();
+        for (Attachment attachment: attachmentList) {
+            Drawable defaultDrawable = imageGetter.getDrawable(attachment.url);
+            ImageSpan span = new ImageSpan(defaultDrawable, attachment.url);
+            int len = text.length();
+            text.append("\uFFFC");
+            text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            text.append("\n");
+        }
+
+        // Текст
         CharSequence msg = UiUtils.removeTrailingWhitespaces(Html.fromHtml(message.contentHtml, imageGetter, null));
         msg = UiUtils.replaceUrlSpans(msg, true);
-
-        if (author != null) {
-            SpannableStringBuilder ssb = new SpannableStringBuilder(author.getNameWithPrefix());
-            UiUtils.setNicknameSpans(ssb, 0, ssb.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
-            ssb.append(' ');
-            if (!TextUtils.isEmpty(msg)) {
-                ssb.append(msg);
-            }
-            text = ssb;
-        } else {
-            // Автор неизвестен, скорее всего, переписка ещё не загружена
-            text = TextUtils.isEmpty(msg) ? null : msg;
-        }
+        text.append(msg);
 
         holder.text.setText(text);
         holder.textImgLoader.loadImages(holder.text);
@@ -459,6 +490,16 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             text.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
             relativeDate = (RelativeDateTextSwitcher) v.findViewById(R.id.relative_date);
             textImgLoader = new TextViewImgLoader(v.getContext(), SHOW_PHOTO_ON_CLICK_LISTENER);
+        }
+    }
+
+    public static class SystemMessageHolder extends RecyclerView.ViewHolder {
+
+        TextView messageText;
+
+        public SystemMessageHolder(View itemView) {
+            super(itemView);
+            messageText = (TextView) itemView.findViewById(R.id.message);
         }
     }
 

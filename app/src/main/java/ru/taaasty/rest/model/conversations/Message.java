@@ -5,8 +5,12 @@ import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import ru.taaasty.Session;
 import ru.taaasty.rest.model.User;
@@ -58,6 +62,8 @@ public class Message implements Parcelable {
     @Nullable
     public Conversation conversation;
 
+    public Attachment attachments[];
+
     public Message() {
     }
 
@@ -71,6 +77,20 @@ public class Message implements Parcelable {
 
     public boolean isSystemMessage() {
         return MESSAGE_TYPE_SYSTEM.equals(type);
+    }
+
+    public List<Attachment> getImageAttachments() {
+        if (attachments == null || attachments.length == 0) return Collections.emptyList();
+        List<Attachment> attachments = new ArrayList<>(this.attachments.length);
+        for (Attachment a: this.attachments) if (a.isImage()) attachments.add(a);
+        return attachments;
+    }
+
+    @Nullable
+    public Attachment getFirstImageAttachment() {
+        if (attachments == null) return null;
+        for (Attachment a: attachments) if (a.isImage()) return a;
+        return null;
     }
 
     @Override
@@ -87,11 +107,15 @@ public class Message implements Parcelable {
         if (uuid != null ? !uuid.equals(message.uuid) : message.uuid != null) return false;
         if (createdAt != null ? !createdAt.equals(message.createdAt) : message.createdAt != null)
             return false;
-        if (readAt != null ? !readAt.equals(message.readAt) : message.readAt != null)
-            return false;
+        if (readAt != null ? !readAt.equals(message.readAt) : message.readAt != null) return false;
         if (contentHtml != null ? !contentHtml.equals(message.contentHtml) : message.contentHtml != null)
             return false;
-        return !(conversation != null ? !conversation.equals(message.conversation) : message.conversation != null);
+        if (author != null ? !author.equals(message.author) : message.author != null) return false;
+        if (type != null ? !type.equals(message.type) : message.type != null) return false;
+        if (conversation != null ? !conversation.equals(message.conversation) : message.conversation != null)
+            return false;
+        // Probably incorrect - comparing Object[] arrays with Arrays.equals
+        return Arrays.equals(attachments, message.attachments);
 
     }
 
@@ -105,14 +129,16 @@ public class Message implements Parcelable {
         result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
         result = 31 * result + (readAt != null ? readAt.hashCode() : 0);
         result = 31 * result + (contentHtml != null ? contentHtml.hashCode() : 0);
+        result = 31 * result + (author != null ? author.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
         result = 31 * result + (conversation != null ? conversation.hashCode() : 0);
+        result = 31 * result + Arrays.hashCode(attachments);
         return result;
     }
 
     @Override
     public int describeContents() {
         return 0;
-
     }
 
     @Override
@@ -125,12 +151,13 @@ public class Message implements Parcelable {
         dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
         dest.writeLong(readAt != null ? readAt.getTime() : -1);
         dest.writeString(this.contentHtml);
-        dest.writeParcelable(this.conversation, 0);
-        dest.writeParcelable(this.author, 0);
+        dest.writeParcelable(this.author, flags);
         dest.writeString(this.type);
+        dest.writeParcelable(this.conversation, flags);
+        dest.writeTypedArray(this.attachments, flags);
     }
 
-    private Message(Parcel in) {
+    protected Message(Parcel in) {
         this.id = in.readLong();
         this.userId = in.readLong();
         this.conversationId = in.readLong();
@@ -141,16 +168,19 @@ public class Message implements Parcelable {
         long tmpReadAt = in.readLong();
         this.readAt = tmpReadAt == -1 ? null : new Date(tmpReadAt);
         this.contentHtml = in.readString();
-        this.conversation = in.readParcelable(Conversation.class.getClassLoader());
         this.author = in.readParcelable(User.class.getClassLoader());
         this.type = in.readString();
+        this.conversation = in.readParcelable(Conversation.class.getClassLoader());
+        this.attachments = in.createTypedArray(Attachment.CREATOR);
     }
 
     public static final Creator<Message> CREATOR = new Creator<Message>() {
+        @Override
         public Message createFromParcel(Parcel source) {
             return new Message(source);
         }
 
+        @Override
         public Message[] newArray(int size) {
             return new Message[size];
         }

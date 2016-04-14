@@ -1,21 +1,28 @@
 package ru.taaasty.ui.messages;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -23,6 +30,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.greenrobot.event.EventBus;
+import retrofit.mime.TypedOutput;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -37,14 +46,17 @@ import ru.taaasty.Session;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.MessageChanged;
 import ru.taaasty.events.UpdateMessagesReceived;
+import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.Status;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
-import ru.taaasty.rest.model.Status;
-import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
+import ru.taaasty.ui.post.PhotoSourceManager;
+import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImeUtils;
@@ -60,11 +72,12 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.subjects.BehaviorSubject;
 import rx.subscriptions.Subscriptions;
 
-public class ConversationFragment extends Fragment {
+public class ConversationFragment extends Fragment implements SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationFragment";
 
     private static final String ARG_CONVERSATION = "ru.taaasty.ui.messages.ConversationFragment.conversation";
+    private static final String ARG_FORCE_SHOW_KEYBOARD = "ru.taaasty.ui.messages.ConversationFragment.ARG_FORCE_SHOW_KEYBOARD";
 
     private static final int REQUEST_CODE_LOGIN = 1;
 
@@ -82,29 +95,45 @@ public class ConversationFragment extends Fragment {
     private View mSendMessageButton;
     private View mSendMessageProgress;
     private View mEmptyView;
+    private MenuItem mAttachFileMenuItem;
 
     private ListScrollController mListScrollController;
 
     private Subscription mPostMessageSubscription = Subscriptions.unsubscribed();
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment LiveFeedFragment.
-     */
-    public static ConversationFragment newInstance(Conversation conversation) {
-        ConversationFragment fragment = new ConversationFragment();
-        Bundle args = new Bundle();
-        args.putParcelable(ARG_CONVERSATION, conversation);
-        fragment.setArguments(args);
-        return fragment;
+    private Toolbar mToolbar;
+
+    private PhotoSourceManager mPhotoSourceManager;
+
+    public static class Builder {
+
+        private Conversation mConversation;
+
+        private boolean mForceShowKeyboard;
+
+        public Builder() {
+        }
+
+        public Builder setConversation(Conversation conversation) {
+            mConversation = conversation;
+            return this;
+        }
+
+        public Builder setForceShowKeyboard(boolean force) {
+            mForceShowKeyboard = force;
+            return this;
+        }
+
+        public ConversationFragment build() {
+            ConversationFragment fragment = new ConversationFragment();
+            Bundle args = new Bundle();
+            if (mConversation != null) args.putParcelable(ARG_CONVERSATION, mConversation);
+            if (mForceShowKeyboard) args.putBoolean(ARG_FORCE_SHOW_KEYBOARD, true);
+            fragment.setArguments(args);
+            return fragment;
+        }
     }
 
-    public static ConversationFragment newInstance() {
-        ConversationFragment fragment = new ConversationFragment();
-        return fragment;
-    }
 
     public ConversationFragment() {
         // Required empty public constructor
@@ -127,6 +156,9 @@ public class ConversationFragment extends Fragment {
         }
 
         mMessagesLoader = new MessagesLoader();
+        setHasOptionsMenu(true);
+        mPhotoSourceManager = new PhotoSourceManager(this, "CreateFlowFragment", this::sendAttachment);
+        mPhotoSourceManager.onCreate(savedInstanceState);
     }
 
     @Override
@@ -138,6 +170,7 @@ public class ConversationFragment extends Fragment {
         mSendMessageButton = v.findViewById(R.id.reply_to_comment_button);
         mSendMessageProgress = v.findViewById(R.id.reply_to_comment_progress);
         mEmptyView = v.findViewById(R.id.empty_view);
+        mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListScrollController = new ListScrollController(mListView, mListener);
@@ -165,6 +198,7 @@ public class ConversationFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         mConversationSubject
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Conversation>() {
@@ -183,28 +217,26 @@ public class ConversationFragment extends Fragment {
     }
 
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (OnFragmentInteractionListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
+            throw new ClassCastException(context.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mAdapter != null) {
-            // List<Conversation.Message> feed = mAdapter.getF();
-            // outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
-        }
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (DBG) Log.v(TAG, "onActivityResult()");
+        mPhotoSourceManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void refresh() {
-        mMessagesLoader.refreshMessages();
-        bindToolbar();
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        mPhotoSourceManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -215,6 +247,44 @@ public class ConversationFragment extends Fragment {
             mMessagesLoader.refreshMessages();
         }
         mListScrollController.checkScroll();
+
+        if (getArguments() != null && getArguments().getBoolean(ARG_FORCE_SHOW_KEYBOARD, false)) {
+            mSendMessageText.post(() -> ImeUtils.showIme(mSendMessageText));
+        }
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        mPhotoSourceManager.onSaveInstanceState(outState);
+        if (mAdapter != null) {
+            // List<Conversation.Message> feed = mAdapter.getF();
+            // outState.putParcelable(BUNDLE_KEY_FEED_ITEMS, feed);
+        }
+    }
+
+    @Override
+    public void onPickPhotoSelected(Fragment fragment) {
+        mPhotoSourceManager.startPickPhoto();
+    }
+
+    @Override
+    public void onMakePhotoSelected(Fragment fragment) {
+        mPhotoSourceManager.startMakePhoto();
+    }
+
+    @Override
+    public void onDeletePhotoSelected(Fragment fragment) {
+    }
+
+    @Override
+    public void onFeatherPhotoSelected(Fragment fragment) {
+    }
+
+    public void refresh() {
+        mMessagesLoader.refreshMessages();
+        bindToolbar();
     }
 
     @Override
@@ -231,6 +301,7 @@ public class ConversationFragment extends Fragment {
         mAdapter = null;
         mListScrollController = null;
         mEmptyView = null;
+        mToolbar = null;
     }
 
     @Override
@@ -243,6 +314,33 @@ public class ConversationFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.fragment_conversation, menu);
+        mAttachFileMenuItem = menu.findItem(R.id.attach_image);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        mAttachFileMenuItem = menu.findItem(R.id.attach_image);
+
+        // TODO
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.attach_image:
+                showAttachImageMenu(null);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 
     public void onEventMainThread(MessageChanged event) {
@@ -276,7 +374,7 @@ public class ConversationFragment extends Fragment {
     public void bindToolbar() {
         Conversation conversation = mConversationSubject.getValue();
         if (conversation == null || getActivity() == null || mListView == null) return;
-        View headerGroupChat = getActivity().findViewById(R.id.header_group_info);
+        View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
 
         Context context = getActivity();
 
@@ -317,7 +415,21 @@ public class ConversationFragment extends Fragment {
         mSendMessageButton.setOnClickListener(v -> sendMessage());
     }
 
-    @SuppressLint("RxSubscribeOnError")
+    private void showAttachImageMenu(View from) {
+        DialogFragment dialog = SelectPhotoSourceDialogFragment.createInstance(false);
+        dialog.show(getChildFragmentManager(), "SelectPhotoSourceDialogFragment");
+    }
+
+    private void sendAttachment(Uri imageUri) {
+        TypedOutput typedOutput = new ContentTypedOutput(getContext(), imageUri, null);
+        Observable<Message> observable = mConversationSubject
+                .take(1)
+                .flatMap(conversation -> RestClient.getAPiMessenger().postMessageWithAttachments(null,
+                            conversation.id, "", UUID.randomUUID().toString(), null,
+                            Collections.singletonMap("files[]", typedOutput)));
+        sendMessage(observable);
+    }
+
     private void sendMessage() {
         String comment = mSendMessageText.getText().toString();
 
@@ -328,16 +440,23 @@ public class ConversationFragment extends Fragment {
             return;
         }
 
+        Observable<Message> observable = mConversationSubject
+                .take(1)
+                .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
+                        conversation.id, comment, UUID.randomUUID().toString(), null));
+        sendMessage(observable);
+    }
+
+    @SuppressLint("RxSubscribeOnError")
+    private void sendMessage(Observable<Message> observable) {
+
         mPostMessageSubscription.unsubscribe();
 
         //mSendMessageText.setEnabled(false);
         mSendMessageProgress.setVisibility(View.VISIBLE);
         mSendMessageButton.setVisibility(View.INVISIBLE);
 
-        mPostMessageSubscription = mConversationSubject
-                .take(1)
-                .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
-                        conversation.id, comment, UUID.randomUUID().toString(), null))
+        mPostMessageSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .finallyDo(() -> {
                     mSendMessageText.setEnabled(true);
@@ -401,7 +520,7 @@ public class ConversationFragment extends Fragment {
 
         ConversationAdapter.ViewHolderMessage top = findTopVisibleMessageViewHolder();
         if (top != null) {
-            oldTopId = mAdapter.getItemId(top.getPosition());
+            oldTopId = mAdapter.getItemId(top.getLayoutPosition());
             oldTopTop = top.itemView.getTop();
         }
 
@@ -433,16 +552,6 @@ public class ConversationFragment extends Fragment {
         AnalyticsHelper.getInstance().sendUXEvent(Constants.ANALYTICS_ACTION_UX_SEND_MESSAGE);
     }
 
-    static class SystemMessageHolder extends RecyclerView.ViewHolder {
-
-        TextView messageText;
-
-        public SystemMessageHolder(View itemView) {
-            super(itemView);
-            messageText = (TextView) itemView.findViewById(R.id.message);
-        }
-    }
-
     static class LoadMoreButtonHeaderHolder extends RecyclerView.ViewHolder {
 
         View loadButton;
@@ -458,21 +567,10 @@ public class ConversationFragment extends Fragment {
 
     class Adapter extends ConversationAdapter {
 
-        public static final int VIEW_TYPE_SYSTEM_MESSAGE = R.id.conversation_view_system_message;
-
         private Session mSession = Session.getInstance();
 
         public Adapter(Context context) {
             super(context);
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            Message message = getMessage(position);
-            if (message != null && message.isSystemMessage()) {
-                return VIEW_TYPE_SYSTEM_MESSAGE;
-            }
-            return super.getItemViewType(position);
         }
 
         @Override
@@ -508,15 +606,6 @@ public class ConversationFragment extends Fragment {
         }
 
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (VIEW_TYPE_SYSTEM_MESSAGE == viewType) {
-                View child = LayoutInflater.from(parent.getContext()).inflate(R.layout.conversation_system_message, mListView, false);
-                return new SystemMessageHolder(child);
-            }
-            return super.onCreateViewHolder(parent, viewType);
-        }
-
-        @Override
         protected RecyclerView.ViewHolder onCreateHeaderViewHolder(ViewGroup parent, int viewType) {
             View child;
             switch (viewType) {
@@ -530,13 +619,9 @@ public class ConversationFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
-            if (viewHolder instanceof SystemMessageHolder) {
-                bindSystemMessage((SystemMessageHolder) viewHolder, position);
-            } else {
-                super.onBindViewHolder(viewHolder, position);
-                if (mMessagesLoader != null) {
-                    mMessagesLoader.onBindViewHolder(viewHolder, position);
-                }
+            super.onBindViewHolder(viewHolder, position);
+            if (mMessagesLoader != null) {
+                mMessagesLoader.onBindViewHolder(viewHolder, position);
             }
         }
 
@@ -558,11 +643,6 @@ public class ConversationFragment extends Fragment {
             if (isLoadMoreIndicatorPosition(position)) {
                 mMessagesLoader.bindLoadMoreButton((LoadMoreButtonHeaderHolder) pHolder);
             }
-        }
-
-        public void bindSystemMessage(SystemMessageHolder holder, int position) {
-            Message message = getMessage(position);
-            holder.messageText.setText(message.contentHtml);
         }
 
         @Nullable

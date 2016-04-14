@@ -409,6 +409,9 @@
     <string name="error_no_photo_dir_permission">Нет доступа к каталогу с фотографиями</string>
     <string name="error_external_photo_dir_permission_required">Приложению нужен доступ к папке с фотографиями</string>
     <string name="grant_access_to_external_photo_dir_button">Открыть</string>
+    <string name="menu_button_attach">Прикрепить</string>
+    <string name="conversation_list_image_attachment_photo">Фотография</string>
+    <string name="conversation_list_image_attachment">Документ</string>
 
 </resources>
 

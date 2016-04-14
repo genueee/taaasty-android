@@ -5,19 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
+
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.BuildConfig;
@@ -48,6 +47,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private static final String ARG_RECIPIENT_ID = "ru.taaasty.ui.feeds.ConversationActivity.recipient_id";
 
+    private static final String ARG_FORCE_SHOW_KEYBOARD = "ru.taaasty.ui.feeds.ConversationActivity.ARG_FORCE_SHOW_KEYBOARD";
+
     private static final String ARG_ENTRY_ID = "ru.taaasty.ui.feeds.ConversationActivity.entry_id";
 
     private static final String BUNDLE_ARG_CONVERSATION = "ru.taaasty.ui.feeds.ConversationActivity.BUNDLE_ARG_CONVERSATION";
@@ -59,8 +60,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     // Anti-picasso weak ref
     private TargetSetHeaderBackground mBackgroundTarget;
-
-    private Handler mHideActionBarHandler;
 
     private boolean imeKeyboardShown;
 
@@ -97,10 +96,12 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         }
     }
 
-    public static Intent createIntent(Context source, long conversationId, long recipientId) {
+    // Интент, который будет открываться при тыке на уведомление
+    public static Intent createNotificationIntent(Context source, long conversationId, long recipientId) {
         Intent intent = new Intent(source, ConversationActivity.class);
         intent.putExtra(ARG_RECIPIENT_ID, recipientId);
         intent.putExtra(ARG_CONVERSATION_ID, conversationId);
+        intent.putExtra(ARG_FORCE_SHOW_KEYBOARD, true);
         return intent;
     }
 
@@ -109,11 +110,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        setSupportActionBar((Toolbar)findViewById(R.id.toolbar));
-
         mRecipientId = getIntent().getLongExtra(ARG_RECIPIENT_ID, -1);
         mEntryId = getIntent().getLongExtra(ARG_ENTRY_ID, -1);
         mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
+        boolean forceShowKeyboard = getIntent().getBooleanExtra(ARG_FORCE_SHOW_KEYBOARD, false);
 
         if (savedInstanceState != null) {
             mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
@@ -124,18 +124,15 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         }
 
         if (savedInstanceState == null) {
-            Fragment conversationFragment;
-            if (mConversation != null) {
-                conversationFragment = ConversationFragment.newInstance(mConversation);
-            } else {
-                conversationFragment = ConversationFragment.newInstance();
-            }
+            Fragment conversationFragment = new ConversationFragment.Builder()
+                    .setConversation(mConversation)
+                    .setForceShowKeyboard(forceShowKeyboard)
+                    .build();
+
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, conversationFragment)
                     .commit();
         }
-
-        mHideActionBarHandler = new Handler();
 
         setupImeWatcher();
     }
@@ -154,6 +151,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_EDIT_CONVERSATION:
@@ -189,32 +187,14 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     protected void onDestroy() {
         super.onDestroy();
         mConversationSubscription.unsubscribe();
-        mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        mHideActionBarHandler = null;
     }
 
     @Override
     public void onEdgeReached(boolean atTop) {
-        /*
-        if (DBG) Log.v(TAG, "onBottomReached atTop: " + atTop);
-        mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        if (!atTop) {
-            mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
-        } else {
-            mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-            ActionBar ab = getSupportActionBar();
-            if (ab != null) ab.show();
-        }
-        */
     }
 
     @Override
     public void onEdgeUnreached() {
-        /*
-        if (DBG) Log.v(TAG, "onEdgeUnreached");
-        mHideActionBarHandler.removeCallbacks(mHideActionBarRunnable);
-        mHideActionBarHandler.postDelayed(mHideActionBarRunnable, HIDE_ACTION_BAR_DELAY);
-        */
     }
 
     public void onConversationLoaded(Conversation conversation) {
@@ -323,11 +303,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         }
         rq.into(mBackgroundTarget);
     }
-
-    private Runnable mHideActionBarRunnable = () -> {
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) ab.hide();
-    };
 
     public void onEditGroupConversation(Conversation conversation) {
         EditCreateGroupActivity.editGroupConversation(this, conversation, REQUEST_CODE_EDIT_CONVERSATION);

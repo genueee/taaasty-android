@@ -1,8 +1,19 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.messages.ConversationActivity">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <include
+            layout="@layout/include_conversation_toolbar_layout" />
+
+    </android.support.v7.widget.Toolbar>
 
     <ru.taaasty.widgets.MyRecyclerView
         android:id="@+id/recycler_list_view"
@@ -25,7 +36,7 @@
         android:id="@+id/progress"
         android:visibility="invisible"
         tools:visibility="visible"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
@@ -33,7 +44,7 @@
         android:id="@+id/empty_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_gravity="center"
         android:layout_marginLeft="@dimen/following_followers_horizontal_margin"
         android:layout_marginRight="@dimen/following_followers_horizontal_margin"
         android:layout_marginBottom="48dp"
@@ -46,7 +57,7 @@
         android:id="@+id/reply_to_comment_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         />
 
-</RelativeLayout>
+</FrameLayout>

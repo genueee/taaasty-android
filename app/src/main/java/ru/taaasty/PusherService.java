@@ -90,6 +90,28 @@ public class PusherService extends Service {
     public static final String EVENT_PUSH_NOTIFICATION = "push_notification";
 
 
+    // Групповые
+    public static final String EVENT_GROUP_STATUS = "group_status";
+    public static final String EVENT_GROUP_ACTIVE_CONVERSATIONS = "group_active_conversations";
+    public static final String EVENT_GROUP_UPDATE_CONVERSATION = "group_update_conversation";
+    public static final String EVENT_GROUP_PUSH_MESSAGE = "group_push_message";
+    public static final String EVENT_GROUP_UPDATE_MESSAGES = "group_update_messages";
+    public static final String EVENT_GROUP_NOTIFICATION = "group_push_notification";
+    public static final String EVENT_GROUP_UPDATE_NOTIFICATIONS = "group_update_notifications";
+    public static final String EVENT_GROUP_DELETE_MESSAGES = "group_delete_messages";
+    public static final String EVENT_GROUP_DELETE_USER_MESSAGES = "group_delete_user_messages";
+
+    //Обсуждения:
+    public static final String EVENT_PUBLIC_STATUS = "public_status";
+    public static final String EVENT_PUBLIC_ACTIVE_CONVERSATIONS = "public_active_conversations";
+    public static final String EVENT_PUBLIC_UPDATE_CONVERSATION = "public_update_conversation";
+    public static final String EVENT_PUBLIC_PUSH_MESSAGE = "public_push_message";
+    public static final String EVENT_PUBLIC_UPDATE_MESSAGES = "public_update_messages";
+    public static final String EVENT_PUBLIC_NOTIFICATION = "public_push_notification";
+    public static final String EVENT_PUBLIC_UPDATE_NOTIFICATIONS = "public_update_notifications";
+    public static final String EVENT_PUBLIC_DELETE_MESSAGES = "public_delete_messages";
+    public static final String EVENT_PUBLIC_DELETE_USER_MESSAGES = "public_delete_user_messages";
+
     /**
      * Уведомления отмечеты как прочитвнные.
      * Тип: notifications: [{ id: notification.id, read_at: notification.read_at }]

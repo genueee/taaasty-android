@@ -332,7 +332,7 @@ public class StatusBarConversationNotification {
             } else {
                 recipient = message.recipientId;
             }
-            Intent conversationIntent = ConversationActivity.createIntent(mContext, message.conversationId, recipient);
+            Intent conversationIntent = ConversationActivity.createNotificationIntent(mContext, message.conversationId, recipient);
             stackBuilder.addNextIntent(conversationIntent);
         }
 

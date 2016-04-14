@@ -110,12 +110,14 @@ android {
             manifestPlaceholders = [ facebook_app_id_forprovider:"debug7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
             multiDexEnabled true
             buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DebugStethoHelper()'
+            ext.enableCrashlytics = false
         }
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
             buildConfigField 'retrofit.RestAdapter.LogLevel', 'RETROFIT_LOG_LEVEL', 'retrofit.RestAdapter.LogLevel.NONE'
+            ext.enableCrashlytics = false
         }
         beta {
             applicationIdSuffix ".beta";

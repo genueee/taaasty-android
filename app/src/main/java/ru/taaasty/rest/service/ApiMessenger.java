@@ -1,6 +1,7 @@
 package ru.taaasty.rest.service;
 
 import java.util.List;
+import java.util.Map;
 
 import retrofit.client.Response;
 import retrofit.http.DELETE;
@@ -11,16 +12,17 @@ import retrofit.http.Multipart;
 import retrofit.http.POST;
 import retrofit.http.PUT;
 import retrofit.http.Part;
+import retrofit.http.PartMap;
 import retrofit.http.Path;
 import retrofit.http.Query;
 import retrofit.mime.TypedOutput;
-import ru.taaasty.rest.model.conversations.Conversation;
-import ru.taaasty.rest.model.conversations.Message;
-import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.Status;
+import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.MessageList;
 import rx.Observable;
 
 /**
@@ -99,7 +101,28 @@ public interface ApiMessenger {
                                     @Path("id") long conversationId,
                                     @Query("content") String content,
                                     @Query("uuid") String uuid,
-                                    @Query("recipient_id") Long recipientId);
+                                    @Query("recipient_id") Long recipientId
+                                    );
+
+    /**
+     * Отправка сообщения в переписку
+     * @param socketId не обязателен
+     * @param conversationId ID переписки.
+     * @param content Содержимое собщения
+     * @param uuid UUID сообщения, сгенерированный на стороне клиента
+     * @param recipientId ID получателя. По умолчанию тот, что в беседе
+     * @return
+     */
+    @Multipart
+    @POST("/messenger/conversations/by_id/{id}/messages.json")
+    Observable<Message> postMessageWithAttachments(@Part("socket_id") String socketId,
+                                    @Path("id") long conversationId,
+                                    @Part("content") String content,
+                                    @Part("uuid") String uuid,
+                                    @Part("recipient_id") Long recipientId,
+                                    @PartMap Map<String,TypedOutput> Files
+                                    );
+
 
     /**
      * Отправка сообщения в переписку
