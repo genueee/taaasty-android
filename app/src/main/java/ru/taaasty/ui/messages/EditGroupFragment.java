@@ -256,7 +256,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         } else {
             bindReadWriteGroupAvatar();
         }
-        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(getConversation(), mAvatar);
+        if (getConversation() != null) {
+            ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(getConversation(), mAvatar);
+        }
     }
 
     private void bindReadOnlyGroupAvatar() {
