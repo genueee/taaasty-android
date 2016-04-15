@@ -12,7 +12,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import ru.taaasty.Session;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.Objects;
 
@@ -71,8 +70,8 @@ public class Message implements Parcelable {
         return readAt != null;
     }
 
-    public boolean isFromMe() {
-        return Session.getInstance().isMe(userId);
+    public boolean isFromMe(Conversation inConversation) {
+        return inConversation.userId == this.userId;
     }
 
     public boolean isSystemMessage() {

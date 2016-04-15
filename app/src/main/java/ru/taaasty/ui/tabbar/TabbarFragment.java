@@ -23,7 +23,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.PusherService;
 import ru.taaasty.R;
 import ru.taaasty.Session;
-import ru.taaasty.events.MessagingStatusReceived;
+import ru.taaasty.events.pusher.MessagingStatusReceived;
 import ru.taaasty.rest.model.MessagingStatus;
 import ru.taaasty.ui.OnBackPressedListener;
 import ru.taaasty.utils.FabHelper;

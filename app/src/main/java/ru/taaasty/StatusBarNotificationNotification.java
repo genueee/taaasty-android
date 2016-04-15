@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 import de.greenrobot.event.EventBus;
-import ru.taaasty.events.NotificationMarkedAsRead;
-import ru.taaasty.events.NotificationReceived;
+import ru.taaasty.events.pusher.NotificationMarkedAsRead;
+import ru.taaasty.events.pusher.NotificationReceived;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;

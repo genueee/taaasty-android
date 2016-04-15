@@ -44,8 +44,8 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.adapters.ConversationAdapter;
-import ru.taaasty.events.MessageChanged;
-import ru.taaasty.events.UpdateMessagesReceived;
+import ru.taaasty.events.pusher.MessageChanged;
+import ru.taaasty.events.pusher.UpdateMessagesReceived;
 import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Status;
@@ -210,7 +210,9 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
                     @Override
                     public void onNext(Conversation conversation) {
-                        if (mAdapter != null) mAdapter.setFeedDesign(conversation.recipient.getDesign());
+                        if (mAdapter != null) {
+                            mAdapter.setConversation(conversation);
+                        }
                         bindToolbar();
                     }
                 });

@@ -1,4 +1,4 @@
-package ru.taaasty.events;
+package ru.taaasty.events.pusher;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.rest.model.Notification;

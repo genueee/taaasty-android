@@ -34,13 +34,18 @@ public class Conversation implements Parcelable {
 
     public long id = -1;
 
+    public String type;
+
+    /**
+     * В приватных чатах - всегда ты (текущий заголиненный пользователь)
+     * в публичных - ID, по которому можно определить, от тебя это сообщение или нет.
+     * В большинстве случаев это ID залогигенного пользователя, но в обсуждениях этот ID - фейковый
+     */
     public long userId = -1;
 
     public Date createdAt;
 
     public Date updatedAt;
-
-    public String type;
 
     /**
      * Тема. Только для {@linkplain #TYPE_GROUP_CONVERSATION} чатов. null - для остальных

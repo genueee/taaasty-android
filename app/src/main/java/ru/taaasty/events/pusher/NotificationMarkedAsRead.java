@@ -1,4 +1,4 @@
-package ru.taaasty.events;
+package ru.taaasty.events.pusher;
 
 import android.support.v4.util.LongSparseArray;
 

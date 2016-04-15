@@ -32,11 +32,13 @@ import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Attachment;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.LinkMovementMethodNoSelection;
+import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
@@ -67,6 +69,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     private ImageLoadingGetter mImageGetterMyMessage;
 
     private ImageLoadingGetter mImageGetterTheirMessage;
+
+    private Conversation mConversation = null;
 
     public ConversationAdapter(Context context) {
         super();
@@ -191,7 +195,13 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         if (message.isSystemMessage()) {
             return VIEW_TYPE_SYSTEM_MESSAGE;
         } else {
-            if (mSession.isMe(message.userId)) {
+            boolean isFromMe;
+            if (mConversation != null) {
+                isFromMe = message.isFromMe(mConversation);
+            } else {
+                isFromMe = mSession.isMe(message.userId);
+            }
+            if (isFromMe) {
                 return VIEW_TYPE_MY_MESSAGE;
             } else {
                 return VIEW_TYPE_THEIR_MESSAGE;
@@ -291,8 +301,12 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         return mMessages.get(0).id;
     }
 
-    public void setFeedDesign(TlogDesign design) {
-        mFeedDesign = design;
+    public void setConversation(Conversation conversation) {
+        if (Objects.equals(mConversation, conversation)) return;
+        mConversation = conversation;
+        if (!mConversation.isGroup()) {
+            mFeedDesign = conversation.recipient.getDesign();
+        }
         notifyDataSetChanged();
     }
 

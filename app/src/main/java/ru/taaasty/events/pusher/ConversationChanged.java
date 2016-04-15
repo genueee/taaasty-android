@@ -1,4 +1,4 @@
-package ru.taaasty.events;
+package ru.taaasty.events.pusher;
 
 import ru.taaasty.rest.model.conversations.Conversation;
 

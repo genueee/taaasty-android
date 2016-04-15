@@ -21,7 +21,7 @@ import java.util.List;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.events.ConversationVisibilityChanged;
-import ru.taaasty.events.MessageChanged;
+import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
@@ -141,7 +141,12 @@ public class StatusBarConversationNotification {
     }
 
     public void onEventMainThread(MessageChanged event) {
-        append(event.message);
+        if (event.message.conversation == null) {
+            // TODO а что делать?
+            return;
+        } else {
+            append(event.message.conversation, event.message);
+        }
     }
 
     /**
@@ -179,34 +184,34 @@ public class StatusBarConversationNotification {
 
             @Override
             public void onNext(List<Conversation> conversations) {
-                Message lastMessage = null;
+                Conversation lastMessageConversation = null;
                 int activeConversationCount = 0;
                 // Самое последнее непрочитанное сообщение - наше (на самом деле нет)
                 for (Conversation conversation: conversations) {
                     if (conversation.unreadMessagesCount > 0) {
                         activeConversationCount += 1;
-                        if (lastMessage == null ||
-                                (conversation.lastMessage.createdAt.getTime() > lastMessage.createdAt.getTime())) {
-                            lastMessage = conversation.lastMessage;
+                        if (conversation == null ||
+                                (conversation.lastMessage.createdAt.getTime() > lastMessageConversation.lastMessage.createdAt.getTime())) {
+                            lastMessageConversation = conversation;
                             // API в lastMessage не возвращает conversationId и ещё дохуя каких полей
-                            lastMessage.conversationId = conversation.id;
-                            lastMessage.conversation = conversation;
+                            lastMessageConversation.lastMessage.conversationId = conversation.id;
+                            lastMessageConversation.lastMessage.conversation = conversation;
                         }
                     }
                 }
-                if (lastMessage != null) append(lastMessage);
+                if (lastMessageConversation != null) append(lastMessageConversation, lastMessageConversation.lastMessage);
                 mSeveralConversations = activeConversationCount > 1;
             }
         });
     }
 
 
-    public synchronized void append(Message message) {
+    public synchronized void append(Conversation conversation, Message message) {
         if (mIsPaused) return;
         if (mConversationVisibility.get(message.recipientId, 0) != 0
                 || mConversationVisibility.get(message.userId, 0) != 0) return;
 
-        if (message.isFromMe()) {
+        if (message.isFromMe(conversation)) {
             // Игнорируем свои сообщения
             return;
         }

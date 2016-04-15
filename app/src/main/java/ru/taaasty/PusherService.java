@@ -23,19 +23,23 @@ import org.apache.commons.io.IOUtils;
 import de.greenrobot.event.EventBus;
 import retrofit.client.Response;
 import retrofit.mime.TypedInput;
-import ru.taaasty.events.ConversationChanged;
-import ru.taaasty.events.MessageChanged;
-import ru.taaasty.events.MessagingStatusReceived;
-import ru.taaasty.events.NotificationMarkedAsRead;
-import ru.taaasty.events.NotificationReceived;
+import ru.taaasty.events.MessagesRemoved;
 import ru.taaasty.events.UiVisibleStatusChanged;
-import ru.taaasty.events.UpdateMessagesReceived;
+import ru.taaasty.events.UserMessagesRemoved;
+import ru.taaasty.events.pusher.ConversationChanged;
+import ru.taaasty.events.pusher.MessageChanged;
+import ru.taaasty.events.pusher.MessagingStatusReceived;
+import ru.taaasty.events.pusher.NotificationMarkedAsRead;
+import ru.taaasty.events.pusher.NotificationReceived;
+import ru.taaasty.events.pusher.UpdateMessagesReceived;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.MessagingStatus;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.PusherEventUpdateNotifications;
+import ru.taaasty.rest.model.RemovedMessages;
+import ru.taaasty.rest.model.RemovedUserMessages;
 import ru.taaasty.rest.model.UpdateMessages;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.ConversationList;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.utils.GcmUtils;
@@ -54,7 +58,7 @@ public class PusherService extends Service {
 
     /**
      *  Кол-во активных и непрочитанных переписок и непрочитанных уведомлений
-     *  Тип: {@linkplain ru.taaasty.rest.model.MessagingStatus}
+     *  Тип: {@linkplain MessagingStatus}
      */
     public static final String EVENT_STATUS = "status";
 
@@ -91,9 +95,18 @@ public class PusherService extends Service {
 
 
     // Групповые
+    /**
+     * То же самое, что и {@linkplain #EVENT_STATUS}, только шлются при изменениях в групповых чатах.
+     * Значения в событиях совпадатют
+     */
     public static final String EVENT_GROUP_STATUS = "group_status";
     public static final String EVENT_GROUP_ACTIVE_CONVERSATIONS = "group_active_conversations";
     public static final String EVENT_GROUP_UPDATE_CONVERSATION = "group_update_conversation";
+
+    /**
+     * Новое сообщение в групповом чате
+     * Тип: {@linkplain Message}
+     */
     public static final String EVENT_GROUP_PUSH_MESSAGE = "group_push_message";
     public static final String EVENT_GROUP_UPDATE_MESSAGES = "group_update_messages";
     public static final String EVENT_GROUP_NOTIFICATION = "group_push_notification";
@@ -102,10 +115,21 @@ public class PusherService extends Service {
     public static final String EVENT_GROUP_DELETE_USER_MESSAGES = "group_delete_user_messages";
 
     //Обсуждения:
+    /**
+     * То же самое, что и {@linkplain #EVENT_STATUS}, только шлются при изменениях в обсуждениях записи.
+     * Значения в событиях совпадатют
+     */
     public static final String EVENT_PUBLIC_STATUS = "public_status";
+
     public static final String EVENT_PUBLIC_ACTIVE_CONVERSATIONS = "public_active_conversations";
     public static final String EVENT_PUBLIC_UPDATE_CONVERSATION = "public_update_conversation";
+
+    /**
+     * Новое сообщение в обсуждениях записи
+     * Тип: {@linkplain Message}
+     */
     public static final String EVENT_PUBLIC_PUSH_MESSAGE = "public_push_message";
+
     public static final String EVENT_PUBLIC_UPDATE_MESSAGES = "public_update_messages";
     public static final String EVENT_PUBLIC_NOTIFICATION = "public_push_notification";
     public static final String EVENT_PUBLIC_UPDATE_NOTIFICATIONS = "public_update_notifications";
@@ -113,7 +137,7 @@ public class PusherService extends Service {
     public static final String EVENT_PUBLIC_DELETE_USER_MESSAGES = "public_delete_user_messages";
 
     /**
-     * Уведомления отмечеты как прочитвнные.
+     * Уведомления отмечены как прочитвнные.
      * Тип: notifications: [{ id: notification.id, read_at: notification.read_at }]
      */
     public static final String EVENT_UPDATE_NOTIFICATIONS = "update_notifications";
@@ -220,6 +244,8 @@ public class PusherService extends Service {
             if (eventName == null) eventName = "";
             switch (eventName) {
                 case EVENT_STATUS:
+                case EVENT_GROUP_STATUS:
+                case EVENT_PUBLIC_STATUS:
                     MessagingStatus status = mGson.fromJson(data, MessagingStatus.class);
                     if (!Objects.equals(status, mLastMessagingStatus)) {
                         mLastMessagingStatus = status;
@@ -227,29 +253,54 @@ public class PusherService extends Service {
                     }
                     break;
                 case EVENT_ACTIVE_CONVERSATIONS:
+                case EVENT_GROUP_ACTIVE_CONVERSATIONS:
+                case EVENT_PUBLIC_ACTIVE_CONVERSATIONS:
                     break;
+                case EVENT_GROUP_PUSH_MESSAGE:
                 case EVENT_PUSH_MESSAGE:
+                case EVENT_PUBLIC_PUSH_MESSAGE:
                     Message message =  mGson.fromJson(data, Message.class);
                     EventBus.getDefault().post(new MessageChanged(message));
                     break;
                 case EVENT_UPDATE_CONVERSATION:
+                case EVENT_GROUP_UPDATE_CONVERSATION:
+                case EVENT_PUBLIC_UPDATE_CONVERSATION:
                     Conversation conversation =  mGson.fromJson(data, Conversation.class);
                     EventBus.getDefault().post(new ConversationChanged(conversation));
                     break;
                 case EVENT_UPDATE_MESSAGES:
+                case EVENT_GROUP_UPDATE_MESSAGES:
+                case EVENT_PUBLIC_UPDATE_MESSAGES:
                     UpdateMessages updateMessages =  mGson.fromJson(data, UpdateMessages.class);
                     EventBus.getDefault().post(new UpdateMessagesReceived(updateMessages));
                     break;
                 case EVENT_PUSH_NOTIFICATION:
+                case EVENT_GROUP_NOTIFICATION:
+                case EVENT_PUBLIC_NOTIFICATION:
                     Notification notification = mGson.fromJson(data, Notification.class);
                     EventBus.getDefault().post(new NotificationReceived(notification));
                     break;
                 case EVENT_UPDATE_NOTIFICATIONS:
+                case EVENT_GROUP_UPDATE_NOTIFICATIONS:
+                case EVENT_PUBLIC_UPDATE_NOTIFICATIONS:
                     PusherEventUpdateNotifications event = mGson.fromJson(data, PusherEventUpdateNotifications.class);
                     if (!event.notifications.isEmpty()) {
                         EventBus.getDefault().post(new NotificationMarkedAsRead(event.notifications));
                     }
                     break;
+                case EVENT_GROUP_DELETE_MESSAGES:
+                case EVENT_PUBLIC_DELETE_MESSAGES:
+                    RemovedMessages removedMessages = mGson.fromJson(data, RemovedMessages.class);
+                    if (removedMessages.messages.length > 0) {
+                        EventBus.getDefault().post(new MessagesRemoved(removedMessages));
+                    }
+                    break;
+                case EVENT_GROUP_DELETE_USER_MESSAGES:
+                case EVENT_PUBLIC_DELETE_USER_MESSAGES:
+                    RemovedUserMessages removedUserMessages = mGson.fromJson(data, RemovedUserMessages.class);
+                    if (removedUserMessages.messages.length > 0) {
+                        EventBus.getDefault().post(new UserMessagesRemoved(removedUserMessages));
+                    }
                 default:
                     break;
             }
@@ -290,7 +341,29 @@ public class PusherService extends Service {
                 EVENT_UPDATE_CONVERSATION,
                 EVENT_UPDATE_MESSAGES,
                 EVENT_UPDATE_NOTIFICATIONS,
-                EVENT_PUSH_NOTIFICATION);
+                EVENT_PUSH_NOTIFICATION,
+                // TODO delete messages
+
+                EVENT_GROUP_STATUS,
+                EVENT_GROUP_ACTIVE_CONVERSATIONS,
+                EVENT_GROUP_PUSH_MESSAGE,
+                EVENT_GROUP_UPDATE_MESSAGES,
+                EVENT_GROUP_NOTIFICATION,
+                EVENT_GROUP_UPDATE_NOTIFICATIONS,
+                EVENT_GROUP_UPDATE_CONVERSATION,
+                EVENT_GROUP_DELETE_MESSAGES,
+                EVENT_GROUP_DELETE_USER_MESSAGES,
+
+                EVENT_PUBLIC_STATUS,
+                EVENT_PUBLIC_ACTIVE_CONVERSATIONS,
+                EVENT_PUBLIC_UPDATE_CONVERSATION,
+                EVENT_PUBLIC_PUSH_MESSAGE,
+                EVENT_PUBLIC_UPDATE_MESSAGES,
+                EVENT_PUBLIC_NOTIFICATION,
+                EVENT_PUBLIC_UPDATE_NOTIFICATIONS,
+                EVENT_PUBLIC_DELETE_MESSAGES,
+                EVENT_PUBLIC_DELETE_USER_MESSAGES
+                );
     }
 
     private void pusherConnect() {

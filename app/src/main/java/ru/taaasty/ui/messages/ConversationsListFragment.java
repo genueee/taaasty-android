@@ -24,7 +24,7 @@ import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
-import ru.taaasty.events.ConversationChanged;
+import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.service.ApiMessenger;

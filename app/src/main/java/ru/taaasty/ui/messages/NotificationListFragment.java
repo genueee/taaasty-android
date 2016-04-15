@@ -45,7 +45,7 @@ import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.adapters.NotificationListAdapter;
 import ru.taaasty.adapters.list.NotificationsListManaged;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
-import ru.taaasty.events.MessagingStatusReceived;
+import ru.taaasty.events.pusher.MessagingStatusReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Notification;
