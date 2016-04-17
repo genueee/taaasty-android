@@ -16,7 +16,7 @@ import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import rx.Observable;
 
 /**

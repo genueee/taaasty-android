@@ -36,7 +36,7 @@ import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.DeleteOrReportDialogActivity;
 import ru.taaasty.ui.post.ErrorLoadingPostFragment;

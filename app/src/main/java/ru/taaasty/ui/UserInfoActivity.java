@@ -357,7 +357,7 @@ public class UserInfoActivity extends ActivityBase implements UserInfoFragment.O
             mBackgroundPhotoManager.startFeatherPhoto(photoUri);
         } else {
             // XXX: userpic может быть null
-            photoUri = Uri.parse(getUser().getUserpic().originalUrl);
+            photoUri = Uri.parse(getUser().getUserpic().originalUrl());
             mAvatarManager.startFeatherPhoto(photoUri);
         }
 

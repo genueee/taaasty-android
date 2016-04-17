@@ -3,7 +3,7 @@ package ru.taaasty.rest.service;
 import retrofit.http.GET;
 import retrofit.http.Query;
 import ru.taaasty.rest.model.AppVersionResponse;
-import ru.taaasty.rest.model.Stats;
+import ru.taaasty.rest.model2.Stats;
 import rx.Observable;
 
 public interface ApiApp {

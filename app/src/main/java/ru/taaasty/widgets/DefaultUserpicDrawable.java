@@ -13,7 +13,7 @@ import android.text.TextUtils;
 
 import java.util.Random;
 
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.utils.FontManager;
 
 /**
@@ -64,9 +64,9 @@ public class DefaultUserpicDrawable extends Drawable {
 
     public void setUser(Userpic userpic, String name) {
         mUsername = name == null ? "" : name;
-        if (userpic != null && userpic.defaultColors != null) {
-            mTextColor = userpic.defaultColors.getTextColor();
-            mBackgroundColor = userpic.defaultColors.getBackgroundColor();
+        if (userpic != null && userpic.defaultColors() != null) {
+            mTextColor = userpic.defaultColors().getTextColor();
+            mBackgroundColor = userpic.defaultColors().getBackgroundColor();
         } else {
             mTextColor = Color.WHITE;
             mBackgroundColor = Color.parseColor("#44d068");

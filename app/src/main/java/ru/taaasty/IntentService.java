@@ -64,7 +64,7 @@ import ru.taaasty.rest.model.PostImageForm;
 import ru.taaasty.rest.model.PostQuoteForm;
 import ru.taaasty.rest.model.PostTextForm;
 import ru.taaasty.rest.model.TlogDesign;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;

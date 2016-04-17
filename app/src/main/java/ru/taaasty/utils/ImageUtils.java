@@ -50,7 +50,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.GifLoaderHelper;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.PicassoDrawable;
 import rx.Observer;
@@ -432,13 +432,13 @@ public class ImageUtils {
         Drawable defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
-        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
+        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl()))) {
             dstTextView.setCompoundDrawables(defaultUserpicDrawable, null, null, null);
         } else {
             Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub).mutate();
             stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
-            ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl);
+            ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl());
             String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
                     .toUrlUnsafe();
             if (dstTextView.getTag() != null && !(dstTextView.getTag() instanceof Target)) {
@@ -482,13 +482,13 @@ public class ImageUtils {
         Drawable defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
-        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
+        if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl()))) {
             dstImageView.setImageDrawable(defaultUserpicDrawable);
         } else {
             Drawable stubPlaceholder = context.getResources().getDrawable(R.drawable.ic_user_stub);
             stubPlaceholder.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
-            ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl);
+            ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(userpic.originalUrl());
             String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
                     .toUrlUnsafe();
 

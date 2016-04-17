@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import ru.taaasty.Constants;
+import ru.taaasty.rest.model2.Userpic;
 
 /**
 * Created by alexey on 01.08.14.
@@ -35,10 +36,8 @@ public class User implements Parcelable {
         ANONYMOUS.mSlug = "anonymous";
         ANONYMOUS.mTlogUrl = "http://taaasty.com/~anonymous";
         ANONYMOUS.mCreateAt = new Date(1202843744);
-        ANONYMOUS.mUserpic = new Userpic();
-        ANONYMOUS.mUserpic.originalUrl = "http://taaasty.com/assets/userpic/72/29/4409_original.png";
-        ANONYMOUS.mUserpic.defaultColors.background = "#00000000";
-        ANONYMOUS.mUserpic.defaultColors.name = "#ffffff";
+        ANONYMOUS.mUserpic = Userpic.create("http://taaasty.com/assets/userpic/72/29/4409_original.png",
+                Userpic.DefaultColors.create("#00000000", "#ffffff"));
     }
 
     private static class SortByNameComparator implements Comparator<User> {

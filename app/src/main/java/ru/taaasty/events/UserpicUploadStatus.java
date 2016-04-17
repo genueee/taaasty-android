@@ -2,7 +2,7 @@ package ru.taaasty.events;
 
 import android.net.Uri;
 
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 
 /**
  * Created by alexey on 11.09.14.

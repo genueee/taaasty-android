@@ -7,6 +7,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.Date;
 
+import ru.taaasty.rest.model2.Userpic;
+
 /**
  * {
  "id": 232419,
@@ -51,10 +53,7 @@ public class CurrentUser extends User implements android.os.Parcelable {
         UNAUTHORIZED.mSlug = "";
         UNAUTHORIZED.mTlogUrl = "";
         UNAUTHORIZED.mCreateAt = new Date(1167609600);
-        UNAUTHORIZED.mUserpic = new Userpic();
-        UNAUTHORIZED.mUserpic.originalUrl = "";
-        UNAUTHORIZED.mUserpic.defaultColors.background = "#00000000";
-        UNAUTHORIZED.mUserpic.defaultColors.name = "#ffffff";
+        UNAUTHORIZED.mUserpic = Userpic.create("", Userpic.DefaultColors.create("#00000000", "#ffffff"));
         UNAUTHORIZED.mIsConfirmed = false;
         UNAUTHORIZED.mRelationshipsSummary = new RelationshipsSummary();
         UNAUTHORIZED.mDesign = TlogDesign.createLightTheme(TlogDesign.DUMMY,

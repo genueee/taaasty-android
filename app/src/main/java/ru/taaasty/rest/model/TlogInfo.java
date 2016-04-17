@@ -80,7 +80,7 @@ public class TlogInfo implements Parcelable {
         // Совершенно непонятно зачем, у потока картинку вынесли в userpic, а не в background.
         if (author != null && author.isFlow()) {
             if (author.getUserpic() != null) {
-                return TlogDesign.createLightTheme(TlogDesign.DUMMY, author.getUserpic().originalUrl);
+                return TlogDesign.createLightTheme(TlogDesign.DUMMY, author.getUserpic().originalUrl());
             } else {
                 return TlogDesign.createLightTheme(mDesign != null ? mDesign : TlogDesign.DUMMY);
             }

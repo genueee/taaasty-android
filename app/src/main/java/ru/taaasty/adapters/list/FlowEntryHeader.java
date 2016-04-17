@@ -23,7 +23,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import ru.taaasty.R;
 import ru.taaasty.rest.model.Entry;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.UiUtils;
 import ru.taaasty.widgets.AspectRatioImageView;
@@ -100,10 +100,10 @@ public abstract class FlowEntryHeader {
 
     private void setupImageAfterSizeKnown(Entry entry, int viewWidth, int viewHeight) {
         Userpic userpic = entry.getTlog().author.getUserpic();
-        if (userpic == null || TextUtils.isEmpty(userpic.originalUrl)) {
+        if (userpic == null || TextUtils.isEmpty(userpic.originalUrl())) {
             mPicasso.load(R.color.embedd_play_gray_background).into(this.image);
         } else {
-            String url = NetworkUtils.createThumborUrl(userpic.originalUrl)
+            String url = NetworkUtils.createThumborUrl(userpic.originalUrl())
                     .resize(viewWidth, viewHeight)
                     .filter(ThumborUrlBuilder.noUpscale())
                     .toUrlUnsafe();

@@ -33,7 +33,7 @@ import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
-import ru.taaasty.rest.model.Stats;
+import ru.taaasty.rest.model2.Stats;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiApp;

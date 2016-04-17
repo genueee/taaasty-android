@@ -1,6 +1,6 @@
 package ru.taaasty.events;
 
-import ru.taaasty.rest.model.Stats;
+import ru.taaasty.rest.model2.Stats;
 
 /**
  * Created by alexey on 09.12.14.

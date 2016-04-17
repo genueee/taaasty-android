@@ -117,7 +117,7 @@ public final class ConversationHelper {
                 PrivateConversation privateChat = (PrivateConversation) conversation;
                 if (privateChat.getRecipient() != null
                         && privateChat.getRecipient().getUserpic() != null) {
-                    return privateChat.getRecipient().getUserpic().originalUrl;
+                    return privateChat.getRecipient().getUserpic().originalUrl();
                 }
                 break;
             case GROUP:

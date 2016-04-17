@@ -1,5 +1,5 @@
 
-package ru.taaasty.rest.model;
+package ru.taaasty.rest.model2;
 
 import android.os.Parcelable;
 import android.support.annotation.Nullable;

@@ -28,7 +28,7 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model2.Userpic;
 import ru.taaasty.ui.tabbar.NotificationsActivity;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.UiUtils;
@@ -280,7 +280,7 @@ public class StatusBarNotificationNotification {
             // Есть юзерпик - отлично
             Userpic userpic = lastNotification.sender.getUserpic();
             mLoadImagesTask = new LoadNotificationDataTask(lastNotification, isCollapsed, mContext, true);
-            mLoadImagesTask.execute(userpic.originalUrl);
+            mLoadImagesTask.execute(userpic.originalUrl());
         } else {
             // Ничего нет. Ну нет так нет.
             refreshNotification(lastNotification, isCollapsed, null, null);
