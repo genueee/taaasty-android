@@ -40,6 +40,7 @@ import ru.taaasty.PusherService;
 import ru.taaasty.Session;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.rest.DateTypeAdapter;
+import ru.taaasty.rest.TastyTypeAdapterFactory;
 import ru.taaasty.rest.model.conversations.Conversation;
 
 public final class NetworkUtils {
@@ -76,6 +77,7 @@ public final class NetworkUtils {
                             .registerTypeSelector(Conversation.class, Conversation.GSON_TYPE_SELECTOR);
                     sGson = builder.createGsonBuilder()
                             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                            .registerTypeAdapterFactory(new TastyTypeAdapterFactory())
                             .registerTypeAdapter(Date.class, new DateTypeAdapter())
                             .create();
                 }
