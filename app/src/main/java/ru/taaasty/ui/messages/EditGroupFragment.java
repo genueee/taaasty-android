@@ -29,6 +29,8 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,8 +40,10 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.GroupConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.feeds.TlogActivity;
@@ -194,12 +198,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (conversation == null) {
             return false;
         }
-        User admin = conversation.getGroupAdmin();
-        if (admin != null && Session.getInstance().isMe(admin.getId())) {
-            return true;
-        }
-        if (Session.getInstance().isMe(conversation.userId)) {
-            return true;
+        if (conversation.getType() == Conversation.Type.GROUP) {
+            User admin = ((GroupConversation)conversation).getGroupAdmin();
+            if (admin != null && Session.getInstance().isMe(admin.getId())) {
+                return true;
+            }
+            if (Session.getInstance().isMe(conversation.getRealUserId())) {
+                return true;
+            }
         }
         return false;
     }
@@ -213,7 +219,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     private boolean isReadOnly() {
-        return !isNewConversation() && getConversation().isPublicGroup();
+        if (isNewConversation()) return false;
+        if (getConversation().getType() != Conversation.Type.GROUP) return true;
+        return false; // TODO
     }
 
     @Override
@@ -254,7 +262,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (isReadOnly()) {
             bindReadOnlyGroupAvatar();
         } else {
-            bindReadWriteGroupAvatar();
+            bindReadWriteGroupPicture();
         }
         if (getConversation() != null) {
             ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(getConversation(), mAvatar);
@@ -264,11 +272,11 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private void bindReadOnlyGroupAvatar() {
         // URL аватарки не меняется. Показываем аватарку примерно как в списке сообщений.
         // Не показываем кнопку для изменения.
-        ConversationHelper.getInstance().bindAvatarToImageView(getConversation(),
+        ConversationHelper.getInstance().bindConversationIconToImageView(getConversation(),
                 R.dimen.avatar_small_diameter, mAvatar);
     }
 
-    private void bindReadWriteGroupAvatar() {
+    private void bindReadWriteGroupPicture() {
         final Uri imageUri = mModel.getAvatarUri();
         final Picasso picasso = Picasso.with(getActivity());
         final int imageSize = getResources().getDimensionPixelSize(R.dimen.avatar_small_diameter);
@@ -342,7 +350,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (isNewConversation()) {
             observable = mApiMessenger.createGroupConversation(null, topic, ids, avatar, null);
         } else {
-            observable = mApiMessenger.editGroupConversation(Long.toString(getConversation().id), null, topic, ids, avatar, null);
+            observable = mApiMessenger.editGroupConversation(Long.toString(getConversation().getId()), null, topic, ids, avatar, null);
         }
         observable
                 .observeOn(AndroidSchedulers.mainThread())
@@ -379,12 +387,13 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private void leaveChat() {
         setProgressState(true);
         mIsInLoadingState = true;
+        // TODO remove для паблик чатов
         final boolean remove = isAuthorMe();
         final Conversation conversation = getConversation();
         final Context appContext = getContext().getApplicationContext();
         Observable<Object> observable = remove ?
-                mApiMessenger.deleteConversation(Long.toString(conversation.id), null)
-                : mApiMessenger.leaveConversation(Long.toString(conversation.id), null);
+                mApiMessenger.deleteConversation(Long.toString(conversation.getId()), null)
+                : mApiMessenger.leaveConversation(Long.toString(conversation.getId()), null);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Object>() {
@@ -420,9 +429,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                     if (!isReadOnly()) {
                         showLoadAvatar();
                     } else {
-                        if (getConversation().isPublicGroup()) {
+                        if (getConversation().getType() == Conversation.Type.PUBLIC) {
                             new ShowPostActivity2.Builder(getContext())
-                                    .setEntryId(getConversation().entry.getId())
+                                    .setEntryId(((PublicConversation)getConversation()).getEntry().getId())
                                     .setReturnOnCommentsClick(true)
                                     .startActivity();
                         }
@@ -632,9 +641,22 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public State(Context context, Conversation conversation) {
-            topic = ConversationHelper.getInstance().getTitle(conversation, context);
-            avatarUri = conversation.avatar != null ? conversation.avatar.url : "";
-            users = new ArrayList<>(conversation.getActualUsers());
+            ConversationHelper helper = ConversationHelper.getInstance();
+            if (conversation.getType() == Conversation.Type.GROUP) {
+                GroupConversation groupChat = (GroupConversation)conversation;
+                topic = helper.getTitle(conversation, context);
+                avatarUri = groupChat.getAvatar() != null ? groupChat.getAvatar().url : "";
+                users = new ArrayList<>();
+                for (User user: groupChat.getUsers()) {
+                    if (!ArrayUtils.contains(groupChat.getUsersLeft(), user.getId())) {
+                        users.add(user);
+                    }
+                }
+            } else {
+                topic = ConversationHelper.getInstance().getTitle(conversation, context);
+                avatarUri = "";
+                users = new ArrayList<>(0);
+            }
         }
 
         protected State(Parcel in) {

@@ -27,6 +27,8 @@ import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
@@ -147,9 +149,9 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                     public void onClick(View v) {
                         int position = holder.getAdapterPosition();
                         Conversation conversation = getConversation(position);
-                        if (!conversation.isGroup()) {
+                        if (conversation.getType() == Conversation.Type.PRIVATE) {
                             TlogActivity.startTlogActivity(getActivity(),
-                                    conversation.recipientId, v, R.dimen.avatar_small_diameter);
+                                    ((PrivateConversation)conversation).getRecipientId(), v, R.dimen.avatar_small_diameter);
                         } else {
                             EditCreateGroupActivity.editGroupConversation(getActivity(), conversation, 0);
                         }
@@ -160,9 +162,11 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                     public void onClick(View v) {
                         int position = holder.getAdapterPosition();
                         Conversation conversation = getConversation(position);
-                        if (conversation.isGroup()) {
+                        if (conversation != null
+                                && conversation.getLastMessage() != null
+                                &&  !(conversation.getType() == Conversation.Type.PUBLIC && ((PublicConversation)conversation).isAnonymous())) {
                             TlogActivity.startTlogActivity(getActivity(),
-                                    conversation.lastMessage.userId, v, R.dimen.avatar_small_diameter);
+                                    conversation.getLastMessage().userId, v, R.dimen.avatar_small_diameter);
                         }
                     }
                 });
@@ -286,7 +290,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
 
                 @Override
                 public boolean areItemsTheSame(Conversation item1, Conversation item2) {
-                    return item1.id == item2.id;
+                    return item1.getId() == item2.getId();
                 }
             });
             if (savedInstanceState != null) {
@@ -360,7 +364,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         }
 
         public void onEventMainThread(ConversationChanged event) {
-            if (event.conversation.messagesCount <= 0) return;
+            if (event.conversation.getMessagesCount() <= 0) return;
             mConversationList.addOrUpdate(event.conversation);
         }
 
@@ -391,7 +395,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
             public void onNext(List<Conversation> conversations) {
                 if (DBG) Log.v(TAG, "onNext");
                 List<Conversation> ge0 = new ArrayList<>(conversations.size());
-                for (Conversation c : conversations) if (c.messagesCount > 0) ge0.add(c);
+                for (Conversation c : conversations) if (c.getMessagesCount() > 0) ge0.add(c);
                 mConversationList.resetItems(ge0);
             }
         };

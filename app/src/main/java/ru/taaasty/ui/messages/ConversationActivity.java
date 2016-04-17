@@ -26,6 +26,7 @@ import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
@@ -119,8 +120,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
         }
 
-        if (mConversation != null) {
-            mRecipientId = mConversation.recipientId;
+        if (mConversation != null && mConversation.getType() == Conversation.Type.PRIVATE) {
+            mRecipientId = ((PrivateConversation)mConversation).getRecipientId();
         }
 
         if (savedInstanceState == null) {
@@ -199,10 +200,12 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     public void onConversationLoaded(Conversation conversation) {
         mConversation = conversation;
-        setTitle(conversation.recipient.getName());
-        if (!conversation.isGroup()) {
-            bindDesign(conversation.recipient.getDesign());
+        if (mConversation.getType() == Conversation.Type.PRIVATE) {
+            PrivateConversation chat = (PrivateConversation) conversation;
+            setTitle(chat.getRecipient().getName());
+            bindDesign(chat.getRecipient().getDesign());
         }
+
         ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onConversationLoaded(conversation);
     }
@@ -318,7 +321,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             if (DBG) throw new IllegalStateException();
             return;
         }
-        if (!mConversation.isGroup()) {
+        if (mConversation.getType() == Conversation.Type.PRIVATE) {
             onViewChatDetails(mConversation);
         } else {
             onEditGroupConversation(mConversation);

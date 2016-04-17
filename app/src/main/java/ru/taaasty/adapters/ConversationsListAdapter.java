@@ -15,8 +15,8 @@ import com.squareup.picasso.Picasso;
 
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
-import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.UiUtils;
@@ -65,10 +65,10 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         //  в групповых чатах отправитель отображается всегда, в личных - только для исходящих.
         // Получатель и так отображается, поэтому не дублируют для исходящих.
         // В чате с самим собой отправитель не отображается
-        if (conversation.lastMessage == null || conversation.lastMessage.author == null) return false;
-        if (conversation.isGroup()) return true;
-        if (conversation.userId == conversation.recipientId) return false;
-        return conversation.lastMessage.userId == conversation.userId;
+        if (conversation.getLastMessage() == null || conversation.getLastMessage().author == null) return false;
+        if (conversation.getType() != Conversation.Type.PRIVATE) return true;
+        if (conversation.getUserId() == ((PrivateConversation)conversation).getRecipientId()) return false;
+        return conversation.getLastMessage().userId == conversation.getUserId();
     }
 
     @Override
@@ -78,7 +78,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     @Override
     public long getItemId(int position) {
-        return mConversations.get(position).id;
+        return mConversations.get(position).getId();
     }
 
     @Nullable
@@ -91,13 +91,13 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
         ConversationHelper helper = ConversationHelper.getInstance();
-        helper.bindAvatarToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
+        helper.bindConversationIconToImageView(conversation, R.dimen.avatar_small_diameter, holder.avatar);
         ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, holder.avatar);
 
         // Last message sender
         if (isLastSenderShouldBeShown(conversation)) {
             holder.messageAvatar.setVisibility(View.VISIBLE);
-            mImageUtils.loadAvatarToImageView(conversation.lastMessage.author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
+            mImageUtils.loadAvatarToImageView(conversation.getLastMessage().author, R.dimen.avatar_small_diameter_24dp, holder.messageAvatar);
         } else {
             Picasso.with(holder.messageAvatar.getContext()).cancelRequest(holder.messageAvatar);
             holder.messageAvatar.setVisibility(View.GONE);
@@ -109,38 +109,38 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     private void bindText(ViewHolder holder, Conversation conversation) {
-        User author = conversation.recipient;
         String title = ConversationHelper.getInstance().getTitleWithoutUserPrefix(conversation, holder.title.getContext());
         SpannableStringBuilder ssb = new SpannableStringBuilder(title);
-        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), conversation.isGroup() ? -1 : author.getId(),
+        long recipientId = conversation.getType() == Conversation.Type.PRIVATE ? ((PrivateConversation)conversation).getRecipientId() : -1;
+        UiUtils.setNicknameSpans(ssb, 0, ssb.length(), recipientId,
                 holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
         holder.title.setText(ssb);
         holder.messageText.setText(formatLastMessageText(conversation, holder.messageText.getResources()));
     }
 
     private void bindDate(ViewHolder holder, Conversation conversation) {
-        holder.date.setRelativeDate(conversation.createdAt.getTime());
+        holder.date.setRelativeDate(conversation.getCreatedAt().getTime());
     }
 
     private void bindUnreadMessages(ViewHolder holder, Conversation conversation) {
-        if (conversation.unreadMessagesCount > 0) {
+        if (conversation.getUnreadMessagesCount()> 0) {
             // TODO: анимации переходов и появлений
             holder.msgCount.setVisibility(View.VISIBLE);
-            holder.msgCount.setText(String.valueOf(conversation.unreadMessagesCount));
+            holder.msgCount.setText(String.valueOf(conversation.getUnreadMessagesCount()));
             holder.unreceivedIndicator.setVisibility(View.INVISIBLE);
         } else {
             holder.msgCount.setVisibility(View.INVISIBLE);
-            holder.unreceivedIndicator.setVisibility(conversation.unreceivedMessagesCount > 0 ? View.VISIBLE : View.INVISIBLE);
+            holder.unreceivedIndicator.setVisibility(conversation.getUnreceivedMessagesCount() > 0 ? View.VISIBLE : View.INVISIBLE);
         }
     }
 
     private CharSequence formatLastMessageText(Conversation conversation, Resources resources) {
-        if (conversation.lastMessage != null) {
-            if(!UiUtils.isBlank(conversation.lastMessage.contentHtml)) {
-                return Html.fromHtml(conversation.lastMessage.contentHtml);
+        if (conversation.getLastMessage() != null) {
+            if(!UiUtils.isBlank(conversation.getLastMessage().contentHtml)) {
+                return Html.fromHtml(conversation.getLastMessage().contentHtml);
             } else {
                 SpannableStringBuilder ssb;
-                if (conversation.lastMessage.getFirstImageAttachment() != null) {
+                if (conversation.getLastMessage().getFirstImageAttachment() != null) {
                     ssb = new SpannableStringBuilder(resources.getText(R.string.conversation_list_image_attachment_photo));
                 } else {
                     ssb = new SpannableStringBuilder(resources.getText(R.string.conversation_list_image_attachment));

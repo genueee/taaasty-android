@@ -11,7 +11,6 @@ import android.util.Log;
 import com.facebook.login.LoginManager;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.okhttp.Cache;
 import com.squareup.okhttp.CacheControl;
@@ -33,6 +32,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import io.gsonfire.GsonFireBuilder;
 import retrofit.RetrofitError;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
@@ -40,6 +40,7 @@ import ru.taaasty.PusherService;
 import ru.taaasty.Session;
 import ru.taaasty.StatusBarNotifications;
 import ru.taaasty.rest.DateTypeAdapter;
+import ru.taaasty.rest.model.conversations.Conversation;
 
 public final class NetworkUtils {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -71,9 +72,11 @@ public final class NetworkUtils {
         if (sGson == null) {
             synchronized (Gson.class) {
                 if (sGson == null) {
-                    sGson = new GsonBuilder()
+                    GsonFireBuilder builder = new GsonFireBuilder()
+                            .registerTypeSelector(Conversation.class, Conversation.GSON_TYPE_SELECTOR);
+                    sGson = builder.createGsonBuilder()
                             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-                                .registerTypeAdapter(Date.class, new DateTypeAdapter())
+                            .registerTypeAdapter(Date.class, new DateTypeAdapter())
                             .create();
                 }
             }

@@ -51,8 +51,11 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.GroupConversation;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.PhotoSourceManager;
@@ -349,7 +352,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Conversation conversation = mConversationSubject.getValue();
         if ((mAdapter != null)
                 && (conversation != null)
-                && (event.message.conversationId == conversation.id)) {
+                && (event.message.conversationId == conversation.getId())) {
             addMessageScrollToEnd(event.message);
         }
     }
@@ -358,7 +361,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Conversation conversation = mConversationSubject.getValue();
         if (mAdapter != null
                 && (conversation != null)
-                && (event.updateMessages.conversationId == conversation.id)) {
+                && (event.updateMessages.conversationId == conversation.getId())) {
             mAdapter.markMessagesAsRead(event.updateMessages.messages);
         }
     }
@@ -386,14 +389,16 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                 0xfff37420, Color.WHITE);
 
         ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
-        ConversationHelper.getInstance().bindAvatarToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
+        ConversationHelper.getInstance().bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
         ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
         topic.setText(ConversationHelper.getInstance().getTitle(conversation, getContext()));
-        if (conversation.isGroup()) {
-            users.setText(getString(R.string.user_count, conversation.getActualUsers().size()));
+        if (conversation.getType() == Conversation.Type.GROUP
+                || conversation.getType() == Conversation.Type.PUBLIC) {
+            users.setText(getString(R.string.user_count,
+                    ConversationHelper.getInstance().countActiveUsers(conversation)));
         } else {
             users.setVisibility(View.GONE);
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) topic.getLayoutParams();
@@ -427,7 +432,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Observable<Message> observable = mConversationSubject
                 .take(1)
                 .flatMap(conversation -> RestClient.getAPiMessenger().postMessageWithAttachments(null,
-                            conversation.id, "", UUID.randomUUID().toString(), null,
+                            conversation.getId(), "", UUID.randomUUID().toString(), null,
                             Collections.singletonMap("files[]", typedOutput)));
         sendMessage(observable);
     }
@@ -445,7 +450,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Observable<Message> observable = mConversationSubject
                 .take(1)
                 .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
-                        conversation.id, comment, UUID.randomUUID().toString(), null));
+                        conversation.getId(), comment, UUID.randomUUID().toString(), null));
         sendMessage(observable);
     }
 
@@ -650,18 +655,25 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         @Nullable
         @Override
         protected User getMember(long userUuid) {
-            if (mSession.isMe(userUuid)) {
-                return mSession.getCachedCurrentUser();
-            } else {
-                Conversation conversation = mConversationSubject.getValue();
-                if (conversation != null) {
-                    if (conversation.isGroup()) {
-                        return conversation.findUserById(userUuid);
-                    } else {
-                        return conversation.recipient;
-                    }
-                }
+            Conversation conversation = mConversationSubject.getValue();
+            if (conversation == null) {
+                // Биндимся немного раньше загрузки данных по конверсейшну
                 return null;
+            }
+            switch (conversation.getType()) {
+                case PRIVATE:
+                    if (mSession.isMe(userUuid)) {
+                        return mSession.getCachedCurrentUser();
+                    } else {
+                        return ((PrivateConversation)conversation).getRecipient();
+                    }
+                case GROUP:
+                    return ConversationHelper.getInstance().findUserById(((GroupConversation)conversation).getUsers(), userUuid);
+                case PUBLIC:
+                    return ConversationHelper.getInstance().findUserById(((PublicConversation)conversation).getUsers(), userUuid);
+                case OTHER:
+                default:
+                    return null;
             }
         }
     }
@@ -713,7 +725,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         mConversationSubject
                                 .take(1)
                                 .flatMap(conversation -> RestClient.getAPiMessenger()
-                                    .markMessagesAsRead(null, conversation.id,
+                                    .markMessagesAsRead(null, conversation.getId(),
                                             TextUtils.join(",", postSet)));
 
                 mPostMessageSubscription = observablePost
@@ -789,7 +801,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
             return mConversationSubject
                     .take(1)
-                    .flatMap(conversation -> mApiMessenger.getMessages(null, conversation.id, null, sinceEntryId, limit, null));
+                    .flatMap(conversation -> mApiMessenger.getMessages(null, conversation.getId(), null, sinceEntryId, limit, null));
         }
 
         public void refreshMessages() {

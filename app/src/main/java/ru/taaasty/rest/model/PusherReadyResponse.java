@@ -3,6 +3,7 @@ package ru.taaasty.rest.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class PusherReadyResponse implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeTypedList(conversations);
+        dest.writeList(conversations);
         dest.writeTypedList(this.notifications);
     }
 
@@ -33,7 +34,8 @@ public class PusherReadyResponse implements Parcelable {
     }
 
     private PusherReadyResponse(Parcel in) {
-        this.conversations = in.createTypedArrayList(Conversation.CREATOR);
+        this.conversations = new ArrayList<>();
+        in.readList(conversations, Conversation.class.getClassLoader());
         this.notifications = in.createTypedArrayList(Notification.CREATOR);
     }
 

@@ -3,12 +3,10 @@ package ru.taaasty.rest.model.conversations;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import ru.taaasty.rest.model.Geometry;
-
 /**
  * Иконка чата
  */
-public class ConversationAvatar implements Parcelable {
+public class GroupPicture implements Parcelable {
 
     public String url;
     //public String path;
@@ -27,22 +25,22 @@ public class ConversationAvatar implements Parcelable {
         dest.writeString(this.url);
     }
 
-    public ConversationAvatar() {
+    public GroupPicture() {
     }
 
-    protected ConversationAvatar(Parcel in) {
+    protected GroupPicture(Parcel in) {
         this.url = in.readString();
     }
 
-    public static final Creator<ConversationAvatar> CREATOR = new Creator<ConversationAvatar>() {
+    public static final Creator<GroupPicture> CREATOR = new Creator<GroupPicture>() {
         @Override
-        public ConversationAvatar createFromParcel(Parcel source) {
-            return new ConversationAvatar(source);
+        public GroupPicture createFromParcel(Parcel source) {
+            return new GroupPicture(source);
         }
 
         @Override
-        public ConversationAvatar[] newArray(int size) {
-            return new ConversationAvatar[size];
+        public GroupPicture[] newArray(int size) {
+            return new GroupPicture[size];
         }
     };
 }

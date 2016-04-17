@@ -35,10 +35,16 @@ public class Message implements Parcelable {
 
     public long id = -1;
 
+    /**
+     * ID отправителя. Может быть фейковым в случае анонимного диалога.
+     */
     public long userId;
 
     public long conversationId;
 
+    /**
+     * ID получателя. Может быть фейковым в случае анонимного диалога.
+     */
     public long recipientId;
 
     @Nullable
@@ -54,10 +60,18 @@ public class Message implements Parcelable {
      */
     public String contentHtml;
 
+    /**
+     * Отправитель. МОжет быть с фейковым ID в случае обсуждения анонимной записи
+     */
     public User author;
 
     public String type;
 
+    /**
+     * Приходит вроде только в уведомлениях и, возможно, через пушер.
+     * TODO Постараться не использовать и избавиться.
+     */
+    @Deprecated
     @Nullable
     public Conversation conversation;
 
@@ -71,12 +85,13 @@ public class Message implements Parcelable {
     }
 
     public boolean isFromMe(Conversation inConversation) {
-        return inConversation.userId == this.userId;
+        return inConversation.getUserId() == this.userId;
     }
 
     public boolean isSystemMessage() {
         return MESSAGE_TYPE_SYSTEM.equals(type);
     }
+
 
     public List<Attachment> getImageAttachments() {
         if (attachments == null || attachments.length == 0) return Collections.emptyList();

@@ -18,9 +18,10 @@ import android.widget.Toast;
 import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.utils.ImageUtils;
+import ru.taaasty.utils.ConversationHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
@@ -32,7 +33,7 @@ public class ConversationDetailsFragment extends Fragment {
 
     private static final String ARG_CONVERSATION = EditGroupFragment.class.getName() + ".conversation";
 
-    ImageView mAvatar;
+    ImageView mIcon;
     TextView mName;
     View mDeleteChatButton;
     View mDoNotDisturbButton;
@@ -58,7 +59,7 @@ public class ConversationDetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_conversation_details, container, false);
 
-        mAvatar = (ImageView) root.findViewById(R.id.avatar);
+        mIcon = (ImageView) root.findViewById(R.id.avatar);
         mName = (TextView) root.findViewById(R.id.topic);
         mDeleteChatButton = root.findViewById(R.id.delete_chat_layout);
         mDoNotDisturbButton = root.findViewById(R.id.do_not_disturb_layout);
@@ -81,13 +82,13 @@ public class ConversationDetailsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mAvatar.setOnClickListener(mOnClickListener);
+        mIcon.setOnClickListener(mOnClickListener);
         mDeleteChatButton.setOnClickListener(mOnClickListener);
         mDoNotDisturbButton.setOnClickListener(mOnClickListener);
 
         Conversation conversation = getConversation();
-        ImageUtils.getInstance().loadAvatarToImageView(conversation.recipient, R.dimen.avatar_small_diameter, mAvatar);
-        mName.setText(conversation.recipient.getNameWithPrefix());
+        ConversationHelper.getInstance().bindConversationIconToImageView(conversation, R.dimen.avatar_small_diameter, mIcon);
+        mName.setText(ConversationHelper.getInstance().getTitle(conversation, view.getContext()));
         setProgressState(mIsRequestInProgress);
     }
 
@@ -98,7 +99,10 @@ public class ConversationDetailsFragment extends Fragment {
     OnClickListener mOnClickListener = v -> {
         switch (v.getId()) {
             case R.id.avatar:
-                TlogActivity.startTlogActivity(getActivity(), getConversation().recipientId, v);
+                if (getConversation().getType() == Conversation.Type.PRIVATE) {
+                    TlogActivity.startTlogActivity(getActivity(),
+                            ((PrivateConversation)getConversation()).getRecipientId(), v);
+                }
                 break;
             case R.id.do_not_disturb_layout:
                 break;
@@ -131,7 +135,7 @@ public class ConversationDetailsFragment extends Fragment {
         mIsRequestInProgress = true;
         final Conversation conversation = getConversation();
         final Context appContext = getContext().getApplicationContext();
-        Observable<Object> observable = mApiMessenger.deleteConversation(Long.toString(conversation.id), null);
+        Observable<Object> observable = mApiMessenger.deleteConversation(Long.toString(conversation.getId()), null);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Object>() {

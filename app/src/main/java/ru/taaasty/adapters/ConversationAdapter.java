@@ -34,6 +34,7 @@ import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -304,8 +305,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     public void setConversation(Conversation conversation) {
         if (Objects.equals(mConversation, conversation)) return;
         mConversation = conversation;
-        if (!mConversation.isGroup()) {
-            mFeedDesign = conversation.recipient.getDesign();
+        if (conversation.getType() == Conversation.Type.PRIVATE) {
+            mFeedDesign = ((PrivateConversation)conversation).getRecipient().getDesign();
         }
         notifyDataSetChanged();
     }

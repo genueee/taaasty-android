@@ -23,13 +23,14 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.rest.RestClient;
-import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
-import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.ui.messages.ConversationActivity;
 import ru.taaasty.ui.tabbar.ConversationsActivity;
 import ru.taaasty.utils.AnalyticsHelper;
+import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.UiUtils;
 import rx.Observer;
 import rx.Subscription;
@@ -188,18 +189,18 @@ public class StatusBarConversationNotification {
                 int activeConversationCount = 0;
                 // Самое последнее непрочитанное сообщение - наше (на самом деле нет)
                 for (Conversation conversation: conversations) {
-                    if (conversation.unreadMessagesCount > 0) {
+                    if (conversation.getUnreadMessagesCount() > 0) {
                         activeConversationCount += 1;
                         if (conversation == null ||
-                                (conversation.lastMessage.createdAt.getTime() > lastMessageConversation.lastMessage.createdAt.getTime())) {
+                                (conversation.getLastMessage().createdAt.getTime() > lastMessageConversation.getLastMessage().createdAt.getTime())) {
                             lastMessageConversation = conversation;
                             // API в lastMessage не возвращает conversationId и ещё дохуя каких полей
-                            lastMessageConversation.lastMessage.conversationId = conversation.id;
-                            lastMessageConversation.lastMessage.conversation = conversation;
+                            lastMessageConversation.getLastMessage().conversationId = conversation.getId();
+                            lastMessageConversation.getLastMessage().conversation = conversation;
                         }
                     }
                 }
-                if (lastMessageConversation != null) append(lastMessageConversation, lastMessageConversation.lastMessage);
+                if (lastMessageConversation != null) append(lastMessageConversation, lastMessageConversation.getLastMessage());
                 mSeveralConversations = activeConversationCount > 1;
             }
         });
@@ -252,15 +253,14 @@ public class StatusBarConversationNotification {
         }
 
         if ((mLastMessage.conversation == null)
-                || (mLastMessage.conversation.recipient == null)
-                || (mLastMessage.conversation.recipient.getUserpic() == null)
-                ) {
+                || (ConversationHelper.getInstance().getConversationIconUrl(mLastMessage.conversation) == null)) {
             // Облом, не будет у нас нормальной иконки, геморно грузить
+            // TODO а всё таки надо грузить конверсейшн и её иконку
             refreshNotification(null, null);
         } else {
-            Userpic userpic = mLastMessage.conversation.recipient.getUserpic();
+            String url = ConversationHelper.getInstance().getConversationIconUrl(mLastMessage.conversation);
             mLoadImagesTask = new LoadNotificationDataTask(mContext);
-            mLoadImagesTask.execute(userpic.originalUrl);
+            mLoadImagesTask.execute(url);
         }
     }
 
@@ -369,11 +369,12 @@ public class StatusBarConversationNotification {
 
     private CharSequence getMessageText(Message message) {
         SpannableStringBuilder ssb = new SpannableStringBuilder();
-
+        // Ставим ник перед сообщением, иначе в приходящем тексте его нет
         if (message.conversation != null
-            && message.conversation.recipient != null
-                && !Session.getInstance().isMe(message.conversation.recipient.getId())) {
-            User author = message.conversation.recipient;
+                && message.conversation.getType() == Conversation.Type.PRIVATE
+            && ((PrivateConversation)message.conversation).getRecipient() != null
+                && !Session.getInstance().isMe(((PrivateConversation)message.conversation).getRecipient().getId())) {
+            User author = ((PrivateConversation) message.conversation).getRecipient();
             // wearable не поддерживает CustomTypefaceSpan/TextAppearanceSpan, поэтому ставим так
             UiUtils.appendStyled(ssb, author.getNameWithPrefix(),
                     new ForegroundColorSpan(mContext.getResources().getColor(R.color.text_color_green)));

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.text.TextUtils;
@@ -15,10 +16,20 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 import com.squareup.pollexor.ThumborUrlBuilder;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Arrays;
+import java.util.List;
 
 import ru.taaasty.R;
+import ru.taaasty.rest.model.ImageInfo;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.GroupConversation;
+import ru.taaasty.rest.model.conversations.GroupPicture;
+import ru.taaasty.rest.model.conversations.HasManyUsers;
+import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.widgets.ExtendedImageView;
 
 public final class ConversationHelper {
@@ -45,54 +56,106 @@ public final class ConversationHelper {
         return getTitle(conversation, context, false);
     }
 
+    @Nullable
     private String getTitle(Conversation conversation, Context context, boolean recipientWithPrefix) {
-        if (conversation.isPrivateGroup()) {
-            return conversation.topic;
-        } else if (conversation.isPublicGroup()) {
-            if (TextUtils.isEmpty(conversation.entry.getTitle().trim())) {
-                return context.getString(R.string.public_conversation_default_title);
-            } else {
-                return conversation.entry.getTitle().trim();
-            }
-        } else {
-            return recipientWithPrefix ? conversation.recipient.getNameWithPrefix() : conversation.recipient.getName();
+        switch (conversation.getType()) {
+            case PRIVATE:
+                User recipient = ((PrivateConversation) conversation).getRecipient();
+                return recipientWithPrefix ? recipient.getNameWithPrefix() : recipient.getName();
+            case GROUP:
+                return UiUtils.trimUnblank(((GroupConversation) conversation).getTopic());
+            case PUBLIC:
+                String entryTitle = UiUtils.trimUnblank(((PublicConversation) conversation).getEntryTitle());
+                return !TextUtils.isEmpty(entryTitle) ? entryTitle :  context.getString(R.string.public_conversation_default_title);
+            default:
+                return null;
         }
     }
 
-    public void bindAvatarToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst) {
+    public int countActiveUsers(Conversation conversation) {
+        switch (conversation.getType()) {
+            case PRIVATE:
+                return 2;
+            case GROUP:
+            case PUBLIC:
+                return countActiveUsers(((HasManyUsers)conversation).getUsers(),
+                        ((GroupConversation)conversation).getUsersLeft());
+            case OTHER:
+            default:
+                return -1;
+        }
+    }
+
+    private int countActiveUsers(List<User> usersAll, @Nullable long[] usersLeft) {
+        if (usersLeft == null || usersLeft.length == 0) return usersAll.size();
+        int cnt = 0;
+        for (User user: usersAll) {
+            if (!ArrayUtils.contains(usersLeft, user.getId())) {
+                cnt += 1;
+            }
+        }
+        return cnt;
+    }
+
+    public User findUserById(List<User> users, long userId) {
+        if (users == null) return null;
+        for (User user: users) if (user.getId() == userId) return user;
+        return null;
+    }
+
+    public void bindConversationIconToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst) {
         Context context = dst.getContext();
         Drawable drawable = ContextCompat.getDrawable(context, R.drawable.group_post_default_avatar).mutate();
         drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
-        bindAvatarToImageView(conversation, dstSizeRes, dst, drawable);
+        bindConversationIconToImageView(conversation, dstSizeRes, dst, drawable);
     }
 
-    public void bindAvatarToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst, Drawable defaultGroupDrawable) {
+    @Nullable
+    public String getConversationIconUrl(Conversation conversation) {
+        switch (conversation.getType()) {
+            case PRIVATE:
+                PrivateConversation privateChat = (PrivateConversation) conversation;
+                if (privateChat.getRecipient() != null
+                        && privateChat.getRecipient().getUserpic() != null) {
+                    return privateChat.getRecipient().getUserpic().originalUrl;
+                }
+                break;
+            case GROUP:
+                GroupPicture picture = ((GroupConversation)conversation).getAvatar();
+                if (picture != null) return picture.url;
+                break;
+            case PUBLIC:
+                ImageInfo.Image2 picture2 = ((PublicConversation)conversation).getPreviewImage();
+                if (picture2 != null) return picture2.url;
+                break;
+            case OTHER:
+                break;
+        }
+        return null;
+    }
+
+    public void bindConversationIconToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst, Drawable defaultGroupDrawable) {
         // Для аватарок тут немного ахтунг
         Context context = dst.getContext();
 
-        if (conversation.avatar != null) {
-            // У чата установлена аватарка. В первую очередь, показываем её
-            bindAvatarToImageView(conversation.avatar.url, getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst, defaultGroupDrawable);
-            return;
-        }
-
-        if (!conversation.isGroup()) {
+        if (conversation.getType() == Conversation.Type.PRIVATE) {
             // Приватный чат с одним пользователем. Показываем его аватарку.
             // Если аватарка у юзера не установлена, то ставим дефолтную аватарку _пользователя_
             // для таких случаев
-            ImageUtils.getInstance().loadAvatarToImageView(conversation.recipient, dstSizeRes, dst);
-        } else {
-            // Групповой чат. Никогда не показываем аватарок каких-лбио пользователей
-            if (conversation.isPublicGroup()) {
-                // Чат - обсуждение записи. Попробуем показать какую-нибудь картинку из поста.
-                if (conversation.entry != null && conversation.entry.getPreviewImage() != null) {
-                    bindAvatarToImageView(conversation.entry.getPreviewImage().url,
-                            getTitleWithoutUserPrefix(conversation, context), dstSizeRes, dst, defaultGroupDrawable);
-                    return;
-                }
-            }
+            ImageUtils.getInstance().loadAvatarToImageView(((PrivateConversation) conversation).getRecipient(), dstSizeRes, dst);
+            return;
+        }
 
-            // Чат - групповой из нескольких участников и либо аватарка не установлена, либо одно из двух
+        // В групповых чатах никогда не показываем аватарок каких-либо пользователей
+        String url = getConversationIconUrl(conversation);
+        if (url != null) {
+            bindConversationIconToImageView(url,
+                    getTitleWithoutUserPrefix(conversation, context),
+                    dstSizeRes,
+                    dst,
+                    defaultGroupDrawable);
+        } else {
+            // Для всех остальных случаев ставим дефолтную аватарку для групп.
             Picasso.with(context).cancelRequest(dst);
             dst.setImageDrawable(defaultGroupDrawable);
         }
@@ -100,14 +163,14 @@ public final class ConversationHelper {
 
     public void setupAvatarImageViewClickableForeground(Conversation conversation, ExtendedImageView imageView) {
         // кликабельное состояние
-        if (conversation.isGroup()) {
-            imageView.setForegroundDrawable(null); // TODO
-        } else {
+        if (conversation.getType() == Conversation.Type.PRIVATE) {
             imageView.setForegroundResource(R.drawable.clickable_item_circle_background);
+        } else {
+            imageView.setForegroundDrawable(null); // TODO
         }
     }
 
-    private void bindAvatarToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst, Drawable errorDrawable) {
+    private void bindConversationIconToImageView(String url, String chatTitle, @DimenRes int dstSizeRes, ImageView dst, Drawable errorDrawable) {
         Context context = dst.getContext();
         int imageSize = dst.getResources().getDimensionPixelSize(dstSizeRes);
 
@@ -138,7 +201,6 @@ public final class ConversationHelper {
                         RoundedCornersTransformation.create(dst.getResources().getDimensionPixelSize(R.dimen.group_avatar_corner_radius)),
                         new DrawBackgroundTransformation(context, R.drawable.group_post_default_avatar)))
                 .into(dst);
-        return;
     }
 
     // Рисование Drawable на Bitmap

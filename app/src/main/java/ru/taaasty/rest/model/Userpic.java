@@ -13,8 +13,8 @@ import android.util.Log;
 public class Userpic implements Parcelable {
 
     /**
-     * URL картинки. Может быть null, если картинка на сервере внезапно пропала
-     * (да, такое реально бывает)
+     * URL картинки. Может быть null, если пользователь её себе не установил,
+     * или если картинка на сервере внезапно пропала (да, такое реально бывает)
      */
     @Nullable
     public String originalUrl;
