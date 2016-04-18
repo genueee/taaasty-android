@@ -62,6 +62,9 @@ public class StatusBarConversationNotification {
     private boolean mSeveralConversations;
 
     @Nullable
+    private Conversation mLastConversation;
+
+    @Nullable
     private Message mLastMessage;
 
     private int mConversationMessagesCount;
@@ -98,6 +101,7 @@ public class StatusBarConversationNotification {
         mConversationMessagesCount = 0;
         mConversationVisibility.clear();
         mLastMessage = null;
+        mLastConversation = null;
         mSeveralConversations = false;
         if (mLoadImagesTask != null) {
             mLoadImagesTask.cancel(true);
@@ -142,11 +146,12 @@ public class StatusBarConversationNotification {
     }
 
     public void onEventMainThread(MessageChanged event) {
-        if (event.message.conversation == null) {
+        if (event.conversation == null) {
             // TODO а что делать?
             return;
         } else {
-            append(event.message.conversation, event.message);
+            // TODO проверять на do_not_disturb и is_disabled
+            append(event.conversation, event.message);
         }
     }
 
@@ -223,11 +228,13 @@ public class StatusBarConversationNotification {
                 mSeveralConversations = true;
             }
             mLastMessage = message;
+            mLastConversation = conversation;
             refreshNotification();
         } else {
             if (mLastMessage.id == message.id) {
                 // XXX здесь можем получить ситуацию, когда mConversationMessagesCount > 0 и mLastMessage=null
                 mLastMessage = null;
+                mLastConversation = null;
                 mConversationMessagesCount -= 1;
                 refreshNotification();
             }
@@ -251,13 +258,13 @@ public class StatusBarConversationNotification {
             return;
         }
 
-        if ((mLastMessage.conversation == null)
-                || (ConversationHelper.getInstance().getConversationIconUrl(mLastMessage.conversation) == null)) {
+        if ((mLastConversation == null)
+                || (ConversationHelper.getInstance().getConversationIconUrl(mLastConversation) == null)) {
             // Облом, не будет у нас нормальной иконки, геморно грузить
             // TODO а всё таки надо грузить конверсейшн и её иконку
             refreshNotification(null, null);
         } else {
-            String url = ConversationHelper.getInstance().getConversationIconUrl(mLastMessage.conversation);
+            String url = ConversationHelper.getInstance().getConversationIconUrl(mLastConversation);
             mLoadImagesTask = new LoadNotificationDataTask(mContext);
             mLoadImagesTask.execute(url);
         }
@@ -285,7 +292,7 @@ public class StatusBarConversationNotification {
                 .setSmallIcon(R.drawable.ic_notification)
                 .setLargeIcon(largeIcon)
                 .setContentTitle(title)
-                .setContentText(getMessageText(mLastMessage))
+                .setContentText(getMessageText(mLastConversation, mLastMessage))
                 .setWhen(mLastMessage.createdAt.getTime())
                 .setContentIntent(resultPendingIntent)
                 .setDeleteIntent(createDeletePendingIntent())
@@ -305,7 +312,7 @@ public class StatusBarConversationNotification {
                 + mContext.getPackageName() + "/" + R.raw.incoming_message));
 
         NotificationCompat.BigTextStyle bigStyle = new NotificationCompat.BigTextStyle();
-        bigStyle.bigText(getMessageText(mLastMessage));
+        bigStyle.bigText(getMessageText(mLastConversation, mLastMessage));
         notificationBuilder.setStyle(bigStyle);
 
         if (!mSeveralConversations) voiceReplyAction = createVoiceReplyAction(mLastMessage);
@@ -366,14 +373,14 @@ public class StatusBarConversationNotification {
                 .build();
     }
 
-    private CharSequence getMessageText(Message message) {
+    private CharSequence getMessageText(Conversation conversation, Message message) {
         SpannableStringBuilder ssb = new SpannableStringBuilder();
         // Ставим ник перед сообщением, иначе в приходящем тексте его нет
-        if (message.conversation != null
-                && message.conversation.getType() == Conversation.Type.PRIVATE
-            && ((PrivateConversation)message.conversation).getRecipient() != null
-                && !Session.getInstance().isMe(((PrivateConversation)message.conversation).getRecipient().getId())) {
-            User author = ((PrivateConversation) message.conversation).getRecipient();
+        if (conversation != null
+                && conversation.getType() == Conversation.Type.PRIVATE
+            && ((PrivateConversation)conversation).getRecipient() != null
+                && !Session.getInstance().isMe(((PrivateConversation)conversation).getRecipient().getId())) {
+            User author = ((PrivateConversation) conversation).getRecipient();
             // wearable не поддерживает CustomTypefaceSpan/TextAppearanceSpan, поэтому ставим так
             UiUtils.appendStyled(ssb, author.getNameWithPrefix(),
                     new ForegroundColorSpan(mContext.getResources().getColor(R.color.text_color_green)));

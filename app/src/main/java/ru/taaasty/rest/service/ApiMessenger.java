@@ -78,6 +78,13 @@ public interface ApiMessenger {
     Observable<Conversation> createConversation(@Field("socket_id") String socketId,
                                                            @Path("user_id") long slug);
 
+
+    @GET("/messenger/conversations/by_id/{id}.json")
+    Observable<Conversation> getConversation(@Path("id") long id);
+
+    @GET("/messenger/conversations/by_id/{id}.json")
+    Conversation getConversationSync(@Path("id") long id);
+
     @GET("/messenger/conversations/by_id/{id}/messages.json")
     Observable<MessageList> getMessages(@Query("socket_id") String socketId,
                                         @Path("id") long conversationId,

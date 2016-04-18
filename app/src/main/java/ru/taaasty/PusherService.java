@@ -260,7 +260,8 @@ public class PusherService extends Service {
                 case EVENT_PUSH_MESSAGE:
                 case EVENT_PUBLIC_PUSH_MESSAGE:
                     Message message =  mGson.fromJson(data, Message.class);
-                    EventBus.getDefault().post(new MessageChanged(message));
+                    // TODO проверить, действительно ли оно здесь приходит
+                    EventBus.getDefault().post(new MessageChanged(message.conversation, message));
                     break;
                 case EVENT_UPDATE_CONVERSATION:
                 case EVENT_GROUP_UPDATE_CONVERSATION:

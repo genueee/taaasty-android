@@ -44,11 +44,11 @@ import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.events.FlowChanged;
 import ru.taaasty.events.FlowUploadStatus;
 import ru.taaasty.events.MarkAllAsReadRequestCompleted;
+import ru.taaasty.events.TlogBackgroundUploadStatus;
+import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.events.pusher.NotificationMarkedAsRead;
 import ru.taaasty.events.pusher.NotificationReceived;
-import ru.taaasty.events.TlogBackgroundUploadStatus;
-import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
@@ -65,6 +65,7 @@ import ru.taaasty.rest.model.PostQuoteForm;
 import ru.taaasty.rest.model.PostTextForm;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.Userpic;
+import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.service.ApiDesignSettings;
 import ru.taaasty.rest.service.ApiEntries;
@@ -429,6 +430,7 @@ public class IntentService extends android.app.IntentService {
 
         // TODO Как-то уведомлять, что идет загрузка и при ошибке
         try {
+            Conversation conversation = null;
             ApiMessenger api = RestClient.getAPiMessenger();
             if (messageIds != null) {
                 try {
@@ -442,7 +444,8 @@ public class IntentService extends android.app.IntentService {
             }
             Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
                     UUID.randomUUID().toString(), null);
-            EventBus.getDefault().post(new MessageChanged(message));
+            conversation = api.getConversationSync(conversationId);
+            EventBus.getDefault().post(new MessageChanged(conversation, message));
         } catch (ApiErrorException ree) {
             if (DBG) Log.i(TAG, "handleVoiceReplyToConversation() error", ree);
         } catch (Throwable ex) {
