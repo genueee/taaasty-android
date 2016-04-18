@@ -127,16 +127,16 @@ public class StatusBarConversationNotification {
 
     public void onEventMainThread(ConversationVisibilityChanged event) {
         cancelNotification();
-        int val = mConversationVisibility.get(event.userId, 0);
+        int val = mConversationVisibility.get(event.conversationId, 0);
         if (event.isShown) {
             val += 1;
-            mConversationVisibility.put(event.userId, val);
+            mConversationVisibility.put(event.conversationId, val);
         } else {
             if (val > 0) val -= 1;
             if (val == 0) {
-                mConversationVisibility.remove(event.userId);
+                mConversationVisibility.remove(event.conversationId);
             } else {
-                mConversationVisibility.put(event.userId, val);
+                mConversationVisibility.put(event.conversationId, val);
             }
         }
     }
@@ -209,8 +209,7 @@ public class StatusBarConversationNotification {
 
     public synchronized void append(Conversation conversation, Message message) {
         if (mIsPaused) return;
-        if (mConversationVisibility.get(message.recipientId, 0) != 0
-                || mConversationVisibility.get(message.userId, 0) != 0) return;
+        if (mConversationVisibility.get(message.conversationId, 0) != 0) return;
 
         if (message.isFromMe(conversation)) {
             // Игнорируем свои сообщения

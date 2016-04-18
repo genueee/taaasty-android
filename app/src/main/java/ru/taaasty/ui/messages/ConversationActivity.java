@@ -70,6 +70,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private long mEntryId;
 
+    private boolean mIsStarted;
+
     @Nullable
     private Conversation mConversation;
 
@@ -141,13 +143,13 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     @Override
     protected void onStart() {
         super.onStart();
+        mIsStarted = true;
         if (mConversation != null) {
             onConversationLoaded(mConversation);
+            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), true));
         } else {
             loadConversation();
         }
-
-        EventBus.getDefault().post(new ConversationVisibilityChanged(mRecipientId, true));
     }
 
     @Override
@@ -175,7 +177,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     @Override
     protected void onStop() {
         super.onStop();
-        EventBus.getDefault().post(new ConversationVisibilityChanged(mRecipientId, false));
+        mIsStarted = false;
+        if (mConversation != null) {
+            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), false));
+        }
     }
 
     @Override
@@ -272,6 +277,9 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
                     @Override
                     public void onNext(Conversation conversation) {
+                        if (mIsStarted && mConversation == null) {
+                            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), false));
+                        }
                         onConversationLoaded(conversation);
                     }
                 });

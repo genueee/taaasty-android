@@ -1,16 +1,16 @@
 package ru.taaasty.events;
 
 /**
- * Открыт или закрыт диалог
+ * Открыта или закрыта переписка. Нужно, чтобы не слать сообщения самому себе
  */
 public class ConversationVisibilityChanged {
 
-    public final long userId;
+    public final long conversationId;
 
     public final boolean isShown;
 
-    public ConversationVisibilityChanged(long userId, boolean shown) {
-        this.userId = userId;
+    public ConversationVisibilityChanged(long conversationId, boolean shown) {
+        this.conversationId = conversationId;
         this.isShown = shown;
     }
 
