@@ -29,8 +29,6 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +41,8 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.GroupConversation;
+import ru.taaasty.rest.model.conversations.GroupPicture;
+import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.DividerItemDecoration;
@@ -51,6 +51,7 @@ import ru.taaasty.ui.messages.UserAdapter.AdapterListener;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
 import ru.taaasty.ui.post.ShowPostActivity2;
 import ru.taaasty.utils.ConversationHelper;
+import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.RoundedCornersTransformation;
 import ru.taaasty.widgets.HintedExtendedImageView;
@@ -143,16 +144,12 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
         mApiMessenger = RestClient.getAPiMessenger();
 
-        if (!isNewConversation()) {
+        CharSequence deleteChatTitle = getDeleteChatTitle();
+        if (deleteChatTitle != null) {
             mLeaveButton.setOnClickListener(onClickListener);
+            mDeleteChatText.setText(deleteChatTitle);
         } else {
             mLeaveButton.setVisibility(View.GONE);
-        }
-
-        if (isAuthorMe()) {
-            mDeleteChatText.setText(R.string.delete_chat);
-        } else {
-            mDeleteChatText.setText(R.string.leave_chat_dialog_title);
         }
 
         if (!isReadOnly()) {
@@ -200,14 +197,40 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
         if (conversation.getType() == Conversation.Type.GROUP) {
             User admin = ((GroupConversation)conversation).getGroupAdmin();
-            if (admin != null && Session.getInstance().isMe(admin.getId())) {
+            if (admin != null && admin.getId() == conversation.getId()) {
                 return true;
             }
-            if (Session.getInstance().isMe(conversation.getRealUserId())) {
+        } else if (conversation.getType() == Conversation.Type.PUBLIC) {
+            User author = ((PublicConversation)conversation).getEntry() == null ? null
+                    :  ((PublicConversation)conversation).getEntry().getAuthor();
+
+            if (author != null && author.getId() == conversation.getId()) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isMeInUserList() {
+        Conversation conversation = getConversation();
+        ConversationHelper helper = ConversationHelper.getInstance();
+        List<User> users;
+
+        if (conversation == null) {
+            return true; // при создании группы я в ней по определению, без вариантов, неудаляемый
+        }
+        switch (conversation.getType()) {
+            case PRIVATE:
+                return true;
+            case GROUP:
+            case PUBLIC:
+                users = new ArrayList<>();
+                helper.getActiveUsers((HasManyUsers) conversation, users);
+                return helper.findUserById(users, conversation.getUserId()) != null;
+            case OTHER:
+            default:
+                return false;
+        }
     }
 
     private boolean isNewConversation() {
@@ -358,15 +381,18 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     public void requestLeaveChat() {
-        final boolean remove = isAuthorMe();
+        final boolean meAuthor = isAuthorMe();
+
         AlertDialog.Builder builder = new Builder(getContext());
-        if (remove) {
+        if (meAuthor) {
             builder.setTitle(R.string.delete_chat_dialog_title);
             builder.setMessage(R.string.delete_chat_dialog_message);
             builder.setPositiveButton(R.string.delete_chat_dialog_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    leaveChat();
+                    Observable<Object> observable = RestClient.getAPiMessenger()
+                            .deleteConversation(Long.toString(getConversation().getId()), null);
+                    leaveChat(observable);
                 }
             });
         } else {
@@ -375,7 +401,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             builder.setPositiveButton(R.string.leave_chat_dialog_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    leaveChat();
+                    Observable<Object> observable = RestClient.getAPiMessenger()
+                            .leaveConversation(Long.toString(getConversation().getId()), null);
+                    leaveChat(observable);
                 }
             });
         }
@@ -384,16 +412,11 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         builder.show();
     }
 
-    private void leaveChat() {
+    private void leaveChat(Observable<Object> observable) {
         setProgressState(true);
         mIsInLoadingState = true;
         // TODO remove для паблик чатов
-        final boolean remove = isAuthorMe();
         final Conversation conversation = getConversation();
-        final Context appContext = getContext().getApplicationContext();
-        Observable<Object> observable = remove ?
-                mApiMessenger.deleteConversation(Long.toString(conversation.getId()), null)
-                : mApiMessenger.leaveConversation(Long.toString(conversation.getId()), null);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Object>() {
@@ -404,7 +427,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
                     @Override
                     public void onError(Throwable e) {
-                        Toast.makeText(appContext, R.string.fail_to_remove_chat, Toast.LENGTH_SHORT).show();
+                        if (getActivity() != null) {
+                            MessageHelper.showError(getActivity(), getText(R.string.fail_to_remove_chat), e);
+                        }
                         mIsInLoadingState = false;
                         setProgressState(false);
                     }
@@ -416,6 +441,40 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                         mInteractionListener.onConversationLeaved(conversation);
                     }
                 });
+    }
+
+    @Nullable
+    private CharSequence getDeleteChatTitle() {
+        ConversationHelper helper = ConversationHelper.getInstance();
+        Conversation conversation = getConversation();
+        if (conversation == null) {
+            return null;
+        }
+
+        List<User> activeUsers;
+        switch (conversation.getType()) {
+            case PRIVATE:
+                return getText(R.string.delete_chat_button);
+            case GROUP:
+                activeUsers = helper.getActiveUsers((HasManyUsers) conversation);
+                if (helper.findUserById(activeUsers, conversation.getUserId()) == null) {
+                    return null;
+                }
+                if (activeUsers.size() == 1) {
+                    return getText(R.string.delete_chat_button); // Не, ну а нафига нужен чат с 0 юзерами? :)
+                } else {
+                    return getText(R.string.leave_chat_button);
+                }
+            case PUBLIC:
+                activeUsers = helper.getActiveUsers((HasManyUsers) conversation);
+                if (helper.findUserById(activeUsers, conversation.getUserId()) == null) {
+                    return null;
+                }
+                return getText(R.string.leave_chat_button);
+            case OTHER:
+            default:
+                return null;
+        }
     }
 
     private OnClickListener onClickListener = new OnClickListener() {
@@ -501,7 +560,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         private State current;
         OnChangeListener onChangeListener;
 
-        public ViewModel(Context context, Conversation conversation) {
+        public ViewModel(Context context, @Nullable Conversation conversation) {
             if (conversation == null) {
                 last = new State();
                 current = new State();
@@ -538,9 +597,9 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public void setAvatarUri(Uri uri) {
-            boolean changed = TextUtils.isEmpty(current.avatarUri) && uri != null || !Objects.equals(current.avatarUri, uri == null ? null : uri.toString());
+            boolean changed = TextUtils.isEmpty(current.groupPictureUri) && uri != null || !Objects.equals(current.groupPictureUri, uri == null ? null : uri.toString());
             if (changed) {
-                current.avatarUri = uri == null ? "" : uri.toString();
+                current.groupPictureUri = uri == null ? "" : uri.toString();
                 if (onChangeListener != null) {
                     onChangeListener.onModelChanged();
                 }
@@ -565,7 +624,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public Uri getAvatarUri() {
-            return !TextUtils.isEmpty(current.avatarUri) ? Uri.parse(current.avatarUri) : null;
+            return !TextUtils.isEmpty(current.groupPictureUri) ? Uri.parse(current.groupPictureUri) : null;
         }
 
         public ArrayList<User> getUsers() {
@@ -604,7 +663,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
 
         public ContentTypedOutput getAvatarOutput(Context context) {
-            if (last.avatarUri == current.avatarUri || !TextUtils.isEmpty(last.avatarUri) && last.avatarUri.equals(current.avatarUri)) {
+            if (last.groupPictureUri == current.groupPictureUri || !TextUtils.isEmpty(last.groupPictureUri) && last.groupPictureUri.equals(current.groupPictureUri)) {
                 return null;
             }
             return new ContentTypedOutput(context, getAvatarUri(), null);
@@ -630,38 +689,38 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         String topic;
 
         @Nullable
-        String avatarUri;
+        String groupPictureUri;
 
         ArrayList<User> users;
 
         public State() {
             users = new ArrayList<>();
             topic = "";
-            avatarUri = "";
+            groupPictureUri = "";
         }
 
         public State(Context context, Conversation conversation) {
             ConversationHelper helper = ConversationHelper.getInstance();
+            topic = helper.getTitle(conversation, context);
+
+            // Picture uri
             if (conversation.getType() == Conversation.Type.GROUP) {
-                GroupConversation groupChat = (GroupConversation)conversation;
-                topic = helper.getTitle(conversation, context);
-                avatarUri = groupChat.getAvatar() != null ? groupChat.getAvatar().url : "";
-                users = new ArrayList<>();
-                for (User user: groupChat.getUsers()) {
-                    if (!ArrayUtils.contains(groupChat.getUsersLeft(), user.getId())) {
-                        users.add(user);
-                    }
-                }
+                GroupPicture picture = ((GroupConversation)conversation).getAvatar();
+                groupPictureUri = picture != null ? picture.url : null;
             } else {
-                topic = ConversationHelper.getInstance().getTitle(conversation, context);
-                avatarUri = "";
-                users = new ArrayList<>(0);
+                groupPictureUri = "";
+            }
+
+            // Users
+            users = new ArrayList<>();
+            if (conversation instanceof HasManyUsers) {
+                helper.getActiveUsers((HasManyUsers)conversation, users);
             }
         }
 
         protected State(Parcel in) {
             topic = in.readString();
-            avatarUri = in.readString();
+            groupPictureUri = in.readString();
             users = in.createTypedArrayList(User.CREATOR);
         }
 
@@ -685,7 +744,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             State state = (State) o;
 
             if (topic != null ? !topic.equals(state.topic) : state.topic != null) return false;
-            if (avatarUri != null ? !avatarUri.equals(state.avatarUri) : state.avatarUri != null) return false;
+            if (groupPictureUri != null ? !groupPictureUri.equals(state.groupPictureUri) : state.groupPictureUri != null) return false;
             return users != null ? users.equals(state.users) : state.users == null;
 
         }
@@ -693,7 +752,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         @Override
         public int hashCode() {
             int result = topic != null ? topic.hashCode() : 0;
-            result = 31 * result + (avatarUri != null ? avatarUri.hashCode() : 0);
+            result = 31 * result + (groupPictureUri != null ? groupPictureUri.hashCode() : 0);
             result = 31 * result + (users != null ? users.hashCode() : 0);
             return result;
         }
@@ -706,7 +765,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeString(topic);
-            dest.writeString(avatarUri);
+            dest.writeString(groupPictureUri);
             dest.writeTypedList(users);
         }
     }

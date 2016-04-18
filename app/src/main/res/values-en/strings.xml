@@ -328,12 +328,13 @@
   <string name="new_version_available_default">New version of the application is available</string>
   <string name="app_version_not_supported">This version of the application is no longer supported, it needs to be updated</string>
   <string name="update_app">Update</string>
-  <string name="group_chat">Group chat</string>
   <string name="create_group_chat">Create group chat</string>
   <string name="group_topic_should_not_be_empty">Group name should not be empty</string>
   <string name="chat">Chat</string>
   <string name="do_not_disturb">Don\'t disturb</string>
   <string name="delete_chat">Delete chat</string>
+  <string name="delete_chat_button">Delete chat</string>
+  <string name="leave_chat_button">Leave chat</string>
   <string name="delete_chat_dialog_title">Delete chat</string>
   <string name="delete_chat_dialog_button">Delete</string>
   <string name="delete_chat_dialog_message">Chat will be deleted and you will be unable to receive messages</string>
@@ -351,4 +352,9 @@
   <string name="menu_button_attach">Attach</string>
   <string name="conversation_list_image_attachment_photo">Photo</string>
   <string name="conversation_list_image_attachment">Attachment</string>
+
+  <string name="edit_create_conversation_title_conversation">Сhat</string>
+  <string name="edit_create_conversation_group_chat">Group chat</string>
+  <string name="edit_create_conversation_thread">Thread</string>
+
 </resources>

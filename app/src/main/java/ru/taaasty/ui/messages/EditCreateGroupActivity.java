@@ -13,6 +13,7 @@ import ru.taaasty.R;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener;
+import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.ImeUtils;
 
 /**
@@ -47,7 +48,6 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation_group);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(getString(R.string.group_chat));
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -61,6 +61,8 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
                 findViewById(R.id.coordinator_layout_container),
                 (uri) -> getEditFragment().onImagePicked(uri));
         mPhotoManager.onCreate(savedInstanceState);
+
+        setTitle(guessActivityTitle());
     }
 
     private Conversation getConversation() {
@@ -146,5 +148,25 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         intent.setAction(ACTION_SAVE_CONVERSATION);
         setResult(Activity.RESULT_OK, intent);
         finish();
+    }
+
+    private CharSequence guessActivityTitle() {
+        Conversation conversation = getConversation();
+        if (conversation == null) {
+            // Скорее всего, это создание нового обсуждения
+            return getText(R.string.edit_create_conversation_group_chat);
+        }
+
+        switch (conversation.getType()) {
+            case PRIVATE:
+                return getText(R.string.edit_create_conversation_title_conversation);
+            case GROUP:
+                return getText(R.string.edit_create_conversation_group_chat);
+            case PUBLIC:
+                return getText(R.string.edit_create_conversation_thread);
+            case OTHER:
+            default:
+                return ConversationHelper.getInstance().getTitle(conversation, this);
+        }
     }
 }

@@ -389,13 +389,14 @@
     <string name="new_version_available_default">Доступна новая версия приложения</string>
     <string name="app_version_not_supported">Данная версия приложения больше не поддерживается, её необходимо обновить</string>
     <string name="update_app">Обновить</string>
-    <string name="group_chat">Групповой чат</string>
     <string name="create_group_chat">Создать группу</string>
     <string name="group_topic_should_not_be_empty">Заголовок группы не должен быть пустым</string>
     <string name="chat">Переписка</string>
     <string name="do_not_disturb">Не беспокоить</string>
     <string name="delete_chat">Удалить переписку</string>
     <string name="delete_chat_dialog_title">Удалить переписку</string>
+    <string name="delete_chat_button">Удалить обсуждение</string>
+    <string name="leave_chat_button">Покинуть обсуждение</string>
     <string name="delete_chat_dialog_button">Удалить</string>
     <string name="delete_chat_dialog_message">Переписка будет удалена и вы не сможете получать сообщения</string>
 
@@ -412,6 +413,10 @@
     <string name="menu_button_attach">Прикрепить</string>
     <string name="conversation_list_image_attachment_photo">Фотография</string>
     <string name="conversation_list_image_attachment">Документ</string>
+
+    <string name="edit_create_conversation_title_conversation">Переписка</string>
+    <string name="edit_create_conversation_group_chat">Групповой чат</string>
+    <string name="edit_create_conversation_thread">Обсуждение</string>
 
 </resources>
 

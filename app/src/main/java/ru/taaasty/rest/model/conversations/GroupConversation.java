@@ -83,6 +83,10 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
         super(Type.GROUP.apiValue);
     }
 
+    public boolean isMeAdmin() {
+        return admin != null && admin.getId() == getId();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

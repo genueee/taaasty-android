@@ -18,6 +18,7 @@ import com.squareup.pollexor.ThumborUrlBuilder;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,7 +80,7 @@ public final class ConversationHelper {
             case GROUP:
             case PUBLIC:
                 return countActiveUsers(((HasManyUsers)conversation).getUsers(),
-                        ((GroupConversation)conversation).getUsersLeft());
+                        ((HasManyUsers)conversation).getUsersLeft());
             case OTHER:
             default:
                 return -1;
@@ -95,6 +96,20 @@ public final class ConversationHelper {
             }
         }
         return cnt;
+    }
+
+    public void getActiveUsers(HasManyUsers conversation, List<User> dst) {
+        for (User user: conversation.getUsers()) {
+            if (!ArrayUtils.contains(conversation.getUsersLeft(), user.getId())) {
+                dst.add(user);
+            }
+        }
+    }
+
+    public List<User> getActiveUsers(HasManyUsers conversation) {
+        List<User> users = new ArrayList<>();
+        getActiveUsers(conversation, users);
+        return users;
     }
 
     public User findUserById(List<User> users, long userId) {
