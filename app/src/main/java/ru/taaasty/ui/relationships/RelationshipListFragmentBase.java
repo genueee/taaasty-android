@@ -24,6 +24,7 @@ import ru.taaasty.R;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiTlog;
@@ -160,6 +161,7 @@ public abstract class RelationshipListFragmentBase extends RxFragment {
 
         mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mRelationshipsObserver);
     }
 

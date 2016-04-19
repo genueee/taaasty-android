@@ -21,6 +21,7 @@ import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRemoved;
 import ru.taaasty.events.ReportCommentSent;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiComments;
 import ru.taaasty.rest.service.ApiEntries;
@@ -160,6 +161,7 @@ public class DeleteOrReportDialogActivity extends ActivityBase {
 
         mSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mObserver);
 
     }

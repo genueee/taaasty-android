@@ -15,6 +15,7 @@ import ru.taaasty.R;
 import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -197,6 +198,7 @@ public abstract class FeedWorkFragment extends Fragment {
 
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .doOnUnsubscribe(() -> callLoadingStateChanged("refreshUser() doOnUnsubscribe"))
                 .subscribe(mCurrentUserObserver);
         callLoadingStateChanged("refreshUser start");

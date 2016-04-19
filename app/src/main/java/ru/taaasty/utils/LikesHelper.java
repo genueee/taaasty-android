@@ -16,6 +16,7 @@ import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryRatingStatusChanged;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Rating;
 import ru.taaasty.rest.service.ApiEntries;
@@ -123,6 +124,7 @@ public class LikesHelper {
         }
 
         Subscription s = observable.observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .doOnUnsubscribe(() -> mSubscriptions.delete(entryId))
                 .subscribe(new UpdateRatingObserver(entry));
         mSubscriptions.append(entryId, s);

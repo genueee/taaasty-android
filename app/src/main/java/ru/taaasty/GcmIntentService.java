@@ -26,10 +26,13 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 import java.io.IOException;
 import java.util.Random;
 
-import retrofit.RetrofitError;
+import retrofit2.Call;
+import retrofit2.adapter.rxjava.HttpException;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.model.User;
 import ru.taaasty.utils.GcmUtils;
+import rx.Observable;
 
 public class GcmIntentService extends IntentService {
     private static final boolean DBG = BuildConfig.DEBUG;
@@ -108,25 +111,33 @@ public class GcmIntentService extends IntentService {
         }
     }
 
+
     private void sendRegistrationIdToBackend(String regId) throws IOException {
         String userToken = Session.getInstance().getCurrentUserToken();
-        try {
-            if (userToken != null) {
-                RestClient.getAPiDevice().register(regId);
+        final IOException[] ioExceptions = new IOException[1];
+        if (userToken != null) {
+            Observable<User> getApiDeviceObservable = RestClient.getAPiDevice().register(regId);
+            getApiDeviceObservable.subscribe(
+                    user -> {
+
+                    },
+                    error -> {
+
+                        if (error instanceof HttpException) {
+                            int errorCode = ((HttpException) error).code();
+                            if (400 <= errorCode && errorCode < 500) {
+                                // Скорее всего, "уже существует". Не считаем ошибкой.
+                                if (DBG)
+                                    Log.v(TAG, "sendRegistrationIdToBackend response: " + error + "no response");
+                                return;
+                            }
+                        }
+                        ioExceptions[0] = new IOException(error);
+                    }
+            );
+            if (ioExceptions[0] != null) {
+                throw ioExceptions[0];
             }
-        } catch (ApiErrorException ree) {
-            RetrofitError err = (RetrofitError)ree.getCause();
-            if (err.getKind() == RetrofitError.Kind.HTTP
-                    && err.getResponse() != null
-                    && err.getResponse().getStatus() >= 400
-                    && err.getResponse().getStatus() < 500) {
-                // Скорее всего, "уже существует". Не считаем ошибкой.
-                if (DBG) Log.v(TAG, "sendRegistrationIdToBackend response: " + ree.getErrorUserMessage(getResources(), "no response"));
-            } else {
-                throw new IOException(err);
-            }
-        } catch (RuntimeException e) {
-            throw new IOException(e);
         }
     }
 

@@ -33,6 +33,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiUsers;
@@ -152,6 +153,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
 
         mAuthSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new AuthObserver(token));
     }
 
@@ -217,6 +219,7 @@ public class SignViaVkontakteFragment extends DialogFragment {
                 );
         mSignupSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new SignupObserver());
     }
 

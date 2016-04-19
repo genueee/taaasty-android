@@ -33,6 +33,7 @@ import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.Flow.FlowPic;
@@ -163,6 +164,7 @@ public class RepostActivity extends ActivityBase {
 
         mFlowsSubscription = observableComments
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mFlowsObserver);
     }
 
@@ -266,6 +268,7 @@ public class RepostActivity extends ActivityBase {
 
         mRepostSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mRepostObserver);
     }
 

@@ -17,6 +17,7 @@ import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.Session;
 import ru.taaasty.adapters.FlowListManaged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.service.ApiFlows;
 import rx.Observable;
@@ -239,6 +240,7 @@ public class FlowListWorkFragment extends Fragment {
             Observable<FlowList> observable = createObservable(mNextPage);
             mRefreshSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .finallyDo(mFinallySetupLoadingState)
                     .subscribe(new LoadObserver(true, forceReplace));
         }
@@ -274,6 +276,7 @@ public class FlowListWorkFragment extends Fragment {
                     onNewListPendingIndicatorStatus(true);
                     mAppendSubscription = createObservable(mNextPage)
                             .observeOn(AndroidSchedulers.mainThread())
+                            .subscribeOn(RestSchedulerHelper.getScheduler())
                             .finallyDo(mFinallySetupLoadingState)
                             .subscribe(new LoadObserver(false, false));
                 }

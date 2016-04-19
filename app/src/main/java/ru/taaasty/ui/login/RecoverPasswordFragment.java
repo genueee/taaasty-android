@@ -22,6 +22,7 @@ import java.util.List;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.utils.ImeUtils;
@@ -145,6 +146,7 @@ public class RecoverPasswordFragment extends Fragment {
             mAuthTask = service.recoveryPassword(email);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .finallyDo(() -> {
                         if (DBG) Log.v(TAG, "finallyDo()");
                         mAuthTask = null;

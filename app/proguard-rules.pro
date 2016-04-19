@@ -23,12 +23,6 @@
 
 -keep class ru.taaasty.rest.model.** { *; }
 
-#Retrofit
--dontwarn android.net.http.AndroidHttpClient
--dontwarn retrofit.client.ApacheClient$GenericEntityHttpRequest
--dontwarn retrofit.client.ApacheClient$GenericHttpRequest
--dontwarn retrofit.client.ApacheClient$TypedOutputEntity
-
 # Eventbus
 -keepclassmembers class ** {
     public void onEvent*(**);
@@ -40,18 +34,24 @@
 
 # Retrofit
 -keepattributes *Annotation*
--keep class retrofit.** { *; }
+-keepattributes Exceptions
+-dontwarn retrofit2.**
+-keep class retrofit2.** { *; }
 -keepclasseswithmembers class * {
-    @retrofit.http.* <methods>;
+    @retrofit2.http.* <methods>;
 }
 -dontwarn rx.**
 -dontwarn com.squareup.okhttp.**
 -dontwarn com.google.appengine.api.urlfetch.**
 
+
 #okhttp
 -dontwarn java.nio.file.*
 -dontwarn com.squareup.okhttp.internal.http.*
 -dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
+
+#okhttp3
+-dontwarn okhttp3.**
 
 #android-gif-drawable
 -keep public class pl.droidsonroids.gif.GifIOException{<init>(int);}

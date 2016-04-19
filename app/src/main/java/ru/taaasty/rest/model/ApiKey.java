@@ -2,6 +2,8 @@ package ru.taaasty.rest.model;
 
 import android.os.Parcel;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.Date;
 
 /**
@@ -10,11 +12,11 @@ import java.util.Date;
 public class ApiKey implements android.os.Parcelable {
 
     public static ApiKey DUMMY = new ApiKey();
-
+    @SerializedName("access_token")
     public String accessToken = "";
-
+    @SerializedName("user_id")
     public long userId;
-
+    @SerializedName("expired_at")
     private Date expiredAt;
 
     @Override

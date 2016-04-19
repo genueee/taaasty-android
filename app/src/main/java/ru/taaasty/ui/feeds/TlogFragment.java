@@ -8,6 +8,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -53,6 +54,7 @@ import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
@@ -370,7 +372,6 @@ public class TlogFragment extends RxFragment implements IRereshable,
         Session.getInstance().getUserObservable()
                 .distinctUntilChanged()
                 .compose(this.<CurrentUser>bindUntilEvent(FragmentEvent.PAUSE))
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new CurrentUserChangesObservable());
     }
 
@@ -389,6 +390,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
         @Override
         public void onNext(CurrentUser currentUser) {
+            if (DBG) Assert.assertSame(Looper.myLooper(), Looper.getMainLooper());
             boolean isAuthorized = Session.getInstance().isAuthorized();
             if (isAuthorized) {
                 mLoginButton.setVisibility(View.GONE);
@@ -1128,6 +1130,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
 
             mCurrentUserSubscription = observableCurrentUser
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .doOnUnsubscribe(() -> callLoadingStateChanged("refreshUser() doOnUnsubscribe"))
                     .subscribe(mCurrentUserObserver);
             callLoadingStateChanged("refreshUser start");
@@ -1164,6 +1167,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             Observable<Relationship> observable = relApi.follow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .finallyDo(this::callFollowingStatusChanged)
                     .subscribe(new RelationChangedObserver());
             callFollowingStatusChanged();
@@ -1176,6 +1180,7 @@ public class TlogFragment extends RxFragment implements IRereshable,
             Observable<Relationship> observable = relApi.unfollow(mUserId.toString());
             mFollowSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .finallyDo(this::callFollowingStatusChanged)
                     .subscribe(new RelationChangedObserver());
             callFollowingStatusChanged();

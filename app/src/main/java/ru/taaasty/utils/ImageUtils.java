@@ -49,6 +49,7 @@ import java.util.Locale;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.rest.GifLoaderHelper;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.Userpic;
 import ru.taaasty.widgets.DefaultUserpicDrawable;
@@ -579,6 +580,7 @@ public class ImageUtils {
         return GifLoaderHelper.getInstance()
                 .loadGifWithProgress(url, okHttpTag)
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<GifLoaderHelper.ProgressStatus>() {
 
                     boolean onNextCalled = false;

@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import ru.taaasty.BuildConfig;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.AppVersionResponse;
 import rx.Observable;
 import rx.schedulers.Schedulers;
@@ -43,6 +44,7 @@ public final class CheckAppHelper {
         final Context appContext = context.getApplicationContext();
         return RestClient.getAPiApp().checkVersion("android_offical", BuildConfig.VERSION_NAME)
                 .observeOn(Schedulers.io())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .map(appVersionResponse -> {
                     if (appVersionResponse.update == null) return CheckVersionResult.DO_NOTHING;
                     return handleCheckVersionResponse(appContext, appVersionResponse);

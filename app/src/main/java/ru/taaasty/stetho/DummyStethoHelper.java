@@ -2,7 +2,7 @@ package ru.taaasty.stetho;
 
 import android.content.Context;
 
-import com.squareup.okhttp.OkHttpClient;
+import okhttp3.OkHttpClient;
 
 
 public class DummyStethoHelper implements StethoHelper {
@@ -11,6 +11,7 @@ public class DummyStethoHelper implements StethoHelper {
     }
 
     @Override
-    public void configureInterceptor(OkHttpClient httpClient) {
+    public void configureInterceptor(OkHttpClient.Builder httpClient) {
+
     }
 }

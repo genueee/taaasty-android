@@ -2,16 +2,16 @@ package ru.taaasty.rest.service;
 
 import java.util.List;
 
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Part;
-import retrofit.http.Query;
-import retrofit.mime.TypedOutput;
+import okhttp3.MultipartBody;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.RecoveryPasswordResponse;
 import ru.taaasty.rest.model.Status;
@@ -24,7 +24,7 @@ import rx.Observable;
  */
 public interface ApiUsers {
 
-    @GET("/users/me.json")
+    @GET("users/me.json")
     Observable<CurrentUser> getMyInfo();
 
     /**
@@ -35,7 +35,7 @@ public interface ApiUsers {
      * @return
      */
     @FormUrlEncoded
-    @POST("/users.json")
+    @POST("users.json")
     Observable<CurrentUser> registerUser(@Field("email") String email,
                                          @Field("password") String password,
                                          @Field("slug") String slug);
@@ -45,7 +45,7 @@ public interface ApiUsers {
      * @return
      */
     @FormUrlEncoded
-    @POST("/users/vkontakte.json")
+    @POST("users/vkontakte.json")
     Observable<CurrentUser> registerUserVkontakte(@Field("token") String token,
                                          @Field("nickname") String nickname,
                                          @Field("avatar_url") String avatar_url,
@@ -60,7 +60,7 @@ public interface ApiUsers {
      * @return
      */
     @FormUrlEncoded
-    @POST("/users/facebook.json")
+    @POST("users/facebook.json")
     Observable<CurrentUser> registerUserFacebook(@Field("token") String token,
                                                   @Field("nickname") String nickname,
                                                   @Field("avatar_url") String avatar_url,
@@ -72,35 +72,35 @@ public interface ApiUsers {
     );
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMySlug(@Field("slug") String slug);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyTitle(@Field("title") String title);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyEmail(@Field("email") String email);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyPassword(@Field("password") String password);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyIsPrivacy(@Field("is_privacy") boolean isPrivacy);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyIsDaylog(@Field("is_daylog") boolean isDaylog);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyAvailableNotifications(@Field("available_notifications") boolean availableNotifications);
 
     @FormUrlEncoded
-    @PUT("/users.json")
+    @PUT("users.json")
     Observable<CurrentUser> setMyIsFemale(@Field("is_female") boolean is_female);
 
     /**
@@ -109,7 +109,7 @@ public interface ApiUsers {
      * @return
      */
     @FormUrlEncoded
-    @POST("/users/password/recovery.json")
+    @POST("users/password/recovery.json")
     Observable<RecoveryPasswordResponse> recoveryPassword(@Field("slug_or_email") String slugOrEmail);
 
     /**
@@ -118,8 +118,8 @@ public interface ApiUsers {
      * @return
      */
     @Multipart
-    @POST("/users/userpic.json")
-    Observable<Userpic> uploadUserpic(@Part("file") TypedOutput file);
+    @POST("users/userpic.json")
+    Observable<Userpic> uploadUserpic(@Part("file") MultipartBody.Part file);
 
     /**
      * Загрузка юзерпика
@@ -127,14 +127,14 @@ public interface ApiUsers {
      * @return
      */
     @Multipart
-    @POST("/users/userpic.json")
-    Userpic uploadUserpicSync(@Part("file") TypedOutput file);
+    @POST("users/userpic.json")
+    Observable<Userpic> uploadUserpicSync(@Part MultipartBody.Part file);//("file")
 
     /**
      * Удаление юзерпика
      * @return
      */
-    @DELETE("/users/userpic.json")
+    @DELETE("users/userpic.json")
     Observable<Status> deleteUserpic();
 
     /**
@@ -143,7 +143,7 @@ public interface ApiUsers {
      * @param limit
      * @return
      */
-    @GET("/users/predict.json")
+    @GET("users/predict.json")
     Observable<List<User>> predict(@Query("query") String query, @Query("limit") Integer limit);
 
 }

@@ -30,6 +30,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostEmbeddForm;
 import ru.taaasty.rest.model.PostForm;
@@ -356,6 +357,7 @@ public class CreateEmbeddPostFragment extends CreatePostFragmentBase implements 
 
         mLoafIframelySubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Subscriber<IFramely>() {
                     @Override
                     public void onCompleted() {

@@ -67,8 +67,8 @@ android {
                 project.ext.private.getProperty("default.AdobeClientId", "\"a28b7e7fa93c49c98c0caf1438ec3d53\"")
         buildConfigField "String", "ADOBE_CLIENT_SECRET",
                 project.ext.private.getProperty("default.AdobeClientSecret", "\"6102b00a-823c-4ab9-8af8-8e5799961774\"")
-        buildConfigField "retrofit.RestAdapter.LogLevel", "RETROFIT_LOG_LEVEL",
-                project.ext.private.getProperty("default.RetrofitLogLevel", "retrofit.RestAdapter.LogLevel.BASIC")
+        buildConfigField "okhttp3.logging.HttpLoggingInterceptor.Level", "OKHTTP_LOG_LEVEL",
+                project.ext.private.getProperty("default.OkhttpLogLevel", "okhttp3.logging.HttpLoggingInterceptor.Level.BASIC")
 
         buildConfigField 'ru.taaasty.stetho.StethoHelper', 'STETHO', 'new ru.taaasty.stetho.DummyStethoHelper()'
 
@@ -116,7 +116,7 @@ android {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
-            buildConfigField 'retrofit.RestAdapter.LogLevel', 'RETROFIT_LOG_LEVEL', 'retrofit.RestAdapter.LogLevel.NONE'
+            buildConfigField 'okhttp3.logging.HttpLoggingInterceptor.Level', 'OKHTTP_LOG_LEVEL', 'okhttp3.logging.HttpLoggingInterceptor.Level.NONE'
             ext.enableCrashlytics = false
         }
         beta {
@@ -186,15 +186,18 @@ dependencies {
     compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile('com.pusher:pusher-java-client:1.1.2')
     compile 'org.slf4j:slf4j-nop:1.7.21'
-    compile 'com.squareup.okhttp:okhttp:2.7.5'
-    compile 'com.squareup.okhttp:okhttp-ws:2.7.5'
-    compile 'com.squareup.okhttp:okhttp-urlconnection:2.7.5' // aviary
     compile 'com.squareup:pollexor:2.0.4'
     // Picasso из jecenter не используем, пока не починят https://github.com/square/picasso/issues/364,
     // пока своя сборка.
     // compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.squareup.retrofit:retrofit:1.8.0'
+    //
+    compile ('com.jakewharton.picasso:picasso2-okhttp3-downloader:1.0.2') { transitive = false; }
+    compile 'com.squareup.retrofit2:retrofit:2.0.0'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.vk:androidsdk:1.6.6'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.0'
+    compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.2.0'
     compile 'de.greenrobot:eventbus:2.4.0'
     compile 'javax.annotation:jsr250-api:1.0'
     compile 'info.piwai.frenchtoast:frenchtoast:1.0'
@@ -207,7 +210,7 @@ dependencies {
     compile 'com.adobe.creativesdk:image:4.4.8'
 
     debugCompile 'com.facebook.stetho:stetho:1.3.1'
-    debugCompile 'com.facebook.stetho:stetho-okhttp:1.3.1'
+    debugCompile 'com.facebook.stetho:stetho-okhttp3:1.3.1'
 
     testCompile 'junit:junit:4.12'
     testCompile "org.robolectric:robolectric:3.0"

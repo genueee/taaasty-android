@@ -28,6 +28,7 @@ import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.TlogBackgroundUploadStatus;
 import ru.taaasty.events.UserpicUploadStatus;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.RelationshipsSummary;
@@ -499,6 +500,7 @@ public class UserInfoFragment extends Fragment {
 
         mUserInfoSubscription = observableUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mTlogInfoObserver);
     }
 
@@ -512,6 +514,7 @@ public class UserInfoFragment extends Fragment {
         showFollowUnfollowProgress();
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mFollowObserver);
     }
 
@@ -525,6 +528,7 @@ public class UserInfoFragment extends Fragment {
         showFollowUnfollowProgress();
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mFollowObserver);
     }
 
@@ -535,6 +539,7 @@ public class UserInfoFragment extends Fragment {
         Observable<Conversation> observable = apiMessenger.createConversation(null, mUserId);
         mCreateConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mCreateConversationObservable);
         setupSubscribeButton();
     }

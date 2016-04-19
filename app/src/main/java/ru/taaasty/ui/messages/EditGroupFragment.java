@@ -32,17 +32,21 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.events.pusher.ConversationChanged;
-import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.GroupConversation;
@@ -398,6 +402,15 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         }
     }
 
+    private MultipartBody.Part getMultipartBodyPartFromUri(Uri uri, String partName){
+        String fullFileName = uri.getLastPathSegment();
+        File file = new File(fullFileName);
+        // create RequestBody instance from file
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+        //MultipartBody.Part is used to send also the actual file name
+        return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
+    }
+
     private void startSaveConversation() {
         if (TextUtils.isEmpty(mTopic.getText())) {
             mTopic.requestFocus();
@@ -409,15 +422,17 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         setProgressState(true);
         String topic = mModel.getTopic();
         String ids = mModel.getUsersIdsString();
-        ContentTypedOutput avatar = mModel.getAvatarOutput(getContext());
         Observable<Conversation> observable;
         if (isNewConversation()) {
+            MultipartBody.Part avatar = getMultipartBodyPartFromUri(mModel.getAvatarUri(), "avatar");
             observable = mApiMessenger.createGroupConversation(null, topic, ids, avatar, null);
         } else {
+            MultipartBody.Part avatar = getMultipartBodyPartFromUri(mModel.getAvatarUri(), "avatar");
             observable = mApiMessenger.editGroupConversation(Long.toString(getConversation().getId()), null, topic, ids, avatar, null);
         }
         observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mSaveConversationObserver);
     }
 
@@ -456,6 +471,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         RestClient.getAPiMessenger()
                 .deleteConversation(Long.toString(getConversation().getId()), null)
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Object>() {
                     @Override
                     public void onCompleted() {
@@ -577,6 +593,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mDoNotDisturbSubscription.unsubscribe();
         mDoNotDisturbSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Conversation>() {
                     @Override
                     public void onCompleted() {}
@@ -737,13 +754,6 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
                 sb.append(Long.toString(user.getId()));
             }
             return sb.toString();
-        }
-
-        public ContentTypedOutput getAvatarOutput(Context context) {
-            if (last.groupPictureUri == current.groupPictureUri || !TextUtils.isEmpty(last.groupPictureUri) && last.groupPictureUri.equals(current.groupPictureUri)) {
-                return null;
-            }
-            return new ContentTypedOutput(context, getAvatarUri(), null);
         }
 
         @Override

@@ -26,6 +26,7 @@ import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
@@ -297,6 +298,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
         mConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Conversation>() {
 
                     @Override

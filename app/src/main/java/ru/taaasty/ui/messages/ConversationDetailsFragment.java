@@ -22,6 +22,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.service.ApiMessenger;
@@ -176,6 +177,7 @@ public class ConversationDetailsFragment extends Fragment {
         Observable<Object> observable = mApiMessenger.deleteConversation(Long.toString(conversation.getId()), null);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Object>() {
                     @Override
                     public void onCompleted() {
@@ -213,6 +215,7 @@ public class ConversationDetailsFragment extends Fragment {
         mDoNotDisturbSubscription.unsubscribe();
         mDoNotDisturbSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Conversation>() {
                     @Override
                     public void onCompleted() {}

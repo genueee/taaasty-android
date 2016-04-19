@@ -1,7 +1,7 @@
 package ru.taaasty.rest.service;
 
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.Feed;
 import rx.Observable;
 
@@ -13,7 +13,7 @@ public interface ApiMyFeeds {
      * @param limit
      * @return
      */
-    @GET("/my_feeds/tlog.json")
+    @GET("my_feeds/tlog.json")
     Observable<Feed> getMyFeed(@Query("since_entry_id") Long sinceEntryId,
                                  @Query("limit") Integer limit);
 
@@ -23,7 +23,7 @@ public interface ApiMyFeeds {
      * @param limit
      * @return
      */
-    @GET("/my_feeds/friends.json")
+    @GET("my_feeds/friends.json")
     Observable<Feed> getMyFriendsFeed(@Query("since_entry_id") Long sinceEntryId,
                             @Query("limit") Integer limit);
 
@@ -33,7 +33,7 @@ public interface ApiMyFeeds {
      * @param limit
      * @return
      */
-    @GET("/my_feeds/favorites.json")
+    @GET("my_feeds/favorites.json")
     Observable<Feed> getMyFavoritesFeed(@Query("since_entry_id") Long sinceEntryId,
                                       @Query("limit") Integer limit);
 
@@ -43,7 +43,7 @@ public interface ApiMyFeeds {
      * @param limit
      * @return
      */
-    @GET("/my_feeds/private.json")
+    @GET("my_feeds/private.json")
     Observable<Feed> getMyPrivateFeed(@Query("since_entry_id") Long sinceEntryId,
                                         @Query("limit") Integer limit);
 

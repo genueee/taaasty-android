@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
@@ -28,15 +29,17 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.Collections;
+import junit.framework.Assert;
+
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import de.greenrobot.event.EventBus;
-import retrofit.mime.TypedOutput;
+import okhttp3.RequestBody;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
@@ -44,8 +47,9 @@ import ru.taaasty.Session;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.events.pusher.UpdateMessagesReceived;
-import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
+import ru.taaasty.rest.UriRequestBody;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
@@ -201,7 +205,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         mConversationSubject
                 .distinctUntilChanged()
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Conversation>() {
                     @Override
                     public void onCompleted() {}
@@ -211,6 +214,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
                     @Override
                     public void onNext(Conversation conversation) {
+                        if (DBG) Assert.assertSame(Looper.getMainLooper(), Looper.myLooper());
                         if (mAdapter != null) {
                             mAdapter.setConversation(conversation);
                         }
@@ -420,13 +424,28 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         dialog.show(getChildFragmentManager(), "SelectPhotoSourceDialogFragment");
     }
 
+
     private void sendAttachment(Uri imageUri) {
-        TypedOutput typedOutput = new ContentTypedOutput(getContext(), imageUri, null);
+        String filename = imageUri.getLastPathSegment();
+        if (!filename.matches(".+\\..{2,6}$")) {
+            filename = filename + ".jpg";
+        }
+
+        HashMap<String, RequestBody> imagesMap = new HashMap<>();
+        imagesMap.put("files[]\"; filename=\"" + filename, new UriRequestBody(getActivity(), imageUri));
+
         Observable<Message> observable = mConversationSubject
                 .take(1)
-                .flatMap(conversation -> RestClient.getAPiMessenger().postMessageWithAttachments(null,
-                            conversation.getId(), "", UUID.randomUUID().toString(), null,
-                            Collections.singletonMap("files[]", typedOutput)));
+                .flatMap(
+                        conversation -> RestClient.getAPiMessenger().postMessageWithAttachments(
+                                null,
+                                conversation.getId(),
+                                "",
+                                UUID.randomUUID().toString(),
+                                null,
+                                imagesMap
+                        ).subscribeOn(RestSchedulerHelper.getScheduler())
+                );
         sendMessage(observable);
     }
 
@@ -443,7 +462,9 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Observable<Message> observable = mConversationSubject
                 .take(1)
                 .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
-                        conversation.getId(), comment, UUID.randomUUID().toString(), null));
+                        conversation.getId(), comment, UUID.randomUUID().toString(), null)
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                );
         sendMessage(observable);
     }
 
@@ -458,6 +479,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         mPostMessageSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     mSendMessageText.setEnabled(true);
                     mSendMessageProgress.setVisibility(View.INVISIBLE);
@@ -723,10 +745,13 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                                 .take(1)
                                 .flatMap(conversation -> RestClient.getAPiMessenger()
                                     .markMessagesAsRead(null, conversation.getId(),
-                                            TextUtils.join(",", postSet)));
+                                            TextUtils.join(",", postSet))
+                                    .subscribeOn(RestSchedulerHelper.getScheduler())
+                                );
 
                 mPostMessageSubscription = observablePost
                         .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
                         .subscribe(new Observer<Status.MarkMessagesAsRead>() {
                             @Override
                             public void onCompleted() {
@@ -797,14 +822,15 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
             return mConversationSubject
                     .take(1)
-                    .flatMap(conversation -> RestClient.getAPiMessenger().getMessages(null, conversation.getId(), null, sinceEntryId, limit, null));
+                    .flatMap(conversation -> RestClient.getAPiMessenger()
+                            .getMessages(conversation.getId(), null, null, sinceEntryId, limit, null)
+                            .subscribeOn(RestSchedulerHelper.getScheduler())
+                    );
         }
 
         public void refreshMessages() {
-            int requestEntries = Constants.CONVERSATION_FEED_INITIAL_LENGTH;
+            int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
             Observable<MessageList> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
-                    .observeOn(AndroidSchedulers.mainThread());
-
             refreshFeed(observableFeed, requestEntries);
         }
 
@@ -815,6 +841,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
             }
             mMessagesRefreshSubscription = observable
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .subscribe(new MessagesLoadObserver(true, entriesRequested));
         }
 
@@ -864,6 +891,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                     mLastAppendMessageId = lastEntryId;
                     mMessagesAppendSubscription = createObservable(lastEntryId, requestEntries)
                             .observeOn(AndroidSchedulers.mainThread())
+                            .subscribeOn(RestSchedulerHelper.getScheduler())
                             .subscribe(new MessagesLoadObserver(false, requestEntries));
                 }
             });

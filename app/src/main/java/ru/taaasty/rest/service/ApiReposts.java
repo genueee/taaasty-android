@@ -1,11 +1,11 @@
 package ru.taaasty.rest.service;
 
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Query;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Status;
 import rx.Observable;
@@ -24,7 +24,7 @@ public interface ApiReposts {
      * can_watch и отличаются can_report, rating-is_voteable. Лучше особо не использовать и запросить заново
      */
     @FormUrlEncoded
-    @POST("/reposts.json")
+    @POST("reposts.json")
     Observable<Entry> repost(
             @Field("tlog_id") long tlogId,
             @Field("entry_id") long entryId);
@@ -34,7 +34,7 @@ public interface ApiReposts {
      * @param tlogId tlog, откуда удалять
      * @param entryId запись
      */
-    @DELETE("/reposts.json")
+    @DELETE("reposts.json")
     Observable<Object> deletePost(
             @Query("tlog_id") long tlogId,
             @Query("entry_id") long entryId);
@@ -43,13 +43,13 @@ public interface ApiReposts {
      * Одобрить репост
      */
     @FormUrlEncoded
-    @PUT("/reposts/accept.json")
+    @PUT("reposts/accept.json")
     Observable<Object> acceptReport(
             @Field("tlog_id") long tlogId,
             @Field("entry_id") long entryId);
 
     @FormUrlEncoded
-    @PUT("/reposts/decline.json")
+    @PUT("reposts/decline.json")
     Observable<Status> declineReport(
             @Field("tlog_id") long tlogId,
             @Field("entry_id") long entryId);

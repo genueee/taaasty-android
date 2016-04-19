@@ -22,6 +22,7 @@ import ru.taaasty.adapters.FollowingRequestsAdapter;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.events.RelationshipRemoved;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.service.ApiRelationships;
@@ -147,6 +148,7 @@ public class RequestsFragment extends Fragment {
 
         mRelationshipsSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mRelationshipsObserver);
     }
 
@@ -161,6 +163,7 @@ public class RequestsFragment extends Fragment {
         mListView.setEnabled(false);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(mSetListEnabledAction0)
                 .subscribe(new RelationChangedObserver(relationship));
     }
@@ -172,6 +175,7 @@ public class RequestsFragment extends Fragment {
         mListView.setEnabled(false);
         observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(mSetListEnabledAction0)
                 .subscribe(new RelationChangedObserver(relationship));
     }

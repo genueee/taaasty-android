@@ -7,7 +7,7 @@ release.ApServerAddress="http://api.taaasty.com/v1"
 default.ApiServerAddress="http://brandydev.ru/api"
 default.ApiServerLogin="tasty"
 default.ApiServerPassword="tasty"
-default.RetrofitLogLevel=retrofit.RestAdapter.LogLevel.FULL
+default.OkhttpLogLevel=okhttp3.logging.HttpLoggingInterceptor.Level.BODY
 
 beta.StoreFile=../taaasty.keystore
 beta.StorePassword=fjrn9rm

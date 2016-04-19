@@ -27,6 +27,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.service.ApiEntries;
 import ru.taaasty.utils.MessageHelper;
@@ -63,7 +64,9 @@ public class PostActionActivity extends ActivityBase {
             showVkontakteShareDialog(mEntry);
         } else if(ACTION_ADD_TO_FAVORITES.equals(action)) {
             Observable<Object> observable = createAddToFavoritesObservable();
-            observable.observeOn(AndroidSchedulers.mainThread()).subscribe(mObserver);
+            observable.observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
+                    .subscribe(mObserver);
         }
     }
 

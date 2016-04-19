@@ -2,8 +2,8 @@ package ru.taaasty.rest.service;
 
 import java.util.Date;
 
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.http.GET;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.Feed;
 import rx.Observable;
 
@@ -11,7 +11,7 @@ import rx.Observable;
  * Created by alexey on 11.07.14.
  */
 public interface ApiFeeds {
-    @GET("/feeds/live.json")
+    @GET("feeds/live.json")
     Observable<Feed> getLiveFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit);
 
@@ -21,7 +21,7 @@ public interface ApiFeeds {
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
      */
-    @GET("/feeds/my.json")
+    @GET("feeds/my.json")
     Observable<Feed> getMyFeed(@Query("since_entry_id") Long sinceEntryId,
                    @Query("limit") Integer limit);
 
@@ -33,7 +33,7 @@ public interface ApiFeeds {
      * @param kind
      * @param rating
      */
-    @GET("/feeds/best.json")
+    @GET("feeds/best.json")
     Observable<Feed> getBestFeed(@Query("since_entry_id") Long sinceEntryId,
                      @Query("limit") Integer limit,
                      @Query("limit_hours") Integer limit_hours,
@@ -46,7 +46,7 @@ public interface ApiFeeds {
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
      */
-    @GET("/feeds/anonymous.json")
+    @GET("feeds/anonymous.json")
     Observable<Feed> getAnonymousFeed(@Query("since_entry_id") Long sinceEntryId,
                           @Query("limit") Integer limit);
 
@@ -55,7 +55,7 @@ public interface ApiFeeds {
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
      */
-    @GET("/feeds/friends.json")
+    @GET("feeds/friends.json")
     Observable<Feed> getFriendsFeed(@Query("since_entry_id") Long sinceEntryId,
                         @Query("limit") Integer limit);
 
@@ -64,7 +64,7 @@ public interface ApiFeeds {
      * @param sinceEntryId ID публикации старше которой отдавать ленту
      * @param limit Ограничение по количеству записей
      */
-    @GET("/feeds/search.json")
+    @GET("feeds/search.json")
     Observable<Feed> getFriendsFeed(
             @Query("query") String query,
             @Query("since_entry_id") Long sinceEntryId,

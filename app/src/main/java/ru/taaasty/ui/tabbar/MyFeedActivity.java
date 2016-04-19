@@ -24,6 +24,7 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
@@ -272,6 +273,7 @@ public class MyFeedActivity extends TabbarActivityBase implements MyFeedFragment
         Observable<Conversation> conversationObservable = RestClient.getAPiMessenger().createConversation(null, 3);
         mSupportConversationSubscription = conversationObservable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Conversation>() {
                     @Override
                     public void onCompleted() {

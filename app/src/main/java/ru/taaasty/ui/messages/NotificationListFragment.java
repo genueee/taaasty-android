@@ -48,6 +48,7 @@ import ru.taaasty.events.MarkAllAsReadRequestCompleted;
 import ru.taaasty.events.pusher.MessagingStatusReceived;
 import ru.taaasty.events.RelationshipChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.Relationship;
@@ -369,6 +370,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         Observable<Relationship> observable = relApi.follow(String.valueOf(notification.sender.getId()));
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new FollowerObserver(notification.id));
     }
 
@@ -378,6 +380,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
         Observable<Relationship> observable = relApi.unfollow(String.valueOf(notification.sender.getId()));
         mFollowSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new FollowerObserver(notification.id));
     }
 
@@ -652,7 +655,8 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 ApiMessenger api = RestClient.getAPiMessenger();
                 List<Observable<Notification>> observables = new ArrayList<>(ids.length);
                 for (int i = 0; i < ids.length; ++i) {
-                    observables.add(api.markNotificationAsRead(null, ids[i]));
+                    observables.add(api.markNotificationAsRead(null, ids[i])
+                        .subscribeOn(RestSchedulerHelper.getScheduler()));
                 }
 
                 final int entriesRequested = Constants.LIST_FEED_INITIAL_LENGTH;
@@ -668,13 +672,14 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 }).flatMap(new Func1<List<Notification>, Observable<NotificationList>>() {
                     @Override
                     public Observable<NotificationList> call(List<Notification> notifications) {
-                        return createObservable(null, entriesRequested);
+                        return createObservable(null, entriesRequested)
+                                .subscribeOn(RestSchedulerHelper.getScheduler());
                     }
                 });
 
                 mRefreshSubscription = observable
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
                         .finallyDo(mFinallySetupLoadingState)
                         .subscribe(new LoadObserver(true, entriesRequested));
             }
@@ -687,6 +692,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                 Observable<NotificationList> observable = createObservable(null, entriesRequested);
                 mRefreshSubscription = observable
                         .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
                         .finallyDo(mFinallySetupLoadingState)
                         .subscribe(new LoadObserver(true, entriesRequested));
             }
@@ -726,6 +732,7 @@ public class NotificationListFragment extends Fragment implements ServiceConnect
                         int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
                         mAppendSubscription = createObservable(lastEntry.id, requestEntries)
                                 .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeOn(RestSchedulerHelper.getScheduler())
                                 .finallyDo(mFinallySetupLoadingState)
                                 .subscribe(new LoadObserver(false, requestEntries));
                     }

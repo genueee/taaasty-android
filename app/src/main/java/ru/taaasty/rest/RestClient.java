@@ -2,15 +2,23 @@ package ru.taaasty.rest;
 
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.Log;
 
-import retrofit.ErrorHandler;
-import retrofit.RequestInterceptor;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.OkClient;
-import retrofit.converter.Converter;
-import retrofit.converter.GsonConverter;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Converter;
+import retrofit2.Retrofit;
+import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.Session;
@@ -35,12 +43,7 @@ import ru.taaasty.utils.NetworkUtils;
 public final class RestClient {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "NetworkUtils";
-
     private static volatile RestClient sInstance;
-
-    private RestAdapter mRestAdapter; // http://stackoverflow.com/a/21250503/2971719
-    private RestAdapter mRestAdapterV2;
-
     private volatile ApiApp mApiApp;
     private volatile ApiComments mApiComments;
     private volatile ApiDesignSettings mApiDesignSettings;
@@ -56,29 +59,58 @@ public final class RestClient {
     private volatile ApiUsers mApiUsers;
     private volatile ApiReposts mApiReposts;
 
+    private static final Retrofit.Builder retrofitBuilder =
+            new Retrofit.Builder()
+                    .baseUrl(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION+"/")
+                    .addConverterFactory(new ScalarRequestBodyConverterFactory())
+                    .addConverterFactory(GsonConverterFactory.create(NetworkUtils.getGson()))
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
+
+    private static final Retrofit.Builder retrofitBuilderV2 =
+            new Retrofit.Builder()
+                    .baseUrl(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION_V2+"/")
+                    .addConverterFactory(new ScalarRequestBodyConverterFactory())
+                    .addConverterFactory(GsonConverterFactory.create(NetworkUtils.getGson()))
+                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create());
+
+    public static Retrofit getRetrofit(){
+        return retrofitBuilder
+                .client(getHttpClient())
+                .build();
+    }
+    public static Retrofit getRetrofitV2(){
+        return retrofitBuilderV2
+                .client(getHttpClient())
+                .build();
+    }
+    private  static <S> S createService(Class<S> serviceClass) {
+        return getRetrofit().create(serviceClass);
+    }
+
+    private  static <S> S createServiceV2(Class<S> serviceClass) {
+        return getRetrofitV2().create(serviceClass);
+    }
+
+    private static OkHttpClient getHttpClient() {
+        OkHttpClient template = NetworkUtils.getInstance().getOkHttpClient();
+        if (template == null) { // Возможно, если по какой-то причине вызвались раньше onAppInit()
+            template = new OkHttpClient();
+        }
+
+        OkHttpClient.Builder builder = template
+                .newBuilder()
+                .addInterceptor(new AddHeadersRequestInterceptor())
+                .addInterceptor(new ErrorInterceptor());
+        if (BuildConfig.OKHTTP_LOG_LEVEL != HttpLoggingInterceptor.Level.NONE) {
+            HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor()
+                    .setLevel(BuildConfig.OKHTTP_LOG_LEVEL);
+            builder.addNetworkInterceptor(loggingInterceptor);
+        }
+        if (DBG) BuildConfig.STETHO.configureInterceptor(builder);
+        return builder.build();
+    }
+
     private RestClient() {
-        Converter gsonConverter = new GsonConverter(NetworkUtils.getGson());
-        AddHeadersRequestInterceptor requestInterceptor = new AddHeadersRequestInterceptor();
-        ErrorHandler errorHandler = new ResponseErrorExceptionErrorHandler();
-        OkClient okClient = new OkClient(NetworkUtils.getInstance().getOkHttpClient());
-
-        mRestAdapter = new RestAdapter.Builder()
-                .setLogLevel(BuildConfig.RETROFIT_LOG_LEVEL)
-                .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION)
-                .setConverter(gsonConverter)
-                .setRequestInterceptor(requestInterceptor)
-                .setErrorHandler(errorHandler)
-                .setClient(okClient)
-                .build();
-
-        mRestAdapterV2 = new RestAdapter.Builder()
-                .setLogLevel(BuildConfig.RETROFIT_LOG_LEVEL)
-                .setEndpoint(BuildConfig.API_SERVER_ADDRESS + "/" + Constants.API_VERSION_V2)
-                .setConverter(gsonConverter)
-                .setRequestInterceptor(requestInterceptor)
-                .setErrorHandler(errorHandler)
-                .setClient(okClient)
-                .build();
     }
 
     public static RestClient getInstance() {
@@ -95,7 +127,7 @@ public final class RestClient {
         if (instance.mApiApp == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiApp == null) {
-                    instance.mApiApp = instance.mRestAdapter.create(ApiApp.class);
+                    instance.mApiApp = createService(ApiApp.class);
                 }
             }
         }
@@ -107,7 +139,7 @@ public final class RestClient {
         if (instance.mApiComments == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiComments == null) {
-                    instance.mApiComments = instance.mRestAdapter.create(ApiComments.class);
+                    instance.mApiComments = createService(ApiComments.class);
                 }
             }
         }
@@ -119,7 +151,7 @@ public final class RestClient {
         if (instance.mApiDesignSettings == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiDesignSettings == null) {
-                    instance.mApiDesignSettings = instance.mRestAdapter.create(ApiDesignSettings.class);
+                    instance.mApiDesignSettings = createService(ApiDesignSettings.class);
                 }
             }
         }
@@ -131,7 +163,7 @@ public final class RestClient {
         if (instance.mApiDevice == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiDevice == null) {
-                    instance.mApiDevice = instance.mRestAdapter.create(ApiDevice.class);
+                    instance.mApiDevice = createService(ApiDevice.class);
                 }
             }
         }
@@ -143,7 +175,7 @@ public final class RestClient {
         if (instance.mApiEntries == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiEntries == null) {
-                    instance.mApiEntries = instance.mRestAdapter.create(ApiEntries.class);
+                    instance.mApiEntries = createService(ApiEntries.class);
                 }
             }
         }
@@ -155,7 +187,7 @@ public final class RestClient {
         if (instance.mApiReposts == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiReposts == null) {
-                    instance.mApiReposts = instance.mRestAdapter.create(ApiReposts.class);
+                    instance.mApiReposts = createService(ApiReposts.class);
                 }
             }
         }
@@ -168,7 +200,7 @@ public final class RestClient {
         if (instance.mApiFeeds == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiFeeds == null) {
-                    instance.mApiFeeds = instance.mRestAdapter.create(ApiFeeds.class);
+                    instance.mApiFeeds = createService(ApiFeeds.class);
                 }
             }
         }
@@ -180,7 +212,7 @@ public final class RestClient {
         if (instance.mApiFlows == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiFlows == null) {
-                    instance.mApiFlows = instance.mRestAdapter.create(ApiFlows.class);
+                    instance.mApiFlows = createService(ApiFlows.class);
                 }
             }
         }
@@ -192,7 +224,7 @@ public final class RestClient {
         if (instance.mApiMessenger == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiMessenger == null) {
-                    instance.mApiMessenger = instance.mRestAdapterV2.create(ApiMessenger.class);
+                    instance.mApiMessenger = createServiceV2(ApiMessenger.class);
                 }
             }
         }
@@ -204,7 +236,7 @@ public final class RestClient {
         if (instance.mApiMyFeeds == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiMyFeeds == null) {
-                    instance.mApiMyFeeds = instance.mRestAdapter.create(ApiMyFeeds.class);
+                    instance.mApiMyFeeds = createService(ApiMyFeeds.class);
                 }
             }
         }
@@ -216,7 +248,7 @@ public final class RestClient {
         if (instance.mApiRelationships == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiRelationships == null) {
-                    instance.mApiRelationships = instance.mRestAdapter.create(ApiRelationships.class);
+                    instance.mApiRelationships = createService(ApiRelationships.class);
                 }
             }
         }
@@ -228,7 +260,7 @@ public final class RestClient {
         if (instance.mApiSessions == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiSessions == null) {
-                    instance.mApiSessions = instance.mRestAdapter.create(ApiSessions.class);
+                    instance.mApiSessions = createService(ApiSessions.class);
                 }
             }
         }
@@ -240,7 +272,7 @@ public final class RestClient {
         if (instance.mApiTlog == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiTlog == null) {
-                    instance.mApiTlog = instance.mRestAdapter.create(ApiTlog.class);
+                    instance.mApiTlog = createService(ApiTlog.class);
                 }
             }
         }
@@ -252,22 +284,20 @@ public final class RestClient {
         if (instance.mApiUsers == null) {
             synchronized (RestClient.class) {
                 if (instance.mApiUsers == null) {
-                    instance.mApiUsers = instance.mRestAdapter.create(ApiUsers.class);
+                    instance.mApiUsers = createService(ApiUsers.class);
                 }
             }
         }
         return instance.mApiUsers;
     }
 
-    private static class AddHeadersRequestInterceptor implements RequestInterceptor {
+    private static class AddHeadersRequestInterceptor implements Interceptor {
 
-        private final Session mSession;
         private final String mBasicAuth;
 
         private static final String VERSION_NAME = BuildConfig.VERSION_NAME.replace('–', '-');
 
         AddHeadersRequestInterceptor(){
-            mSession = Session.getInstance();
             if (!TextUtils.isEmpty(BuildConfig.API_SERVER_LOGIN) && !TextUtils.isEmpty(BuildConfig.API_SERVER_PASSWORD)) {
                 final String credentials = BuildConfig.API_SERVER_LOGIN + ":" + BuildConfig.API_SERVER_PASSWORD;
                 mBasicAuth = "Basic " + Base64.encodeToString(credentials.getBytes(), Base64.NO_WRAP);
@@ -276,31 +306,96 @@ public final class RestClient {
             }
         }
 
+
         @Override
-        public void intercept(RequestFacade request) {
-            request.addHeader(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE);
-            request.addHeader(Constants.HEADER_X_TASTY_CLIENT_VERSION, VERSION_NAME);
-            String token = mSession.getCurrentUserToken();
+        public Response intercept(Chain chain) throws IOException {
+            Request original = chain.request();
+            Request.Builder requestBuilder = original.newBuilder()
+                    .header(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE)
+                    .header(Constants.HEADER_X_TASTY_CLIENT_VERSION, VERSION_NAME);
+            String token = Session.getInstance().getCurrentUserToken();
             if (token != null) {
-                request.addHeader(Constants.HEADER_X_USER_TOKEN, token);
+                requestBuilder.header(Constants.HEADER_X_USER_TOKEN, token);
             }
             if (mBasicAuth != null) {
-                request.addHeader("Authorization", mBasicAuth);
+                requestBuilder.header("Authorization", mBasicAuth);
             }
+
+            Request request = requestBuilder.build();
+            return chain.proceed(request);
         }
     }
 
-    private static class ResponseErrorExceptionErrorHandler implements ErrorHandler {
+    private static class ErrorInterceptor implements Interceptor {
+        private static ResponseError parseError(Response response) throws IOException {
+            Converter<ResponseBody, ResponseError> converter =
+                    getRetrofit().responseBodyConverter(ResponseError.class, new Annotation[0]);
+            return converter.convert(response.body());
+        }
+
         @Override
-        public Throwable handleError(RetrofitError cause) {
-            ResponseError responseError = null;
+        public Response intercept(Interceptor.Chain chain) throws IOException {
+            Response response;
             try {
-                responseError = (ResponseError) cause.getBodyAs(ResponseError.class);
-            } catch (Throwable ignore) {
-                if (DBG) Log.v(TAG, "ignore exception", ignore);
+                response = chain.proceed(chain.request());
+            } catch (Throwable e) {
+                throw new ApiErrorException(e);
             }
 
-            return new ApiErrorException(cause, responseError);
+            int code = response.code();
+            ResponseError parsedResponseError;
+            if (code >= 400) {
+                try {
+                    parsedResponseError = parseError(response);
+                } catch (Exception e) {
+                    throw new ApiErrorException(e);
+                }
+                throw new ApiErrorException("HTTP error", parsedResponseError);
+            }
+            return response;
+        }
+    }
+
+    /**
+     * Контент Multipart-запросов сервер принимает в binary, а не в JSON, не сериализуем его.
+     */
+    private static class ScalarRequestBodyConverterFactory extends Converter.Factory {
+
+        @Override
+        public Converter<?, RequestBody> requestBodyConverter(Type type, Annotation[] parameterAnnotations, Annotation[] methodAnnotations, Retrofit retrofit) {
+            if (type == String.class
+                    || type == boolean.class
+                    || type == Boolean.class
+                    || type == byte.class
+                    || type == Byte.class
+                    || type == char.class
+                    || type == Character.class
+                    || type == double.class
+                    || type == Double.class
+                    || type == float.class
+                    || type == Float.class
+                    || type == int.class
+                    || type == Integer.class
+                    || type == long.class
+                    || type == Long.class
+                    || type == short.class
+                    || type == Short.class) {
+                return ScalarRequestBodyConverter.INSTANCE;
+            }
+            return null;
+        }
+
+        private static class ScalarRequestBodyConverter<T> implements Converter<T, RequestBody> {
+            static final ScalarRequestBodyConverter<Object> INSTANCE = new ScalarRequestBodyConverter<>();
+            private static final MediaType MEDIA_TYPE = MediaType.parse("text/plain; charset=UTF-8");
+
+            private ScalarRequestBodyConverter() {
+            }
+
+            @Override
+            public RequestBody convert(T value) throws IOException {
+                return RequestBody.create(MEDIA_TYPE, String.valueOf(value));
+            }
         }
     }
 }

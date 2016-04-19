@@ -23,6 +23,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
@@ -173,6 +174,7 @@ public class StatusBarConversationNotification {
 
         rx.Observable<List<Conversation>> observable = RestClient.getAPiMessenger().getConversations(null)
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     // XXX: должно быть в PusherService
                     GcmBroadcastReceiver.completeWakefulIntent(intent);

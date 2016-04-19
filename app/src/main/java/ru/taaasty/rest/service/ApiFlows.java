@@ -1,17 +1,16 @@
 package ru.taaasty.rest.service;
 
-
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.Multipart;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Part;
-import retrofit.http.Path;
-import retrofit.http.Query;
-import retrofit.mime.TypedOutput;
+import okhttp3.MultipartBody;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.Multipart;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Part;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.FlowList;
 import ru.taaasty.rest.model.FlowStaff;
@@ -28,7 +27,7 @@ public interface ApiFlows {
      * @param limit Лимит
      * @return Список всех потоков
      */
-    @GET("/flows.json")
+    @GET("flows.json")
     Observable<FlowList> getFlows(@Query("page") int page,
                                          @Query("limit") int limit);
 
@@ -41,11 +40,11 @@ public interface ApiFlows {
      * @return
      */
     @Multipart
-    @POST("/flows.json")
-    Flow createFlowSync(
+    @POST("flows.json")
+    Observable<Flow> createFlowSync(
             @Part("name") String name,
             @Part("title") String title,
-            @Part("flowpic") TypedOutput flowpic,
+            @Part MultipartBody.Part flowpic,//("flowpic")
             @Part("staff_ids") int[] staffIds
             );
 
@@ -56,7 +55,7 @@ public interface ApiFlows {
      * @param exposeStaffs Передавать дополнительно staffs
      * @return Список всех потоков
      */
-    @GET("/flows/my.json")
+    @GET("flows/my.json")
     Observable<FlowList> getMyFlows(@Query("page") int page,
                                   @Query("limit") int limit,
                                   @Query("expose_staffs") Boolean exposeStaffs
@@ -65,7 +64,7 @@ public interface ApiFlows {
     /**
      * Данные о потоке
      */
-    @GET("/flows/{id}.json")
+    @GET("flows/{id}.json")
     Observable<Flow> getFlow(@Path("id") long id);
 
     /**
@@ -80,13 +79,13 @@ public interface ApiFlows {
      * @return
      */
     @Multipart
-    @PUT("/flows/{id}.json")
-    Flow updateFlowSync(
+    @PUT("flows/{id}.json")
+    Observable<Flow> updateFlowSync(
             @Path("id") long id,
             @Part("name") String name,
             @Part("title") String title,
             @Part("slug") String slug,
-            @Part("flowpic") TypedOutput flowpic,
+            @Part MultipartBody.Part flowpic,//("flowpic")
             @Part("is_privacy") Boolean isPrivacy,
             @Part("is_premoderate") Boolean isPremoderate
     );
@@ -95,7 +94,7 @@ public interface ApiFlows {
      * Добавление модератора в поток
      */
     @FormUrlEncoded
-    @POST("/flows/{id}/staffs.json")
+    @POST("flows/{id}/staffs.json")
     Observable<Flow> addModerator(@Path("id") long flowId, @Field("user_id") long userId);
 
     /**
@@ -106,7 +105,7 @@ public interface ApiFlows {
      * @return
      */
     @FormUrlEncoded
-    @PUT("/flows/{id}/staffs.json")
+    @PUT("flows/{id}/staffs.json")
     Observable<Flow> changeModerator(@Path("id") long flowId,
                           @Field("user_id") long userId,
                           @Field("role") @FlowStaff.Role String role);
@@ -115,12 +114,12 @@ public interface ApiFlows {
      * Удаление модератора из потока
      */
     @FormUrlEncoded
-    @DELETE("/flows/{id}/staffs.json")
+    @DELETE("flows/{id}/staffs.json")
     Observable<Flow> removeModerator(@Path("id") long flowId, @Field("user_id") long userId);
 
     /**
      * Получить доступные потоки для поста/репоста
      */
-    @GET("/flows/available.json")
+    @GET("flows/available.json")
     Observable<FlowList> getAvailableFlows(@Query("page") int page, @Query("limit") int limit, @Query("expose_staffs") boolean exposeStaffs);
 }

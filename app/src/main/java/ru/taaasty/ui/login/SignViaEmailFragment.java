@@ -28,6 +28,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.rest.ApiErrorException;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.utils.ImeUtils;
@@ -210,6 +211,7 @@ public class SignViaEmailFragment extends Fragment {
             mAuthTask = service.signIn(email, password);
             mAuthTask
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .finallyDo(() -> {
                         if (DBG) Log.v(TAG, "finallyDo()");
                         mAuthTask = null;

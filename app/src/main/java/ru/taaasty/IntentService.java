@@ -15,12 +15,9 @@ import android.support.v4.app.RemoteInput;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Util;
 import com.squareup.picasso.Picasso;
 
 import java.io.BufferedOutputStream;
@@ -39,6 +36,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.greenrobot.event.EventBus;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.internal.Util;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.events.FlowChanged;
@@ -50,8 +52,8 @@ import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.events.pusher.NotificationMarkedAsRead;
 import ru.taaasty.events.pusher.NotificationReceived;
 import ru.taaasty.rest.ApiErrorException;
-import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.UriRequestBody;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Flow;
 import ru.taaasty.rest.model.MarkNotificationsAsReadResponse;
@@ -74,6 +76,7 @@ import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.utils.AnalyticsHelper;
 import ru.taaasty.utils.ImageUtils;
 import ru.taaasty.utils.NetworkUtils;
+import rx.Observable;
 
 /**
  * An {@link android.app.IntentService} subclass for handling asynchronous task requests in
@@ -295,132 +298,202 @@ public class IntentService extends android.app.IntentService {
      * parameters.
      */
     private void handlePostEntry(PostForm.PostFormHtml form) {
-        EntryUploadStatus status;
-        Entry response = null;
+        Observable<Entry> createEntryObservable;
 
-        try {
-            if (form instanceof PostAnonymousTextForm.AsHtml) {
-                PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml) form;
-                response = mApiEntriesService.createAnonymousPostSync(
-                        postText.title, postText.text);
-            } else if (form instanceof PostTextForm.AsHtml) {
-                PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
-                response = mApiEntriesService.createTextPostSync(
-                        postText.title, postText.text, postText.privacy, postText.tlogId);
-            } else if (form instanceof PostQuoteForm.AsHtml) {
-                PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
-                response = mApiEntriesService.createQuoteEntrySync(
-                        postQuote.text, postQuote.source, postQuote.privacy, postQuote.tlogId);
-            } else if (form instanceof PostImageForm.AsHtml) {
-                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
-                response = mApiEntriesService.createImagePostSync(
-                        postImage.title,
-                        postImage.privacy,
-                        postImage.tlogId,
-                        postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
-                );
-            } else if (form instanceof PostEmbeddForm.AsHtml) {
-                PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml)form;
-                response = mApiEntriesService.createVideoPostSync(postForm.title, postForm.url, postForm.privacy, postForm.tlogId);
-            } else {
-                throw new IllegalStateException();
-            }
-            status = EntryUploadStatus.createPostCompleted(form);
-        } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form, ex, R.string.error_create_post);
+        if (form instanceof PostAnonymousTextForm.AsHtml) {
+            PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml) form;
+            createEntryObservable = mApiEntriesService.createAnonymousPostSync(
+                    postText.title,
+                    postText.text
+            );
+        } else if (form instanceof PostTextForm.AsHtml) {
+            PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
+            createEntryObservable = mApiEntriesService.createTextPostSync(
+                    postText.title,
+                    postText.text,
+                    postText.privacy,
+                    postText.tlogId
+            );
+        } else if (form instanceof PostQuoteForm.AsHtml) {
+            PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml) form;
+            createEntryObservable = mApiEntriesService.createQuoteEntrySync(
+                    postQuote.text,
+                    postQuote.source,
+                    postQuote.privacy,
+                    postQuote.tlogId
+            );
+        } else if (form instanceof PostImageForm.AsHtml) {
+            PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
+            createEntryObservable = mApiEntriesService.createImagePostSync(
+                    postImage.title,
+                    postImage.privacy,
+                    postImage.tlogId,
+                    postImage.imageUri == null ? null : getMultipartBodyPartFromUri(postImage.imageUri,null, "file")
+            );
+        } else if (form instanceof PostEmbeddForm.AsHtml) {
+            PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml) form;
+            createEntryObservable = mApiEntriesService.createVideoPostSync(
+                    postForm.title,
+                    postForm.url,
+                    postForm.privacy,
+                    postForm.tlogId
+            );
+        } else {
+            throw new IllegalStateException();
         }
-
-        if (DBG) Log.v(TAG, "status: " + status);
-        EventBus.getDefault().post(status);
-        if (response != null) EventBus.getDefault().post(new EntryChanged(response));
+        createEntryObservable.subscribe(
+                createdEntity -> {
+                    EntryUploadStatus entryUploadStatus = EntryUploadStatus.createPostCompleted(form);
+                    EventBus.getDefault().post(new EntryChanged(createdEntity));
+                    EventBus.getDefault().post(entryUploadStatus);
+                    if (DBG) Log.v(TAG, "status: " + entryUploadStatus);
+                },
+                error -> {
+                    EntryUploadStatus entryUploadStatus = EntryUploadStatus.createPostFinishedWithError(form, error, R.string.error_create_post);
+                    EventBus.getDefault().post(entryUploadStatus);
+                    if (DBG) Log.v(TAG, "status: " + entryUploadStatus);
+                }
+        );
     }
 
     private void handleEditEntry(long entryId, PostForm.PostFormHtml form) {
-        EntryUploadStatus status;
-        Entry response = null;
+        Observable<Entry> editEntryObservable;
 
-        try {
-            if (form instanceof PostAnonymousTextForm.AsHtml) {
-                PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml)form;
-                response = mApiEntriesService.updateAnonymousPostSync(String.valueOf(entryId),
-                        postText.title,
-                        postText.text);
-            } else if (form instanceof PostTextForm.AsHtml) {
-                PostTextForm.AsHtml postText = (PostTextForm.AsHtml)form;
-                response = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
-                        postText.title,
-                        postText.text,
-                        postText.privacy, null);
-            } else if (form instanceof PostQuoteForm.AsHtml) {
-                PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml)form;
-                response = mApiEntriesService.updateQuoteEntrySync(String.valueOf(entryId),
-                        postQuote.text,
-                        postQuote.source,
-                        postQuote.privacy, postQuote.tlogId);
-            } else if (form instanceof PostImageForm.AsHtml) {
-                PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
-                response = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
-                        postImage.title,
-                        postImage.privacy,
-                        postImage.tlogId,
-                        postImage.imageUri == null ? null : new ContentTypedOutput(this, postImage.imageUri, null)
-                );
-            } else if (form instanceof PostEmbeddForm.AsHtml) {
-                PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml) form;
-                response = mApiEntriesService.updateVideoPostSync(String.valueOf(entryId),
-                        postForm.title, postForm.url, postForm.privacy, postForm.tlogId);
-            } else {
-                throw new IllegalStateException();
-            }
-            status = EntryUploadStatus.createPostCompleted(form);
-        } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form, ex,  R.string.error_saving_post);
+        if (form instanceof PostAnonymousTextForm.AsHtml) {
+            PostAnonymousTextForm.AsHtml postText = (PostAnonymousTextForm.AsHtml) form;
+            editEntryObservable = mApiEntriesService.updateAnonymousPostSync(
+                    String.valueOf(entryId),
+                    postText.title,
+                    postText.text
+            );
+        } else if (form instanceof PostTextForm.AsHtml) {
+            PostTextForm.AsHtml postText = (PostTextForm.AsHtml) form;
+            editEntryObservable = mApiEntriesService.updateTextPostSync(String.valueOf(entryId),
+                    postText.title,
+                    postText.text,
+                    postText.privacy, null
+            );
+        } else if (form instanceof PostQuoteForm.AsHtml) {
+            PostQuoteForm.AsHtml postQuote = (PostQuoteForm.AsHtml) form;
+            editEntryObservable = mApiEntriesService.updateQuoteEntrySync(String.valueOf(entryId),
+                    postQuote.text,
+                    postQuote.source,
+                    postQuote.privacy, postQuote.tlogId
+            );
+        } else if (form instanceof PostImageForm.AsHtml) {
+            PostImageForm.AsHtml postImage = (PostImageForm.AsHtml) form;
+            editEntryObservable = mApiEntriesService.updateImagePostSync(String.valueOf(entryId),
+                    postImage.title,
+                    postImage.privacy,
+                    postImage.tlogId,
+                    postImage.imageUri == null ? null : getMultipartBodyPartFromUri(postImage.imageUri,null, "file")
+            );
+        } else if (form instanceof PostEmbeddForm.AsHtml) {
+            PostEmbeddForm.AsHtml postForm = (PostEmbeddForm.AsHtml) form;
+            editEntryObservable = mApiEntriesService.updateVideoPostSync(
+                    String.valueOf(entryId),
+                    postForm.title, postForm.url,
+                    postForm.privacy,
+                    postForm.tlogId
+            );
+        } else {
+            throw new IllegalStateException();
         }
 
-        if (DBG) Log.v(TAG, "status: " + status);
-        EventBus.getDefault().post(status);
-        if (response != null) EventBus.getDefault().post(new EntryChanged(response));
+        editEntryObservable.subscribe(
+                entry -> {
+                    EntryUploadStatus status = EntryUploadStatus.createPostCompleted(form);
+                    EventBus.getDefault().post(new EntryChanged(entry));
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                },
+                error ->{
+                    EntryUploadStatus status = EntryUploadStatus.createPostFinishedWithError(form, error, R.string.error_saving_post);
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                }
+        );
     }
 
     private void handlePostFlow(PostFlowForm.AsHtml form) {
-        FlowUploadStatus status;
-        Flow response = null;
+        Observable<Flow> createFlowObservable = RestClient.getAPiFlows().createFlowSync(
+                form.title,
+                form.description,
+                getMultipartBodyPartFromUri(form.imageUri, null,"flowpic"),
+                null);
 
-        try {
-            response = RestClient.getAPiFlows().createFlowSync(
-                    form.title,
-                    form.description,
-                    new ContentTypedOutput(this, form.imageUri, null),
-                    null);
-            status = FlowUploadStatus.createCompleted(form, response);
-        } catch (Throwable ex) {
-            status = FlowUploadStatus.createFinishedWithError(form, ex, R.string.error_saving_flow);
+        createFlowObservable.subscribe(
+                flow -> {
+                    FlowUploadStatus status = FlowUploadStatus.createCompleted(form, flow);
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                    EventBus.getDefault().post(new FlowChanged(flow));
+                },
+                error -> {
+                    FlowUploadStatus status = FlowUploadStatus.createFinishedWithError(form, error, R.string.error_saving_flow);
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                }
+        );
+    }
+    public String mimeType( Uri uri, String contentType) {
+        String type;
+        if (contentType != null) {
+            return contentType;
+        } else {
+            type = getBaseContext().getContentResolver().getType(uri);
+            if (type == null) {
+                MimeTypeMap map = MimeTypeMap.getSingleton();
+                String ext = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+                if (!TextUtils.isEmpty(ext)) {
+                    type = map.getMimeTypeFromExtension(ext);
+                }
+
+                if (type == null) type = "image/jpeg";
+                if (DBG) Log.v(TAG, "ext: " + ext + " mime type: " + type);
+            }
         }
 
-        if (DBG) Log.v(TAG, "status: " + status);
-        EventBus.getDefault().post(status);
-        if (response != null) EventBus.getDefault().post(new FlowChanged(response));
+        return type;
+    }
+
+
+
+    private MultipartBody.Part getMultipartBodyPartFromUri(Uri uri,String contentType,String partName){
+
+        String filename = uri.getLastPathSegment();
+        if (!filename.matches(".+\\..{2,6}$")) {
+            String ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+            if (ext == null) ext = "jpg";
+            filename = filename + "." + ext;
+        }
+
+        UriRequestBody uriRequestBody = new UriRequestBody(getBaseContext(), uri);
+        return MultipartBody.Part.createFormData(partName, filename, uriRequestBody);
     }
 
     private void handleEditFlow(long flowId, PostFlowForm.AsHtml form) {
-        EntryUploadStatus status;
-        Flow response = null;
-        try {
-            status = EntryUploadStatus.createPostCompleted(form);
-            response = RestClient.getAPiFlows().updateFlowSync(flowId,
-                    form.title,
-                    form.description,
-                    null,
-                    (form.imageUri == null ? null : new ContentTypedOutput(this, form.imageUri, null)),
-                    null,
-                    null);
-        } catch (Throwable ex) {
-            status = EntryUploadStatus.createPostFinishedWithError(form, ex, R.string.error_saving_flow);
-        }
+        Observable<Flow> updateFlowObservable = RestClient.getAPiFlows().updateFlowSync(flowId,
+                form.title,
+                form.description,
+                null,
+                (form.imageUri == null ? null : getMultipartBodyPartFromUri(form.imageUri,null, "flowpic")),
+                null,
+                null);
 
-        if (DBG) Log.v(TAG, "status: " + status);
-        EventBus.getDefault().post(status);
-        if (response != null) EventBus.getDefault().post(new FlowChanged(response));
+        updateFlowObservable.subscribe(
+                flow -> {
+                    EntryUploadStatus status = EntryUploadStatus.createPostCompleted(form);
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                    EventBus.getDefault().post(new FlowChanged(flow));
+                },
+                error -> {
+                    EntryUploadStatus status = EntryUploadStatus.createPostFinishedWithError(form, error, R.string.error_saving_flow);
+                    if (DBG) Log.v(TAG, "status: " + status);
+                    EventBus.getDefault().post(status);
+                }
+        );
     }
 
     private void handleVoiceReplyToConversation(long conversationId, long messageIds[], CharSequence replyContent) {
@@ -438,14 +511,14 @@ public class IntentService extends android.app.IntentService {
                     ArrayList<Long> idsArray = new ArrayList<>(messageIds.length);
                     for (long id: messageIds) idsArray.add(id);
                     String ids = TextUtils.join(",", idsArray);
-                    api.markMessagesAsReadSync(null, conversationId, ids);
+                    api.markMessagesAsReadSync(null, conversationId, ids).execute();
                 } catch (ApiErrorException ignore) {
                     if (DBG) Log.v(TAG, "markMessagesAsReadSync() error");
                 }
             }
             Message message = api.postMessageSync(null, conversationId, replyContent.toString(),
-                    UUID.randomUUID().toString(), null);
-            conversation = api.getConversationSync(conversationId);
+                    UUID.randomUUID().toString(), null).execute().body();
+            conversation = api.getConversationSync(conversationId).execute().body();
             EventBus.getDefault().post(new MessageChanged(conversation, message));
         } catch (ApiErrorException ree) {
             if (DBG) Log.i(TAG, "handleVoiceReplyToConversation() error", ree);
@@ -455,31 +528,39 @@ public class IntentService extends android.app.IntentService {
     }
 
     private void handleUploadUserpic(long userId, Uri imageUri) {
-        UserpicUploadStatus status;
-        try {
-            Userpic response = mApiUsersService.uploadUserpicSync(new ContentTypedOutput(this, imageUri, null));
-            status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, response);
-            if (DBG) Log.v(TAG, "userpic response: " + response);
-        } catch (Exception ex) {
-            status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri,
-                    R.string.error_upload_userpic, ex);
-        }
-        EventBus.getDefault().post(status);
+            Observable<Userpic> uploadUserpicObservable = mApiUsersService.uploadUserpicSync(getMultipartBodyPartFromUri(imageUri,null, "file"));
+            uploadUserpicObservable.subscribe(
+                    userPic->{
+                        UserpicUploadStatus status = UserpicUploadStatus.createUploadCompleted(userId, imageUri, userPic);
+                        if (DBG) Log.v(TAG, "userpic response: " + userPic);
+                        EventBus.getDefault().post(status);
+                    },
+                    error->{
+                        UserpicUploadStatus status = UserpicUploadStatus.createUploadFinishedWithError(userId, imageUri,
+                                R.string.error_upload_userpic, error);
+                        EventBus.getDefault().post(status);
+                    }
+            );
     }
 
     public void handleUploadUserBackground(long userId, Uri imageUri) {
-        TlogBackgroundUploadStatus status;
-        try {
-            TlogDesign response = mApiDesignService.uploadBackgroundSync(
-                    String.valueOf(Session.getInstance().getCurrentUserId()),
-                    new ContentTypedOutput(this, imageUri, null));
-            status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, response);
-            if (DBG) Log.v(TAG, "userpic response: " + response);
-        } catch (Exception ex) {
-            status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri,
-                    R.string.error_upload_userpic, ex);
-        }
-        EventBus.getDefault().post(status);
+        //todo remove sync
+        Observable<TlogDesign> uploadBackObservable = mApiDesignService.uploadBackgroundSync(
+                String.valueOf(Session.getInstance().getCurrentUserId()),
+                getMultipartBodyPartFromUri(imageUri,null, "file"));
+        uploadBackObservable.subscribe(
+                tlogDesign -> {
+                    TlogBackgroundUploadStatus status = TlogBackgroundUploadStatus.createUploadCompleted(userId, imageUri, tlogDesign);
+                    EventBus.getDefault().post(status);
+                    if (DBG) Log.v(TAG, "userpic response: " + tlogDesign);
+                },
+                error -> {
+                    TlogBackgroundUploadStatus status = TlogBackgroundUploadStatus.createUploadFinishedWithError(userId, imageUri,
+                            R.string.error_upload_userpic, error);
+                    EventBus.getDefault().post(status);
+                }
+        );
+
     }
 
     void handleDownloadImages(List<String> urlList) {
@@ -552,7 +633,7 @@ public class IntentService extends android.app.IntentService {
         ApiMessenger api = RestClient.getAPiMessenger();
         for (long notificationId: notificationIds) {
             try {
-                Notification notification = api.markNotificationAsReadSync(null, notificationId);
+                Notification notification = api.markNotificationAsReadSync(null, notificationId).execute().body();
                 EventBus.getDefault().post(new NotificationReceived(notification));
                 StatusBarNotifications.getInstance().onNewNotificationIdSeen(notificationId); // На всякий случай, иначе может и не дойти
             } catch (Throwable e) {
@@ -565,7 +646,7 @@ public class IntentService extends android.app.IntentService {
         ApiMessenger api = RestClient.getAPiMessenger();
         EventBus eventBus = EventBus.getDefault();
         try {
-            List<MarkNotificationsAsReadResponse> response = api.markAllNotificationsAsRead(null, null);
+            List<MarkNotificationsAsReadResponse> response = api.markAllNotificationsAsRead(null, null).execute().body();
             eventBus.post(new NotificationMarkedAsRead(response));
             eventBus.post(new MarkAllAsReadRequestCompleted(null));
 

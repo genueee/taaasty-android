@@ -5,16 +5,15 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.text.TextUtils;
 
-import java.net.SocketTimeoutException;
+import java.io.IOException;
 
-import retrofit.RetrofitError;
 import ru.taaasty.R;
 import ru.taaasty.rest.model.ResponseError;
 
 /**
  * Ошибка от API
  */
-public class ApiErrorException extends RuntimeException {
+public class ApiErrorException extends IOException {
 
     /**
      * Объект ошибки с сервера.
@@ -24,13 +23,18 @@ public class ApiErrorException extends RuntimeException {
     @Nullable
     public final ResponseError error;
 
-    public ApiErrorException(Throwable throwable, @Nullable ResponseError error) {
-        super(throwable);
+    public ApiErrorException(String detailMessage,@Nullable ResponseError error) {
+        super(detailMessage);
         this.error = error;
     }
+    public ApiErrorException(String detailMessage,@Nullable Throwable throwable) {
+        super(detailMessage,throwable);
+        error = null;
+    }
 
-    public RetrofitError getRetrofitError() {
-        return (RetrofitError) getCause();
+    public ApiErrorException(Throwable throwable) {
+        super(throwable);
+        error = null;
     }
 
     /**
@@ -72,13 +76,6 @@ public class ApiErrorException extends RuntimeException {
                 return "Invalid email or password";
             }
         }
-
-        if (getRetrofitError().getKind() == RetrofitError.Kind.NETWORK) {
-            if (getRetrofitError().getCause() instanceof SocketTimeoutException) {
-                return resources == null ? "timeout" : resources.getString(R.string.error_socket_timeout);
-            }
-        }
-
         return fallbackText;
     }
 
@@ -86,9 +83,10 @@ public class ApiErrorException extends RuntimeException {
      * @return HTTP status code. -1 при ошибке до уровня HTTP (код не был получен)
      */
     public int getHttpStatusCode() {
-        RetrofitError ree = (RetrofitError)getCause();
-        if (getRetrofitError().getKind() != RetrofitError.Kind.HTTP) return -1;
-        return ree.getResponse().getStatus();
+        if (error!=null){
+            return error.responseCode;
+        }
+        return -1;
     }
 
     public boolean isError403Forbidden() {

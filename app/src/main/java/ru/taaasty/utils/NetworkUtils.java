@@ -2,7 +2,6 @@ package ru.taaasty.utils;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import android.net.Uri;
 import android.os.StatFs;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,16 +11,8 @@ import com.facebook.login.LoginManager;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.jakewharton.disklrucache.DiskLruCache;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.CacheControl;
-import com.squareup.okhttp.Interceptor;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
+import com.jakewharton.picasso.OkHttp3Downloader;
 import com.squareup.picasso.LruCache;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.OkHttpDownloader;
 import com.squareup.picasso.Picasso;
 import com.squareup.pollexor.Thumbor;
 import com.squareup.pollexor.ThumborUrlBuilder;
@@ -33,7 +24,8 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import io.gsonfire.GsonFireBuilder;
-import retrofit.RetrofitError;
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.PusherService;
@@ -84,18 +76,6 @@ public final class NetworkUtils {
         return sGson;
     }
 
-    public static String getUrlApiPath(RetrofitError error) {
-        String url = error.getUrl();
-        if (url.startsWith(BuildConfig.API_SERVER_ADDRESS)) {
-            try {
-                Uri uri = Uri.parse(error.getUrl());
-                return uri.getPath();
-            } catch (Throwable ignore) {}
-        }
-        return url;
-
-    }
-
     public void onAppInit(Context context) {
         initOkHttpClient(context);
         initLruMemoryCache(context);
@@ -112,20 +92,21 @@ public final class NetworkUtils {
     }
 
     private void initOkHttpClient(Context context) {
-        mOkHttpClient = new OkHttpClient();
-        mOkHttpClient.setConnectTimeout(Constants.CONNECT_TIMEOUT_S, TimeUnit.SECONDS);
-        mOkHttpClient.setReadTimeout(Constants.READ_TIMEOUT_S, TimeUnit.SECONDS);
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(Constants.CONNECT_TIMEOUT_S, TimeUnit.SECONDS)
+                .readTimeout(Constants.READ_TIMEOUT_S, TimeUnit.SECONDS);
+
+        if (DBG) BuildConfig.STETHO.configureInterceptor(builder);
+
         File httpCacheDir = NetworkUtils.getCacheDir(context);
         if (httpCacheDir != null) {
             long cacheSize = NetworkUtils.calculateDiskCacheSize(httpCacheDir);
             if (DBG) Log.v(TAG, "cache size, mb: " + cacheSize / 1024 / 1024);
             Cache cache = new Cache(httpCacheDir, cacheSize);
-            mOkHttpClient.setCache(cache);
+            builder.cache(cache);
         }
-        if (DBG) BuildConfig.STETHO.configureInterceptor(mOkHttpClient);
 
-        //if (DBG) mOkHttpClient.networkInterceptors().add(new OkLoggingInterceptor());
-        // mOkHttpClient.interceptors().add(new OkLoggingInterceptorInfo());
+        mOkHttpClient = builder.build();
     }
 
     private void initLruMemoryCache(Context context) {
@@ -151,62 +132,7 @@ public final class NetworkUtils {
     private void initPicasso(Context context) {
         Picasso picasso = new Picasso.Builder(context.getApplicationContext())
                 .memoryCache(mPicassoCache)
-                .downloader(new OkHttpDownloader(mOkHttpClient) {
-
-                    private final CacheControl ALLOW_STALE_CACHE_RESPONSE = new CacheControl.Builder()
-                            .maxStale(Integer.MAX_VALUE, TimeUnit.SECONDS)
-                            .build();
-
-                    private final OkHttpClient client = mOkHttpClient;
-
-                    @Override
-                    public Response load(Uri uri, int networkPolicy) throws IOException {
-                        CacheControl cacheControl = null;
-                        if(networkPolicy != 0) {
-                            if(NetworkPolicy.isOfflineOnly(networkPolicy)) {
-                                cacheControl = CacheControl.FORCE_CACHE;
-                            } else {
-                                CacheControl.Builder builder = new CacheControl.Builder();
-                                if(!NetworkPolicy.shouldReadFromDiskCache(networkPolicy)) {
-                                    builder.noCache();
-                                }
-
-                                if(!NetworkPolicy.shouldWriteToDiskCache(networkPolicy)) {
-                                    builder.noStore();
-                                }
-
-                                cacheControl = builder.build();
-                            }
-                        } else {
-                            cacheControl = ALLOW_STALE_CACHE_RESPONSE; // Хуякс
-                        }
-
-                        com.squareup.okhttp.Request.Builder builder1 = (new com.squareup.okhttp.Request.Builder()).url(uri.toString());
-                        if(cacheControl != null) {
-                            builder1.cacheControl(cacheControl);
-                        }
-
-                        com.squareup.okhttp.Response response = this.client.newCall(builder1.build()).execute();
-                        int responseCode = response.code();
-                        if(responseCode >= 300) {
-                            response.body().close();
-                            throw new ResponseException(responseCode + " " + response.message(), networkPolicy, responseCode);
-                        } else {
-                            boolean fromCache = response.cacheResponse() != null;
-                            ResponseBody responseBody = response.body();
-                            return new Response(responseBody.byteStream(), fromCache, responseBody.contentLength());
-                        }
-                    }
-                })
-                .listener(new Picasso.Listener() {
-                    @Override
-                    public void onImageLoadFailed(Picasso picasso, Uri uri, Exception exception) {
-                        Log.i(TAG, "onImageLoadFailed() uri: " + uri, exception);
-                        if (exception instanceof RuntimeException && (exception.getCause() instanceof OutOfMemoryError)) {
-                            mPicassoCache.clear();
-                        }
-                    }
-                })
+                .downloader(new OkHttp3Downloader(mOkHttpClient))
                 .build();
         Picasso.setSingletonInstance(picasso);
     }
@@ -227,7 +153,7 @@ public final class NetworkUtils {
         VKSdk.logout();
         PusherService.stopPusher(context);
         try {
-            mOkHttpClient.getCache().delete();
+            mOkHttpClient.cache().delete();
         } catch (Exception ignore) {}
 
         try {
@@ -300,33 +226,6 @@ public final class NetworkUtils {
         if (cacheDir == null) return null;
 
         return new File(cacheDir, "gifcache");
-    }
-
-    private class OkLoggingInterceptor implements Interceptor {
-        @Override public com.squareup.okhttp.Response intercept(Chain chain) throws IOException {
-            Request request = chain.request();
-
-            Log.i("Ok", String.format("REQ     %s on %n%s%n",
-                    request.url(), request.headers()));
-
-            com.squareup.okhttp.Response response = chain.proceed(request);
-
-            Log.i("Ok", String.format("RESP %d %s, %n%s%n",
-                    response.code(), response.request().url(), response.headers()));
-
-            return response;
-        }
-    }
-
-    private class OkLoggingInterceptorInfo implements Interceptor {
-
-        @Override
-        public Response intercept(Chain chain) throws IOException {
-            Response response = chain.proceed(chain.request());
-            if (DBG) Log.i("Ok", String.format("RESP %d %s, %s",
-                    response.code(), response.request().url(), response.cacheResponse() != null ? "from cache" : "from network"));
-            return response;
-        }
     }
 
     public static String hashUrlMurmur3(String url) {

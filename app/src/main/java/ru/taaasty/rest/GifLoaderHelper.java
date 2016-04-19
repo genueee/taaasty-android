@@ -5,11 +5,6 @@ import android.support.annotation.MainThread;
 import android.util.Log;
 
 import com.jakewharton.disklrucache.DiskLruCache;
-import com.squareup.okhttp.CacheControl;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.internal.Util;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
@@ -19,6 +14,11 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.CacheControl;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.internal.Util;
 import pl.droidsonroids.gif.GifDrawable;
 import pl.droidsonroids.gif.GifDrawableBuilder;
 import ru.taaasty.utils.NetworkUtils;

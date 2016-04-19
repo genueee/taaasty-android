@@ -38,6 +38,7 @@ import ru.taaasty.events.CommentRemoved;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.events.ReportCommentSent;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Comment;
 import ru.taaasty.rest.model.Comments;
 import ru.taaasty.rest.model.Entry;
@@ -394,6 +395,7 @@ public class ShowCommentsFragment extends Fragment {
 
         mPostSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mCurrentEntryObserver);
     }
 
@@ -406,6 +408,7 @@ public class ShowCommentsFragment extends Fragment {
         Observable<TlogDesign> observable = mTlogDesignService.getDesignSettings(String.valueOf(userId));
         mTlogDesignSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mTlogDesignObserver);
     }
 
@@ -422,6 +425,7 @@ public class ShowCommentsFragment extends Fragment {
         mLoadComments = true;
         mCommentsSubscription = observableComments
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mCommentsObserver);
         refreshCommentsStatus();
 
@@ -477,6 +481,7 @@ public class ShowCommentsFragment extends Fragment {
         mPostButton.setVisibility(View.INVISIBLE);
         mPostCommentSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     mReplyToCommentText.setEnabled(true);
                     mPostProgress.setVisibility(View.INVISIBLE);

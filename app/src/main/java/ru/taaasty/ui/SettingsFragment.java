@@ -25,6 +25,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.service.ApiUsers;
 import ru.taaasty.utils.AnalyticsHelper;
@@ -190,6 +191,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         mUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mCurrentUserObserver);
         setupRefreshingIndicator();
@@ -260,6 +262,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         mPutSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(mStopRefreshingAction)
                 .subscribe(mUpdateUserObserver);
         setupRefreshingIndicator();

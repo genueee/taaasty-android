@@ -1,13 +1,13 @@
 package ru.taaasty.rest.service;
 
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.http.DELETE;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 import rx.Observable;
 
 /**
@@ -29,7 +29,7 @@ public interface ApiComments {
      * @param limit
      * @return
      */
-    @GET("/comments.json")
+    @GET("comments.json")
     Observable<ru.taaasty.rest.model.Comments> getComments(@Query("entry_id") long entryId,
                                                         @Query("from_comment_id") Long fromCommentId,
                                                         @Query("to_comment_id") Long toCommentId,
@@ -44,7 +44,7 @@ public interface ApiComments {
      * @return
      */
     @FormUrlEncoded
-    @POST("/comments.json")
+    @POST("comments.json")
     Observable<ru.taaasty.rest.model.Comment> postComment(@Field("entry_id")long entryId,
                                                       @Field("text") String text);
 
@@ -55,7 +55,7 @@ public interface ApiComments {
      * @return
      */
     @FormUrlEncoded
-    @PUT("/comments/{id}.json")
+    @PUT("comments/{id}.json")
     Observable<ru.taaasty.rest.model.Comment> putComment(@Path("id")long commentId, @Field("text") String text);
 
     /**
@@ -63,7 +63,7 @@ public interface ApiComments {
      * @param commentId
      * @return
      */
-    @DELETE("/comments/{id}.json")
+    @DELETE("comments/{id}.json")
     Observable<Object> deleteComment(@Path("id") long commentId);
 
 
@@ -72,7 +72,7 @@ public interface ApiComments {
      * @param id
      * @return а блядь хуй его знает, что там с сервера возвращается
      */
-    @POST("/comments/{id}/report.json")
+    @POST("comments/{id}/report.json")
     Observable<Object> reportComment(@Path("id")long id);
 
 }

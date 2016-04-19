@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Тлог, в который написана запись.
  * Сущность встречается под ключом 'tlog' в лентах. Схема отличается от всех существующих.
@@ -14,7 +16,7 @@ public class EntryTlog implements Parcelable {
      * какой-то ID
      */
     public long id;
-
+    @SerializedName("tlog_url")
     public String tlogUrl;
 
     public String tag;
@@ -30,7 +32,7 @@ public class EntryTlog implements Parcelable {
      * Инфа о тлоге в формате юзера.
      */
     public User author;
-
+    @SerializedName("relationships_summary")
     public RelationshipsSummary relationshipsSummary;
 
     public boolean isFlow() {

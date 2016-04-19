@@ -26,6 +26,7 @@ import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.model.conversations.PublicConversation;
@@ -359,6 +360,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
             mConversationsSubscription.unsubscribe();
             mConversationsSubscription = mApiMessenger.getConversations(null)
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .subscribe(mConversationListObserver);
             if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusLoading();
         }

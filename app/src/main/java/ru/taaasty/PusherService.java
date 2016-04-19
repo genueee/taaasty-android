@@ -7,6 +7,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -20,9 +21,11 @@ import com.pusher.client.connection.ConnectionStateChange;
 
 import org.apache.commons.io.IOUtils;
 
+import java.io.Reader;
+
 import de.greenrobot.event.EventBus;
-import retrofit.client.Response;
-import retrofit.mime.TypedInput;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
 import ru.taaasty.events.MessagesRemoved;
 import ru.taaasty.events.UiVisibleStatusChanged;
 import ru.taaasty.events.UserMessagesRemoved;
@@ -151,7 +154,7 @@ public class PusherService extends Service {
 
     private Pusher mPusher;
 
-    private Handler mHandler;
+    private volatile Handler mHandler;
 
     private Subscription mSendAuthReadySubscription = Subscriptions.unsubscribed();
 
@@ -233,6 +236,8 @@ public class PusherService extends Service {
     }
 
     private final com.pusher.client.channel.PrivateChannelEventListener mPrivateChannelEventListener = new  com.pusher.client.channel.PrivateChannelEventListener() {
+
+        @WorkerThread
         @Override
         public void onEvent(String channelName, String eventName, String data) {
             if (!getMessagingChannelName().equals(channelName)) {
@@ -307,16 +312,23 @@ public class PusherService extends Service {
                     break;
             }
         }
+
+        @WorkerThread
         @Override
         public void onAuthenticationFailure(String message, Exception e) {
             if (DBG) Log.v(TAG, "onAuthenticationFailure() msg: " + message, e);
         }
 
+        @WorkerThread
         @Override
         public synchronized void onSubscriptionSucceeded(String channelName) {
             if (DBG) Log.v(TAG, "onSubscriptionSucceeded() channel: " + channelName);
-            sentAuthReady();
+            if (mHandler == null) return;
+            mHandler.removeCallbacks(mSendAuthReadyRunnable);
+            mHandler.post(mSendAuthReadyRunnable);
         }
+
+        private final Runnable mSendAuthReadyRunnable = () -> sentAuthReady();
     };
 
     @Nullable
@@ -332,8 +344,7 @@ public class PusherService extends Service {
         destroyPusher();
         PusherOptions options = new PusherOptions()
                 .setEncrypted(false)
-                .setAuthorizer(mAuthorizer)
-                ;
+                .setAuthorizer(mAuthorizer);
 
         mPusher = new Pusher(BuildConfig.PUSHER_KEY, options);
         mPusher.subscribePrivate(getMessagingChannelName(), mPrivateChannelEventListener,
@@ -419,21 +430,19 @@ public class PusherService extends Service {
         }
     }
 
-    private final Authorizer mAuthorizer = new Authorizer() {
-        @Override
-        public String authorize(String channelName, String socketId) throws AuthorizationFailureException {
-            try {
-                Response response = RestClient.getAPiMessenger().authPusher(channelName, socketId);
-                TypedInput ti = response.getBody();
-                if (ti == null) throw  new NullPointerException("response is null");
-                return IOUtils.toString(ti.in());
-            } catch (Exception e) {
-                throw new AuthorizationFailureException(e);
-            }
+    private final Authorizer mAuthorizer = (channelName, socketId) -> {
+        try {
+            Call<ResponseBody> responseBodyCall = RestClient.getAPiMessenger().authPusher(channelName, socketId);
+            Reader responseBodyReader = responseBodyCall.execute().body().charStream();
+            return IOUtils.toString(responseBodyReader);
+        } catch (Exception e) {
+            throw new AuthorizationFailureException(e);
         }
     };
 
+    @WorkerThread
     private void sentAuthReady() {
+        if (DBG) Log.d(TAG, "sentAuthReady()");
         if (mPusher == null || mPusher.getConnection().getState() != ConnectionState.CONNECTED) {
             if (DBG) Log.v(TAG, "sentAuthReady pusher disconnected");
             return;
@@ -442,9 +451,11 @@ public class PusherService extends Service {
 
         // Игнорируем все ошибки и результаты
         mSendAuthReadySubscription =  RestClient.getAPiMessenger().authReady2(mPusher.getConnection().getSocketId())
+                //.subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Void>() {
                     @Override
-                    public void onCompleted() {}
+                    public void onCompleted() {
+                    }
 
                     @Override
                     public void onError(Throwable e) {}

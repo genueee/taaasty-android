@@ -25,6 +25,7 @@ import de.greenrobot.event.EventBus;
 import ru.taaasty.events.pusher.NotificationMarkedAsRead;
 import ru.taaasty.events.pusher.NotificationReceived;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Notification;
 import ru.taaasty.rest.model.NotificationList;
 import ru.taaasty.rest.model.User;
@@ -186,6 +187,7 @@ public class StatusBarNotificationNotification {
                 .getNotifications(null, (fromMsgId == 0 ? null : fromMsgId),
                         null, 2, "desc")
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     // XXX: должно быть в PusherService
                     GcmBroadcastReceiver.completeWakefulIntent(intent);

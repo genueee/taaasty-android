@@ -23,6 +23,7 @@ import java.util.List;
 import ru.taaasty.R;
 import ru.taaasty.adapters.UsernameAdapter;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.service.ApiMessenger;
@@ -260,6 +261,7 @@ public class InitiateConversationFragment extends Fragment {
         Observable<List<User>> observable = mApiUsers.predict(text.toString(), PREDICT_USERS_LIMIT);
         mLoadingNamesSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mUserPreloadObservable);
     }
 
@@ -270,6 +272,7 @@ public class InitiateConversationFragment extends Fragment {
         Observable<Conversation> observable = apiMessenger.createConversation(null, userId);
         mCreatingConversationSubscription = observable
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(mCreateConversationObservable);
     }
 

@@ -31,6 +31,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.events.EntryUploadStatus;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.PostForm;
 import ru.taaasty.rest.model.TlogInfo;
@@ -198,6 +199,7 @@ public class CreatePostActivity extends ActivityBase implements OnCreatePostInte
                 Observable<TlogInfo> observable = RestClient.getAPiTlog().getUserInfo(String.valueOf(mTlogId));
                 mTlogInfoSubscription = observable
                         .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
                         .subscribe(mTlogInfoObserver);
             }
         }

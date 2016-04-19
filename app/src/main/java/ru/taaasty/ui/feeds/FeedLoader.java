@@ -11,13 +11,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.SortedList;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Feed;
 import rx.Observable;
 import rx.Observer;
+import rx.Scheduler;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Func1;
+import rx.schedulers.Schedulers;
 import rx.subscriptions.Subscriptions;
 
 /**
@@ -72,10 +75,10 @@ public abstract class FeedLoader {
             onFeedIsUnsubscribed(true);
             mFeedRefreshSubscription.unsubscribe();
         }
-
         mFeedRefreshSubscription = observable
                 .map(mInitFeedSpannedText)
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     if (DBG) Log.v(TAG, "refreshFeed() finallyDo");
                     onFeedIsUnsubscribed(true);
@@ -134,7 +137,9 @@ public abstract class FeedLoader {
             observable = observable.map(postCacheFunc);
         }
 
-        mFeedAppendSubscription = observable.observeOn(AndroidSchedulers.mainThread())
+        mFeedAppendSubscription = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .finallyDo(() -> {
                     onShowPendingIndicatorChanged(false);
                     onFeedIsUnsubscribed(false);

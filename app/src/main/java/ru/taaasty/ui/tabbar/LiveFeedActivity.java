@@ -31,6 +31,7 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.events.OnStatsLoaded;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.CurrentUser;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.Stats;
@@ -182,6 +183,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
                 .distinctUntilChanged()
                 .compose(this.<CurrentUser>bindToLifecycle())
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new CurrentUserChangesSubscriber());
     }
 
@@ -295,6 +297,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
             ApiApp api = RestClient.getAPiApp();
             mStatsSubscription = api.getStats()
                     .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeOn(RestSchedulerHelper.getScheduler())
                     .subscribe(new Observer<Stats>() {
                         @Override
                         public void onCompleted() {
@@ -329,6 +332,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         Observable<CurrentUser> observableCurrentUser = Session.getInstance().reloadCurrentUser();
         mCurrentUserSubscription = observableCurrentUser
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<CurrentUser>() {
                     @Override
                     public void onCompleted() {}
@@ -391,6 +395,7 @@ public class LiveFeedActivity extends TabbarActivityBase implements FeedFragment
         CheckAppHelper.createCheckVersionObservable(this)
                 .compose(this.<CheckAppHelper.CheckVersionResult>bindUntilEvent(ActivityEvent.DESTROY))
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<CheckAppHelper.CheckVersionResult>() {
                     @Override
                     public void onCompleted() {

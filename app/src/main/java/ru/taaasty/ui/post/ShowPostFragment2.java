@@ -22,6 +22,7 @@ import ru.taaasty.adapters.list.ListQuoteEntry;
 import ru.taaasty.adapters.list.ListTextEntry;
 import ru.taaasty.events.EntryChanged;
 import ru.taaasty.rest.RestClient;
+import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.Entry;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.User;
@@ -198,6 +199,7 @@ public class ShowPostFragment2 extends Fragment {
 
         mPostSubscription = observablePost
                 .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
                 .subscribe(new Observer<Entry>() {
 
                     @Override

@@ -1,10 +1,10 @@
 package ru.taaasty.rest.service;
 
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.POST;
-import retrofit.http.Path;
-import retrofit.http.Query;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 import ru.taaasty.rest.model.Relationship;
 import ru.taaasty.rest.model.Relationships;
 import ru.taaasty.rest.model.RelationshipsSummary;
@@ -12,7 +12,7 @@ import rx.Observable;
 
 public interface ApiRelationships {
 
-    @GET("/relationships/summary.json")
+    @GET("relationships/summary.json")
     Observable<RelationshipsSummary> getRelationshipsSummary();
 
     /**
@@ -25,7 +25,7 @@ public interface ApiRelationships {
      * @param limit
      * @return Список моих отношений. Отсортированы по position.
      */
-    @GET("/relationships/to/{type}.json")
+    @GET("relationships/to/{type}.json")
     Observable<Relationships> getRelationshipsTo(
             @Path("type") String path,
             @Query("since_position") Integer sincePosition,
@@ -37,24 +37,24 @@ public interface ApiRelationships {
      * @param idOrSlug
      * @return Узнать, какое у меня с ним отношение
      */
-    @GET("/relationships/to/tlog/{id_or_slug}.json")
+    @GET("relationships/to/tlog/{id_or_slug}.json")
     Observable<Relationships> getRelationshipsToTlog(
             @Path("id_or_slug") String idOrSlug);
 
 
-    @POST("/relationships/to/tlog/{id_or_slug}/follow.json")
+    @POST("relationships/to/tlog/{id_or_slug}/follow.json")
     Observable<Relationship> follow(
             @Path("id_or_slug") String idOrSlug);
 
-    @POST("/relationships/to/tlog/{id_or_slug}/unfollow.json")
+    @POST("relationships/to/tlog/{id_or_slug}/unfollow.json")
     Observable<Relationship> unfollow(
             @Path("id_or_slug") String idOrSlug);
 
-    @POST("/relationships/to/tlog/{id_or_slug}/ignore.json")
+    @POST("relationships/to/tlog/{id_or_slug}/ignore.json")
     Observable<Relationship> ignore(
             @Path("id_or_slug") String idOrSlug);
 
-    @POST("/relationships/to/tlog/{id_or_slug}/cancel.json")
+    @POST("relationships/to/tlog/{id_or_slug}/cancel.json")
     Observable<Relationship> cancel(
             @Path("id_or_slug") String idOrSlug);
 
@@ -67,7 +67,7 @@ public interface ApiRelationships {
      * @param limit
      * @return
      */
-    @GET("/relationships/by/{type}.json")
+    @GET("relationships/by/{type}.json")
     Observable<Relationships> getRelationshipsBy(
             @Path("type") String path,
             @Query("since_position") Integer sincePosition,
@@ -79,22 +79,22 @@ public interface ApiRelationships {
      * @param idOrSlug
      * @return
      */
-    @GET("/relationships/by/tlog/{id_or_slug}.json")
+    @GET("relationships/by/tlog/{id_or_slug}.json")
     Observable<Relationship> getRelationshipsByTlog(
             @Path("id_or_slug") String idOrSlug);
 
-    @POST("/relationships/by/tlog/{id_or_slug}/approve.json")
+    @POST("relationships/by/tlog/{id_or_slug}/approve.json")
     Observable<Relationship> approveTlogRelationship(
             @Path("id_or_slug") String idOrSlug);
 
-    @POST("/relationships/by/tlog/{id_or_slug}/disapprove.json")
+    @POST("relationships/by/tlog/{id_or_slug}/disapprove.json")
     Observable<Relationship> disapproveTlogRelationship(
             @Path("id_or_slug") String idOrSlug);
 
-    @DELETE("/relationships/by/tlog/{id_or_slug}.json")
+    @DELETE("relationships/by/tlog/{id_or_slug}.json")
     Observable<Relationship> unsubscribe(@Path("id_or_slug") String idOrSlug);
 
-    @GET("/relationships/by/requested.json")
+    @GET("relationships/by/requested.json")
     Observable<Relationships> getRelationshipsRequested(
             @Query("since_position") Integer sincePosition,
             @Query("limit") Integer limit,
