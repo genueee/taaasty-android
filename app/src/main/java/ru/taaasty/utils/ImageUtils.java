@@ -429,7 +429,7 @@ public class ImageUtils {
         }
 
         final int avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
-        Drawable defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
+        Drawable defaultUserpicDrawable = DefaultUserpicDrawable.create(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
         if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
@@ -479,7 +479,7 @@ public class ImageUtils {
         }
 
         int avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
-        Drawable defaultUserpicDrawable = new DefaultUserpicDrawable(context, userpic, userName);
+        Drawable defaultUserpicDrawable = DefaultUserpicDrawable.create(context, userpic, userName);
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
         if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {
@@ -492,6 +492,7 @@ public class ImageUtils {
             String userpicUrl = thumborUrl.resize(avatarDiameter, avatarDiameter)
                     .toUrlUnsafe();
 
+            dstImageView.setImageDrawable(stubPlaceholder);
             Picasso.with(context).load(userpicUrl)
                     .placeholder(stubPlaceholder)
                     .error(defaultUserpicDrawable)

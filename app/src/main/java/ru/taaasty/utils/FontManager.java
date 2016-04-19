@@ -13,6 +13,7 @@ public class FontManager {
     public static final String FONT_POST_SERIF_PATH = "fonts/PTF55F_W.ttf";
 
     public static final String FONT_SYSTEM_BOLD_PATH = "fonts/ProximaNova-Bold.otf";
+    public static final String FONT_ANONYMOUS_PATH = "fonts/anonymous.ttf";
 
     private static volatile FontManager sFontManager;
     private final AssetManager mAssetsManager;
@@ -21,6 +22,7 @@ public class FontManager {
     private final Typeface mFontSans;
     private final Typeface mFontSerif;
     private Typeface mFontSystemBold;
+    private volatile Typeface mFontAnonymous;
 
     private FontManager(Context context) {
         mAssetsManager = context.getApplicationContext().getAssets();
@@ -65,5 +67,16 @@ public class FontManager {
             mFontSystemBold = Typeface.createFromAsset(mAssetsManager, FONT_SYSTEM_BOLD_PATH);
         }
         return mFontSystemBold;
+    }
+
+    public Typeface getFontAnonymous() {
+        if (mFontAnonymous == null) {
+            synchronized (this) {
+                if (mFontAnonymous == null) {
+                    mFontAnonymous = Typeface.createFromAsset(mAssetsManager, FONT_ANONYMOUS_PATH);
+                }
+            }
+        }
+        return mFontAnonymous;
     }
 }

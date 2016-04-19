@@ -386,9 +386,14 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         Context context = getActivity();
 
         // У групп без аватарки пустая рамка на зеленом экшнбаре выглядит хреново
-        Drawable defaultGroupDrawable = new DefaultUserpicDrawable(context,
-                mChatHelper.getTitleWithoutUserPrefix(conversation, context),
-                0xfff37420, Color.WHITE);
+        Drawable defaultGroupDrawable;
+        if (ConversationHelper.getInstance().isNullOrAnonymousConversation(conversation)) {
+            defaultGroupDrawable = DefaultUserpicDrawable.createAnonymousDefault(context);
+        } else {
+            defaultGroupDrawable = new DefaultUserpicDrawable(context,
+                    mChatHelper.getTitleWithoutUserPrefix(conversation, context),
+                    0xfff37420, Color.WHITE, false);
+        }
 
         ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
         mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
