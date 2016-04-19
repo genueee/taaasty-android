@@ -390,9 +390,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             builder.setPositiveButton(R.string.delete_chat_dialog_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Observable<Object> observable = RestClient.getAPiMessenger()
-                            .deleteConversation(Long.toString(getConversation().getId()), null);
-                    leaveChat(observable);
+                    leaveChat();
                 }
             });
         } else {
@@ -401,9 +399,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             builder.setPositiveButton(R.string.leave_chat_dialog_button, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    Observable<Object> observable = RestClient.getAPiMessenger()
-                            .leaveConversation(Long.toString(getConversation().getId()), null);
-                    leaveChat(observable);
+                    leaveChat();
                 }
             });
         }
@@ -412,12 +408,12 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         builder.show();
     }
 
-    private void leaveChat(Observable<Object> observable) {
+    private void leaveChat() {
         setProgressState(true);
         mIsInLoadingState = true;
-        // TODO remove для паблик чатов
         final Conversation conversation = getConversation();
-        observable
+        RestClient.getAPiMessenger()
+                .deleteConversation(Long.toString(getConversation().getId()), null)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Object>() {
                     @Override
@@ -545,7 +541,14 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
 
     @Override
     public void onUserAvatarClicked(View view, User user) {
-        TlogActivity.startTlogActivity(getActivity(), user.getId(), view);
+        if (getConversation() != null
+                && getConversation().getType() == Conversation.Type.PUBLIC
+                && ((PublicConversation)getConversation()).isAnonymous()) {
+            return;
+        } else {
+            TlogActivity.startTlogActivity(getActivity(),
+                    user.getId(), view);
+        }
     }
 
     @Override

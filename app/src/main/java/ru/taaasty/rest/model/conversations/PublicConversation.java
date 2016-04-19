@@ -51,8 +51,8 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
     }
 
     @Override
-    public long getRealUserId() {
-        return !isAnonymous ? getUserId() : User.ANONYMOUS.getId();
+    public long toRealUserId(long fakeUserId) {
+        return !isAnonymous ? fakeUserId : User.ANONYMOUS.getId();
     }
 
     public String getEntryTitle() {

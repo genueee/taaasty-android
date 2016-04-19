@@ -100,7 +100,11 @@ public abstract class Conversation implements Parcelable {
      * @return ID пользователя, который можно использовать за пределеами чата.
      * В случае анонимок возвращает ID юзера {@link ru.taaasty.rest.model.User#ANONYMOUS}
      */
-    public abstract long getRealUserId();
+    public long getRealUserId() {
+        return toRealUserId(getUserId());
+    }
+
+    public abstract long toRealUserId(long fakeUserId);
 
     @Override
     public boolean equals(Object o) {

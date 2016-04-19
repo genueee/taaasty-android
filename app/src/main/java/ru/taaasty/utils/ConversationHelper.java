@@ -125,6 +125,13 @@ public final class ConversationHelper {
         bindConversationIconToImageView(conversation, dstSizeRes, dst, drawable);
     }
 
+    public boolean isNullOrAnonymousConversation(@Nullable Conversation conversation) {
+        if (conversation == null) return true;
+        if (conversation.getType() == Conversation.Type.PUBLIC
+                && ((PublicConversation)conversation).isAnonymous()) return true;
+        return false;
+    }
+
     @Nullable
     public String getConversationIconUrl(Conversation conversation) {
         switch (conversation.getType()) {

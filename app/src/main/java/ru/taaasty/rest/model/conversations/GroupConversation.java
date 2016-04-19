@@ -66,6 +66,11 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
         return getUserId();
     }
 
+    @Override
+    public long toRealUserId(long fakeUserId) {
+        return fakeUserId;
+    }
+
 
     public List<User> getUsers() {
         return users;

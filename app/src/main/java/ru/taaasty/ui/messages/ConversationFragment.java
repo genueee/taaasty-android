@@ -84,6 +84,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
     private static final int REQUEST_CODE_LOGIN = 1;
 
+    private final ConversationHelper mChatHelper = ConversationHelper.getInstance();
+
     private OnFragmentInteractionListener mListener;
 
     private BehaviorSubject<Conversation> mConversationSubject;
@@ -385,20 +387,20 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         // У групп без аватарки пустая рамка на зеленом экшнбаре выглядит хреново
         Drawable defaultGroupDrawable = new DefaultUserpicDrawable(context,
-                ConversationHelper.getInstance().getTitleWithoutUserPrefix(conversation, context),
+                mChatHelper.getTitleWithoutUserPrefix(conversation, context),
                 0xfff37420, Color.WHITE);
 
         ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
-        ConversationHelper.getInstance().bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
-        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, avatar);
+        mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
+        mChatHelper.setupAvatarImageViewClickableForeground(conversation, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
-        topic.setText(ConversationHelper.getInstance().getTitle(conversation, getContext()));
+        topic.setText(mChatHelper.getTitle(conversation, getContext()));
         if (conversation.getType() == Conversation.Type.GROUP
                 || conversation.getType() == Conversation.Type.PUBLIC) {
             users.setText(getString(R.string.user_count,
-                    ConversationHelper.getInstance().countActiveUsers(conversation)));
+                    mChatHelper.countActiveUsers(conversation)));
         } else {
             users.setVisibility(View.GONE);
             RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) topic.getLayoutParams();
@@ -596,8 +598,13 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         case R.id.avatar:
                             int position = pHolder.getAdapterPosition();
                             Message message = getMessage(position);
+                            if (mChatHelper.isNullOrAnonymousConversation(mConversationSubject.getValue())) {
+                                return;
+                            }
                             if (message != null) {
-                                TlogActivity.startTlogActivity(getActivity(), message.userId, v,
+                                TlogActivity.startTlogActivity(getActivity(),
+                                        message.getRealUserId(mConversationSubject.getValue()),
+                                        v,
                                         R.dimen.avatar_small_diameter);
                             }
                             break;
@@ -668,9 +675,9 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         return ((PrivateConversation)conversation).getRecipient();
                     }
                 case GROUP:
-                    return ConversationHelper.getInstance().findUserById(((GroupConversation)conversation).getUsers(), userUuid);
+                    return mChatHelper.findUserById(((GroupConversation)conversation).getUsers(), userUuid);
                 case PUBLIC:
-                    return ConversationHelper.getInstance().findUserById(((PublicConversation)conversation).getUsers(), userUuid);
+                    return mChatHelper.findUserById(((PublicConversation)conversation).getUsers(), userUuid);
                 case OTHER:
                 default:
                     return null;

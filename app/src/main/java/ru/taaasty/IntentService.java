@@ -236,6 +236,7 @@ public class IntentService extends android.app.IntentService {
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
             final String action = intent.getAction();
+            Log.d(TAG, "onHandleIntent() called with action: " + action);
             if (ACTION_POST_ENTRY.equals(action)) {
                 PostForm.PostFormHtml entry = intent.getParcelableExtra(EXTRA_FORM);
                 handlePostEntry(entry);

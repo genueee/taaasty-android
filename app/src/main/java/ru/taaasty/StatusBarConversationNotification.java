@@ -201,7 +201,6 @@ public class StatusBarConversationNotification {
                             lastMessageConversation = conversation;
                             // API в lastMessage не возвращает conversationId и ещё дохуя каких полей
                             lastMessageConversation.getLastMessage().conversationId = conversation.getId();
-                            lastMessageConversation.getLastMessage().conversation = conversation;
                         }
                     }
                 }
@@ -283,7 +282,7 @@ public class StatusBarConversationNotification {
             return;
         }
 
-        PendingIntent resultPendingIntent = createContentPendingIntent(mLastMessage, !mSeveralConversations);
+        PendingIntent resultPendingIntent = createContentPendingIntent(mLastConversation, mLastMessage, !mSeveralConversations);
 
         String title = mContext.getResources().getQuantityString(R.plurals.conversation_received_title,
                 mConversationMessagesCount, mConversationMessagesCount);
@@ -328,7 +327,7 @@ public class StatusBarConversationNotification {
         AnalyticsHelper.getInstance().sendNotificationsEvent("Показано уведомление о новом сообщении");
     }
 
-    private PendingIntent createContentPendingIntent(Message message, boolean showConversation) {
+    private PendingIntent createContentPendingIntent(Conversation conversation, Message message, boolean showConversation) {
         // ConversationsActivity intent
         Intent firstIntent = new Intent(mContext, ConversationsActivity.class);
 
@@ -337,13 +336,7 @@ public class StatusBarConversationNotification {
 
         // Conversation intent
         if (showConversation) {
-            long recipient;
-            if (Session.getInstance().isMe(message.recipientId)) {
-                recipient = message.userId;
-            } else {
-                recipient = message.recipientId;
-            }
-            Intent conversationIntent = ConversationActivity.createNotificationIntent(mContext, message.conversationId, recipient);
+            Intent conversationIntent = ConversationActivity.createNotificationIntent(mContext, message.conversationId);
             stackBuilder.addNextIntent(conversationIntent);
         }
 

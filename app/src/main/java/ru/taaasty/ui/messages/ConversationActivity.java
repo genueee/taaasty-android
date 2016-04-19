@@ -46,8 +46,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private static final String ARG_CONVERSATION_ID = "ru.taaasty.ui.feeds.ConversationActivity.conversation_id";
 
-    private static final String ARG_RECIPIENT_ID = "ru.taaasty.ui.feeds.ConversationActivity.recipient_id";
-
     private static final String ARG_FORCE_SHOW_KEYBOARD = "ru.taaasty.ui.feeds.ConversationActivity.ARG_FORCE_SHOW_KEYBOARD";
 
     private static final String ARG_ENTRY_ID = "ru.taaasty.ui.feeds.ConversationActivity.entry_id";
@@ -66,7 +64,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private Subscription mConversationSubscription = Subscriptions.unsubscribed();
 
-    private long mRecipientId;
+    private long mConversationId;
 
     private long mEntryId;
 
@@ -100,9 +98,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     }
 
     // Интент, который будет открываться при тыке на уведомление
-    public static Intent createNotificationIntent(Context source, long conversationId, long recipientId) {
+    public static Intent createNotificationIntent(Context source, long conversationId) {
         Intent intent = new Intent(source, ConversationActivity.class);
-        intent.putExtra(ARG_RECIPIENT_ID, recipientId);
         intent.putExtra(ARG_CONVERSATION_ID, conversationId);
         intent.putExtra(ARG_FORCE_SHOW_KEYBOARD, true);
         return intent;
@@ -113,17 +110,13 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
-        mRecipientId = getIntent().getLongExtra(ARG_RECIPIENT_ID, -1);
+        mConversationId = getIntent().getLongExtra(ARG_CONVERSATION_ID, -1);
         mEntryId = getIntent().getLongExtra(ARG_ENTRY_ID, -1);
         mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
         boolean forceShowKeyboard = getIntent().getBooleanExtra(ARG_FORCE_SHOW_KEYBOARD, false);
 
         if (savedInstanceState != null) {
             mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
-        }
-
-        if (mConversation != null && mConversation.getType() == Conversation.Type.PRIVATE) {
-            mRecipientId = ((PrivateConversation)mConversation).getRecipientId();
         }
 
         if (savedInstanceState == null) {
@@ -250,8 +243,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         ApiMessenger apiMessenger = RestClient.getAPiMessenger();
 
         Observable<Conversation> observable;
-        if (mRecipientId > 0) {
-            observable = apiMessenger.createConversation(null, mRecipientId);
+        if (mConversationId > 0) {
+            observable = apiMessenger.getConversation(mConversationId);
         } else if (mEntryId > 0) {
             observable = apiMessenger.createGroupConversationByEntry(null, mEntryId);
         } else {
@@ -277,10 +270,10 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
                     @Override
                     public void onNext(Conversation conversation) {
-                        if (mIsStarted && mConversation == null) {
-                            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), false));
-                        }
                         onConversationLoaded(conversation);
+                        if (mIsStarted && mConversation == null) {
+                            EventBus.getDefault().post(new ConversationVisibilityChanged(conversation.getId(), false));
+                        }
                     }
                 });
     }

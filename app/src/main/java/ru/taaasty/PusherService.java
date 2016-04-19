@@ -42,6 +42,7 @@ import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.ConversationList;
 import ru.taaasty.rest.model.conversations.Message;
+import ru.taaasty.rest.model.conversations.PusherMessage;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
@@ -259,9 +260,9 @@ public class PusherService extends Service {
                 case EVENT_GROUP_PUSH_MESSAGE:
                 case EVENT_PUSH_MESSAGE:
                 case EVENT_PUBLIC_PUSH_MESSAGE:
-                    Message message =  mGson.fromJson(data, Message.class);
-                    // TODO проверить, действительно ли оно здесь приходит
-                    EventBus.getDefault().post(new MessageChanged(message.conversation, message));
+                    PusherMessage pusherMessage =  mGson.fromJson(data, PusherMessage.class);
+                    Message message = mGson.fromJson(data, Message.class);
+                    EventBus.getDefault().post(new MessageChanged(pusherMessage.conversation, message));
                     break;
                 case EVENT_UPDATE_CONVERSATION:
                 case EVENT_GROUP_UPDATE_CONVERSATION:

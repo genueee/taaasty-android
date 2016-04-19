@@ -38,14 +38,14 @@ public class Message implements Parcelable {
     /**
      * ID отправителя. Может быть фейковым в случае анонимного диалога.
      */
-    public long userId;
+    long userId;
 
     public long conversationId;
 
     /**
      * ID получателя. Может быть фейковым в случае анонимного диалога.
      */
-    public long recipientId;
+    long recipientId;
 
     @Nullable
     public String uuid;
@@ -67,14 +67,6 @@ public class Message implements Parcelable {
 
     public String type;
 
-    /**
-     * Приходит вроде только в уведомлениях и, возможно, через пушер.
-     * TODO Постараться не использовать и избавиться.
-     */
-    @Deprecated
-    @Nullable
-    public Conversation conversation;
-
     public Attachment attachments[];
 
     public Message() {
@@ -84,6 +76,9 @@ public class Message implements Parcelable {
         return readAt != null;
     }
 
+    /**
+     *  Сообщение - исходящее, от меня
+     */
     public boolean isFromMe(Conversation inConversation) {
         return inConversation.getUserId() == this.userId;
     }
@@ -107,6 +102,30 @@ public class Message implements Parcelable {
         return null;
     }
 
+    /**
+     * @return ID отправителя. Может быть фейковым (в анонимных паблик чатах)
+     */
+    public long getUserId() {
+        return userId;
+    }
+
+    /**
+     * @return ID получателя. Может быть фейковым (в анонимных паблик чатах)
+     */
+    public long getRecipientId() {
+        return recipientId;
+    }
+
+    public long getRealUserId(Conversation inConversation) {
+        return inConversation.toRealUserId(userId);
+    }
+
+    public long getRecipientUserId(Conversation inConversation){
+        if (recipientId == 0) return 0;
+        return inConversation.toRealUserId(recipientId);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -126,8 +145,6 @@ public class Message implements Parcelable {
             return false;
         if (author != null ? !author.equals(message.author) : message.author != null) return false;
         if (type != null ? !type.equals(message.type) : message.type != null) return false;
-        if (conversation != null ? !conversation.equals(message.conversation) : message.conversation != null)
-            return false;
         // Probably incorrect - comparing Object[] arrays with Arrays.equals
         return Arrays.equals(attachments, message.attachments);
 
@@ -145,10 +162,10 @@ public class Message implements Parcelable {
         result = 31 * result + (contentHtml != null ? contentHtml.hashCode() : 0);
         result = 31 * result + (author != null ? author.hashCode() : 0);
         result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (conversation != null ? conversation.hashCode() : 0);
         result = 31 * result + Arrays.hashCode(attachments);
         return result;
     }
+
 
     @Override
     public int describeContents() {
@@ -167,7 +184,6 @@ public class Message implements Parcelable {
         dest.writeString(this.contentHtml);
         dest.writeParcelable(this.author, flags);
         dest.writeString(this.type);
-        dest.writeParcelable(this.conversation, flags);
         dest.writeTypedArray(this.attachments, flags);
     }
 
@@ -184,7 +200,6 @@ public class Message implements Parcelable {
         this.contentHtml = in.readString();
         this.author = in.readParcelable(User.class.getClassLoader());
         this.type = in.readString();
-        this.conversation = in.readParcelable(Conversation.class.getClassLoader());
         this.attachments = in.createTypedArray(Attachment.CREATOR);
     }
 

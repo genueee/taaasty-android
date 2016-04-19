@@ -68,7 +68,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         if (conversation.getLastMessage() == null || conversation.getLastMessage().author == null) return false;
         if (conversation.getType() != Conversation.Type.PRIVATE) return true;
         if (conversation.getUserId() == ((PrivateConversation)conversation).getRecipientId()) return false;
-        return conversation.getLastMessage().userId == conversation.getUserId();
+        return conversation.getLastMessage().isFromMe(conversation);
     }
 
     @Override

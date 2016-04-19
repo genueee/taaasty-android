@@ -40,7 +40,6 @@ import ru.taaasty.ui.DividerFeedListInterPost;
 import ru.taaasty.ui.FragmentStateConsumer;
 import ru.taaasty.ui.FragmentWithWorkFragment;
 import ru.taaasty.ui.messages.ConversationActivity;
-import ru.taaasty.ui.post.old.ShowPostActivity;
 import ru.taaasty.ui.tabbar.TabbarFragment;
 import ru.taaasty.utils.FabHelper;
 import ru.taaasty.utils.LikesHelper;
@@ -594,21 +593,7 @@ public class FeedFragment extends FragmentWithWorkFragment<FeedWorkFragment> imp
             Entry entry = mAdapter.getAnyEntryAtHolderPosition(holder);
             if (entry == null) return;
             if (DBG) Log.v(TAG, "onPostCommentsClicked postId: " + entry.getId());
-            if (!entry.isAnonymousPost()) {
-                ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
-            } else {
-                TlogDesign design = null;
-                if (entry.getDesign() != null) {
-                    design = entry.getDesign();
-                }
-                // Анонимки обычно светлые
-                design = TlogDesign.createLightTheme(design != null ? design : TlogDesign.DUMMY);
-                new ShowPostActivity.Builder(getActivity())
-                        .setEntry(entry)
-                        .setSrcView(view)
-                        .setDesign(design)
-                        .startActivity();
-            }
+            ConversationActivity.startEntryConversationActivity(getActivity(), entry.getId(), view);
         }
 
         @Override

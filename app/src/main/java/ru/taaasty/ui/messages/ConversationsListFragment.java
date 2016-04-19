@@ -162,11 +162,11 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                     public void onClick(View v) {
                         int position = holder.getAdapterPosition();
                         Conversation conversation = getConversation(position);
-                        if (conversation != null
-                                && conversation.getLastMessage() != null
+                        if (conversation == null) return;
+                        if (conversation.getLastMessage() != null
                                 &&  !(conversation.getType() == Conversation.Type.PUBLIC && ((PublicConversation)conversation).isAnonymous())) {
                             TlogActivity.startTlogActivity(getActivity(),
-                                    conversation.getLastMessage().userId, v, R.dimen.avatar_small_diameter);
+                                    conversation.getLastMessage().getRealUserId(conversation), v, R.dimen.avatar_small_diameter);
                         }
                     }
                 });

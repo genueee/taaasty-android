@@ -5,8 +5,6 @@ import android.support.annotation.Nullable;
 
 import java.util.Date;
 
-import ru.taaasty.rest.model.User;
-
 public class UnsupportedTypeConversation extends Conversation {
 
     public UnsupportedTypeConversation() {
@@ -20,10 +18,9 @@ public class UnsupportedTypeConversation extends Conversation {
     }
 
     @Override
-    public long getRealUserId() {
-        return User.DUMMY.getId();
+    public long toRealUserId(long fakeUserId) {
+        return fakeUserId;
     }
-
 
     @Override
     public int describeContents() {

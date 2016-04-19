@@ -200,7 +200,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             if (mConversation != null) {
                 isFromMe = message.isFromMe(mConversation);
             } else {
-                isFromMe = mSession.isMe(message.userId);
+                isFromMe = mSession.isMe(message.getUserId()); // Есть шанс, что попадем
             }
             if (isFromMe) {
                 return VIEW_TYPE_MY_MESSAGE;
@@ -357,7 +357,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     private void bindMessageText(ViewHolderMessage holder, Message message) {
-        User author = getMember(message.userId);
+        User author = getMember(message.getUserId());
         SpannableStringBuilder text;
 
         Html.ImageGetter imageGetter = holder.isMyMessage ? mImageGetterMyMessage : mImageGetterTheirMessage;
@@ -365,6 +365,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         text = new SpannableStringBuilder();
         // Автор. Может быть неизвестен, если переписка ещё не загружена
         if (author != null && !holder.isMyMessage) {
+            // TODO В случае анонимок здесь фейковый ID.
             text.append(author.getNameWithPrefix());
             UiUtils.setNicknameSpans(text, 0, text.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
             text.append(' ');
@@ -392,7 +393,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     private void bindAvatar(ViewHolderMessage holder, Message message) {
-        User user = getMember(message.userId);
+        // TODO аватары фейковых юзеров
+        User user = getMember(message.getUserId());
         mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
     }
 
@@ -456,7 +458,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                     //if (oldItem.id != newItem.id) return false;
                     //if (oldItem.userId != newItem.userId) return false;
                     if (oldItem.conversationId != newItem.conversationId) return false;
-                    if (oldItem.recipientId != newItem.recipientId) return false;
+                    if (oldItem.getRecipientId() != newItem.getRecipientId()) return false;
                     if (oldItem.createdAt != null ? !oldItem.createdAt.equals(newItem.createdAt) : newItem.createdAt != null)
                         return false;
                     if (oldItem.readAt != null ? !oldItem.readAt.equals(newItem.readAt) : newItem.readAt != null)

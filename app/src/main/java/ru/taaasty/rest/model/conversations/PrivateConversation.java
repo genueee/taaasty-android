@@ -36,8 +36,8 @@ public class PrivateConversation extends Conversation implements Parcelable {
     }
 
     @Override
-    public long getRealUserId() {
-        return 0;
+    public long toRealUserId(long fakeUserId) {
+        return fakeUserId;
     }
 
     public User getRecipient() {
