@@ -217,4 +217,10 @@ public interface ApiMessenger {
     @DELETE("/messenger/conversations/by_id/{conv_id}.json")
     Observable<Object> deleteConversation(@Path("conv_id") String conv_id,
                                           @Query("socket_id") String socketId);
+
+    @POST("/messenger/conversations/by_id/{conv_id}/not_disturb.json")
+    Observable<Conversation> doNotDisturbTurnOn(@Path("conv_id") long conv_id, @Query("socket_id") String socketId);
+
+    @DELETE("/messenger/conversations/by_id/{conv_id}/not_disturb.json")
+    Observable<Conversation> doNotDisturbTurnOff(@Path("conv_id") long conv_id, @Query("socket_id") String socketId);
 }

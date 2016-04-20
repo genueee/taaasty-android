@@ -7,15 +7,20 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
+import android.support.v7.widget.SwitchCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
+import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
@@ -24,7 +29,9 @@ import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.utils.ConversationHelper;
 import rx.Observable;
 import rx.Observer;
+import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subscriptions.Subscriptions;
 
 /**
  * Created by arhis on 03.03.2016.
@@ -36,14 +43,16 @@ public class ConversationDetailsFragment extends Fragment {
     ImageView mIcon;
     TextView mName;
     View mDeleteChatButton;
-    View mDoNotDisturbButton;
-    TextView mDoNotDisturbPeriod;
+    View mDoNotDisturbLayout;
+    SwitchCompat mDoNotDisturbButton;
     View mProgressLayout;
 
     InteractionListener listener;
 
     ApiMessenger mApiMessenger = RestClient.getAPiMessenger();
     boolean mIsRequestInProgress;
+
+    private Subscription mDoNotDisturbSubscription = Subscriptions.unsubscribed();
 
     public static ConversationDetailsFragment newInstance(Conversation conversation) {
         ConversationDetailsFragment fragment = new ConversationDetailsFragment();
@@ -62,8 +71,8 @@ public class ConversationDetailsFragment extends Fragment {
         mIcon = (ImageView) root.findViewById(R.id.avatar);
         mName = (TextView) root.findViewById(R.id.topic);
         mDeleteChatButton = root.findViewById(R.id.delete_chat_layout);
-        mDoNotDisturbButton = root.findViewById(R.id.do_not_disturb_layout);
-        mDoNotDisturbPeriod = (TextView) root.findViewById(R.id.do_not_disturb_period);
+        mDoNotDisturbButton = (SwitchCompat)root.findViewById(R.id.do_not_disturb_switch);
+        mDoNotDisturbLayout = root.findViewById(R.id.do_not_disturb_layout);
         mProgressLayout = root.findViewById(R.id.progress_overlay);
 
         return root;
@@ -84,17 +93,46 @@ public class ConversationDetailsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mIcon.setOnClickListener(mOnClickListener);
         mDeleteChatButton.setOnClickListener(mOnClickListener);
-        mDoNotDisturbButton.setOnClickListener(mOnClickListener);
+        mDoNotDisturbButton.setOnCheckedChangeListener(mOnDoNotDisturbCheckedChangeListener);
 
-        Conversation conversation = getConversation();
-        ConversationHelper.getInstance().bindConversationIconToImageView(conversation, R.dimen.avatar_small_diameter, mIcon);
-        mName.setText(ConversationHelper.getInstance().getTitle(conversation, view.getContext()));
+        bindConversation(getConversation(), view);
         setProgressState(mIsRequestInProgress);
     }
 
     private Conversation getConversation() {
         return (Conversation) getArguments().getParcelable(ARG_CONVERSATION);
     }
+
+    private void bindConversation(Conversation conversation, View root) {
+        ConversationHelper.getInstance().bindConversationIconToImageView(conversation, R.dimen.avatar_small_diameter, mIcon);
+        mName.setText(ConversationHelper.getInstance().getTitle(conversation, root.getContext()));
+
+        if (conversation == null) {
+            mDoNotDisturbLayout.setVisibility(View.GONE);
+        } else {
+            mDoNotDisturbLayout.setVisibility(View.VISIBLE);
+            mDoNotDisturbButton.setOnCheckedChangeListener(null);
+            mDoNotDisturbButton.setChecked(conversation.isNotDisturbTurnedOn());
+            mDoNotDisturbButton.setOnCheckedChangeListener(mOnDoNotDisturbCheckedChangeListener);
+        }
+    }
+
+    void onEventMainThread(ConversationChanged event) {
+        Conversation old = getConversation();
+        if (old == null) return;
+
+        if (old.getId() == event.conversation.getId()
+                && getView() != null) {
+            bindConversation(event.conversation, getView());
+        }
+    }
+
+    final CompoundButton.OnCheckedChangeListener mOnDoNotDisturbCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            requestChangeDoNotDisturbStatus(isChecked);
+        }
+    };
 
     OnClickListener mOnClickListener = v -> {
         switch (v.getId()) {
@@ -156,6 +194,38 @@ public class ConversationDetailsFragment extends Fragment {
                         mIsRequestInProgress = false;
                         setProgressState(false);
                         listener.onConversationRemoved(conversation);
+                    }
+                });
+    }
+
+    private void requestChangeDoNotDisturbStatus(boolean turnendOn) {
+        if (getConversation() == null) return;
+        long convId = getConversation().getId();
+
+        Observable<Conversation> observable;
+
+        if (turnendOn) {
+            observable = RestClient.getAPiMessenger().doNotDisturbTurnOn(convId, null);
+        } else {
+            observable = RestClient.getAPiMessenger().doNotDisturbTurnOff(convId, null);
+        }
+
+        mDoNotDisturbSubscription.unsubscribe();
+        mDoNotDisturbSubscription = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Conversation>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (BuildConfig.DEBUG) Log.e("ConversationDetails", "requestChangeDoNotDisturbStatus() error", e);
+                        // Игнорируем, не парим мозг всякой фигней
+                    }
+
+                    @Override
+                    public void onNext(Conversation conversation) {
+                        // А тоже игнорируем.
                     }
                 });
     }

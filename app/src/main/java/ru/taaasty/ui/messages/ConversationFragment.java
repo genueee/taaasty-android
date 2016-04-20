@@ -205,6 +205,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         super.onActivityCreated(savedInstanceState);
         ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         mConversationSubject
+                .distinctUntilChanged()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Conversation>() {
                     @Override

@@ -64,6 +64,8 @@ public abstract class Conversation implements Parcelable {
 
     int messagesCount;
 
+    boolean notDisturb;
+
     Message lastMessage = Message.DUMMY;
 
     /**
@@ -116,41 +118,6 @@ public abstract class Conversation implements Parcelable {
 
     public abstract long toRealUserId(long fakeUserId);
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Conversation that = (Conversation) o;
-
-        if (id != that.id) return false;
-        if (getUserId() != that.getUserId()) return false;
-        if (getUnreadMessagesCount() != that.getUnreadMessagesCount()) return false;
-        if (getUnreceivedMessagesCount() != that.getUnreceivedMessagesCount()) return false;
-        if (getMessagesCount() != that.getMessagesCount()) return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
-        if (getCreatedAt() != null ? !getCreatedAt().equals(that.getCreatedAt()) : that.getCreatedAt() != null)
-            return false;
-        if (getUpdatedAt() != null ? !getUpdatedAt().equals(that.getUpdatedAt()) : that.getUpdatedAt() != null)
-            return false;
-        return getLastMessage() != null ? getLastMessage().equals(that.getLastMessage()) : that.getLastMessage() == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = (int) (id ^ (id >>> 32));
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (int) (getUserId() ^ (getUserId() >>> 32));
-        result = 31 * result + (getCreatedAt() != null ? getCreatedAt().hashCode() : 0);
-        result = 31 * result + (getUpdatedAt() != null ? getUpdatedAt().hashCode() : 0);
-        result = 31 * result + getUnreadMessagesCount();
-        result = 31 * result + getUnreceivedMessagesCount();
-        result = 31 * result + getMessagesCount();
-        result = 31 * result + (getLastMessage() != null ? getLastMessage().hashCode() : 0);
-        return result;
-    }
-
     public static final TypeSelector<Conversation> GSON_TYPE_SELECTOR = new TypeSelector<Conversation>() {
         @Override
         public Class<? extends Conversation> getClassForElement(JsonElement readElement) {
@@ -165,6 +132,43 @@ public abstract class Conversation implements Parcelable {
             return null;
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Conversation that = (Conversation) o;
+
+        if (id != that.id) return false;
+        if (userId != that.userId) return false;
+        if (unreadMessagesCount != that.unreadMessagesCount) return false;
+        if (unreceivedMessagesCount != that.unreceivedMessagesCount) return false;
+        if (messagesCount != that.messagesCount) return false;
+        if (notDisturb != that.notDisturb) return false;
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        if (createdAt != null ? !createdAt.equals(that.createdAt) : that.createdAt != null)
+            return false;
+        if (updatedAt != null ? !updatedAt.equals(that.updatedAt) : that.updatedAt != null)
+            return false;
+        return lastMessage != null ? lastMessage.equals(that.lastMessage) : that.lastMessage == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (int) (userId ^ (userId >>> 32));
+        result = 31 * result + (createdAt != null ? createdAt.hashCode() : 0);
+        result = 31 * result + (updatedAt != null ? updatedAt.hashCode() : 0);
+        result = 31 * result + unreadMessagesCount;
+        result = 31 * result + unreceivedMessagesCount;
+        result = 31 * result + messagesCount;
+        result = 31 * result + (notDisturb ? 1 : 0);
+        result = 31 * result + (lastMessage != null ? lastMessage.hashCode() : 0);
+        return result;
+    }
 
     public long getId() {
         return id;
@@ -203,5 +207,9 @@ public abstract class Conversation implements Parcelable {
 
     public Message getLastMessage() {
         return lastMessage;
+    }
+
+    public boolean isNotDisturbTurnedOn() {
+        return notDisturb;
     }
 }

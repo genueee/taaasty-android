@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
 import ru.taaasty.R;
+import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment.SelectPhotoSourceDialogListener;
@@ -65,6 +68,7 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         setTitle(guessActivityTitle());
     }
 
+    @Nullable
     private Conversation getConversation() {
         return getIntent().getParcelableExtra(EXTRA_CONVERSATION);
     }
@@ -148,6 +152,15 @@ public class EditCreateGroupActivity extends ActivityBase implements SelectPhoto
         intent.setAction(ACTION_SAVE_CONVERSATION);
         setResult(Activity.RESULT_OK, intent);
         finish();
+    }
+
+    @Override
+    public void onDoNotDisturbStatusChanged(Conversation conversation) {
+        if (isFinishing()) return;
+        Intent intent = new Intent();
+        intent.putExtra(RESULT_CONVERSATION, conversation);
+        setResult(Activity.RESULT_OK, intent);
+        EventBus.getDefault().post(new ConversationChanged(conversation));
     }
 
     private CharSequence guessActivityTitle() {

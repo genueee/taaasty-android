@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.taaasty.R;
 import ru.taaasty.Session;
@@ -42,13 +43,22 @@ public class UserAdapter extends RecyclerView.Adapter {
     private boolean isReadOnly;
     private ViewGroup header;
 
+    private long conversationUserId = Session.getInstance().getCurrentUserId();
+
     SortedList<User> users = new SortedList<>(User.class, new SortedListAdapterCallback<User>(this) {
         @Override
         public int compare(User user1, User user2) {
-            if (Session.getInstance().isMe(user1.getId())) {
-                return -Integer.MAX_VALUE;
+            if (user1.getName().compareToIgnoreCase(user2.getName()) == 0) return 0;
+
+            if (conversationUserId == user1.getId()) {
+                return -1;
             }
-            return user1.getName().compareTo(user2.getName());
+
+            if (conversationUserId == user2.getId()) {
+                return 1;
+            }
+
+            return user1.getName().compareToIgnoreCase(user2.getName());
         }
 
         @Override
@@ -90,6 +100,17 @@ public class UserAdapter extends RecyclerView.Adapter {
 
     public void setIsReadonly() {
         isReadOnly = true;
+    }
+
+    public void setConversationUserId(long userId) {
+        if (userId != conversationUserId) {
+            conversationUserId = userId;
+            users.beginBatchedUpdates();
+            List<User> oldUsers = users.getItems();
+            users.clear();
+            users.addItems(oldUsers);
+            users.endBatchedUpdates();
+        }
     }
 
     public void setUsers(ArrayList<User> usersList) {

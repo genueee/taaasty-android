@@ -81,11 +81,6 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
     }
 
     @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -110,6 +105,11 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
     }
 
     @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.id);
         dest.writeLong(this.userId);
@@ -118,11 +118,12 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
         dest.writeInt(this.unreadMessagesCount);
         dest.writeInt(this.unreceivedMessagesCount);
         dest.writeInt(this.messagesCount);
+        dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
         dest.writeParcelable(this.lastMessage, flags);
-        dest.writeByte(isAnonymous ? (byte) 1 : (byte) 0);
         dest.writeParcelable(this.entry, flags);
         dest.writeTypedList(users);
         dest.writeLongArray(this.usersLeft);
+        dest.writeByte(isAnonymous ? (byte) 1 : (byte) 0);
     }
 
     protected PublicConversation(Parcel in) {
@@ -136,11 +137,12 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
+        this.notDisturb = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
-        this.isAnonymous = in.readByte() != 0;
         this.entry = in.readParcelable(Entry.class.getClassLoader());
         this.users = in.createTypedArrayList(User.CREATOR);
         this.usersLeft = in.createLongArray();
+        this.isAnonymous = in.readByte() != 0;
     }
 
     public static final Creator<PublicConversation> CREATOR = new Creator<PublicConversation>() {

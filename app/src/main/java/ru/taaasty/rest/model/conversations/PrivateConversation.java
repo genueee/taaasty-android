@@ -69,6 +69,10 @@ public class PrivateConversation extends Conversation implements Parcelable {
         return result;
     }
 
+    public PrivateConversation() {
+        super(Type.PRIVATE.apiValue);
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -76,26 +80,21 @@ public class PrivateConversation extends Conversation implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.id);
+        dest.writeLong(this.userId);
+        dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
+        dest.writeLong(updatedAt != null ? updatedAt.getTime() : -1);
+        dest.writeInt(this.unreadMessagesCount);
+        dest.writeInt(this.unreceivedMessagesCount);
+        dest.writeInt(this.messagesCount);
+        dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.lastMessage, flags);
         dest.writeLong(this.recipientId);
         dest.writeParcelable(this.recipient, flags);
-        dest.writeLong(this.id);
-        dest.writeLong(this.getUserId());
-        dest.writeLong(getCreatedAt() != null ? getCreatedAt().getTime() : -1);
-        dest.writeLong(getUpdatedAt() != null ? getUpdatedAt().getTime() : -1);
-        dest.writeInt(this.getUnreadMessagesCount());
-        dest.writeInt(this.getUnreceivedMessagesCount());
-        dest.writeInt(this.getMessagesCount());
-        dest.writeParcelable(this.getLastMessage(), flags);
-    }
-
-    public PrivateConversation() {
-        super(Type.PRIVATE.apiValue);
     }
 
     protected PrivateConversation(Parcel in) {
-        super(Type.PRIVATE.apiValue);
-        this.recipientId = in.readLong();
-        this.recipient = in.readParcelable(User.class.getClassLoader());
+        this();
         this.id = in.readLong();
         this.userId = in.readLong();
         long tmpCreatedAt = in.readLong();
@@ -105,7 +104,10 @@ public class PrivateConversation extends Conversation implements Parcelable {
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
+        this.notDisturb = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
+        this.recipientId = in.readLong();
+        this.recipient = in.readParcelable(User.class.getClassLoader());
     }
 
     public static final Creator<PrivateConversation> CREATOR = new Creator<PrivateConversation>() {

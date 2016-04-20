@@ -110,38 +110,62 @@
     </ru.taaasty.widgets.RelativeDateTextSwitcher>
 
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true">
+        android:layout_centerVertical="true"
+        android:orientation="horizontal"
+        android:baselineAligned="false"
+        >
 
-        <ru.taaasty.widgets.SquareTextView
-            android:id="@+id/unread_messages_count"
+        <ImageView
+            android:id="@+id/mute_off_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginTop="1dp"
+            android:layout_gravity="center_vertical"
+            android:tint="#c9c9c9"
+            android:src="@drawable/ic_mute_off"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible"/>
+
+        <FrameLayout
+            android:id="@+id/unread_messages_count_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="8dp"
-            android:background="@drawable/conversations_list_unread_messages_background"
-            android:gravity="center"
-            android:maxWidth="5sp"
-            android:minHeight="16dp"
-            android:minWidth="16dp"
-            android:padding="4dp"
-            android:textSize="12sp"
-            android:singleLine="true"
-            android:textColor="@android:color/white"
-            tools:text="100" />
+            android:layout_gravity="center_vertical">
 
-        <View
-            android:id="@+id/unreceived_messages_indicator"
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_gravity="center"
-            android:visibility="invisible"
-            tools:visibility="visible"
-            android:background="@drawable/conversations_has_unreceived_messages"
-            />
-    </FrameLayout>
+            <ru.taaasty.widgets.SquareTextView
+                android:id="@+id/unread_messages_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="8dp"
+                android:background="@drawable/conversations_list_unread_messages_background"
+                android:gravity="center"
+                android:maxWidth="5sp"
+                android:minHeight="16dp"
+                android:minWidth="16dp"
+                android:padding="4dp"
+                android:singleLine="true"
+                android:text="100"
+                android:textColor="@android:color/white"
+                android:textSize="12sp"/>
+
+            <View
+                android:id="@+id/unreceived_messages_indicator"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_gravity="center"
+                android:background="@drawable/conversations_has_unreceived_messages"
+                android:visibility="invisible"
+                tools:visibility="visible"
+                />
+        </FrameLayout>
+
+    </LinearLayout>
 
 </RelativeLayout>

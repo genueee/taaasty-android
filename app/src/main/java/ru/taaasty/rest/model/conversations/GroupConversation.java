@@ -126,28 +126,24 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(this.id);
+        dest.writeLong(this.userId);
+        dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
+        dest.writeLong(updatedAt != null ? updatedAt.getTime() : -1);
+        dest.writeInt(this.unreadMessagesCount);
+        dest.writeInt(this.unreceivedMessagesCount);
+        dest.writeInt(this.messagesCount);
+        dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.lastMessage, flags);
         dest.writeString(this.topic);
         dest.writeParcelable(this.admin, flags);
         dest.writeTypedList(users);
         dest.writeLongArray(this.usersLeft);
         dest.writeParcelable(this.avatar, flags);
-        dest.writeLong(this.id);
-        dest.writeLong(this.getUserId());
-        dest.writeLong(getCreatedAt() != null ? getCreatedAt().getTime() : -1);
-        dest.writeLong(getUpdatedAt() != null ? getUpdatedAt().getTime() : -1);
-        dest.writeInt(this.getUnreadMessagesCount());
-        dest.writeInt(this.getUnreceivedMessagesCount());
-        dest.writeInt(this.getMessagesCount());
-        dest.writeParcelable(this.getLastMessage(), flags);
     }
 
     protected GroupConversation(Parcel in) {
         this();
-        this.topic = in.readString();
-        this.admin = in.readParcelable(User.class.getClassLoader());
-        this.users = in.createTypedArrayList(User.CREATOR);
-        this.usersLeft = in.createLongArray();
-        this.avatar = in.readParcelable(GroupPicture.class.getClassLoader());
         this.id = in.readLong();
         this.userId = in.readLong();
         long tmpCreatedAt = in.readLong();
@@ -157,7 +153,13 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
+        this.notDisturb = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
+        this.topic = in.readString();
+        this.admin = in.readParcelable(User.class.getClassLoader());
+        this.users = in.createTypedArrayList(User.CREATOR);
+        this.usersLeft = in.createLongArray();
+        this.avatar = in.readParcelable(GroupPicture.class.getClassLoader());
     }
 
     public static final Creator<GroupConversation> CREATOR = new Creator<GroupConversation>() {

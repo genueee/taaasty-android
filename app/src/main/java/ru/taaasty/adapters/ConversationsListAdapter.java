@@ -60,6 +60,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
         bindText(viewHolder, conversation);
         bindDate(viewHolder, conversation);
         bindUnreadMessages(viewHolder, conversation);
+        bindMuteStatusIndicator(viewHolder, conversation);
     }
 
 
@@ -133,13 +134,21 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     private void bindUnreadMessages(ViewHolder holder, Conversation conversation) {
         if (conversation.getUnreadMessagesCount()> 0) {
             // TODO: анимации переходов и появлений
+            holder.unreadContainer.setVisibility(View.VISIBLE);
+            holder.unreceivedIndicator.setVisibility(View.INVISIBLE);
             holder.msgCount.setVisibility(View.VISIBLE);
             holder.msgCount.setText(String.valueOf(conversation.getUnreadMessagesCount()));
-            holder.unreceivedIndicator.setVisibility(View.INVISIBLE);
-        } else {
+        } else if (conversation.getUnreadMessagesCount() > 0) {
+            holder.unreadContainer.setVisibility(View.VISIBLE);
             holder.msgCount.setVisibility(View.INVISIBLE);
-            holder.unreceivedIndicator.setVisibility(conversation.getUnreceivedMessagesCount() > 0 ? View.VISIBLE : View.INVISIBLE);
+            holder.unreceivedIndicator.setVisibility(View.VISIBLE);
+        } else {
+            holder.unreadContainer.setVisibility(View.GONE);
         }
+    }
+
+    private void bindMuteStatusIndicator(ViewHolder holder, Conversation conversation) {
+        holder.muteNotificationIndicator.setVisibility(conversation.isNotDisturbTurnedOn() ? View.VISIBLE : View.INVISIBLE);
     }
 
     private CharSequence formatLastMessageText(Conversation conversation, Resources resources) {
@@ -173,7 +182,11 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
 
         public final TextView msgCount;
 
+        public final View unreadContainer;
+
         public final View unreceivedIndicator;
+
+        public final View muteNotificationIndicator;
 
         public ViewHolder(View v) {
             super(v);
@@ -184,6 +197,8 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             unreceivedIndicator = v.findViewById(R.id.unreceived_messages_indicator);
             messageAvatar = (ImageView) v.findViewById(R.id.message_avatar);
             messageText = (TextView) v.findViewById(R.id.last_message);
+            muteNotificationIndicator = v.findViewById(R.id.mute_off_indicator);
+            unreadContainer = v.findViewById(R.id.unread_messages_count_container);
         }
     }
 

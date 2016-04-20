@@ -1,83 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
 
     <LinearLayout
-                  android:orientation="vertical"
-                  android:layout_width="match_parent"
-                  android:layout_height="match_parent">
-
-    <LinearLayout
-        android:id="@+id/group_header_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <RelativeLayout
-            android:id="@+id/header_group_info"
+        <LinearLayout
+            android:id="@+id/group_header_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:padding="16dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true">
+            android:orientation="vertical">
 
-            <ru.taaasty.widgets.HintedExtendedImageView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/avatar_small_diameter"
-                android:layout_height="@dimen/avatar_small_diameter"
-                android:layout_marginRight="16dp"
-                android:layout_gravity="top"
-                android:contentDescription="@string/change_conversation_avatar"
-                android:src="@drawable/group_post_default_avatar"
-                android:clickable="true" />
-
-            <EditText
-                android:id="@+id/topic"
+            <RelativeLayout
+                android:id="@+id/header_group_info"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#303030"
-                android:maxLines="7"
-                android:ellipsize="end"
-                android:textSize="16sp"
-                tools:text="genue sf"
-                android:layout_toRightOf="@+id/avatar"
-                android:layout_centerVertical="true"/>
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center_vertical"
+                android:padding="16dp">
 
-        </RelativeLayout>
+                <ru.taaasty.widgets.HintedExtendedImageView
+                    android:id="@+id/avatar"
+                    android:layout_width="@dimen/avatar_small_diameter"
+                    android:layout_height="@dimen/avatar_small_diameter"
+                    android:layout_gravity="top"
+                    android:layout_marginRight="16dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/change_conversation_avatar"
+                    android:src="@drawable/group_post_default_avatar"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#c0c0c0"/>
+                <EditText
+                    android:id="@+id/topic"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toRightOf="@+id/avatar"
+                    android:ellipsize="end"
+                    android:maxLines="7"
+                    android:textColor="#303030"
+                    android:textSize="16sp"
+                    tools:text="genue sf"/>
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#c0c0c0"/>
 
             <LinearLayout
                 android:id="@+id/do_not_disturb_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
                 android:background="@drawable/background_chat_options"
-                android:visibility="gone">
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:text="@string/do_not_disturb"
                     android:textColor="#303030"
-                    android:textSize="18sp"
-                    tools:text="@string/do_not_disturb"/>
+                    android:textSize="18sp"/>
 
-                <TextView
-                    android:id="@+id/do_not_disturb_period"
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/do_not_disturb_switch"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="#303030"
-                    android:textSize="16sp"
-                    tools:text="@string/do_not_disturb"/>
+                    android:layout_height="wrap_content"/>
 
             </LinearLayout>
 
@@ -85,74 +81,79 @@
                 android:id="@+id/delete_chat_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="horizontal"
+                android:background="@drawable/background_chat_options"
                 android:gravity="center_vertical"
-                android:background="@drawable/background_chat_options">
+                android:orientation="horizontal"
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/delete_chat_caption"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:text="@string/delete_chat"
                     android:textColor="#303030"
-                    android:textSize="18sp"
-                    android:text="@string/delete_chat"/>
+                    android:textSize="18sp"/>
 
             </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/user_count"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="#303030"
-                android:textSize="18sp"
-                tools:text="Участников: 10"
-                android:singleLine="true"
-                android:layout_marginRight="8dp"
-                />
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/edit_users"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#303030"
-                android:textSize="18sp"
-                android:text="@string/edit_post"
-                android:paddingLeft="8dp"
-                android:paddingRight="8dp"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:background="@drawable/btn_edit_group_users"/>
+                <TextView
+                    android:id="@+id/user_count"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:textColor="#303030"
+                    android:textSize="18sp"
+                    tools:text="Участников: 10"
+                    />
+
+                <TextView
+                    android:id="@+id/edit_users"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_edit_group_users"
+                    android:paddingBottom="16dp"
+                    android:paddingLeft="8dp"
+                    android:paddingRight="8dp"
+                    android:paddingTop="16dp"
+                    android:text="@string/edit_post"
+                    android:textColor="#303030"
+                    android:textSize="18sp"/>
+
+            </LinearLayout>
 
         </LinearLayout>
 
-    </LinearLayout>
+        <ru.taaasty.widgets.MyRecyclerView
+            android:id="@+id/user_list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="never"
+            android:scrollbarStyle="outsideOverlay"
+            android:smoothScrollbar="true"
+            tools:divider="@drawable/followings_list_divider"
+            tools:listitem="@layout/list_item_chat_user"/>
 
-    <ru.taaasty.widgets.MyRecyclerView
-        android:id="@+id/user_list"
-        android:layout_height="0dp"
-        android:layout_width="match_parent"
-        android:layout_weight="1"/>
-
-    <TextView
-        android:id="@+id/save_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:textColor="@android:color/white"
-        android:background="@drawable/btn_green_background"
-        android:text="@string/save_post"/>
+        <TextView
+            android:id="@+id/save_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_green_background"
+            android:gravity="center"
+            android:padding="16dp"
+            android:text="@string/save_post"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"/>
 
     </LinearLayout>
 
@@ -160,8 +161,8 @@
         android:id="@+id/progress_overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clickable="true"
         android:background="@color/black_overlay"
+        android:clickable="true"
         android:visibility="gone">
 
         <ProgressBar

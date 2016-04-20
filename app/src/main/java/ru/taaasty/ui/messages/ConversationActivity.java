@@ -23,6 +23,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
+import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
@@ -146,23 +147,40 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case REQUEST_CODE_EDIT_CONVERSATION:
                     if (EditCreateGroupActivity.ACTION_SAVE_CONVERSATION.equals(data.getAction())) {
-                        onConversationLoaded((Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION));
                     }
                     if (EditCreateGroupActivity.ACTION_LEAVE_CONVERSATION.equals(data.getAction())) {
                         finish();
+                        return;
                     }
                     break;
                 case REQUEST_CODE_CONVERSATION_DETAILS:
                     if (data.getAction().equals(ConversationDetailsActivity.ACTION_CONVERSATION_REMOVED)) {
                         finish();
+                        return;
                     }
                     break;
+            }
+            if (data != null) {
+                Conversation newConversation = (Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION);
+                if (newConversation != null
+                        && (!newConversation.equals(mConversation)))
+                    onConversationLoaded(newConversation);
+            }
+        } else if (resultCode == RESULT_CANCELED) {
+            if (requestCode == REQUEST_CODE_EDIT_CONVERSATION) {
+                // XXX здесь при смене doNotDisturb может оказаться новый conversation
+                if (data != null) {
+                    Conversation newConversation = (Conversation) data.getParcelableExtra(EditCreateGroupActivity.RESULT_CONVERSATION);
+                    if ((newConversation != null)
+                            && (!newConversation.equals(mConversation)))
+                        onConversationLoaded(newConversation);
+                }
             }
         }
     }
@@ -188,6 +206,14 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         mConversationSubscription.unsubscribe();
     }
 
+    void onEventMainThread(ConversationChanged event) {
+        if (mConversation != null
+                && mConversation.getId() == event.conversation.getId()
+                && !mConversation.equals(event.conversation)) {
+            onConversationLoaded(event.conversation);
+        }
+    }
+
     @Override
     public void onEdgeReached(boolean atTop) {
     }
@@ -195,6 +221,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     @Override
     public void onEdgeUnreached() {
     }
+
+
 
     public void onConversationLoaded(Conversation conversation) {
         mConversation = conversation;

@@ -15,13 +15,16 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SwitchCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,8 +37,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.Session;
+import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.ContentTypedOutput;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.User;
@@ -85,6 +90,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private View mProgressOverlay;
     private View mLeaveButton;
     private TextView mDeleteChatText;
+    private View mDoNotDisturbLayout;
+    private SwitchCompat mDoNotDisturbButton;
 
     private ViewGroup mGroupHeaderLayout;
 
@@ -99,6 +106,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     private ApiMessenger mApiMessenger;
     private Subscription mSaveGroupSubscription = Subscriptions.unsubscribed();
     private Subscription mGroupAvatarThumbnailSubscription = Subscriptions.unsubscribed();
+    private Subscription mDoNotDisturbSubscription = Subscriptions.unsubscribed();
 
     OnChangeListener mOnChangeListener = new OnChangeListener() {
         @Override
@@ -130,6 +138,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mProgressOverlay = root.findViewById(R.id.progress_overlay);
         mLeaveButton = root.findViewById(R.id.delete_chat_layout);
         mDeleteChatText = (TextView) root.findViewById(R.id.delete_chat_caption);
+        mDoNotDisturbButton = (SwitchCompat)root.findViewById(R.id.do_not_disturb_switch);
+        mDoNotDisturbLayout = root.findViewById(R.id.do_not_disturb_layout);
 
         mGroupHeaderLayout = (ViewGroup) root.findViewById(R.id.group_header_layout);
         ((ViewGroup)mGroupHeaderLayout.getParent()).removeView(mGroupHeaderLayout);
@@ -140,6 +150,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.notification_list_divider));
+        if (getConversation() != null) mAdapter.setConversationUserId(getConversation().getUserId());
         mAdapter.setUsers(mModel.getUsers());
 
         mApiMessenger = RestClient.getAPiMessenger();
@@ -164,6 +175,8 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             mSaveButton.setText(isNewConversation() ? R.string.create_conversation_short_button : R.string.save_conversation);
         }
         mAvatar.setOnClickListener(onClickListener);
+
+        bindDoNotDisturb(getConversation());
 
         bindModel();
 
@@ -260,6 +273,16 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         super.onDestroyView();
     }
 
+    void onEventMainThread(ConversationChanged event) {
+        Conversation old = getConversation();
+        if (old == null) return;
+
+        if (old.getId() == event.conversation.getId()
+                && getView() != null) {
+            bindDoNotDisturb(event.conversation);
+        }
+    }
+
     private void setProgressState(boolean showProgress) {
         mProgressOverlay.setVisibility(showProgress ? View.VISIBLE : View.GONE);
     }
@@ -267,6 +290,24 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     public boolean isInProgress() {
         return mProgressOverlay.getVisibility() == View.VISIBLE;
     }
+
+    private void bindDoNotDisturb(Conversation conversation) {
+        if (conversation == null) {
+            mDoNotDisturbLayout.setVisibility(View.GONE);
+            return;
+        }
+        mDoNotDisturbLayout.setVisibility(View.VISIBLE);
+        mDoNotDisturbButton.setOnCheckedChangeListener(null);
+        mDoNotDisturbButton.setChecked(conversation.isNotDisturbTurnedOn());
+        mDoNotDisturbButton.setOnCheckedChangeListener(mOnDoNotDisturbCheckedChangeListener);
+    }
+
+    final CompoundButton.OnCheckedChangeListener mOnDoNotDisturbCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            requestChangeDoNotDisturbStatus(isChecked);
+        }
+    };
 
     private void bindModel() {
         mTextWatcher.setEnabled(false);
@@ -520,6 +561,39 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
             mInteractionListener.onConversationSaved(conversation);
         }
     };
+
+    private void requestChangeDoNotDisturbStatus(boolean turnendOn) {
+        if (getConversation() == null) return;
+        long convId = getConversation().getId();
+
+        Observable<Conversation> observable;
+
+        if (turnendOn) {
+            observable = RestClient.getAPiMessenger().doNotDisturbTurnOn(convId, null);
+        } else {
+            observable = RestClient.getAPiMessenger().doNotDisturbTurnOff(convId, null);
+        }
+
+        mDoNotDisturbSubscription.unsubscribe();
+        mDoNotDisturbSubscription = observable
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Conversation>() {
+                    @Override
+                    public void onCompleted() {}
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (BuildConfig.DEBUG) Log.e("ConversationDetails", "requestChangeDoNotDisturbStatus() error", e);
+                        // Игнорируем, не парим мозг всякой фигней
+                    }
+
+                    @Override
+                    public void onNext(Conversation conversation) {
+                        if (mInteractionListener != null) mInteractionListener.onDoNotDisturbStatusChanged(conversation);
+                        // А тоже игнорируем.
+                    }
+                });
+    }
 
     public void showLoadAvatar() {
         if (!isReadOnly()) {
@@ -805,6 +879,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     public interface InteractionListener {
         void onConversationLeaved(Conversation conversation);
         void onConversationSaved(Conversation conversation);
+        void onDoNotDisturbStatusChanged(Conversation conversation);
     }
 
 }
