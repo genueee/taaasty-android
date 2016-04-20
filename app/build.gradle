@@ -42,7 +42,7 @@ android {
         minSdkVersion 16
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 23
-        versionName "1.6.1" // Используем semver. Требуется для проверки версии. Hint: 1.6 - неверно, 1.6.0 - верно
+        versionName "1.7.0" // Используем semver. Требуется для проверки версии. Hint: 1.6 - неверно, 1.6.0 - верно
 
         buildConfigField "String", "API_SERVER_ADDRESS",
                 project.ext.private.getProperty("default.ApiServerAddress",
@@ -126,6 +126,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.beta
             manifestPlaceholders = [ facebook_app_id_forprovider:"beta7319196969019291"] // Левый id в провайдере, чтобы не задалбывал ошибками
+            ext.enableCrashlytics = true
+            ext.betaDistributionEmailsFilePath="crashlytics_testers.txt"
+            ext.betaDistributionReleaseNotesFilePath="crashlytics_release_notes.txt"
         }
     }
 
