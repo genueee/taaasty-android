@@ -13,6 +13,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.Date;
+
 import ru.taaasty.R;
 import ru.taaasty.SortedList;
 import ru.taaasty.rest.model.conversations.Conversation;
@@ -119,7 +121,13 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     }
 
     private void bindDate(ViewHolder holder, Conversation conversation) {
-        holder.date.setRelativeDate(conversation.getCreatedAt().getTime());
+        Date date;
+        if (conversation.getLastMessage() != null) {
+            date = conversation.getLastMessage().readAt != null ? conversation.getLastMessage().readAt : conversation.getLastMessage().createdAt;
+        } else {
+            date = conversation.getUpdatedAt() != null ? conversation.getUpdatedAt() : conversation.getCreatedAt();
+        }
+        holder.date.setRelativeDate(date.getTime());
     }
 
     private void bindUnreadMessages(ViewHolder holder, Conversation conversation) {

@@ -67,9 +67,9 @@ public abstract class Conversation implements Parcelable {
     Message lastMessage = Message.DUMMY;
 
     /**
-     * Сортировка по убыванию даты создания (более новые - в начале списка)
+     * Сортировка по убыванию даты обновления последниего сообщения, либо переписки (более поздние даты - в начале списка)
      */
-    public static Comparator<Conversation> SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR = new Comparator<Conversation>() {
+    public static Comparator<Conversation> SORT_BY_LAST_MESSAGE_UPDATED_AT_DESC_COMPARATOR = new Comparator<Conversation>() {
         @Override
         public int compare(Conversation lhs, Conversation rhs) {
             if (lhs == null && rhs == null) {
@@ -79,11 +79,21 @@ public abstract class Conversation implements Parcelable {
             } else if (rhs == null) {
                 return 1;
             } else {
-                Date rhsDate = (rhs.getLastMessage() == null ? rhs.getCreatedAt() : rhs.getLastMessage().createdAt);
-                Date lhsDate = (lhs.getLastMessage() == null ? lhs.getCreatedAt() : lhs.getLastMessage().createdAt);
+                Date rhsDate = guessDate(rhs);
+                Date lhsDate = guessDate(lhs);
                 int compareDates = rhsDate.compareTo(lhsDate);
                 return compareDates != 0 ? compareDates : Objects.compare(rhs.id, lhs.id);
             }
+        }
+
+        private Date guessDate(Conversation conversation) {
+            Date date;
+            if (conversation.getLastMessage() != null) {
+                date = conversation.getLastMessage().readAt != null ? conversation.getLastMessage().readAt : conversation.getLastMessage().createdAt;
+            } else {
+                date = conversation.getUpdatedAt() != null ? conversation.getUpdatedAt() : conversation.getCreatedAt();
+            }
+            return date;
         }
     };
 

@@ -256,7 +256,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
             mConversationList = new SortedList<>(Conversation.class, new android.support.v7.util.SortedList.Callback<Conversation>() {
                 @Override
                 public int compare(Conversation o1, Conversation o2) {
-                    return Conversation.SORT_BY_LAST_MESSAGE_CREATED_AT_DESC_COMPARATOR.compare(o1, o2);
+                    return Conversation.SORT_BY_LAST_MESSAGE_UPDATED_AT_DESC_COMPARATOR.compare(o1, o2);
                 }
 
                 @Override
