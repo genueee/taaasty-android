@@ -19,6 +19,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -381,8 +383,14 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         if (holder.isMyMessage) {
             return;
         }
-        User user = getMember(message.getUserId());
-        mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
+
+        if (mConversation != null && mConversation.getType() == Conversation.Type.PRIVATE) {
+            holder.avatar.setVisibility(View.GONE);
+            Picasso.with(holder.itemView.getContext()).cancelRequest(holder.avatar);
+        } else {
+            User user = getMember(message.getUserId());
+            mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
+        }
     }
 
     private void bindMessageDate(ViewHolderMessage holder, Message message) {
