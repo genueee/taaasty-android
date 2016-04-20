@@ -31,6 +31,7 @@
         android:name="ru.taaasty.ui.tabbar.TabbarFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        tools:visibility="invisible"
         tools:layout="@layout/tabbar"/>
 
 </FrameLayout>

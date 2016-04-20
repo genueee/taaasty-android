@@ -41,7 +41,6 @@
         <item name="android:windowBackground">@drawable/feed_white_background</item>
     </style>
 
-
     <style name="TranslucentTheme" parent="AppTheme">
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -54,7 +53,13 @@
     <style name="ShowPhotoTheme" parent="AppThemeOverlayingActionBar"/>
 
     <style name="NotificationsActivityTheme" parent="AppThemeLightOverlayingActionBar">
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkGreen</item>
         <item name="android:windowBackground">@color/feed_light_background_color</item>
+    </style>
+
+    <style name="ConversationActivityTheme" parent="NotificationsActivityTheme">
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkGreen</item>
+        <item name="android:windowBackground">@color/light_background_color_conversations</item>
     </style>
 
     <style name="SettingsActivityTheme" parent="AppTheme">

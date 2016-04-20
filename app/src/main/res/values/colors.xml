@@ -7,6 +7,8 @@
     <!-- colorPrimaryDark is used for the status bar -->
     <color name="colorPrimaryDark">#000000</color>
 
+    <color name="colorPrimaryDarkGreen">#219e59</color>
+
     <!-- colorAccent is used as the default value for colorControlActivated
          which is used to tint widgets -->
     <color name="colorAccent">#24b166</color>
@@ -43,6 +45,8 @@
 
     <color name="feed_light_border_background_color">#eeeeee</color>
     <color name="feed_light_background_color">#fafafa</color>
+
+    <color name="light_background_color_conversations">#EAEBED</color>
 
     <color name="semi_transparent_action_bar_dark">#b6000000</color>
     <color name="semi_transparent_action_bar_light">#b6ffffff</color>

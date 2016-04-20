@@ -67,7 +67,7 @@
         <activity
             android:name=".ui.tabbar.ConversationsActivity"
             android:launchMode="singleTop"
-            android:theme="@style/NotificationsActivityTheme"
+            android:theme="@style/ConversationActivityTheme"
             android:label="@string/title_conversations" >
         </activity>
         <activity
@@ -246,7 +246,7 @@
             android:name=".ui.messages.ConversationActivity"
             android:label="@string/title_activity_conversation"
             android:parentActivityName=".ui.tabbar.NotificationsActivity"
-            android:theme="@style/AppThemeOverlayingActionBar"
+            android:theme="@style/ConversationActivityTheme"
             android:windowSoftInputMode="stateHidden|adjustResize" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -201,7 +201,8 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         if (mConversation.getType() == Conversation.Type.PRIVATE) {
             PrivateConversation chat = (PrivateConversation) conversation;
             setTitle(chat.getRecipient().getName());
-            bindDesign(chat.getRecipient().getDesign());
+            // Фон пока не ставим. TODO: удалить bindDesign, когда примут
+            //bindDesign(chat.getRecipient().getDesign());
         }
 
         ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
