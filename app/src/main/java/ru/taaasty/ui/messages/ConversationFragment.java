@@ -619,7 +619,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
             if (pHolder instanceof LoadMoreButtonHeaderHolder) {
                 ((LoadMoreButtonHeaderHolder) pHolder).loadButton.setOnClickListener(onClickListener);
-            } else if (pHolder instanceof ViewHolderMessage) {
+            } else if (pHolder instanceof ViewHolderMessage && ((ViewHolderMessage) pHolder).avatar != null) {
                 ((ViewHolderMessage) pHolder).avatar.setOnClickListener(onClickListener);
             }
         }

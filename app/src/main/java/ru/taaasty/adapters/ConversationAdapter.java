@@ -110,12 +110,6 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
                             - myHolder.text.getPaddingLeft() - myHolder.text.getPaddingRight()
                             - lpText.leftMargin - lpText.rightMargin;
 
-                    ViewGroup.MarginLayoutParams lpAvatar = (ViewGroup.MarginLayoutParams) myHolder.avatar.getLayoutParams();
-                    maxBubbleTextSize = maxBubbleTextSize
-                            - myHolder.avatar.getPaddingLeft() - myHolder.avatar.getPaddingRight()
-                            - lpAvatar.leftMargin - lpAvatar.rightMargin - lpAvatar.width
-                    ;
-
                     mImageGetterMyMessage = new ImageLoadingGetter(maxBubbleTextSize, parent.getContext());
                 }
                 holder = myHolder;
@@ -384,7 +378,9 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     private void bindAvatar(ViewHolderMessage holder, Message message) {
-        // TODO аватары фейковых юзеров
+        if (holder.isMyMessage) {
+            return;
+        }
         User user = getMember(message.getUserId());
         mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
     }
@@ -474,6 +470,7 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
         public final boolean isMyMessage;
 
+        @Nullable
         public final ImageView avatar;
 
         public final TextView text;
