@@ -357,20 +357,11 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
     }
 
     private void bindMessageText(ViewHolderMessage holder, Message message) {
-        User author = getMember(message.getUserId());
         SpannableStringBuilder text;
 
         Html.ImageGetter imageGetter = holder.isMyMessage ? mImageGetterMyMessage : mImageGetterTheirMessage;
 
         text = new SpannableStringBuilder();
-        // Автор. Может быть неизвестен, если переписка ещё не загружена
-        if (author != null && !holder.isMyMessage) {
-            // TODO В случае анонимок здесь фейковый ID.
-            text.append(author.getNameWithPrefix());
-            UiUtils.setNicknameSpans(text, 0, text.length(), author.getId(), holder.itemView.getContext(), R.style.TextAppearanceSlugInlineGreen);
-            text.append(' ');
-        }
-
         // Аттачи.
         // TODO более вменяемый вариант
         List<Attachment> attachmentList = message.getImageAttachments();

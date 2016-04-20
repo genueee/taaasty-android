@@ -37,10 +37,9 @@
             android:background="@drawable/msg_in"
             android:textColor="#1b1b1b"
             tools:text="text блаблабла"
-            android:textIsSelectable="true"
             android:gravity="center_vertical"
             android:layout_marginLeft="-4dp"
-            android:minWidth="150dp"
+            android:minWidth="80dp"
             android:minHeight="40dp" />
 
         <ru.taaasty.widgets.RelativeDateTextSwitcher
