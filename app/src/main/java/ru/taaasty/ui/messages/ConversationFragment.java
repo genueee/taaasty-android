@@ -51,11 +51,10 @@ import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
-import ru.taaasty.rest.model.conversations.GroupConversation;
+import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
-import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.PhotoSourceManager;
@@ -681,9 +680,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         return ((PrivateConversation)conversation).getRecipient();
                     }
                 case GROUP:
-                    return mChatHelper.findUserById(((GroupConversation)conversation).getUsers(), userUuid);
                 case PUBLIC:
-                    return mChatHelper.findUserById(((PublicConversation)conversation).getUsers(), userUuid);
+                    return mChatHelper.findUserById(((HasManyUsers)conversation).getUsers(), userUuid);                 
                 case OTHER:
                 default:
                     return null;

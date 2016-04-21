@@ -459,10 +459,16 @@ public class ImageUtils {
         }
     }
 
-
     public void loadAvatarToImageView(@Nullable User user,
                                       @DimenRes int diameterResource,
                                       ImageView dstImageView) {
+        loadAvatarToImageView(user, diameterResource, dstImageView,null);
+    }
+
+    public void loadAvatarToImageView(@Nullable User user,
+                                      @DimenRes int diameterResource,
+                                      ImageView dstImageView,
+                                      Drawable defaultUserpicDrawable) {
         Context context = dstImageView.getContext();
 
         //cancel previous background loading
@@ -479,7 +485,9 @@ public class ImageUtils {
         }
 
         int avatarDiameter = context.getResources().getDimensionPixelSize(diameterResource);
-        Drawable defaultUserpicDrawable = DefaultUserpicDrawable.create(context, userpic, userName);
+        if (defaultUserpicDrawable == null) {
+            defaultUserpicDrawable = DefaultUserpicDrawable.create(context, userpic, userName);
+        }
         defaultUserpicDrawable.setBounds(0, 0, avatarDiameter, avatarDiameter); // Ставим bounds врчучную, иначе мерцает при скролле
 
         if (userpic == null || (TextUtils.isEmpty(userpic.originalUrl))) {

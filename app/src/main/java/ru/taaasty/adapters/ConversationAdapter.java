@@ -37,6 +37,7 @@ import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.ui.ImageLoadingGetter;
 import ru.taaasty.ui.photo.ShowPhotoActivity;
 import ru.taaasty.utils.ImageUtils;
@@ -44,6 +45,7 @@ import ru.taaasty.utils.LinkMovementMethodNoSelection;
 import ru.taaasty.utils.Objects;
 import ru.taaasty.utils.TextViewImgLoader;
 import ru.taaasty.utils.UiUtils;
+import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.RelativeDateTextSwitcher;
 
 
@@ -397,7 +399,15 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             Picasso.with(holder.itemView.getContext()).cancelRequest(holder.avatar);
         } else {
             User user = getMember(message.getUserId());
-            mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
+            if (user == null
+                    && mConversation != null
+                    && mConversation.getType() == Conversation.Type.PUBLIC
+                    && ((PublicConversation)mConversation).isAnonymous()) {
+                DefaultUserpicDrawable drawable = DefaultUserpicDrawable.createAnonymousDefault(holder.itemView.getContext());
+                mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar, drawable);
+            } else {
+                mImageUtils.loadAvatarToImageView(user, R.dimen.avatar_small_diameter, holder.avatar);
+            }
         }
     }
 
