@@ -46,6 +46,10 @@ public class TextViewImgLoader {
 
     final Set<ImgTarget> mTargets = new HashSet<>(2);
 
+    private int mMaxWidth = 0;
+
+    private int mMaxHeight = 0;
+
     private static TextViewImgLoader bindToView(TextView view, OnClickListener listener) {
         TextViewImgLoader imgLoader = (TextViewImgLoader)view.getTag(R.id.tag_text_view_img_loader);
         if (imgLoader == null) {
@@ -85,8 +89,8 @@ public class TextViewImgLoader {
             mTextView = view;
             mTargets.add(target);
 
-            int maxWidth = guessMaxWidth(mTextView, span);
-            int maxHeight = ImageUtils.getMaxTextureSize();
+            int maxWidth = mMaxWidth != 0 ? mMaxWidth : guessMaxWidth(mTextView, span);
+            int maxHeight = mMaxHeight != 0 ? mMaxHeight : ImageUtils.getMaxTextureSize();
 
             if (DBG) Log.v(TAG, "picasso resize: " + maxWidth + "x" + maxHeight);
 
@@ -96,6 +100,7 @@ public class TextViewImgLoader {
                 thumborUrl = NetworkUtils.createThumborUrl(originalUrl)
                         .resize(maxWidth, maxHeight)
                         .filter(ThumborUrlBuilder.noUpscale())
+                        .fitIn()
                         .toUrlUnsafe();
             } else {
                 thumborUrl = originalUrl;
@@ -117,6 +122,19 @@ public class TextViewImgLoader {
         for (ImgTarget t: mTargets) mPicasso.cancelRequest(t);
         mTargets.clear();
         mTextView = null;
+    }
+
+    public void setMaxWidth(int width) {
+        mMaxWidth = width;
+    }
+
+    public void setMaxHeight(int height) {
+        mMaxHeight = height;
+    }
+
+    public void setMaxSize(int width, int height) {
+        mMaxWidth = width;
+        mMaxHeight = height;
     }
 
     private void setupClickableSpans(TextView view) {
@@ -221,18 +239,31 @@ public class TextViewImgLoader {
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             // Масштабируем вручную, иначе какие-то проблемы с памятью в ImageView
             // Размеры TextView тут могут быть еще неизвестны. Пытаемся угадать откуда-нибудь из drawable
-            int width = guessMaxWidth(mTextView, mImageSpan);
+
+            int width = mMaxWidth != 0 ? mMaxWidth : guessMaxWidth(mTextView, mImageSpan);
+            int height = mMaxHeight != 0 ? mMaxHeight : ImageUtils.getMaxTextureSize();
+            float scale;
+
             int bitmapWidth = bitmap.getWidth();
-            if (DBG) Log.v(TAG, "onBitmapLoaded() bitmap width: " + bitmapWidth + " guessed width: " + width);
-            if (width != 0 && (bitmapWidth > width)) {
-                float scale = (float)width / (float)bitmapWidth;
-                Matrix m = new Matrix();
-                m.preScale(scale, scale);
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmap.getHeight(), m, false);
-            }
+            int bitmapHeight = bitmap.getHeight();
+
+            //if (bitmapWidth <= width && bitmapHeight <= height) {
+            //    scale = 1.0f;
+            //} else {
+                scale = Math.min((float) width / (float) bitmapWidth,
+                        (float) height / (float) bitmapHeight);
+
+            if (DBG) Log.v(TAG, "onBitmapLoaded() bitmap width: " + bitmapWidth + " guessed width: " + width
+                    + " new scale: " + scale);
+
+            Matrix m = new Matrix();
+            m.preScale(scale, scale);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmapWidth, bitmapHeight, m, false);
+            //}
+
 
             Drawable d = new BitmapDrawable(mTextView.getResources(), bitmap);
-            ImageSpan newSpan = new ResizeImageSpan(d, mImageSpan.getSource(), width);
+            ImageSpan newSpan = new ResizeImageSpan(d, mImageSpan.getSource(), (int)(bitmapWidth * scale + 0.5f));
             replaceSpan(newSpan);
             removeTarget(this);
         }

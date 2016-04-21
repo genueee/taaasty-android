@@ -361,19 +361,27 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
         // Аттачи.
         // TODO более вменяемый вариант
         List<Attachment> attachmentList = message.getImageAttachments();
-        for (Attachment attachment: attachmentList) {
+        boolean isFirst = true;
+        for (Attachment attachment : attachmentList) {
+            if (isFirst) {
+                isFirst = false;
+            } else {
+                text.append('\n');
+            }
             Drawable defaultDrawable = imageGetter.getDrawable(attachment.url);
             ImageSpan span = new ImageSpan(defaultDrawable, attachment.url);
             int len = text.length();
-            text.append("\uFFFC");
+            text.append("<img>");
             text.setSpan(span, len, text.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            text.append("\n");
         }
 
         // Текст
         CharSequence msg = UiUtils.removeTrailingWhitespaces(Html.fromHtml(message.contentHtml, imageGetter, null));
         msg = UiUtils.replaceUrlSpans(msg, true);
-        text.append(msg);
+        if (!UiUtils.isBlank(msg)) {
+            if (!attachmentList.isEmpty()) text.append("\n");
+            text.append(msg);
+        }
 
         holder.text.setText(text);
         holder.textImgLoader.loadImages(holder.text);
@@ -503,6 +511,9 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             text.setMovementMethod(LinkMovementMethodNoSelection.getInstance());
             relativeDate = (RelativeDateTextSwitcher) v.findViewById(R.id.relative_date);
             textImgLoader = new TextViewImgLoader(v.getContext(), SHOW_PHOTO_ON_CLICK_LISTENER);
+            textImgLoader.setMaxHeight(v.getResources().getDimensionPixelSize(R.dimen.conversation_text_image_height));
+            //textImgLoader.setMaxWidth(v.getResources().getDimensionPixelSize(R.dimen.conversation_text_image_width));
+
         }
     }
 
