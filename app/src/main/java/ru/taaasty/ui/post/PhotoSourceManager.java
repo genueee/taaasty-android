@@ -134,16 +134,17 @@ public class PhotoSourceManager {
                 if (resultCode == Activity.RESULT_OK) {
                     newUri = mMakePhotoDstUri;
                     mMakePhotoDstUri = null;
-                    if (DBG)
-                        Log.v(TAG, "Take picture complete uri: " + newUri + " intent data uri: " + data.getData());
+                    if (DBG) Log.v(TAG, "Take picture complete uri: " + newUri);
+
                     ImageUtils.galleryUpdatePic(getContext(), newUri);
                     if (hasExternalStoragePermission()) {
                         startFeatherPhotoAfterPermissionGranted(newUri, true);
                     } else {
                         // Мы не можем попасть сюда без разрешений, мы должны были их получить до фотографирования.
                         // Разве что, у нас их отобрали во время процесса
-                        if (DBG)
+                        if (DBG) {
                             Log.e(TAG, "Has photo but no permissions", new IllegalStateException());
+                        }
                         dispatchNewImageUriReceived(newUri);
                     }
                 }
