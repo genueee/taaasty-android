@@ -55,7 +55,6 @@ import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
-import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
@@ -776,7 +775,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
      * Подгрузчик сообщений
      */
     class MessagesLoader {
-        public static final int ENTRIES_TO_TRIGGER_APPEND = 3;
+        public static final int ENTRIES_TO_TRIGGER_APPEND = 7;
 
         private final Handler mHandler;
 
@@ -797,22 +796,21 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
          */
         private Subscription mMessagesRefreshSubscription;
 
-        private final ApiMessenger mApiMessenger;
-
         private boolean mLoadingMessages;
+
+        private long mLastAppendMessageId;
 
         public MessagesLoader() {
             mHandler = new Handler();
             mKeepOnAppending = new AtomicBoolean(true);
             mMessagesAppendSubscription = Subscriptions.unsubscribed();
             mMessagesRefreshSubscription = Subscriptions.unsubscribed();
-            mApiMessenger = RestClient.getAPiMessenger();
         }
 
         protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
             return mConversationSubject
                     .take(1)
-                    .flatMap(conversation -> mApiMessenger.getMessages(null, conversation.getId(), null, sinceEntryId, limit, null));
+                    .flatMap(conversation -> RestClient.getAPiMessenger().getMessages(null, conversation.getId(), null, sinceEntryId, limit, null));
         }
 
         public void refreshMessages() {
@@ -865,6 +863,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
             final Long lastEntryId = mAdapter.getTopMessageId();
             if (lastEntryId == null) return;
             mLoadingMessages = true; // Здесь ставим немного раньше, чтобы не наплодить runnable'ов
+            // notifyDataSetChanged() нельзя вызывать в onBindViewHolder, поэтому откладываем
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -875,6 +874,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                     }
 
                     int requestEntries = Constants.LIST_FEED_APPEND_LENGTH;
+                    mLastAppendMessageId = lastEntryId;
                     mMessagesAppendSubscription = createObservable(lastEntryId, requestEntries)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(new MessagesLoadObserver(false, requestEntries));
@@ -921,6 +921,23 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         }
 
         private void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+            if (position >= ENTRIES_TO_TRIGGER_APPEND) {
+                return;
+            }
+
+            //if (DBG) Log.d(TAG, "onBindViewHolder() called with: position = [" + position + "]");
+
+            if (!mKeepOnAppending.get()
+                    || !mStartAppending
+                    || mAdapter.isEmpty()
+                    || mLoadingMessages) return;
+
+            final Long lastEntryId = mAdapter.getTopMessageId();
+            if (lastEntryId == null) return;
+
+            if (mLastAppendMessageId == lastEntryId) return; // загружали уже
+
+            activateCacheInBackground();
         }
 
         public void bindLoadMoreButton(LoadMoreButtonHeaderHolder holder) {
