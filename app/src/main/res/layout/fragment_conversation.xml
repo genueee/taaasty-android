@@ -4,24 +4,13 @@
     android:layout_height="match_parent"
     tools:context="ru.taaasty.ui.messages.ConversationActivity">
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize">
-
-        <include
-            layout="@layout/include_conversation_toolbar_layout" />
-
-    </android.support.v7.widget.Toolbar>
-
     <ru.taaasty.widgets.MyRecyclerView
         android:id="@+id/recycler_list_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="bottom"
         android:clipToPadding="false"
-        android:paddingTop="?actionBarSize"
+        android:layout_marginTop="?actionBarSize"
         android:paddingBottom="16dp"
         android:layout_marginBottom="48dp"
         android:smoothScrollbar="false"
@@ -59,5 +48,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         />
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize">
+
+        <include
+            layout="@layout/include_conversation_toolbar_layout" />
+
+    </android.support.v7.widget.Toolbar>
 
 </FrameLayout>
