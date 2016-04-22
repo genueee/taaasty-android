@@ -76,7 +76,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         mListView.setHasFixedSize(true);
         mListView.setLayoutManager(lm);
-        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.followings_list_divider));
+        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.conversation_list_divider));
         mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override

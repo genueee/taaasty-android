@@ -354,7 +354,7 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
         if (imageUri != null) {
             final List<Transformation> avatarTransformation = Arrays.asList(
                     RoundedCornersTransformation.create(getResources().getDimensionPixelSize(R.dimen.group_avatar_corner_radius)),
-                    new ConversationHelper.DrawBackgroundTransformation(getContext(), R.drawable.group_post_default_avatar));
+                    new ConversationHelper.DrawBackgroundTransformation(getContext(), R.drawable.group_post_default_avatar_stroke));
 
             Observable<Bitmap> bitmapObservable = Observable.create(new OnSubscribe<Bitmap>() {
                 @Override

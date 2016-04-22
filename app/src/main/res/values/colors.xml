@@ -75,4 +75,6 @@
 
     <color name="avatar_default">#44d068</color>
 
+    <color name="conversation_list_text_secondary">#aaaaaa</color>
+
 </resources>

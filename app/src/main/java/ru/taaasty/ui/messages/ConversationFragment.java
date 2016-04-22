@@ -3,8 +3,6 @@ package ru.taaasty.ui.messages;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,7 +62,6 @@ import ru.taaasty.utils.ImeUtils;
 import ru.taaasty.utils.ListScrollController;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.SafeOnPreDrawListener;
-import ru.taaasty.widgets.DefaultUserpicDrawable;
 import ru.taaasty.widgets.ExtendedImageView;
 import rx.Observable;
 import rx.Observer;
@@ -384,18 +381,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         Context context = getActivity();
 
-        // У групп без аватарки пустая рамка на зеленом экшнбаре выглядит хреново
-        Drawable defaultGroupDrawable;
-        if (ConversationHelper.getInstance().isNullOrAnonymousConversation(conversation)) {
-            defaultGroupDrawable = DefaultUserpicDrawable.createAnonymousDefault(context);
-        } else {
-            defaultGroupDrawable = new DefaultUserpicDrawable(context,
-                    mChatHelper.getTitleWithoutUserPrefix(conversation, context),
-                    0xfff37420, Color.WHITE, false);
-        }
-
         ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
-        mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar, defaultGroupDrawable);
+        mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar);
         mChatHelper.setupAvatarImageViewClickableForeground(conversation, avatar);
 
         TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));

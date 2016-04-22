@@ -90,5 +90,7 @@
     <dimen name="group_avatar_corner_radius">5dp</dimen>
 
     <dimen name="conversation_text_image_height">200dp</dimen>
+    <dimen name="avatar_size_conversation_list">60dp</dimen>
+    <dimen name="avatar_size_conversation_list_small">32dp</dimen>
 
 </resources>

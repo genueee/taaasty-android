@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.text.TextUtils;
 import android.widget.ImageView;
@@ -31,6 +30,7 @@ import ru.taaasty.rest.model.conversations.GroupPicture;
 import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.model.conversations.PublicConversation;
+import ru.taaasty.widgets.DefaultConversationIconDrawable;
 import ru.taaasty.widgets.ExtendedImageView;
 
 public final class ConversationHelper {
@@ -120,7 +120,7 @@ public final class ConversationHelper {
 
     public void bindConversationIconToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst) {
         Context context = dst.getContext();
-        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.group_post_default_avatar).mutate();
+        Drawable drawable = DefaultConversationIconDrawable.create(dst.getContext(), conversation);
         drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
         bindConversationIconToImageView(conversation, dstSizeRes, dst, drawable);
     }
@@ -221,7 +221,7 @@ public final class ConversationHelper {
                 .noFade()
                 .transform(Arrays.asList(
                         RoundedCornersTransformation.create(dst.getResources().getDimensionPixelSize(R.dimen.group_avatar_corner_radius)),
-                        new DrawBackgroundTransformation(context, R.drawable.group_post_default_avatar)))
+                        new DrawBackgroundTransformation(context, R.drawable.group_post_default_avatar_stroke)))
                 .into(dst);
     }
 

@@ -1,0 +1,4 @@
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+       android:drawable="@drawable/followings_list_divider_line"
+       android:insetLeft="76dp"
+    />

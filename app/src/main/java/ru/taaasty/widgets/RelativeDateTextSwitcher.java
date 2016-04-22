@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
@@ -34,6 +35,8 @@ public class RelativeDateTextSwitcher extends TextSwitcher {
     private final boolean mIsRelativeDateTimeFormat;
 
     private final int mRelativeFormatFlags;
+
+    private CharSequence mTextPrefix;
 
     public RelativeDateTextSwitcher(Context context) {
         this(context, null);
@@ -99,6 +102,11 @@ public class RelativeDateTextSwitcher extends TextSwitcher {
 
     public void setCompoundDrawablesWithIntrinsicBounds(@DrawableRes int left, @DrawableRes int top,
                                                         @DrawableRes int right, @DrawableRes int bottom) {
+        ((TextView)getChildAt(0)).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+        ((TextView)getChildAt(1)).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
+    }
+
+    public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top, Drawable right, Drawable bottom) {
         ((TextView)getChildAt(0)).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
         ((TextView)getChildAt(1)).setCompoundDrawablesWithIntrinsicBounds(left, top, right, bottom);
     }

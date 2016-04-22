@@ -32,7 +32,7 @@
                     android:layout_marginRight="16dp"
                     android:clickable="true"
                     android:contentDescription="@string/change_conversation_avatar"
-                    android:src="@drawable/group_post_default_avatar"/>
+                    android:src="@drawable/group_post_default_avatar_stroke"/>
 
                 <EditText
                     android:id="@+id/topic"
