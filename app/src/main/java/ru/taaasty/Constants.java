@@ -59,6 +59,10 @@ public interface Constants {
      */
     public static final int LIST_FEED_APPEND_LENGTH = 50;
 
+
+    int CONVERSATION_FEED_INITIAL_LENGTH = 25;
+
+
     static final int FEED_TITLE_BACKGROUND_DIM_COLOR_RES = R.color.feed_title_overlay;
 
     float DEFAULT_PARALLAX_FACTOR = 1.9f;

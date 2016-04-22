@@ -814,7 +814,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         }
 
         public void refreshMessages() {
-            int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
+            int requestEntries = Constants.CONVERSATION_FEED_INITIAL_LENGTH;
             Observable<MessageList> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
                     .observeOn(AndroidSchedulers.mainThread());
 
