@@ -119,6 +119,7 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
         dest.writeInt(this.unreceivedMessagesCount);
         dest.writeInt(this.messagesCount);
         dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeByte(isDisabled ? (byte) 1 : (byte) 0);
         dest.writeParcelable(this.lastMessage, flags);
         dest.writeParcelable(this.entry, flags);
         dest.writeTypedList(users);
@@ -138,6 +139,7 @@ public class PublicConversation extends Conversation implements Parcelable, HasM
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
         this.notDisturb = in.readByte() != 0;
+        this.isDisabled = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
         this.entry = in.readParcelable(Entry.class.getClassLoader());
         this.users = in.createTypedArrayList(User.CREATOR);

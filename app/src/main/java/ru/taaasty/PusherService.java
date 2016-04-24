@@ -26,9 +26,9 @@ import java.io.Reader;
 import de.greenrobot.event.EventBus;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import ru.taaasty.events.MessagesRemoved;
+import ru.taaasty.events.pusher.MessagesRemoved;
 import ru.taaasty.events.UiVisibleStatusChanged;
-import ru.taaasty.events.UserMessagesRemoved;
+import ru.taaasty.events.pusher.UserMessagesRemoved;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.events.pusher.MessagingStatusReceived;
@@ -66,7 +66,6 @@ public class PusherService extends Service {
      */
     public static final String EVENT_STATUS = "status";
 
-
     /**
      * Событие - активные переписки
      * Тип: {@linkplain ConversationList}
@@ -97,6 +96,24 @@ public class PusherService extends Service {
      */
     public static final String EVENT_PUSH_NOTIFICATION = "push_notification";
 
+    /**
+     * push notification - удалены сообщения в чате.
+     * Расылается при нажатии "удалить у себя", т.е. сообщения удаляются только у автора, у остальных
+     * остаются видимыми.
+     * Тип: {@linkplain ru.taaasty.rest.model.RemovedMessages}
+     */
+    public static final String EVENT_DELETE_MESSAGES = "delete_messages";
+
+
+    /**
+     * push notificaton - удалены собщения в чате.
+     * Вызывается при нажатии "удалить у всех", т.е. сообщения удалены и у автора
+     * и у всех пользователей
+     * Тип: {@linkplain ru.taaasty.rest.model.RemovedUserMessages}.
+     * В списке - новые, измененные сообщения. У новых сообщений остается тот же ID,
+     * но меняется тип сообщения на System и текст.
+     */
+    public static final String EVENT_DELETE_USER_MESSAGES = "delete_user_messages";
 
     // Групповые
     /**
@@ -117,6 +134,7 @@ public class PusherService extends Service {
     public static final String EVENT_GROUP_UPDATE_NOTIFICATIONS = "group_update_notifications";
     public static final String EVENT_GROUP_DELETE_MESSAGES = "group_delete_messages";
     public static final String EVENT_GROUP_DELETE_USER_MESSAGES = "group_delete_user_messages";
+
 
     //Обсуждения:
     /**
@@ -295,6 +313,7 @@ public class PusherService extends Service {
                         EventBus.getDefault().post(new NotificationMarkedAsRead(event.notifications));
                     }
                     break;
+                case EVENT_DELETE_MESSAGES:
                 case EVENT_GROUP_DELETE_MESSAGES:
                 case EVENT_PUBLIC_DELETE_MESSAGES:
                     RemovedMessages removedMessages = mGson.fromJson(data, RemovedMessages.class);
@@ -302,6 +321,7 @@ public class PusherService extends Service {
                         EventBus.getDefault().post(new MessagesRemoved(removedMessages));
                     }
                     break;
+                case EVENT_DELETE_USER_MESSAGES:
                 case EVENT_GROUP_DELETE_USER_MESSAGES:
                 case EVENT_PUBLIC_DELETE_USER_MESSAGES:
                     RemovedUserMessages removedUserMessages = mGson.fromJson(data, RemovedUserMessages.class);

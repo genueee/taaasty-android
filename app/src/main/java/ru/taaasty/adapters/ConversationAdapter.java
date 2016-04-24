@@ -21,6 +21,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -30,6 +32,7 @@ import ru.taaasty.BuildConfig;
 import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.SortedList;
+import ru.taaasty.rest.model.RemovedUserMessages;
 import ru.taaasty.rest.model.TlogDesign;
 import ru.taaasty.rest.model.UpdateMessages;
 import ru.taaasty.rest.model.User;
@@ -227,6 +230,42 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
 
     public void addMessages(Message[] messages) {
         mMessages.addOrUpdateItems(messages);
+    }
+
+    public void changeMessages(RemovedUserMessages.RemovedMessage messages[]) {
+        if (mConversation == null) return;
+        mMessages.beginBatchedUpdates();
+        for (int i = mMessages.size() - 1; i >= 0; --i) {
+            Message old = mMessages.get(i);
+            for (RemovedUserMessages.RemovedMessage msg: messages) {
+                if (msg.id == old.id) {
+                    Message newMessage = old.newBuilder()
+                            .contentHtml(msg.content)
+                            .type(msg.type)
+                            .build();
+                    mMessages.add(newMessage);
+                    break;
+                }
+            }
+        }
+        mMessages.endBatchedUpdates();
+    }
+
+    /**
+     * Скрытие своих сообщений
+     * Удаляем из списка соощения при условии, что они мои (может быть вызвано, если я
+     *  удаляю сообщения в браузере только для себя и слежу за изменениями в телефоне)
+     * @param messageIds
+     */
+    public void hideMyMessages(long[] messageIds) {
+        if (mConversation == null) return;
+        mMessages.beginBatchedUpdates();
+        for (int i = mMessages.size() - 1; i >= 0; --i) {
+            Message m = getMessage(i);
+            if (!m.isFromMe(mConversation)) continue;
+            if (ArrayUtils.contains(messageIds, m.id)) mMessages.removeItemAt(i);
+        }
+        mMessages.endBatchedUpdates();
     }
 
     public void addMessage(Message message) {

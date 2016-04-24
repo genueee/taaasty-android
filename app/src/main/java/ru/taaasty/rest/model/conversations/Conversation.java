@@ -66,6 +66,8 @@ public abstract class Conversation implements Parcelable {
 
     boolean notDisturb;
 
+    boolean isDisabled = false;
+
     Message lastMessage = Message.DUMMY;
 
     /**
@@ -146,6 +148,7 @@ public abstract class Conversation implements Parcelable {
         if (unreceivedMessagesCount != that.unreceivedMessagesCount) return false;
         if (messagesCount != that.messagesCount) return false;
         if (notDisturb != that.notDisturb) return false;
+        if (isDisabled != that.isDisabled) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
         if (createdAt != null ? !createdAt.equals(that.createdAt) : that.createdAt != null)
             return false;
@@ -166,6 +169,7 @@ public abstract class Conversation implements Parcelable {
         result = 31 * result + unreceivedMessagesCount;
         result = 31 * result + messagesCount;
         result = 31 * result + (notDisturb ? 1 : 0);
+        result = 31 * result + (isDisabled ? 1 : 0);
         result = 31 * result + (lastMessage != null ? lastMessage.hashCode() : 0);
         return result;
     }
@@ -212,4 +216,6 @@ public abstract class Conversation implements Parcelable {
     public boolean isNotDisturbTurnedOn() {
         return notDisturb;
     }
+
+    public boolean isDisabled() { return isDisabled; }
 }

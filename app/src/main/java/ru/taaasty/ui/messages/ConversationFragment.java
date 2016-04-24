@@ -46,7 +46,9 @@ import ru.taaasty.R;
 import ru.taaasty.Session;
 import ru.taaasty.adapters.ConversationAdapter;
 import ru.taaasty.events.pusher.MessageChanged;
+import ru.taaasty.events.pusher.MessagesRemoved;
 import ru.taaasty.events.pusher.UpdateMessagesReceived;
+import ru.taaasty.events.pusher.UserMessagesRemoved;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.UriRequestBody;
@@ -366,6 +368,22 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                 && (event.updateMessages.conversationId == conversation.getId())) {
             mAdapter.markMessagesAsRead(event.updateMessages.messages);
         }
+    }
+
+    public void onEventMainThread(UserMessagesRemoved event) {
+        Conversation conversation = mConversationSubject.getValue();
+        if (mAdapter == null
+                || conversation == null
+                || event.messages.conversationId != conversation.getId()) return;
+        mAdapter.changeMessages(event.messages.messages);
+    }
+
+    public void onEventMainThread(MessagesRemoved event) {
+        Conversation conversation = mConversationSubject.getValue();
+        if (mAdapter == null
+                || conversation == null
+                || event.messages.conversationId != conversation.getId()) return;
+        mAdapter.hideMyMessages(event.messages.messages);
     }
 
     public void onImeKeyboardShown() {
@@ -830,7 +848,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         public void refreshMessages() {
             int requestEntries = Constants.LIST_FEED_INITIAL_LENGTH;
-            Observable<MessageList> observableFeed = mMessagesLoader.createObservable(null, requestEntries)
+            Observable<MessageList> observableFeed = mMessagesLoader.createObservable(null, requestEntries);
             refreshFeed(observableFeed, requestEntries);
         }
 

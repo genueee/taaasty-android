@@ -367,7 +367,11 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
 
         public void onEventMainThread(ConversationChanged event) {
             if (event.conversation.getMessagesCount() <= 0) return;
-            mConversationList.addOrUpdate(event.conversation);
+            if (event.conversation.isDisabled()) {
+                mConversationList.remove(event.conversation);
+            } else {
+                mConversationList.addOrUpdate(event.conversation);
+            }
         }
 
         @Nullable

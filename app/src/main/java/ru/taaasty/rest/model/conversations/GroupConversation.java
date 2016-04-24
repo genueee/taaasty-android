@@ -134,6 +134,7 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
         dest.writeInt(this.unreceivedMessagesCount);
         dest.writeInt(this.messagesCount);
         dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeByte(isDisabled ? (byte) 1 : (byte) 0);
         dest.writeParcelable(this.lastMessage, flags);
         dest.writeString(this.topic);
         dest.writeParcelable(this.admin, flags);
@@ -154,6 +155,7 @@ public class GroupConversation extends Conversation implements Parcelable, HasMa
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
         this.notDisturb = in.readByte() != 0;
+        this.isDisabled = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
         this.topic = in.readString();
         this.admin = in.readParcelable(User.class.getClassLoader());

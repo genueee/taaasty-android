@@ -88,6 +88,7 @@ public class PrivateConversation extends Conversation implements Parcelable {
         dest.writeInt(this.unreceivedMessagesCount);
         dest.writeInt(this.messagesCount);
         dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeByte(isDisabled ? (byte) 1 : (byte) 0);
         dest.writeParcelable(this.lastMessage, flags);
         dest.writeLong(this.recipientId);
         dest.writeParcelable(this.recipient, flags);
@@ -105,6 +106,7 @@ public class PrivateConversation extends Conversation implements Parcelable {
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
         this.notDisturb = in.readByte() != 0;
+        this.isDisabled = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
         this.recipientId = in.readLong();
         this.recipient = in.readParcelable(User.class.getClassLoader());

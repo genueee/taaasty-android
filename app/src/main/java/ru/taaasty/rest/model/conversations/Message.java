@@ -72,6 +72,40 @@ public class Message implements Parcelable {
     public Message() {
     }
 
+    private Message(Builder builder) {
+        attachments = builder.attachments;
+        id = builder.id;
+        userId = builder.userId;
+        conversationId = builder.conversationId;
+        recipientId = builder.recipientId;
+        uuid = builder.uuid;
+        createdAt = builder.createdAt;
+        readAt = builder.readAt;
+        contentHtml = builder.contentHtml;
+        author = builder.author;
+        type = builder.type;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static Builder newBuilder(Message copy) {
+        Builder builder = new Builder();
+        builder.attachments = copy.attachments;
+        builder.id = copy.id;
+        builder.userId = copy.userId;
+        builder.conversationId = copy.conversationId;
+        builder.recipientId = copy.recipientId;
+        builder.uuid = copy.uuid;
+        builder.createdAt = copy.createdAt;
+        builder.readAt = copy.readAt;
+        builder.contentHtml = copy.contentHtml;
+        builder.author = copy.author;
+        builder.type = copy.type;
+        return builder;
+    }
+
     public boolean isMarkedAsRead() {
         return readAt != null;
     }
@@ -214,4 +248,80 @@ public class Message implements Parcelable {
             return new Message[size];
         }
     };
+
+    public static final class Builder {
+        private Attachment[] attachments;
+        private long id;
+        private long userId;
+        private long conversationId;
+        private long recipientId;
+        private String uuid;
+        private Date createdAt;
+        private Date readAt;
+        private String contentHtml;
+        private User author;
+        private String type;
+
+        private Builder() {
+        }
+
+        public Builder attachments(Attachment[] val) {
+            attachments = val;
+            return this;
+        }
+
+        public Builder id(long val) {
+            id = val;
+            return this;
+        }
+
+        public Builder userId(long val) {
+            userId = val;
+            return this;
+        }
+
+        public Builder conversationId(long val) {
+            conversationId = val;
+            return this;
+        }
+
+        public Builder recipientId(long val) {
+            recipientId = val;
+            return this;
+        }
+
+        public Builder uuid(String val) {
+            uuid = val;
+            return this;
+        }
+
+        public Builder createdAt(Date val) {
+            createdAt = val;
+            return this;
+        }
+
+        public Builder readAt(Date val) {
+            readAt = val;
+            return this;
+        }
+
+        public Builder contentHtml(String val) {
+            contentHtml = val;
+            return this;
+        }
+
+        public Builder author(User val) {
+            author = val;
+            return this;
+        }
+
+        public Builder type(String val) {
+            type = val;
+            return this;
+        }
+
+        public Message build() {
+            return new Message(this);
+        }
+    }
 }

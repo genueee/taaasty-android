@@ -1,7 +1,6 @@
 package ru.taaasty.rest.model.conversations;
 
 import android.os.Parcel;
-import android.support.annotation.Nullable;
 
 import java.util.Date;
 
@@ -11,10 +10,9 @@ public class UnsupportedTypeConversation extends Conversation {
         super("unknown");
     }
 
-    @Nullable
     @Override
     public Type getType() {
-        return null;
+        return Type.OTHER;
     }
 
     @Override
@@ -31,14 +29,15 @@ public class UnsupportedTypeConversation extends Conversation {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.type);
         dest.writeLong(this.id);
-        dest.writeString(this.type);
-        dest.writeLong(this.getUserId());
-        dest.writeLong(getCreatedAt() != null ? getCreatedAt().getTime() : -1);
-        dest.writeLong(getUpdatedAt() != null ? getUpdatedAt().getTime() : -1);
-        dest.writeInt(this.getUnreadMessagesCount());
-        dest.writeInt(this.getUnreceivedMessagesCount());
-        dest.writeInt(this.getMessagesCount());
-        dest.writeParcelable(this.getLastMessage(), flags);
+        dest.writeLong(this.userId);
+        dest.writeLong(createdAt != null ? createdAt.getTime() : -1);
+        dest.writeLong(updatedAt != null ? updatedAt.getTime() : -1);
+        dest.writeInt(this.unreadMessagesCount);
+        dest.writeInt(this.unreceivedMessagesCount);
+        dest.writeInt(this.messagesCount);
+        dest.writeByte(notDisturb ? (byte) 1 : (byte) 0);
+        dest.writeByte(isDisabled ? (byte) 1 : (byte) 0);
+        dest.writeParcelable(this.lastMessage, flags);
     }
 
     protected UnsupportedTypeConversation(Parcel in) {
@@ -52,6 +51,8 @@ public class UnsupportedTypeConversation extends Conversation {
         this.unreadMessagesCount = in.readInt();
         this.unreceivedMessagesCount = in.readInt();
         this.messagesCount = in.readInt();
+        this.notDisturb = in.readByte() != 0;
+        this.isDisabled = in.readByte() != 0;
         this.lastMessage = in.readParcelable(Message.class.getClassLoader());
     }
 
