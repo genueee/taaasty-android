@@ -132,6 +132,7 @@ public class GcmIntentService extends IntentService {
                                 return;
                             }
                         }
+                        if (DBG) error.printStackTrace();
                         ioExceptions[0] = new IOException(error);
                     }
             );
