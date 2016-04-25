@@ -29,7 +29,6 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class TaaastyApplication extends MultiDexApplication implements IAviaryClientCredentials {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "TaaastyApplication";
-
     private volatile boolean mInterSessionStarted;
 
     private int mActiveActivitiesCount = 0;

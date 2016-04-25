@@ -24,6 +24,7 @@ public interface Constants {
     public static final String HEADER_X_TASTY_CLIENT = "X-Tasty-Client";
     public static final String HEADER_X_TASTY_CLIENT_VALUE = "android_offical";
     public static final String HEADER_X_TASTY_CLIENT_VERSION = "X-Tasty-Client-Version";
+    String X_TASTY_CLIENT_TOKEN = "X-Tasty-Client-Token";
 
     public static final int IMAGE_FADE_IN_DURATION = 300;
 

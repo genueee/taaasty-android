@@ -2,6 +2,7 @@ package ru.taaasty.rest;
 
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -22,6 +23,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import ru.taaasty.BuildConfig;
 import ru.taaasty.Constants;
 import ru.taaasty.Session;
+import ru.taaasty.TaaastyApplication;
 import ru.taaasty.rest.model.ResponseError;
 import ru.taaasty.rest.service.ApiApp;
 import ru.taaasty.rest.service.ApiComments;
@@ -37,12 +39,14 @@ import ru.taaasty.rest.service.ApiReposts;
 import ru.taaasty.rest.service.ApiSessions;
 import ru.taaasty.rest.service.ApiTlog;
 import ru.taaasty.rest.service.ApiUsers;
+import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 
 // http://blog.robinchutaux.com/blog/a-smart-way-to-use-retrofit/
 public final class RestClient {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "NetworkUtils";
+
     private static volatile RestClient sInstance;
     private volatile ApiApp mApiApp;
     private volatile ApiComments mApiComments;
@@ -313,6 +317,12 @@ public final class RestClient {
             Request.Builder requestBuilder = original.newBuilder()
                     .header(Constants.HEADER_X_TASTY_CLIENT, Constants.HEADER_X_TASTY_CLIENT_VALUE)
                     .header(Constants.HEADER_X_TASTY_CLIENT_VERSION, VERSION_NAME);
+            String registrationId = GcmUtils.getInstance(null).getRegistrationId();
+            if (registrationId!=null){
+                requestBuilder.header(Constants.X_TASTY_CLIENT_TOKEN, registrationId);
+            }else{
+                if(DBG) Log.d(TAG,"registrationId is null");
+            }
             String token = Session.getInstance().getCurrentUserToken();
             if (token != null) {
                 requestBuilder.header(Constants.HEADER_X_USER_TOKEN, token);
