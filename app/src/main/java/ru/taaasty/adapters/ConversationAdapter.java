@@ -480,7 +480,8 @@ public abstract class ConversationAdapter extends RecyclerView.Adapter<RecyclerV
             super(Message.class, new Callback<Message>() {
                 @Override
                 public int compare(Message o1, Message o2) {
-                    return Message.SORT_BY_ID_COMPARATOR.compare(o1, o2);
+//                    Message.SORT_BY_ID_COMPARATOR.compare(o1, o2);
+                    return Message.ORDER_BY_CREATE_DATE_ASC_ID_COMPARATOR.compare(o1, o2);
                 }
 
                 @Override

@@ -31,6 +31,7 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -838,12 +839,41 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         }
 
         protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
-            return mConversationSubject
+//            Message unsentMessage = new Message();
+//            unsentMessage.
+            Observable<MessageList> messageListObservable = mConversationSubject
                     .take(1)
                     .flatMap(conversation -> RestClient.getAPiMessenger()
                             .getMessages(conversation.getId(), null, null, sinceEntryId, limit, null)
                             .subscribeOn(RestSchedulerHelper.getScheduler())
+                            .map(messageList -> {
+
+                                MessageList newMessageList = new MessageList();
+
+
+                                Message lastMessage = messageList.messages[messageList.messages.length - 1];
+
+                                lastMessage.contentHtml =lastMessage.contentHtml+" tmp!!!!";
+
+                                Message unsentMessage = Message.newBuilder(lastMessage)
+                                        .id(lastMessage.id+1)
+                                        .uuid("987598723578390475")
+                                        .contentHtml("unsentMessage")
+                                        .createdAt(new Date())
+                                        .build();
+
+                                Message[] newMessages = Arrays.copyOf(messageList.messages, messageList.messages.length + 1);
+                                newMessages[newMessages.length - 1] = unsentMessage;
+
+                                newMessageList.messages = newMessages;
+                                newMessageList.scopeCount = messageList.scopeCount+1;
+                                newMessageList.totalCount = messageList.totalCount+1;
+
+                                return newMessageList;
+                            })
                     );
+
+            return messageListObservable;
         }
 
         public void refreshMessages() {
