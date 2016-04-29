@@ -30,6 +30,7 @@ public class Message implements Parcelable {
             return Objects.unsignedCompare(lhs.id, rhs.id);
         }
     };
+
     public static transient Comparator<Message> ORDER_BY_CREATE_DATE_ASC_ID_COMPARATOR = (lhs, rhs) -> {
         if (lhs == null && rhs == null) {
             return 0;
@@ -80,6 +81,9 @@ public class Message implements Parcelable {
     public String type;
 
     public Attachment attachments[];
+
+    public boolean isOnServer =true;
+
 
     public Message() {
     }

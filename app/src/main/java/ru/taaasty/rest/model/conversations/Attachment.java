@@ -1,6 +1,7 @@
 package ru.taaasty.rest.model.conversations;
 
 
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -20,6 +21,9 @@ public class Attachment implements Parcelable {
     public long size;
 
     public Geometry geometry;
+
+    //for unsent message
+    public Uri uri;
 
     public Attachment() {
     }

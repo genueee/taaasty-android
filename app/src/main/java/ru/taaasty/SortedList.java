@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * Created by alexey on 25.04.15.
  */
-public class SortedList<E> extends android.support.v7.util.SortedList<E> {
+public class    SortedList<E> extends android.support.v7.util.SortedList<E> {
 
     private Class<E> mTClass;
 
