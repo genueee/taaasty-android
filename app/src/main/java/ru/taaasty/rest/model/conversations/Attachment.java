@@ -22,9 +22,6 @@ public class Attachment implements Parcelable {
 
     public Geometry geometry;
 
-    //for unsent message
-    public Uri uri;
-
     public Attachment() {
     }
 

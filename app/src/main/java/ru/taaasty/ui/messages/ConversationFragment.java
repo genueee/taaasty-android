@@ -472,7 +472,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         Attachment attachment = new Attachment();
                         //todo make real content type
                         attachment.contentType = "image/jpeg";
-                        attachment.uri = imageUri;
                         attachment.url = imageUri.toString();
                         Attachment[] attachments = new Attachment[]{attachment};
 
