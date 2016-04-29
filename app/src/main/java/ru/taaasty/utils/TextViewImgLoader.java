@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -95,25 +96,38 @@ public class TextViewImgLoader {
             if (DBG) Log.v(TAG, "picasso resize: " + maxWidth + "x" + maxHeight);
 
             String originalUrl = span.getSource();
-            String thumborUrl;
-            if (!originalUrl.startsWith(BuildConfig.THUMBOR_SERVER)) {
-                thumborUrl = NetworkUtils.createThumborUrl(originalUrl)
+            Uri uri = Uri.parse(originalUrl);
+            String scheme = uri.getScheme();
+            if ("content".equals(scheme)||"file".equals(scheme)){
+                mPicasso
+                        .load(uri)
+                        .error(R.drawable.image_load_error)
+                        .config(Bitmap.Config.RGB_565)
                         .resize(maxWidth, maxHeight)
-                        .filter(ThumborUrlBuilder.noUpscale())
-                        .fitIn()
-                        .toUrlUnsafe();
-            } else {
-                thumborUrl = originalUrl;
-            }
+                        .onlyScaleDown()
+                        .centerInside()
+                        .into(target);
+            }else{
+                String thumborUrl;
+                if (!originalUrl.startsWith(BuildConfig.THUMBOR_SERVER)) {
+                    thumborUrl = NetworkUtils.createThumborUrl(originalUrl)
+                            .resize(maxWidth, maxHeight)
+                            .filter(ThumborUrlBuilder.noUpscale())
+                            .fitIn()
+                            .toUrlUnsafe();
+                } else {
+                    thumborUrl = originalUrl;
+                }
 
-            mPicasso
-                    .load(thumborUrl)
-                    .error(R.drawable.image_load_error)
-                    .config(Bitmap.Config.RGB_565)
-                    .resize(maxWidth, maxHeight)
-                    .onlyScaleDown()
-                    .centerInside()
-                    .into(target);
+                mPicasso
+                        .load(thumborUrl)
+                        .error(R.drawable.image_load_error)
+                        .config(Bitmap.Config.RGB_565)
+                        .resize(maxWidth, maxHeight)
+                        .onlyScaleDown()
+                        .centerInside()
+                        .into(target);
+            }
         }
         if (mTargets.isEmpty()) mTextView = null;
     }

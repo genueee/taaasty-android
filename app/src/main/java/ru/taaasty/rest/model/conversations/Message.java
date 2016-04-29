@@ -31,6 +31,19 @@ public class Message implements Parcelable {
         }
     };
 
+    public static transient Comparator<Message> ORDER_BY_CREATE_DATE_ASC_ID_COMPARATOR = (lhs, rhs) -> {
+        if (lhs == null && rhs == null) {
+            return 0;
+        } else if (lhs == null) {
+            return 1;
+        } else if (rhs == null) {
+            return -1;
+        } else {
+            int compareDates = lhs.createdAt.compareTo(rhs.createdAt);
+            return compareDates != 0 ? compareDates : Objects.compare(lhs.id, rhs.id);
+        }
+    };
+
     public static final Message DUMMY = new Message();
 
     public long id = -1;
@@ -68,6 +81,9 @@ public class Message implements Parcelable {
     public String type;
 
     public Attachment attachments[];
+
+    public boolean isOnServer =true;
+
 
     public Message() {
     }

@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -31,9 +32,14 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -54,6 +60,7 @@ import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.UriRequestBody;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
@@ -179,6 +186,9 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
 
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
+        mListView.setItemAnimator(null);
+
+
         mListScrollController = new ListScrollController(mListView, mListener);
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
@@ -444,6 +454,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
 
     private void sendAttachment(Uri imageUri) {
+
         String filename = imageUri.getLastPathSegment();
         if (!filename.matches(".+\\..{2,6}$")) {
             filename = filename + ".jpg";
@@ -451,20 +462,54 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         HashMap<String, RequestBody> imagesMap = new HashMap<>();
         imagesMap.put("files[]\"; filename=\"" + filename, new UriRequestBody(getActivity(), imageUri));
+        String uuid = UUID.randomUUID().toString();
 
-        Observable<Message> observable = mConversationSubject
+        mConversationSubject
                 .take(1)
+                .map(conversation -> {
+                    mListView.post(() -> {
+
+                        Attachment attachment = new Attachment();
+                        //todo make real content type
+                        attachment.contentType = "image/jpeg";
+                        attachment.url = imageUri.toString();
+                        Attachment[] attachments = new Attachment[]{attachment};
+
+                        Message newMessage = Message.newBuilder()
+                                .uuid(uuid)
+                                .createdAt(new Date())
+                                .contentHtml("")
+                                .id(0)
+                                .author(null)
+                                .conversationId(conversation.getId())
+                                .userId(Session.getInstance().getCurrentUserId())
+                                .type("Message")
+                                .attachments(attachments)
+
+                                .build();
+                        newMessage.isOnServer = false;
+                        addMessageScrollToEnd(newMessage);
+                        UnsentMessageRepository.addMessage(newMessage);
+                    });
+                    return conversation;
+                })
                 .flatMap(
                         conversation -> RestClient.getAPiMessenger().postMessageWithAttachments(
                                 null,
                                 conversation.getId(),
                                 "",
-                                UUID.randomUUID().toString(),
+                                uuid,
                                 null,
                                 imagesMap
-                        ).subscribeOn(RestSchedulerHelper.getScheduler())
+                        )
+                )
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(RestSchedulerHelper.getScheduler())
+                .subscribe(
+                        message -> sendAnalytics(),
+                        error -> MessageHelper.showError(ConversationFragment.this, error, R.string.error_post_comment, REQUEST_CODE_LOGIN)
                 );
-        sendMessage(observable);
+
     }
 
     private void sendMessage() {
@@ -476,51 +521,50 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
             t.show();
             return;
         }
+        mSendMessageText.setText("");
 
-        Observable<Message> observable = mConversationSubject
+        String uuid = UUID.randomUUID().toString();
+        mConversationSubject
                 .take(1)
-                .flatMap(conversation -> RestClient.getAPiMessenger().postMessage(null,
-                        conversation.getId(), comment, UUID.randomUUID().toString(), null)
-                        .subscribeOn(RestSchedulerHelper.getScheduler())
-                );
-        sendMessage(observable);
-    }
+                .map(conversation -> {
+                    mListView.post(() -> {
 
-    @SuppressLint("RxSubscribeOnError")
-    private void sendMessage(Observable<Message> observable) {
+                        Message newMessage = Message.newBuilder()
+                                .uuid(uuid)
+                                .createdAt(new Date())
+                                .contentHtml(comment)
+                                .id(0)
+                                .author(null)
+                                .conversationId(conversation.getId())
+                                .userId(Session.getInstance().getCurrentUserId())
+                                .type("Message")
+                                .build();
 
-        mPostMessageSubscription.unsubscribe();
+                        newMessage.isOnServer = false;
+                        addMessageScrollToEnd(newMessage);
+                        UnsentMessageRepository.addMessage(newMessage);
+                    });
 
-        //mSendMessageText.setEnabled(false);
-        mSendMessageProgress.setVisibility(View.VISIBLE);
-        mSendMessageButton.setVisibility(View.INVISIBLE);
-
-        mPostMessageSubscription = observable
+                    return conversation;
+                })
+                .flatMap(conversation ->
+                        RestClient.getAPiMessenger().postMessage(
+                                null,
+                                conversation.getId(),
+                                comment,
+                                uuid,
+                                null
+                        )
+                )
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeOn(RestSchedulerHelper.getScheduler())
-                .finallyDo(() -> {
-                    mSendMessageText.setEnabled(true);
-                    mSendMessageProgress.setVisibility(View.INVISIBLE);
-                    mSendMessageButton.setVisibility(View.VISIBLE);
-                })
-                .subscribe(new Observer<Message>() {
-                    @Override
-                    public void onCompleted() {
-                        if (mSendMessageText != null) mSendMessageText.setText("");
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        MessageHelper.showError(ConversationFragment.this, e, R.string.error_post_comment, REQUEST_CODE_LOGIN);
-                    }
-
-                    @Override
-                    public void onNext(Message message) {
-                        sendAnalytics();
-                        addMessageScrollToEnd(message);
-                    }
-                });
+                .subscribe(
+                        message -> sendAnalytics(),
+                        error -> MessageHelper.showError(ConversationFragment.this, error, R.string.error_post_comment, REQUEST_CODE_LOGIN)
+                );
     }
+
+
 
     private void addMessageScrollToEnd(Message message) {
         if (mAdapter == null) return;
@@ -615,31 +659,26 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
         @Override
         public void initClickListeners(final RecyclerView.ViewHolder pHolder) {
-            View.OnClickListener onClickListener = new View.OnClickListener() {
 
-                RecyclerView.ViewHolder holder = pHolder;
-
-                @Override
-                public void onClick(View v) {
-                    switch (v.getId()) {
-                        case R.id.messages_load_more:
-                            if (mMessagesLoader != null)
-                                mMessagesLoader.activateCacheInBackground();
-                            break;
-                        case R.id.avatar:
-                            int position = pHolder.getAdapterPosition();
-                            Message message = getMessage(position);
-                            if (mChatHelper.isNullOrAnonymousConversation(mConversationSubject.getValue())) {
-                                return;
-                            }
-                            if (message != null) {
-                                TlogActivity.startTlogActivity(getActivity(),
-                                        message.getRealUserId(mConversationSubject.getValue()),
-                                        v,
-                                        R.dimen.avatar_small_diameter);
-                            }
-                            break;
-                    }
+            View.OnClickListener onClickListener = v -> {
+                switch (v.getId()) {
+                    case R.id.messages_load_more:
+                        if (mMessagesLoader != null)
+                            mMessagesLoader.activateCacheInBackground();
+                        break;
+                    case R.id.avatar:
+                        int position = pHolder.getAdapterPosition();
+                        Message message = getMessage(position);
+                        if (mChatHelper.isNullOrAnonymousConversation(mConversationSubject.getValue())) {
+                            return;
+                        }
+                        if (message != null) {
+                            TlogActivity.startTlogActivity(getActivity(),
+                                    message.getRealUserId(mConversationSubject.getValue()),
+                                    v,
+                                    R.dimen.avatar_small_diameter);
+                        }
+                        break;
                 }
             };
 
@@ -836,14 +875,31 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
             mMessagesAppendSubscription = Subscriptions.unsubscribed();
             mMessagesRefreshSubscription = Subscriptions.unsubscribed();
         }
-
+        private Message[] connectArrays(Message[] array1,Message[] array2) {
+            Message[] resultArray = Arrays.copyOf(array1, array1.length + array2.length);
+            System.arraycopy(array2,0,resultArray,array1.length,array2.length);
+            return resultArray;
+        }
         protected Observable<MessageList> createObservable(Long sinceEntryId, Integer limit) {
-            return mConversationSubject
+
+
+            Observable<MessageList> messageListObservable = mConversationSubject
                     .take(1)
                     .flatMap(conversation -> RestClient.getAPiMessenger()
                             .getMessages(conversation.getId(), null, null, sinceEntryId, limit, null)
                             .subscribeOn(RestSchedulerHelper.getScheduler())
+                            .map(messageList -> {
+                                Message[] unsentMessagesArray = UnsentMessageRepository.getUnsentMessagesArray(conversation.getId());
+
+                                MessageList newMessageList = new MessageList();
+                                newMessageList.totalCount = messageList.totalCount+unsentMessagesArray.length;
+                                newMessageList.scopeCount = messageList.scopeCount;
+                                newMessageList.messages = connectArrays(messageList.messages, unsentMessagesArray);
+                                return newMessageList;
+                            })
                     );
+
+            return messageListObservable;
         }
 
         public void refreshMessages() {
