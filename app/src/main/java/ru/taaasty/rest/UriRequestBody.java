@@ -1,7 +1,9 @@
 package ru.taaasty.rest;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +26,9 @@ public class UriRequestBody extends RequestBody {
 
     @Override
     public MediaType contentType() {
-        return MediaType.parse("multipart/form-data");
+        ContentResolver contentResolver = context.getContentResolver();
+        String type = contentResolver.getType(uri);
+        return MediaType.parse(type);
     }
 
     @Override

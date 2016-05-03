@@ -26,7 +26,7 @@ public interface ApiEntries {
             @Part("title") String title,
             @Part("privacy") String privacy,
             @Part("tlog_id") Long tlogId,
-            @Part("file") MultipartBody.Part file);
+            @Part MultipartBody.Part file);//("file")
 
     @Multipart
     @PUT("entries/image/{id}.json")
@@ -35,7 +35,7 @@ public interface ApiEntries {
             @Part("title") String title,
             @Part("privacy") String privacy,
             @Part("tlog_id") Long tlogId,
-            @Part("file") MultipartBody.Part file);
+            @Part MultipartBody.Part file);//("file")
 
 
     @FormUrlEncoded
