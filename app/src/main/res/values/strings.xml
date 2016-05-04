@@ -417,6 +417,9 @@
     <string name="edit_create_conversation_title_conversation">Переписка</string>
     <string name="edit_create_conversation_group_chat">Групповой чат</string>
     <string name="edit_create_conversation_thread">Обсуждение</string>
-
+    <string-array name="routes_for_incoming_share">
+        <item>Создать пост</item>
+        <item>Отправить сообщением</item>
+    </string-array>
 </resources>
 

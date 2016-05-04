@@ -34,7 +34,7 @@
         android:smoothScrollbar="false"
         android:overScrollMode="never"
         android:clipToPadding="false"
-        tools:listitem="@layout/conversations_list_item"
+
         android:layout_alignParentTop="true"/>
 
 </FrameLayout>
