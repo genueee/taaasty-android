@@ -192,13 +192,9 @@
         <activity
             android:name=".ui.post.CreateSharedPostActivity"
             android:windowSoftInputMode="adjustResize|stateHidden" >
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
 
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
+        </activity>
+        <activity android:name=".IncomingShareContentRouterActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
 
@@ -207,6 +203,7 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.messages.CreateMessageActivity"/>
         <activity
             android:name=".ui.post.EditPostActivity"
             android:parentActivityName=".ui.post.old.ShowPostActivity"
@@ -258,6 +255,7 @@
             android:theme="@style/Theme.AppCompat.Light.Dialog"
             android:excludeFromRecents="true"
             android:noHistory="true" />
+
 
         <service
             android:name=".IntentService"

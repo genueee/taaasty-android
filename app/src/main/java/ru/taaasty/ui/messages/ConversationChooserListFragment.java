@@ -1,6 +1,5 @@
 package ru.taaasty.ui.messages;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -9,9 +8,10 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -28,27 +28,24 @@ import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
-import ru.taaasty.rest.model.conversations.PrivateConversation;
-import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.service.ApiMessenger;
-import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
 import ru.taaasty.ui.FragmentWithWorkFragment;
-import ru.taaasty.ui.feeds.TlogActivity;
-import ru.taaasty.ui.tabbar.TabbarFragment;
-import ru.taaasty.utils.FabHelper;
+import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.subjects.PublishSubject;
+import rx.subjects.Subject;
 import rx.subscriptions.Subscriptions;
 
-public class ConversationsListFragment extends FragmentWithWorkFragment<ConversationsListFragment.WorkRetainedFragment> implements RetainedFragmentCallbacks {
+public class ConversationChooserListFragment extends FragmentWithWorkFragment<ConversationChooserListFragment.WorkRetainedFragment> implements RetainedFragmentCallbacks {
     private static final boolean DBG = BuildConfig.DEBUG;
     private static final String TAG = "ConversationsListFrag";
+    private Subject<Long,Long> resultConversationIdSubject = PublishSubject.create();
 
-    private OnFragmentInteractionListener mListener;
 
-    private RecyclerView mListView;
+    private RecyclerView mRecyclerView;
 
     private TextView mAdapterEmpty;
 
@@ -62,52 +59,78 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         return new ConversationsListFragment();
     }
 
-    public ConversationsListFragment() {
-        // Required empty public constructor
+    public ConversationChooserListFragment() {
+    }
+
+    public Observable<Long> getResultConversationIdObservable() {
+        return resultConversationIdSubject;
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_conversation_list, container, false);
-        mListView = (RecyclerView)root.findViewById(R.id.list);
+        mRecyclerView = (RecyclerView)root.findViewById(R.id.list);
         mAdapterEmpty = (TextView)root.findViewById(R.id.empty_text);
         mProgressView = root.findViewById(R.id.progress);
 
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
-        mListView.setHasFixedSize(true);
-        mListView.setLayoutManager(lm);
-        mListView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.conversation_list_divider));
-        mListView.setOnScrollListener(new RecyclerView.OnScrollListener() {
+        mRecyclerView.setHasFixedSize(true);
+        mRecyclerView.setLayoutManager(lm);
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), R.drawable.conversation_list_divider));
+        mRecyclerView.addOnItemTouchListener(new RecyclerViewItemClickListener(mRecyclerView,conversationId->{
+            resultConversationIdSubject.onNext(conversationId);
+        }));
 
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (mListener != null) {
-                    boolean atTop = !mListView.canScrollVertically(-1);
-                    mListener.onListScrolled(dy, atTop);
-                }
-            }
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (mListener != null) mListener.onListScrollStateChanged(newState);
-            }
-        });
 
         return root;
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        if (DBG) Log.v(TAG, "onAttach " + this);
-        try {
-            mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+    public static class RecyclerViewItemClickListener implements RecyclerView.OnItemTouchListener{
+        private OnClickListener onClickListener;
+        private RecyclerView recyclerView;
+        private GestureDetector gestureDetector;
+
+        public interface OnClickListener{
+            void onClick(long itemId);
         }
+
+        public RecyclerViewItemClickListener(RecyclerView recyclerView, OnClickListener onClickListener) {
+            this.onClickListener = onClickListener;
+            this.recyclerView = recyclerView;
+            gestureDetector = new GestureDetector(recyclerView.getContext(), new GestureDetectorListener());
+
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            return gestureDetector.onTouchEvent(e);
+        }
+
+        @Override
+        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
+
+        }
+
+        @Override
+        public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+
+        }
+        private class GestureDetectorListener extends GestureDetector.SimpleOnGestureListener {
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                View childView = recyclerView.findChildViewUnder(e.getX(), e.getY());
+                if (childView==null) return false;
+                RecyclerView.ViewHolder childViewHolder = recyclerView.getChildViewHolder(childView);
+                onClickListener.onClick(childViewHolder.getItemId());
+                return true;
+            }
+        }
+
     }
+
+
+
 
     @Nullable
     @Override
@@ -128,46 +151,11 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         }
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (DBG) Log.v(TAG, this + " onActivityCreated bundle not null: " + (savedInstanceState != null)
-                + " listener not null: " + (mListener != null));
-        mListView.addOnScrollListener(new FabHelper.AutoHideScrollListener(mListener.getTabbar().getFab()));
-    }
 
     @Override
     public void onWorkFragmentActivityCreatedSafe() {
-        mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList()) {
-            public void initClickListeners(final ConversationsListAdapter.ViewHolder holder) {
-                holder.itemView.setOnClickListener(v -> {
-                    int position = holder.getAdapterPosition();
-                    Conversation conversation = getConversation(position);
-                    ConversationActivity.startConversationActivity(v.getContext(), conversation, v);
-                });
-                holder.avatar.setOnClickListener(v -> {
-                    int position = holder.getAdapterPosition();
-                    Conversation conversation = getConversation(position);
-                    if (conversation.getType() == Conversation.Type.PRIVATE) {
-                        TlogActivity.startTlogActivity(getActivity(),
-                                ((PrivateConversation)conversation).getRecipientId(), v, R.dimen.avatar_small_diameter);
-                    } else {
-                        EditCreateGroupActivity.editGroupConversation(getActivity(), conversation, 0);
-                    }
-                });
-                holder.messageAvatar.setOnClickListener(v -> {
-                    int position = holder.getAdapterPosition();
-                    Conversation conversation = getConversation(position);
-                    if (conversation == null) return;
-                    if (conversation.getLastMessage() != null
-                            &&  !(conversation.getType() == Conversation.Type.PUBLIC && ((PublicConversation)conversation).isAnonymous())) {
-                        TlogActivity.startTlogActivity(getActivity(),
-                                conversation.getLastMessage().getRealUserId(conversation), v, R.dimen.avatar_small_diameter);
-                    }
-                });
-            }
-        };
-        mListView.setAdapter(mAdapter);
+        mAdapter = new ConversationsListAdapter(mWorkFragment.getConversationList());
+        mRecyclerView.setAdapter(mAdapter);
         setupLoadingState();
     }
 
@@ -176,19 +164,14 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         mWorkFragment.refreshConversationList();
     }
 
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        if (DBG) Log.v(TAG, this + "onDetach");
-        mListener = null;
-    }
+
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         mWorkFragment.setTargetFragment(null, 0);
         mWorkFragment = null;
-        mListView = null;
+        mRecyclerView = null;
         mProgressView = null;
         mAdapter = null;
     }
@@ -224,12 +207,9 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
     private void setStatusFailure(Throwable e, int fallbackResId) {
         mAdapterEmpty.setVisibility(View.INVISIBLE);
         mProgressView.setVisibility(View.INVISIBLE);
-        notifyError(e, fallbackResId);
     }
 
-    private void notifyError(Throwable e, int fallbackResId) {
-        if (mListener != null) mListener.notifyError(ConversationsListFragment.this, e, fallbackResId);
-    }
+
 
     public static class WorkRetainedFragment extends Fragment {
 
@@ -287,6 +267,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                 public boolean areItemsTheSame(Conversation item1, Conversation item2) {
                     return item1.getId() == item2.getId();
                 }
+
             });
             if (savedInstanceState != null) {
                 ArrayList<Conversation> list = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_SUBSCRIPTION_LIST);
@@ -356,7 +337,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeOn(RestSchedulerHelper.getScheduler())
                     .subscribe(mConversationListObserver);
-            if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusLoading();
+            if (getTargetFragment() != null) ((ConversationChooserListFragment)getTargetFragment()).setStatusLoading();
         }
 
         public void onEventMainThread(ConversationChanged event) {
@@ -371,7 +352,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         @Nullable
         private RecyclerView.Adapter getTargetAdapter() {
             if (getTargetFragment() != null) {
-                return ((ConversationsListFragment) getTargetFragment()).mAdapter;
+                return ((ConversationChooserListFragment) getTargetFragment()).mAdapter;
             } else {
                 return null;
             }
@@ -381,14 +362,13 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
 
             @Override
             public void onCompleted() {
-                if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment()).setStatusReady();
+                if (getTargetFragment() != null) ((ConversationChooserListFragment)getTargetFragment()).setStatusReady();
             }
 
             @Override
             public void onError(Throwable e) {
                 if (DBG) Log.v(TAG, "onError");
-                if (getTargetFragment() != null) ((ConversationsListFragment)getTargetFragment())
-                        .setStatusFailure(e, R.string.error_loading_conversations);
+
             }
 
             @Override
@@ -401,21 +381,4 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         };
 
     }
-
-        /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener extends CustomErrorView {
-        void onListScrolled(int dy, boolean atTop);
-        void onListScrollStateChanged(int state);
-        TabbarFragment getTabbar();
-    }
-
 }
