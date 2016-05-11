@@ -119,7 +119,6 @@ public final class ConversationHelper {
     }
 
     public void bindConversationIconToImageView(Conversation conversation, @DimenRes int dstSizeRes, ImageView dst) {
-        Context context = dst.getContext();
         Drawable drawable = DefaultConversationIconDrawable.create(dst.getContext(), conversation);
         drawable.setBounds(0, 0, dstSizeRes, dstSizeRes);
         bindConversationIconToImageView(conversation, dstSizeRes, dst, drawable);
@@ -180,6 +179,7 @@ public final class ConversationHelper {
             // Для всех остальных случаев ставим дефолтную аватарку для групп.
             Picasso.with(context).cancelRequest(dst);
             dst.setImageDrawable(defaultGroupDrawable);
+//            dst.setImageDrawable(null);
         }
     }
 
