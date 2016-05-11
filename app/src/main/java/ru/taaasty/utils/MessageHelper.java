@@ -145,8 +145,7 @@ public class MessageHelper {
         Toast toast = createErrorToast(context, error);
         FrenchToast.with(context)
                 .length(getHideDelay(error), TimeUnit.MILLISECONDS)
-                .showDipped(toast)
-        ;
+                .showDipped(toast);
         AnalyticsHelper.getInstance().sendErrorAnalyticsEvent(error, exception);
     }
 

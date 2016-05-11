@@ -207,12 +207,9 @@ public class ConversationChooserListFragment extends FragmentWithWorkFragment<Co
     private void setStatusFailure(Throwable e, int fallbackResId) {
         mAdapterEmpty.setVisibility(View.INVISIBLE);
         mProgressView.setVisibility(View.INVISIBLE);
-//        notifyError(e, fallbackResId);
     }
 
-    private void notifyError(Throwable e, int fallbackResId) {
-//        if (mListener != null) mListener.notifyError(ConversationsListFragment.this, e, fallbackResId);
-    }
+
 
     public static class WorkRetainedFragment extends Fragment {
 
@@ -371,8 +368,7 @@ public class ConversationChooserListFragment extends FragmentWithWorkFragment<Co
             @Override
             public void onError(Throwable e) {
                 if (DBG) Log.v(TAG, "onError");
-                if (getTargetFragment() != null) ((ConversationChooserListFragment)getTargetFragment())
-                        .setStatusFailure(e, R.string.error_loading_conversations);
+
             }
 
             @Override
@@ -381,8 +377,6 @@ public class ConversationChooserListFragment extends FragmentWithWorkFragment<Co
                 List<Conversation> ge0 = new ArrayList<>(conversations.size());
                 for (Conversation c : conversations) if (c.getMessagesCount() > 0) ge0.add(c);
                 mConversationList.resetItems(ge0);
-
-
             }
         };
 
