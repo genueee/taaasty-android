@@ -96,7 +96,7 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
     private void bindAvatar(ViewHolder holder, Conversation conversation) {
         ConversationHelper helper = ConversationHelper.getInstance();
         helper.bindConversationIconToImageView(conversation, R.dimen.avatar_size_conversation_list, holder.avatar);
-        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, holder.avatar);
+//        ConversationHelper.getInstance().setupAvatarImageViewClickableForeground(conversation, holder.avatar);
     }
 
 
