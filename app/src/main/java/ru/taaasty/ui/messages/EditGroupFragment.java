@@ -47,6 +47,7 @@ import ru.taaasty.Session;
 import ru.taaasty.events.pusher.ConversationChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.RestSchedulerHelper;
+import ru.taaasty.rest.UriRequestBody;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.GroupConversation;
@@ -403,12 +404,13 @@ public class EditGroupFragment extends Fragment implements AdapterListener {
     }
 
     private MultipartBody.Part getMultipartBodyPartFromUri(Uri uri, String partName){
-        String fullFileName = uri.getLastPathSegment();
-        File file = new File(fullFileName);
-        // create RequestBody instance from file
-        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
-        //MultipartBody.Part is used to send also the actual file name
-        return MultipartBody.Part.createFormData(partName, file.getName(), requestFile);
+        if (uri==null) return null;
+        String filename = uri.getLastPathSegment();
+        if (!filename.matches(".+\\..{2,6}$")) {
+            filename = filename + ".jpg";
+        }
+        RequestBody uriRequestBody = new UriRequestBody(getActivity(), uri);
+        return MultipartBody.Part.createFormData(partName, filename, uriRequestBody);
     }
 
     private void startSaveConversation() {
