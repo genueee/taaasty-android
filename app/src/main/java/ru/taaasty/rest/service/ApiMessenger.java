@@ -193,7 +193,7 @@ public interface ApiMessenger {
                                                      @Part("topic") String topic,
                                                      @Part("ids") String ids,
                                                      @Part MultipartBody.Part avatar,//("avatar")
-                                                     @Part("background_image") MultipartBody.Part background
+                                                     @Part MultipartBody.Part background//("background_image")
     );
 
     /**
@@ -206,7 +206,7 @@ public interface ApiMessenger {
                                                      @Part("topic") String topic,
                                                      @Part("ids") String ids,
                                                      @Part MultipartBody.Part avatar,//("avatar")
-                                                     @Part("background_image") MultipartBody.Part background
+                                                     @Part MultipartBody.Part background//("background_image")
     );
 
     @DELETE("messenger/conversations/by_id/{conv_id}.json")
