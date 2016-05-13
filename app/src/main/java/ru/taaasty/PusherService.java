@@ -46,6 +46,7 @@ import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.ConversationList;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.PusherMessage;
+import ru.taaasty.rest.model.conversations.TypedPushMessage;
 import ru.taaasty.utils.GcmUtils;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.Objects;
@@ -83,7 +84,11 @@ public class PusherService extends Service {
      * Тип: {@linkplain Message}
      */
     public static final String EVENT_PUSH_MESSAGE = "push_message";
-
+    /**
+     * Набирают сообщение
+     * Тип: {@linkplain Message}
+     */
+    public static final String EVENT_TYPED = "typed";
     /**
      * Обновление статуса сообщений
      * Тип: {@linkplain ru.taaasty.rest.model.UpdateMessages}
@@ -328,6 +333,10 @@ public class PusherService extends Service {
                     if (removedUserMessages.messages.length > 0) {
                         EventBus.getDefault().post(new UserMessagesRemoved(removedUserMessages));
                     }
+                    break;
+                case EVENT_TYPED:
+                    TypedPushMessage typedPushMessage = mGson.fromJson(data, TypedPushMessage.class);
+                    EventBus.getDefault().post(typedPushMessage);
                 default:
                     break;
             }
@@ -395,7 +404,8 @@ public class PusherService extends Service {
                 EVENT_PUBLIC_NOTIFICATION,
                 EVENT_PUBLIC_UPDATE_NOTIFICATIONS,
                 EVENT_PUBLIC_DELETE_MESSAGES,
-                EVENT_PUBLIC_DELETE_USER_MESSAGES
+                EVENT_PUBLIC_DELETE_USER_MESSAGES,
+                EVENT_TYPED
                 );
     }
 

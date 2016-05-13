@@ -1,6 +1,5 @@
 package ru.taaasty.ui.messages;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -12,7 +11,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -33,13 +31,9 @@ import android.widget.Toast;
 import junit.framework.Assert;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +60,7 @@ import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.TypedPushMessage;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.PhotoSourceManager;
 import ru.taaasty.ui.post.SelectPhotoSourceDialogFragment;
@@ -362,6 +357,15 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         return true;
     }
 
+    public void onEventMainThread(TypedPushMessage event) {
+        Log.d("------->", "typed");
+//        ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle("typing...");
+        View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
+        TextView topic = ((TextView) headerGroupChat.findViewById(R.id.users));
+        topic.setText("typing...");
+//        mToolbar.setSubtitle("typing...");
+//        mToolbar.setSubtitleTextColor(0xffffffff);
+    }
     public void onEventMainThread(MessageChanged event) {
         Conversation conversation = mConversationSubject.getValue();
         if ((mAdapter != null)

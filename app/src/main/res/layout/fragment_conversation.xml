@@ -51,8 +51,8 @@
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
-        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
         android:layout_width="match_parent"
+        style="@style/Widget.Taaasty.Toolbar.GreenActionBar"
         android:layout_height="?actionBarSize">
 
         <include
