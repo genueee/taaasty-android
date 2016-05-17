@@ -161,14 +161,23 @@ public class ConversationsListAdapter extends RecyclerView.Adapter<Conversations
             holder.lastMsgWithAvatar.setVisibility(View.VISIBLE);
             bindLastMessageAvatar(holder, conversation);
             bindLastMsgUsername(holder, conversation);
+
             bindLastMessageText(holder, conversation, holder.lastMsgWithAvatar);
+            if (conversation.isTyped()) {
+                holder.lastMsgWithAvatar.setText(R.string.typing);
+            }
         } else {
             holder.lastMsgNoAvatar.setVisibility(View.VISIBLE);
             holder.messageAvatar.setVisibility(View.GONE);
             holder.lastMsgSenderName.setVisibility(View.GONE);
             holder.lastMsgWithAvatar.setVisibility(View.GONE);
+
             bindLastMessageText(holder, conversation, holder.lastMsgNoAvatar);
+            if (conversation.isTyped()) {
+                holder.lastMsgNoAvatar.setText(R.string.typing);
+            }
         }
+
     }
 
     private void bindLastMessageAvatar(ViewHolder holder, Conversation conversation) {

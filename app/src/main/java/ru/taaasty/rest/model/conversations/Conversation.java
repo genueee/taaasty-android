@@ -70,6 +70,8 @@ public abstract class Conversation implements Parcelable {
 
     Message lastMessage = Message.DUMMY;
 
+    private boolean typed;
+
     /**
      * Сортировка по убыванию даты обновления последниего сообщения, либо переписки (более поздние даты - в начале списка)
      */
@@ -218,4 +220,12 @@ public abstract class Conversation implements Parcelable {
     }
 
     public boolean isDisabled() { return isDisabled; }
+
+    public boolean isTyped() {
+        return typed;
+    }
+
+    public void setTyped(boolean typed) {
+        this.typed = typed;
+    }
 }

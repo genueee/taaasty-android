@@ -70,8 +70,12 @@ public interface ApiMessenger {
     @FormUrlEncoded
     @POST("messenger/conversations/by_user_id/{user_id}.json")
     Observable<Conversation> createConversation(@Field("socket_id") String socketId,
-                                                           @Path("user_id") long slug);
+                                                @Path("user_id") long slug);
 
+    @FormUrlEncoded
+    @POST("messenger/conversations/by_id/{conv_id}/typed.json")
+    Observable<Object> sendTyped(@Field("socket_id") String socketId,
+                                 @Path("conv_id") long conversationId);
 
     @GET("messenger/conversations/by_id/{id}.json")
     Observable<Conversation> getConversation(@Path("id") long id);
@@ -214,7 +218,8 @@ public interface ApiMessenger {
                                           @Query("socket_id") String socketId);
 
     @POST("/messenger/conversations/by_id/{conv_id}/not_disturb.json")
-    Observable<Conversation> doNotDisturbTurnOn(@Path("conv_id") long conv_id, @Query("socket_id") String socketId);
+    Observable<Conversation> doNotDisturbTurnOn(@Path("conv_id") long conv_id
+            , @Query("socket_id") String socketId);
 
     @DELETE("/messenger/conversations/by_id/{conv_id}/not_disturb.json")
     Observable<Conversation> doNotDisturbTurnOff(@Path("conv_id") long conv_id, @Query("socket_id") String socketId);
