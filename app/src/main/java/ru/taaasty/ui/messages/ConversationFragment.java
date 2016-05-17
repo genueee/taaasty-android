@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -14,7 +15,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -34,6 +37,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,6 +60,7 @@ import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
 import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Conversation;
+import ru.taaasty.rest.model.conversations.GroupConversation;
 import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
@@ -112,6 +117,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     private Toolbar mToolbar;
 
     private PhotoSourceManager mPhotoSourceManager;
+    private TextView tvTyping;
+
 
     public static class Builder {
 
@@ -150,11 +157,11 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Conversation conversation;
+
+
+        Conversation conversation = null;
         if (getArguments() != null) {
             conversation = getArguments().getParcelable(ARG_CONVERSATION);
-        } else {
-            conversation = null;
         }
 
         if (conversation == null) {
@@ -168,6 +175,31 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mPhotoSourceManager = new PhotoSourceManager(this, "CreateFlowFragment", this::sendAttachment);
         mPhotoSourceManager.onCreate(savedInstanceState);
     }
+    private TextWatcher typingTextWatcher = new TextWatcher() {
+        public static final int MIN_SENDING_INTERVAL = 5000;
+        private long oldDate = 0;
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            long nowDate = System.currentTimeMillis();
+            long timeInterval = nowDate - oldDate;
+            if (timeInterval > MIN_SENDING_INTERVAL && mConversationSubject.hasValue()) {
+                Observable<Object> sendTyped = RestClient.getAPiMessenger().sendTyped(null, mConversationSubject.getValue().getId());
+                sendTyped.subscribe();
+                oldDate = nowDate;
+            }
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -179,11 +211,11 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mSendMessageProgress = v.findViewById(R.id.reply_to_comment_progress);
         mEmptyView = v.findViewById(R.id.empty_view);
         mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
-
+        tvTyping = (TextView) mToolbar.findViewById(R.id.typing);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setItemAnimator(null);
 
-
+        mSendMessageText.addTextChangedListener(typingTextWatcher);
         mListScrollController = new ListScrollController(mListView, mListener);
         LinearLayoutManager lm = new LinearLayoutManager(getActivity());
         lm.setStackFromEnd(true);
@@ -267,6 +299,12 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         }
     }
 
+    @Override
+    public void onPause() {
+        userTypingTextCountDownTimer.onFinish();
+        userTypingTextCountDownTimer.cancel();
+        super.onPause();
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -357,21 +395,46 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         return true;
     }
 
-    public void onEventMainThread(TypedPushMessage event) {
-        Log.d("------->", "typed");
-//        ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle("typing...");
-        View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
-        TextView topic = ((TextView) headerGroupChat.findViewById(R.id.users));
-        topic.setText("typing...");
-//        mToolbar.setSubtitle("typing...");
-//        mToolbar.setSubtitleTextColor(0xffffffff);
+    public void onEventMainThread(TypedPushMessage typedPushMessage) {
+        if (!mConversationSubject.hasValue()) return;
+        if (typedPushMessage.conversationId != mConversationSubject.getValue().getId()) return;
+        userTypingTextCountDownTimer.cancel();
+
+
+        String typingViewText = getResources().getString(R.string.typing);
+        if (mConversationSubject.getValue() instanceof GroupConversation) {
+            List<User> userList = ((GroupConversation) mConversationSubject.getValue()).getUsers();
+            User typingUser = mChatHelper.findUserById(userList, typedPushMessage.userId);
+            if (typingUser != null) {
+                typingViewText = typingUser.getName() + " " + getResources().getString(R.string.typing);
+            }
+        }
+        tvTyping.setText(typingViewText);
+        tvTyping.setVisibility(View.VISIBLE);
+        userTypingTextCountDownTimer.start();
     }
+
+    private CountDownTimer userTypingTextCountDownTimer = new CountDownTimer(6000, 6000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+        }
+
+        @Override
+        public void onFinish() {
+            tvTyping.setVisibility(View.GONE);
+        }
+    };
+
+
     public void onEventMainThread(MessageChanged event) {
         Conversation conversation = mConversationSubject.getValue();
         if ((mAdapter != null)
                 && (conversation != null)
                 && (event.message.conversationId == conversation.getId())) {
             addMessageScrollToEnd(event.message);
+            userTypingTextCountDownTimer.onFinish();
+            userTypingTextCountDownTimer.cancel();
         }
     }
 

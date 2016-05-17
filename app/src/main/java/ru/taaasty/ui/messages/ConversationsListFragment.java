@@ -2,6 +2,7 @@ package ru.taaasty.ui.messages;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,12 +12,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.BuildConfig;
@@ -25,11 +27,13 @@ import ru.taaasty.RetainedFragmentCallbacks;
 import ru.taaasty.SortedList;
 import ru.taaasty.adapters.ConversationsListAdapter;
 import ru.taaasty.events.pusher.ConversationChanged;
+import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
 import ru.taaasty.rest.model.conversations.PublicConversation;
+import ru.taaasty.rest.model.conversations.TypedPushMessage;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.ui.CustomErrorView;
 import ru.taaasty.ui.DividerItemDecoration;
@@ -326,6 +330,21 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         }
 
         @Override
+        public void onPause() {
+            super.onPause();
+            finishAllTyping();
+
+        }
+
+        private void finishAllTyping() {
+            for (CountDownTimer typingCountDownTimer : typingCountDownTimerMap.values()) {
+                typingCountDownTimer.onFinish();
+                typingCountDownTimer.cancel();
+            }
+            typingCountDownTimerMap.clear();
+        }
+
+        @Override
         public void onDestroy() {
             super.onDestroy();
             mConversationsSubscription.unsubscribe();
@@ -365,6 +384,61 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
                 mConversationList.remove(event.conversation);
             } else {
                 mConversationList.addOrUpdate(event.conversation);
+            }
+        }
+        public void onEventMainThread(MessageChanged event) {
+            //stop typing on new message
+            long conversationId = event.conversation.getId();
+            CountDownTimer typingCountDownTimer = typingCountDownTimerMap.get(conversationId);
+            if (typingCountDownTimer != null) {
+                typingCountDownTimer.onFinish();
+                typingCountDownTimer.cancel();
+            }
+        }
+
+
+        private Conversation findConversationInSortedList(long conversationId) {
+            Conversation[] conversationArray = mConversationList.getItemsArray();
+            Conversation typingConversationInRecyclerView = null;
+            for (int i = 0; i < conversationArray.length; i++) {
+                if (conversationArray[i].getId()==conversationId){
+                    typingConversationInRecyclerView = conversationArray[i];
+                    break;
+                }
+            }
+            return typingConversationInRecyclerView;
+        }
+
+        private Map<Long, CountDownTimer> typingCountDownTimerMap = new HashMap<>();
+
+        public void onEventMainThread(TypedPushMessage typedPushMessage) {
+            //find conversation and set it's state typed
+            Conversation conversation = findConversationInSortedList(typedPushMessage.conversationId);
+            if (conversation != null) {
+                conversation.setTyped(true);
+                mConversationList.addOrUpdate(conversation);
+                CountDownTimer countDownTimer = new CountDownTimer(6000, 7000) {
+
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        Conversation conversation = findConversationInSortedList(typedPushMessage.conversationId);
+                        if (conversation != null) {
+                            conversation.setTyped(false);
+                            mConversationList.addOrUpdate(conversation);
+                        }
+                        typingCountDownTimerMap.remove(typedPushMessage.conversationId);
+                    }
+                }.start();
+                CountDownTimer previousTypingCountDownTimer = typingCountDownTimerMap.get(conversation.getId());
+                if (previousTypingCountDownTimer != null) {
+                    previousTypingCountDownTimer.cancel();
+                }
+                typingCountDownTimerMap.put(conversation.getId(), countDownTimer);
             }
         }
 

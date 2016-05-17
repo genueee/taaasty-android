@@ -357,6 +357,7 @@
   <string name="edit_create_conversation_group_chat">Group chat</string>
   <string name="edit_create_conversation_thread">Thread</string>
   <string name="select_conversation">Select conversation</string>
+  <string name="typing">typing...</string>
   <string-array name="routes_for_incoming_share">
     <item>Create post</item>
     <item>Send as a message</item>
