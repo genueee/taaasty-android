@@ -388,7 +388,7 @@ public class ConversationsListFragment extends FragmentWithWorkFragment<Conversa
         }
         public void onEventMainThread(MessageChanged event) {
             //stop typing on new message
-            long conversationId = event.conversation.getId();
+            long conversationId = event.message.conversationId;
             CountDownTimer typingCountDownTimer = typingCountDownTimerMap.get(conversationId);
             if (typingCountDownTimer != null) {
                 typingCountDownTimer.onFinish();
