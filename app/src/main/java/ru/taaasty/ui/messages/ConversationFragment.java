@@ -195,7 +195,9 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
             long timeInterval = nowDate - oldDate;
             if (timeInterval > MIN_SENDING_INTERVAL && mConversationSubject.hasValue()) {
                 Observable<Object> sendTyped = RestClient.getAPiMessenger().sendTyped(null, mConversationSubject.getValue().getId());
-                sendTyped.subscribe();
+                sendTyped
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                        .subscribe();
                 oldDate = nowDate;
             }
         }
