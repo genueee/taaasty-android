@@ -59,72 +59,68 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
+            android:visibility="visible"
             tools:background="@color/green_background_normal"
             tools:showIn="@layout/fragment_conversation">
 
-            <RelativeLayout
-                android:id="@+id/avatar_container"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent">
-
-                <ru.taaasty.widgets.ExtendedImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="@dimen/avatar_in_actiobar_diameter"
-                    android:layout_height="@dimen/avatar_in_actiobar_diameter"
-                    android:layout_alignParentLeft="true"
-                    android:layout_alignParentStart="true"
-                    android:layout_centerInParent="true"
-                    android:clickable="false"
-                    android:contentDescription="@string/open_user_tlog"
-                    tools:src="@drawable/avatar_dummy" />
-            </RelativeLayout>
-
-
-            <ru.taaasty.widgets.LinkifiedTextView
-                android:id="@+id/topic"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:layout_toEndOf="@+id/avatar_container"
-                android:layout_toRightOf="@+id/avatar_container"
-                android:ellipsize="end"
-                android:includeFontPadding="false"
-                android:maxLines="7"
-                android:paddingLeft="4dp"
-                android:paddingRight="8dp"
-                android:singleLine="true"
-                android:textColor="@color/feed_white_text"
-                android:textSize="15sp"
-                tools:text="genue sf" />
-
-            <ru.taaasty.widgets.LinkifiedTextView
-                android:id="@+id/users"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:includeFontPadding="false"
-                android:paddingLeft="4dp"
-                android:paddingRight="8dp"
-                android:singleLine="true"
-                android:textColor="@color/feed_white_text"
-                android:textSize="13sp"
-                android:visibility="gone"
-                tools:text="genue sf" />
+            <ru.taaasty.widgets.ExtendedImageView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/avatar_in_actiobar_diameter"
+                android:layout_height="@dimen/avatar_in_actiobar_diameter"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:clickable="false"
+                android:contentDescription="@string/open_user_tlog"
+                tools:src="@drawable/avatar_dummy" />
 
             <TextView
-                android:id="@+id/typing"
+                android:id="@+id/topic"
+                android:layout_width="match_parent"
+                android:layout_height="18sp"
+                android:layout_alignTop="@+id/avatar"
+                android:layout_toEndOf="@+id/avatar"
+                android:layout_toRightOf="@+id/avatar"
+                android:gravity="bottom"
+                android:includeFontPadding="true"
+                android:paddingBottom="0dp"
+                android:paddingLeft="8dp"
+                android:paddingRight="8dp"
+                android:paddingTop="0dp"
+                android:singleLine="true"
+                android:textColor="@color/feed_white_text"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Dmitry" />
+
+            <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
-                android:paddingLeft="4dp"
-                android:textColor="@color/feed_white_text"
-                android:textSize="12sp"
-                tools:text="typing"
+                android:layout_alignBottom="@+id/avatar"
+                android:layout_marginBottom="-3dp"
+                android:layout_toEndOf="@+id/avatar"
+                android:layout_toRightOf="@+id/avatar"
+                android:paddingLeft="8dp">
 
-                />
-            <!--android:layout_alignLeft="@id/topic"-->
+                <TextView
+                    android:id="@+id/typing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/feed_white_text"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    tools:text="typing..."
 
+                    />
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/feed_white_text"
+                    android:textSize="14sp"
+                    tools:text="online" />
+
+            </FrameLayout>
         </RelativeLayout>
 
     </android.support.v7.widget.Toolbar>

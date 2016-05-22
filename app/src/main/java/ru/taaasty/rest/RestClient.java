@@ -34,6 +34,7 @@ import ru.taaasty.rest.service.ApiFeeds;
 import ru.taaasty.rest.service.ApiFlows;
 import ru.taaasty.rest.service.ApiMessenger;
 import ru.taaasty.rest.service.ApiMyFeeds;
+import ru.taaasty.rest.service.ApiOnlineStatuses;
 import ru.taaasty.rest.service.ApiRelationships;
 import ru.taaasty.rest.service.ApiReposts;
 import ru.taaasty.rest.service.ApiSessions;
@@ -61,6 +62,7 @@ public final class RestClient {
     private volatile ApiSessions mApiSessions;
     private volatile ApiTlog mApiTlog;
     private volatile ApiUsers mApiUsers;
+    private volatile ApiOnlineStatuses mApiOnlineStatuses;
     private volatile ApiReposts mApiReposts;
 
     private static final Retrofit.Builder retrofitBuilder =
@@ -293,6 +295,17 @@ public final class RestClient {
             }
         }
         return instance.mApiUsers;
+    }
+    public static ApiOnlineStatuses getAPiOnlineStatuses() {
+        RestClient instance = getInstance();
+        if (instance.mApiOnlineStatuses == null) {
+            synchronized (RestClient.class) {
+                if (instance.mApiOnlineStatuses == null) {
+                    instance.mApiOnlineStatuses = createService(ApiOnlineStatuses.class);
+                }
+            }
+        }
+        return instance.mApiOnlineStatuses;
     }
 
     private static class AddHeadersRequestInterceptor implements Interceptor {

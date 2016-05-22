@@ -358,6 +358,8 @@
   <string name="edit_create_conversation_thread">Thread</string>
   <string name="select_conversation">Select conversation</string>
   <string name="typing">typing...</string>
+  <string name="last_seen">last seen</string>
+  <string name="online">online</string>
   <string-array name="routes_for_incoming_share">
     <item>Create post</item>
     <item>Send as a message</item>

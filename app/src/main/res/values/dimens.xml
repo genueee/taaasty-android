@@ -18,7 +18,8 @@
     <dimen name="avatar_small_diameter_42dp">42dp</dimen>
 
     <!-- Аватарка в экшнбаре. Чуть меньше taaasty_action_bar_size  -->
-    <dimen name="avatar_in_actiobar_diameter">42dp</dimen>
+    <dimen name="avatar_in_actiobar_diameter">35dp</dimen>
+    <!--<dimen name="avatar_in_actiobar_diameter">42dp</dimen>-->
 
     <!-- аватарка на последнем сообщении группового чата -->
     <dimen name="avatar_small_diameter_24dp">24dp</dimen>

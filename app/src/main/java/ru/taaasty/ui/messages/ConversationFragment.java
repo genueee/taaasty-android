@@ -27,18 +27,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -58,6 +60,7 @@ import ru.taaasty.rest.RestSchedulerHelper;
 import ru.taaasty.rest.UriRequestBody;
 import ru.taaasty.rest.model.Status;
 import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.UserStatusInfo;
 import ru.taaasty.rest.model.conversations.Attachment;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.conversations.GroupConversation;
@@ -65,6 +68,7 @@ import ru.taaasty.rest.model.conversations.HasManyUsers;
 import ru.taaasty.rest.model.conversations.Message;
 import ru.taaasty.rest.model.conversations.MessageList;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
 import ru.taaasty.rest.model.conversations.TypedPushMessage;
 import ru.taaasty.ui.feeds.TlogActivity;
 import ru.taaasty.ui.post.PhotoSourceManager;
@@ -118,6 +122,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
     private PhotoSourceManager mPhotoSourceManager;
     private TextView tvTyping;
+    private TextView tvStatus;
+    private StatusPresenter statusPresenter;
 
 
     public static class Builder {
@@ -214,6 +220,8 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mEmptyView = v.findViewById(R.id.empty_view);
         mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
         tvTyping = (TextView) mToolbar.findViewById(R.id.typing);
+        tvStatus = (TextView) mToolbar.findViewById(R.id.status);
+        statusPresenter = new StatusPresenter(getActivity(),tvStatus,mChatHelper);
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setItemAnimator(null);
 
@@ -299,12 +307,14 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         if (getArguments() != null && getArguments().getBoolean(ARG_FORCE_SHOW_KEYBOARD, false)) {
             mSendMessageText.post(() -> ImeUtils.showIme(mSendMessageText));
         }
+        statusPresenter.start();
     }
 
     @Override
     public void onPause() {
         userTypingTextCountDownTimer.onFinish();
         userTypingTextCountDownTimer.cancel();
+        statusPresenter.stop();
         super.onPause();
     }
 
@@ -371,6 +381,12 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_conversation, menu);
@@ -401,8 +417,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         if (!mConversationSubject.hasValue()) return;
         if (typedPushMessage.conversationId != mConversationSubject.getValue().getId()) return;
         userTypingTextCountDownTimer.cancel();
-
-
         String typingViewText = getResources().getString(R.string.typing);
         if (mConversationSubject.getValue() instanceof GroupConversation) {
             List<User> userList = ((GroupConversation) mConversationSubject.getValue()).getUsers();
@@ -413,6 +427,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         }
         tvTyping.setText(typingViewText);
         tvTyping.setVisibility(View.VISIBLE);
+        tvStatus.setVisibility(View.GONE);
         userTypingTextCountDownTimer.start();
     }
 
@@ -425,6 +440,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         @Override
         public void onFinish() {
             tvTyping.setVisibility(View.GONE);
+            tvStatus.setVisibility(View.VISIBLE);
         }
     };
 
@@ -480,29 +496,97 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         if (conversation == null || getActivity() == null || mListView == null) return;
         View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
 
-        Context context = getActivity();
-
         ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
         mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar);
         mChatHelper.setupAvatarImageViewClickableForeground(conversation, avatar);
 
-        TextView users = ((TextView) headerGroupChat.findViewById(R.id.users));
         TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
         topic.setText(mChatHelper.getTitle(conversation, getContext()));
-        if (conversation.getType() == Conversation.Type.GROUP
-                || conversation.getType() == Conversation.Type.PUBLIC) {
-            users.setText(getString(R.string.user_count,
-                    mChatHelper.countActiveUsers(conversation)));
-        } else {
-            users.setVisibility(View.GONE);
-            RelativeLayout.LayoutParams lp = (RelativeLayout.LayoutParams) topic.getLayoutParams();
-            lp.addRule(RelativeLayout.ALIGN_TOP, 0);
-            lp.addRule(RelativeLayout.CENTER_VERTICAL);
-            topic.setPadding(0, 0, 0, 0);
-        }
-
         headerGroupChat.setOnClickListener(v -> mListener.onSourceDetails(v));
     }
+
+    private  class StatusPresenter {
+        private TextView tvStatus;
+        private ConversationHelper conversationHelper;
+        private Context context;
+        private Timer timer = new Timer();
+        private TimerTask timerTask;
+
+        public StatusPresenter(Context context, TextView tvStatus, ConversationHelper conversationHelper) {
+            this.tvStatus = tvStatus;
+            this.conversationHelper = conversationHelper;
+            this.context = context;
+        }
+
+        public void start() {
+            if (timerTask != null) {
+                timerTask.cancel();
+                timer.purge();
+            }
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    tvStatus.post(()->updateToolbarStatus());
+                }
+            };
+            updateToolbarStatus();
+            timer.schedule(timerTask, 0, 5000);
+        }
+
+        public void stop() {
+            if (timerTask != null) {
+                timerTask.cancel();
+                timer.purge();
+            }
+        }
+
+        private void updateToolbarStatus() {
+            if (!mConversationSubject.hasValue()) return;
+            Conversation conversation = mConversationSubject.getValue();
+
+            if (conversation instanceof GroupConversation || conversation instanceof PublicConversation) {
+
+                RestClient
+                        .getAPiMessenger()
+                        .getConversation(conversation.getId())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                freshConversation -> {
+                                    String statusString = context.getString(R.string.user_count, conversationHelper.countActiveUsers(freshConversation));
+                                    tvStatus.setText(statusString);
+                                },
+                                error -> {
+
+                                }
+                        );
+            }else if (conversation instanceof PrivateConversation) {
+                PrivateConversation privateConversation = (PrivateConversation) conversation;
+                RestClient
+                        .getAPiOnlineStatuses().getUserInfo(""+privateConversation.getRecipient().getId())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(userList -> {
+                                    if (userList.size() == 1) {
+                                        UserStatusInfo userStatusInfo = userList.get(0);
+                                        if (userStatusInfo.isOnline){
+                                            tvStatus.setText(R.string.online);
+                                        }else {
+                                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy");
+                                            tvStatus.setText(context.getString(R.string.last_seen) +" "+ simpleDateFormat.format(userStatusInfo.lastSeenAt));
+                                        }
+                                    }
+                                },
+                                error -> {
+
+                                }
+
+                        );
+            }
+        }
+
+    }
+
 
     private void initSendMessageForm() {
         mSendMessageText.setOnEditorActionListener((v, actionId, event) -> {
