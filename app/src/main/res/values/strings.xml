@@ -419,6 +419,8 @@
     <string name="edit_create_conversation_thread">Обсуждение</string>
     <string name="select_conversation">Выберите переписку</string>
     <string name="typing">набирает текст...</string>
+    <string name="last_seen">был(-а)</string>
+    <string name="online">онлайн</string>
     <string-array name="routes_for_incoming_share">
         <item>Создать пост</item>
         <item>Отправить сообщением</item>

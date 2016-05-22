@@ -62,7 +62,8 @@ public final class ConversationHelper {
         switch (conversation.getType()) {
             case PRIVATE:
                 User recipient = ((PrivateConversation) conversation).getRecipient();
-                return recipientWithPrefix ? recipient.getNameWithPrefix() : recipient.getName();
+//                return recipientWithPrefix ? recipient.getNameWithPrefix() : recipient.getName();
+                return recipient.getName();
             case GROUP:
                 return UiUtils.trimUnblank(((GroupConversation) conversation).getTopic());
             case PUBLIC:
