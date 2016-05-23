@@ -33,7 +33,6 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -120,13 +119,10 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
 
     private Subscription mPostMessageSubscription = Subscriptions.unsubscribed();
 
-    private Toolbar mToolbar;
-
     private PhotoSourceManager mPhotoSourceManager;
-    private TextView tvTyping;
-    private TextView tvStatus;
-    private StatusPresenter statusPresenter;
-    private MediaPlayer submitMessageSuundMediaPlayer;
+
+
+    private MediaPlayer submitMessageSoundMediaPlayer;
 
 
     public static class Builder {
@@ -221,10 +217,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mSendMessageButton = v.findViewById(R.id.reply_to_comment_button);
         mSendMessageProgress = v.findViewById(R.id.reply_to_comment_progress);
         mEmptyView = v.findViewById(R.id.empty_view);
-        mToolbar = (Toolbar)v.findViewById(R.id.toolbar);
-        tvTyping = (TextView) mToolbar.findViewById(R.id.typing);
-        tvStatus = (TextView) mToolbar.findViewById(R.id.status);
-        statusPresenter = new StatusPresenter(getActivity(),tvStatus,mChatHelper);
+
         mListView = (RecyclerView) v.findViewById(R.id.recycler_list_view);
         mListView.setItemAnimator(null);
 
@@ -254,7 +247,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        ((AppCompatActivity)getActivity()).setSupportActionBar(mToolbar);
         mConversationSubject
                 .distinctUntilChanged()
                 .subscribe(new Observer<Conversation>() {
@@ -270,7 +262,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
                         if (mAdapter != null) {
                             mAdapter.setConversation(conversation);
                         }
-                        bindToolbar();
                     }
                 });
     }
@@ -296,20 +287,19 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         mPhotoSourceManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        submitMessageSuundMediaPlayer = MediaPlayer.create(getActivity(), R.raw.submit_message);
+        submitMessageSoundMediaPlayer = MediaPlayer.create(getActivity(), R.raw.submit_message);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        submitMessageSuundMediaPlayer.release();
-        submitMessageSuundMediaPlayer = null;
+        submitMessageSoundMediaPlayer.release();
+        submitMessageSoundMediaPlayer = null;
     }
 
     @Override
@@ -324,14 +314,11 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         if (getArguments() != null && getArguments().getBoolean(ARG_FORCE_SHOW_KEYBOARD, false)) {
             mSendMessageText.post(() -> ImeUtils.showIme(mSendMessageText));
         }
-        statusPresenter.start();
+
     }
 
     @Override
     public void onPause() {
-        userTypingTextCountDownTimer.onFinish();
-        userTypingTextCountDownTimer.cancel();
-        statusPresenter.stop();
         super.onPause();
     }
 
@@ -363,10 +350,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     public void onFeatherPhotoSelected(Fragment fragment) {
     }
 
-    public void refresh() {
-        mMessagesLoader.refreshMessages();
-        bindToolbar();
-    }
 
     @Override
     public void onDestroyView() {
@@ -382,7 +365,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mAdapter = null;
         mListScrollController = null;
         mEmptyView = null;
-        mToolbar = null;
     }
 
     @Override
@@ -425,46 +407,12 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         return true;
     }
 
-    public void onEventMainThread(TypedPushMessage typedPushMessage) {
-        if (!mConversationSubject.hasValue()) return;
-        if (typedPushMessage.conversationId != mConversationSubject.getValue().getId()) return;
-        userTypingTextCountDownTimer.cancel();
-        String typingViewText = getResources().getString(R.string.typing);
-        if (mConversationSubject.getValue() instanceof GroupConversation) {
-            List<User> userList = ((GroupConversation) mConversationSubject.getValue()).getUsers();
-            User typingUser = mChatHelper.findUserById(userList, typedPushMessage.userId);
-            if (typingUser != null) {
-                typingViewText = typingUser.getName() + " " + getResources().getString(R.string.typing);
-            }
-        }
-        tvTyping.setText(typingViewText);
-        tvTyping.setVisibility(View.VISIBLE);
-        tvStatus.setVisibility(View.GONE);
-        userTypingTextCountDownTimer.start();
-    }
-
-    private CountDownTimer userTypingTextCountDownTimer = new CountDownTimer(6000, 6000) {
-        @Override
-        public void onTick(long millisUntilFinished) {
-
-        }
-
-        @Override
-        public void onFinish() {
-            tvTyping.setVisibility(View.GONE);
-            tvStatus.setVisibility(View.VISIBLE);
-        }
-    };
-
-
     public void onEventMainThread(MessageChanged event) {
         Conversation conversation = mConversationSubject.getValue();
         if ((mAdapter != null)
                 && (conversation != null)
                 && (event.message.conversationId == conversation.getId())) {
             addMessageScrollToEnd(event.message);
-            userTypingTextCountDownTimer.onFinish();
-            userTypingTextCountDownTimer.cancel();
         }
     }
 
@@ -501,102 +449,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     public void onConversationLoaded(Conversation conversation) {
         mConversationSubject.onNext(conversation);
         mMessagesLoader.refreshMessages();
-    }
-
-    public void bindToolbar() {
-        Conversation conversation = mConversationSubject.getValue();
-        if (conversation == null || getActivity() == null || mListView == null) return;
-        View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
-
-        ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
-        mChatHelper.bindConversationIconToImageView(conversation, R.dimen.avatar_in_actiobar_diameter, avatar);
-        mChatHelper.setupAvatarImageViewClickableForeground(conversation, avatar);
-
-        TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
-        topic.setText(mChatHelper.getTitle(conversation, getContext()));
-        headerGroupChat.setOnClickListener(v -> mListener.onSourceDetails(v));
-    }
-
-    private  class StatusPresenter {
-        private TextView tvStatus;
-        private ConversationHelper conversationHelper;
-        private Context context;
-        private Timer timer = new Timer();
-        private TimerTask timerTask;
-
-        public StatusPresenter(Context context, TextView tvStatus, ConversationHelper conversationHelper) {
-            this.tvStatus = tvStatus;
-            this.conversationHelper = conversationHelper;
-            this.context = context;
-        }
-
-        public void start() {
-            if (timerTask != null) {
-                timerTask.cancel();
-                timer.purge();
-            }
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    tvStatus.post(()->updateToolbarStatus());
-                }
-            };
-            updateToolbarStatus();
-            timer.schedule(timerTask, 0, 5000);
-        }
-
-        public void stop() {
-            if (timerTask != null) {
-                timerTask.cancel();
-                timer.purge();
-            }
-        }
-
-        private void updateToolbarStatus() {
-            if (!mConversationSubject.hasValue()) return;
-            Conversation conversation = mConversationSubject.getValue();
-
-            if (conversation instanceof GroupConversation || conversation instanceof PublicConversation) {
-
-                RestClient
-                        .getAPiMessenger()
-                        .getConversation(conversation.getId())
-                        .subscribeOn(RestSchedulerHelper.getScheduler())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                freshConversation -> {
-                                    String statusString = context.getString(R.string.user_count, conversationHelper.countActiveUsers(freshConversation));
-                                    tvStatus.setText(statusString);
-                                },
-                                error -> {
-
-                                }
-                        );
-            }else if (conversation instanceof PrivateConversation) {
-                PrivateConversation privateConversation = (PrivateConversation) conversation;
-                RestClient
-                        .getAPiOnlineStatuses().getUserInfo(""+privateConversation.getRecipient().getId())
-                        .subscribeOn(RestSchedulerHelper.getScheduler())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(userList -> {
-                                    if (userList.size() == 1) {
-                                        UserStatusInfo userStatusInfo = userList.get(0);
-                                        if (userStatusInfo.isOnline){
-                                            tvStatus.setText(R.string.online);
-                                        }else {
-                                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy");
-                                            tvStatus.setText(context.getString(R.string.last_seen) +" "+ simpleDateFormat.format(userStatusInfo.lastSeenAt));
-                                        }
-                                    }
-                                },
-                                error -> {
-
-                                }
-
-                        );
-            }
-        }
-
     }
 
 
@@ -678,7 +530,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     }
 
     private void sendMessage() {
-        submitMessageSuundMediaPlayer.start();
+        submitMessageSoundMediaPlayer.start();
         String comment = mSendMessageText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {
