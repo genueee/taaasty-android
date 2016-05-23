@@ -2,6 +2,7 @@ package ru.taaasty.ui.messages;
 
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -32,6 +33,7 @@ import android.widget.Toast;
 
 import junit.framework.Assert;
 
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -124,6 +126,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     private TextView tvTyping;
     private TextView tvStatus;
     private StatusPresenter statusPresenter;
+    private MediaPlayer submitMessageSuundMediaPlayer;
 
 
     public static class Builder {
@@ -293,6 +296,20 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         mPhotoSourceManager.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        submitMessageSuundMediaPlayer = MediaPlayer.create(getActivity(), R.raw.submit_message);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        submitMessageSuundMediaPlayer.release();
+        submitMessageSuundMediaPlayer = null;
     }
 
     @Override
@@ -380,11 +397,6 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
         mListener = null;
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-
-    }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -666,6 +678,7 @@ public class ConversationFragment extends Fragment implements SelectPhotoSourceD
     }
 
     private void sendMessage() {
+        submitMessageSuundMediaPlayer.start();
         String comment = mSendMessageText.getText().toString();
 
         if (comment.isEmpty() || comment.matches("(\\@\\w+\\,?\\s*)+")) {

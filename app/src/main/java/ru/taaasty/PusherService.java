@@ -3,6 +3,7 @@ package ru.taaasty;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -186,6 +187,7 @@ public class PusherService extends Service {
     private MessagingStatus mLastMessagingStatus;
 
     private boolean mIsStarted;
+    private MediaPlayer incomingMessageSoundMediaPlayer;
 
     /**
      * Проверяем, что pusher запущен. Пересоединяемся, если нет
@@ -213,10 +215,13 @@ public class PusherService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        incomingMessageSoundMediaPlayer = MediaPlayer.create(this, R.raw.income_message);
         mHandler = new Handler();
         mGson = NetworkUtils.getGson();
         EventBus.getDefault().register(this);
     }
+
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -247,6 +252,8 @@ public class PusherService extends Service {
         mSendAuthReadySubscription.unsubscribe();
         destroyPusher();
         mIsStarted = false;
+        incomingMessageSoundMediaPlayer.release();
+        incomingMessageSoundMediaPlayer = null;
     }
 
     public void onEventMainThread(UiVisibleStatusChanged status) {
@@ -288,6 +295,7 @@ public class PusherService extends Service {
                 case EVENT_GROUP_PUSH_MESSAGE:
                 case EVENT_PUSH_MESSAGE:
                 case EVENT_PUBLIC_PUSH_MESSAGE:
+                    incomingMessageSoundMediaPlayer.start();
                     PusherMessage pusherMessage =  mGson.fromJson(data, PusherMessage.class);
                     Message message = mGson.fromJson(data, Message.class);
                     EventBus.getDefault().post(new MessageChanged(pusherMessage.conversation, message));
