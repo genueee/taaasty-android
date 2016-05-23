@@ -5,18 +5,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
 import com.squareup.pollexor.ThumborUrlBuilder;
+
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import de.greenrobot.event.EventBus;
 import ru.taaasty.ActivityBase;
@@ -25,16 +34,24 @@ import ru.taaasty.Constants;
 import ru.taaasty.R;
 import ru.taaasty.events.ConversationVisibilityChanged;
 import ru.taaasty.events.pusher.ConversationChanged;
+import ru.taaasty.events.pusher.MessageChanged;
 import ru.taaasty.rest.RestClient;
 import ru.taaasty.rest.RestSchedulerHelper;
+import ru.taaasty.rest.model.User;
+import ru.taaasty.rest.model.UserStatusInfo;
 import ru.taaasty.rest.model.conversations.Conversation;
 import ru.taaasty.rest.model.TlogDesign;
+import ru.taaasty.rest.model.conversations.GroupConversation;
 import ru.taaasty.rest.model.conversations.PrivateConversation;
+import ru.taaasty.rest.model.conversations.PublicConversation;
+import ru.taaasty.rest.model.conversations.TypedPushMessage;
 import ru.taaasty.rest.service.ApiMessenger;
+import ru.taaasty.utils.ConversationHelper;
 import ru.taaasty.utils.MessageHelper;
 import ru.taaasty.utils.NetworkUtils;
 import ru.taaasty.utils.SafeOnPreDrawListener;
 import ru.taaasty.utils.TargetSetHeaderBackground;
+import ru.taaasty.widgets.ExtendedImageView;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
@@ -62,17 +79,16 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     // Anti-picasso weak ref
     private TargetSetHeaderBackground mBackgroundTarget;
-
     private boolean imeKeyboardShown;
-
     private Subscription mConversationSubscription = Subscriptions.unsubscribed();
-
     private long mConversationId;
-
     private long mEntryId;
-
     private boolean mIsStarted;
-
+    private Toolbar mToolbar;
+    private TextView tvTyping;
+    private TextView tvStatus;
+    private StatusPresenter statusPresenter;
+    private final ConversationHelper mChatHelper = ConversationHelper.getInstance();
     @Nullable
     private Conversation mConversation;
 
@@ -113,14 +129,21 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_conversation);
 
+        mToolbar = (Toolbar)findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        tvTyping = (TextView) mToolbar.findViewById(R.id.typing);
+        tvStatus = (TextView) mToolbar.findViewById(R.id.status);
+        statusPresenter = new StatusPresenter(this,tvStatus,mChatHelper);
+
         mConversationId = getIntent().getLongExtra(ARG_CONVERSATION_ID, -1);
         mEntryId = getIntent().getLongExtra(ARG_ENTRY_ID, -1);
-        mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
         boolean forceShowKeyboard = getIntent().getBooleanExtra(ARG_FORCE_SHOW_KEYBOARD, false);
 
+        mConversation = getIntent().getParcelableExtra(ARG_CONVERSATION);
         if (savedInstanceState != null) {
             mConversation = savedInstanceState.getParcelable(BUNDLE_ARG_CONVERSATION);
         }
+
 
         if (savedInstanceState == null) {
             Fragment conversationFragment = new ConversationFragment.Builder()
@@ -146,7 +169,79 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
         } else {
             loadConversation();
         }
+        EventBus.getDefault().register(this);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        statusPresenter.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        userTypingTextCountDownTimer.onFinish();
+        userTypingTextCountDownTimer.cancel();
+        statusPresenter.stop();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mIsStarted = false;
+        if (mConversation != null) {
+            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), false));
+        }
+        EventBus.getDefault().unregister(this);
+    }
+    public void bindToolbar() {
+        View headerGroupChat = mToolbar.findViewById(R.id.header_group_info);
+        ExtendedImageView avatar = (ExtendedImageView) headerGroupChat.findViewById(R.id.avatar);
+        mChatHelper.bindConversationIconToImageView(mConversation, R.dimen.avatar_in_actiobar_diameter, avatar);
+        mChatHelper.setupAvatarImageViewClickableForeground(mConversation, avatar);
+        TextView topic = ((TextView) headerGroupChat.findViewById(R.id.topic));
+        topic.setText(mChatHelper.getTitle(mConversation, this));
+        headerGroupChat.setOnClickListener(v -> onSourceDetails(v));
+    }
+
+    public void onEventMainThread(TypedPushMessage typedPushMessage) {
+        if (mConversation==null) return;
+        if (typedPushMessage.conversationId != mConversation.getId()) return;
+        userTypingTextCountDownTimer.cancel();
+        String typingViewText = getResources().getString(R.string.typing);
+        if (mConversation instanceof GroupConversation) {
+            List<User> userList = ((GroupConversation) mConversation).getUsers();
+            User typingUser = mChatHelper.findUserById(userList, typedPushMessage.userId);
+            if (typingUser != null) {
+                typingViewText = typingUser.getName() + " " + getResources().getString(R.string.typing);
+            }
+        }
+        tvTyping.setText(typingViewText);
+        tvTyping.setVisibility(View.VISIBLE);
+        tvStatus.setVisibility(View.GONE);
+        userTypingTextCountDownTimer.start();
+    }
+
+    public void onEventMainThread(MessageChanged event) {
+        if ((mConversation != null) && (event.message.conversationId == mConversation.getId())) {
+            userTypingTextCountDownTimer.onFinish();
+            userTypingTextCountDownTimer.cancel();
+        }
+    }
+
+    private CountDownTimer userTypingTextCountDownTimer = new CountDownTimer(6000, 6000) {
+        @Override
+        public void onTick(long millisUntilFinished) {
+
+        }
+
+        @Override
+        public void onFinish() {
+            tvTyping.setVisibility(View.GONE);
+            tvStatus.setVisibility(View.VISIBLE);
+        }
+    };
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -200,15 +295,6 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        mIsStarted = false;
-        if (mConversation != null) {
-            EventBus.getDefault().post(new ConversationVisibilityChanged(mConversation.getId(), false));
-        }
-    }
-
-    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(BUNDLE_ARG_CONVERSATION, mConversation);
@@ -249,6 +335,7 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
         ConversationFragment fragment = (ConversationFragment)getSupportFragmentManager().findFragmentById(R.id.container);
         if (fragment != null) fragment.onConversationLoaded(conversation);
+        bindToolbar();
     }
 
     void onImeKeyboardShown() {
@@ -262,20 +349,17 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
 
     private void setupImeWatcher() {
         final View activityRootView = findViewById(R.id.activityRoot);
-        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
-                if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
-                    if (!imeKeyboardShown) {
-                        imeKeyboardShown = true;
-                        onImeKeyboardShown();
-                    }
-                } else {
-                    if (imeKeyboardShown) {
-                        imeKeyboardShown = false;
-                        onImeKeyboardHidden();
-                    }
+        activityRootView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            int heightDiff = activityRootView.getRootView().getHeight() - activityRootView.getHeight();
+            if (heightDiff > 100) { // if more than 100 pixels, its probably a keyboard...
+                if (!imeKeyboardShown) {
+                    imeKeyboardShown = true;
+                    onImeKeyboardShown();
+                }
+            } else {
+                if (imeKeyboardShown) {
+                    imeKeyboardShown = false;
+                    onImeKeyboardHidden();
                 }
             }
         });
@@ -317,40 +401,13 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
                         onConversationLoaded(conversation);
                         if (mIsStarted && mConversation == null) {
                             EventBus.getDefault().post(new ConversationVisibilityChanged(conversation.getId(), false));
+                            mConversation = conversation;
                         }
                     }
                 });
     }
 
-    private void bindDesign(final TlogDesign design) {
-        final View root = getWindow().getDecorView();
-        SafeOnPreDrawListener.runWhenLaidOut(root, root1 -> {
-            bindDesignMeasured(design);
-            return true;
-        });
-    }
 
-    private void bindDesignMeasured(TlogDesign design) {
-        View root = getWindow().getDecorView();
-        mBackgroundTarget = new TargetSetHeaderBackground(root,
-                design, R.color.conversation_background_overlay);
-        String originalUrl = design.getBackgroundUrl();
-        ThumborUrlBuilder thumborUrl = NetworkUtils.createThumborUrl(originalUrl);
-        if (root.getWidth() > 1 && root.getHeight() > 1) {
-            thumborUrl
-                    .resize(root.getWidth() / 2, root.getHeight() / 2)
-                    .filter(ThumborUrlBuilder.noUpscale());
-        }
-
-        RequestCreator rq = Picasso.with(this)
-                .load(thumborUrl.toUrlUnsafe())
-                .config(Bitmap.Config.RGB_565);
-        if (root.getWidth() > 1 && root.getHeight() > 1) {
-            rq.resize(root.getWidth() / 2, root.getHeight() / 2)
-                    .centerCrop();
-        }
-        rq.into(mBackgroundTarget);
-    }
 
     public void onEditGroupConversation(Conversation conversation) {
         EditCreateGroupActivity.editGroupConversation(this, conversation, REQUEST_CODE_EDIT_CONVERSATION);
@@ -372,4 +429,89 @@ public class ConversationActivity extends ActivityBase implements ConversationFr
             onEditGroupConversation(mConversation);
         }
     }
+
+
+    private  class StatusPresenter {
+        private TextView tvStatus;
+        private ConversationHelper conversationHelper;
+        private Context context;
+        private Timer timer = new Timer();
+        private TimerTask timerTask;
+
+        public StatusPresenter(Context context, TextView tvStatus, ConversationHelper conversationHelper) {
+            this.tvStatus = tvStatus;
+            this.conversationHelper = conversationHelper;
+            this.context = context;
+        }
+
+        public void start() {
+            if (timerTask != null) {
+                timerTask.cancel();
+                timer.purge();
+            }
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    tvStatus.post(()->updateToolbarStatus());
+                }
+            };
+            updateToolbarStatus();
+            timer.schedule(timerTask, 0, 5000);
+        }
+
+        public void stop() {
+            if (timerTask != null) {
+                timerTask.cancel();
+                timer.purge();
+            }
+        }
+
+        private void updateToolbarStatus() {
+            if (mConversation==null) return;
+
+            if (mConversation instanceof GroupConversation || mConversation instanceof PublicConversation) {
+
+                RestClient
+                        .getAPiMessenger()
+                        .getConversation(mConversation.getId())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                freshConversation -> {
+                                    String statusString = context.getString(R.string.user_count, conversationHelper.countActiveUsers(freshConversation));
+                                    tvStatus.setText(statusString);
+                                },
+                                error -> {
+
+                                }
+                        );
+            }else if (mConversation instanceof PrivateConversation) {
+                PrivateConversation privateConversation = (PrivateConversation) mConversation;
+                RestClient
+                        .getAPiOnlineStatuses().getUserInfo(""+privateConversation.getRecipient().getId())
+                        .subscribeOn(RestSchedulerHelper.getScheduler())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(userList -> {
+                                    if (userList.size() == 1) {
+                                        UserStatusInfo userStatusInfo = userList.get(0);
+                                        if (userStatusInfo.isOnline){
+                                            tvStatus.setText(R.string.online);
+                                        }else {
+                                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMM yyyy");
+                                            tvStatus.setText(context.getString(R.string.last_seen) +" "+ simpleDateFormat.format(userStatusInfo.lastSeenAt));
+                                        }
+                                    }
+                                },
+                                error -> {
+
+                                }
+
+                        );
+            }
+        }
+
+    }
+
+
+
 }
