@@ -279,6 +279,7 @@
         </service>
 
         <receiver
+
             android:name=".GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
